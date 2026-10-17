@@ -36,7 +36,28 @@
     };
     if (out.picks.primary.kind === "none" && !arr(m.moments).length) out.moments = [];
     balanceFlowers(out);
+    windMoments(out);   // last: a winding vine is already balanced
     return out;
+  }
+
+  // The hidden vine WINDS: ribbon/greenery spots zigzag across the full width of the tree.
+  // If three spots in a row (top to bottom) head the same way, they read as one diagonal swath,
+  // so alternate their sides, keeping each spot's height and roughly its distance from the center.
+  function windMoments(d) {
+    const A = d.cone.apex, L = d.cone.left, R = d.cone.right, baseY = (L[1] + R[1]) / 2;
+    const t = y => clamp((y - A[1]) / Math.max(.05, baseY - A[1]), 0, 1);
+    const cx = y => A[0] + t(y) * ((L[0] + R[0]) / 2 - A[0]), hw = y => Math.max(.01, t(y) * (R[0] - L[0]) / 2);
+    const ms = d.moments.filter(m => t(m.y) > .14).sort((a, b) => a.y - b.y);   // leave the top of the tree alone
+    if (ms.length < 3) return;
+    const off = m => (m.x - cx(m.y)) / hw(m.y);
+    const lined = () => { for (let i = 2; i < ms.length; i++) { const a = off(ms[i - 2]), b = off(ms[i - 1]), c = off(ms[i]); if ((Math.sign(a) === Math.sign(b) && Math.sign(b) === Math.sign(c)) || (b - a) * (c - b) > 0 && Math.abs(c - a) > .5) return true; } return false; };
+    if (!lined()) return;
+    let side = Math.sign(off(ms[0])) || -1;
+    ms.forEach((m, i) => {
+      const mag = clamp(Math.abs(off(m)), .3, .78) * (i % 3 === 2 ? .7 : 1);   // vary the depth so it doesn't look like a ladder
+      m.x = clamp(cx(m.y) + side * mag * hw(m.y), 0, 1);
+      side = -side;
+    });
   }
 
   // Flowers should feel balanced (equal visual weight left and right), not symmetric.
