@@ -33,7 +33,7 @@ async function callGemini(model, img, prompt, aspect, pieces, map) {
       contents: [{ parts: [
         { text: prompt },
         { inline_data: { mime_type: img.mediaType, data: img.data } },
-        ...(map ? [{ text: "Placement map (reference only, do not edit or copy its drawing style): the same photo with colored marks showing WHERE each addition goes: soft ovals in the ribbon color = a spot where ribbon loops poke out of the branches; small dots in the accent ribbon color = small accent loops; dots ringed in green = flowers; plain colored circles = ornaments at their real size and color. Follow its positions and spacing so the result matches the homeowner's step-by-step guide." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : []),
+        ...(map ? [{ text: "Placement map (reference only, do not edit or copy its drawing style): the same photo with colored marks showing WHERE each addition goes: soft ovals in the ribbon color = a spot where ribbon loops poke out of the branches; small dots in the accent ribbon color = small accent loops; dots ringed in green = flowers; plain colored circles = ornaments at their real size and color. Follow its positions and spacing so the result matches the homeowner's step-by-step guide, and don't add groupings or extra pieces the map and instructions don't show." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : []),
         ...(pieces ? [{ text: "Reference only (do not edit this one): the homeowner's own special pieces. Show these exact pieces on the tree where the instructions place them." }, { inline_data: { mime_type: pieces.mediaType, data: pieces.data } }] : [])
       ] }],
       generationConfig

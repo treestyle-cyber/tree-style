@@ -29,6 +29,8 @@
       moments: arr(m.moments).slice(0, 14).map(o => (o = obj(o), { x: clamp(o.x, 0, 1), y: clamp(o.y, 0, 1), size: Math.round(clamp(o.size || 2, 1, 3)), floral: !!o.floral })),
       ornaments: arr(m.ornaments).slice(0, 30).map(o => (o = obj(o), { x: clamp(o.x, 0, 1), y: clamp(o.y, 0, 1), color: hex(o.color, "#8E2236"),
         size: oneOf(o.size, ["xl", "l", "m", "s"], "m"), shape: oneOf(o.shape, ["ball", "drop", "finial", "geometric", "candy"], "ball"), finish: oneOf(o.finish, ["shiny", "matte", "glitter"], "shiny") })),
+      clusters: arr(m.clusters).slice(0, 6).map(c => (c = obj(c), { x: clamp(c.x, 0, 1), y: clamp(c.y, 0, 1), color: hex(c.color, "#3E7A4A"),
+        size: oneOf(c.size, ["m", "s"], "m"), count: Math.round(clamp(c.count || 4, 3, 5)), finish: oneOf(c.finish, ["shiny", "matte", "glitter"], "shiny") })),
       crown: oneOf(m.crown, ["light", "medium", "full"], "medium"),
       topper: { style: oneOf(top.style, ["star", "bow", "floral", "finial", "none"], "none"), color: hex(top.color, "#E2B65A"), delicate: !!top.delicate }
     };
@@ -98,7 +100,16 @@
   function ornamentGroups(d, mode, sizes) {
     const inch = ORN_IN(d), tot = ornamentTotals(d.tree.height_ft || 7, mode), out = [];
     sizes.forEach(sz => {
-      const list = d.ornaments.filter(o => o.size === sz); if (!list.length) return;
+      const list = d.ornaments.filter(o => o.size === sz && o.cl == null);
+      // Clusters: one line per color, by the box
+      const cg = {};
+      (d.clusters || []).filter(c => c.size === sz).forEach(c => { const k = colorName(c.color) + "|" + c.finish; (cg[k] = cg[k] || { c, n: 0, k: 0 }).n += c.count; cg[k].k++; });
+      const emitClusters = () => Object.entries(cg).forEach(([key, { c, n, k, merged }]) => {
+        if (merged) return;
+        const boxes = packs(n, PACK[sz]), ins = Math.round(inch[sz]), cn = colorName(c.color);
+        out.push({ color: c.color, label: `${ins}" ${c.finish} ${cn} balls, for ${plural(k, "cluster", "clusters")}`, qty: `${plural(boxes, "box", "boxes")} of ${PACK[sz]} (you'll use ${n})`, q: `${ins} inch ${c.finish} ${cn} ball christmas ornaments` });
+      });
+      if (!list.length) { emitClusters(); return; }
       // Merge look-alikes (same color name, finish, shape) so one-offs become real purchases
       const g = {};
       list.forEach(o => { const k = [colorName(o.color), o.finish, o.shape].join("|"); (g[k] = g[k] || { o, n: 0 }).n++; });
@@ -107,12 +118,19 @@
       if (groups.length > maxG) { const extra = groups.slice(maxG).reduce((a, x) => a + x.n, 0); groups = groups.slice(0, maxG); groups[0].n += extra; }
       const sum = groups.reduce((a, x) => a + x.n, 0);
       groups.forEach(x => {
-        const want = Math.max(PACK[sz], Math.round(tot[sz] * x.n / sum));
+        // Same balls as a cluster? Buy them together.
+        const ck = colorName(x.o.color) + "|" + x.o.finish, cl = x.o.shape === "ball" && cg[ck];
+        if (cl) cl.merged = true;
+        x.extra = cl ? cl.n : 0; x.clusters = cl ? cl.k : 0;
+      });
+      emitClusters();
+      groups.forEach(x => {
+        const want = Math.max(PACK[sz], Math.round(tot[sz] * x.n / sum)) + x.extra;
         const boxes = packs(want, PACK[sz]), n = boxes * PACK[sz];
         const ins = Math.round(inch[sz]), o = x.o, cn = colorName(o.color);
         out.push({
           color: o.color,
-          label: `${ins}" ${o.finish !== "shiny" ? o.finish + " " : "shiny "}${cn} ${SHAPE_Q[o.shape] === "ball" ? "balls" : SHAPE_Q[o.shape] + "s"}`,
+          label: `${ins}" ${o.finish !== "shiny" ? o.finish + " " : "shiny "}${cn} ${SHAPE_Q[o.shape] === "ball" ? "balls" : SHAPE_Q[o.shape] + "s"}${x.clusters ? `, including ${plural(x.clusters, "cluster", "clusters")}` : ""}`,
           qty: `${plural(boxes, "box", "boxes")} of ${PACK[sz]} (${n})`,
           q: `${ins} inch ${o.finish} ${cn} ${SHAPE_Q[o.shape]} christmas ornaments${sz === "xl" || sz === "l" ? " shatterproof" : ""}`
         });
@@ -190,6 +208,13 @@
     const W = cv.width, H = cv.height, ctx = cv.getContext("2d");
     const geo = () => makeGeo([data.cone.apex[0] * W, data.cone.apex[1] * H], [data.cone.left[0] * W, data.cone.left[1] * H], [data.cone.right[0] * W, data.cone.right[1] * H], W, H);
     const G = geo();
+    // Expand each cluster into its balls (packed like grapes) so every view draws them the same way
+    const pxIn0 = G.treeH / ((data.tree.height_ft || 7) * 12 * .92), inch0 = ORN_IN(data);
+    const GRAPES = { 3: [[0, -.6], [-.55, .4], [.6, .35]], 4: [[0, -.75], [-.7, 0], [.7, .05], [0, .72]], 5: [[0, 0], [-.85, -.35], [.82, -.4], [-.45, .8], [.5, .78]] };
+    data.clusters.forEach((c, ci) => {
+      const r = inch0[c.size] * pxIn0 / 2 * 1.9;
+      (GRAPES[c.count] || GRAPES[4]).forEach(([dx, dy]) => data.ornaments.push({ x: (c.x * W + dx * r) / W, y: (c.y * H + dy * r) / H, color: c.color, size: c.size, shape: "ball", finish: c.finish, cl: ci }));
+    });
     const scene = buildScene(G, data, photoSampler(img, W, H));
 
     // Layers: a dimmed photo, then one transparent layer per element.
@@ -408,7 +433,12 @@
       if (["statement", "medium", "small"].includes(key)) {
         const sz = key === "statement" ? ["xl", "l"] : key === "medium" ? ["m"] : ["s"];
         const list = data.ornaments.filter(b => sz.includes(b.size));
-        list.forEach(b => ring(o, b.x * W, b.y * H, Math.max(3, sizes[b.size] * S.pxIn / 2) + u * .5));
+        list.filter(b => b.cl == null).forEach(b => ring(o, b.x * W, b.y * H, Math.max(3, sizes[b.size] * S.pxIn / 2) + u * .5));
+        data.clusters.filter(c => sz.includes(c.size)).forEach((c, i) => {
+          const r = ORN_IN(data)[c.size] * S.pxIn / 2 * 3.4, x = c.x * W, y = c.y * H;
+          o.save(); o.setLineDash([u * .7, u * .5]); o.lineWidth = Math.max(2, u * .25); o.strokeStyle = "#FFE7A3"; o.beginPath(); o.arc(x, y, r, 0, TAU); o.stroke(); o.restore();
+          if (i === 0) pill(o, x, y, `Group of ${c.count}, packed tight`, { align: c.x > .55 ? "right" : "left", gap: r + u, leaderFrom: [x + (c.x > .55 ? -r : r), y] });
+        });
         const xl = list.find(b => b.size === "xl");
         if (xl) pill(o, xl.x * W, xl.y * H, "Push it in, toward the trunk", { align: xl.x > .55 ? "right" : "left", gap: sizes.xl * S.pxIn / 2 + u * 1.2, leaderFrom: [xl.x * W, xl.y * H] });
       }
@@ -439,6 +469,10 @@
         return ownedTxt + `Each numbered band is one piece of the ${wide} ribbon (${n} pieces). Starting at 1, tuck the top end deep into the tree, let it drape over two or three branches in the direction of the arrow, then tuck the bottom end in and cut. Each new piece starts a little lower and off to the side, never straight down or straight across.` + overTxt + acTxt + (ribbonPlan.flowerLoops ? ` Save some ribbon for a loop or two beside each flower in the flowers step.` : "");
       return ownedTxt + `Work through the ${n} numbered spots from the top down. At each one, make ${ribbonPlan.loopsPerSpot >= 4 ? "three or four" : ribbonPlan.loopsPerSpot >= 3 ? "two or three" : "one or two"} loops of the ${wide} ribbon about ${loopIn}" long, pinch them together, and push the pinched end deep into the branches so the loops pop out. The shapes on the picture show the size and direction.` + overTxt + acTxt;
     }
+    function clusterTip(sz) {
+      const cs = data.clusters.filter(c => c.size === sz); if (!cs.length) return "";
+      return ` Start with the ${cs.length === 1 ? "cluster" : cs.length + " clusters"} in the dashed circles: wire ${cs[0].count} ${colorName(cs[0].color)} balls together like a bunch of grapes (twist their hangers together), then tuck the bunch into the branches.`;
+    }
     function lead(key) {
       const t = data.tree, open = t.density === "open", art = t.kind === "artificial", [lo, hi] = lightCount(), xl = ORN_IN(data).xl;
       return {
@@ -449,8 +483,8 @@
         ribbon: ribbonLead(),
         florals: "Tuck the flower stems into the greenery spots, each with a ribbon loop and a few berries beside it. Put a few extra near the top.",
         statement: `Biggest first: about ${xl}" ornaments for this tree, pushed deep toward the trunk so they fill the background. Then give your most special ornaments the best spots, with a little room around them.`,
-        medium: "Medium ornaments go around the big ones, in the spots marked. The circles show where a few of them go; spread the rest of each box evenly around the tree. Mix shiny and matte.",
-        small: "Fill in around everything with the small ones, tucked in close to the branches. Use them for the accent color or a contrasting finish. Spread each box all the way around the tree.",
+        medium: "Medium ornaments go around the big ones, in the spots marked. The circles show where a few of them go; spread the rest of each box evenly around the tree. Mix shiny and matte." + clusterTip("m"),
+        small: "Fill in around everything with the small ones, tucked in close to the branches. Use them for the accent color or a contrasting finish. Spread each box all the way around the tree." + clusterTip("s"),
         small_picks: "Berry stems are inexpensive, so use plenty. Tuck them in all over to add texture and break up any plain patches.",
         crown: data.topper.delicate ? "The top is where everyone looks first. Gather extra greenery, ribbon and flowers here, then add the topper last so nothing knocks it." : "The top is where everyone looks first. Wire the topper on first, then gather extra greenery, ribbon and flowers around it.",
         base: "Choose a skirt or collar in proportion to the tree. A big base, or one that repeats a color already on the tree, pulls the eye down.",
