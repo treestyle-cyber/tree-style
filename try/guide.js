@@ -72,6 +72,71 @@
     const junk = layer(W, H).getContext("2d");
     DRAW_ORDER.forEach(n => { const c = layer(W, H); if (drawGroup(n, c.getContext("2d"), junk, G, scene, data, true)) planL[n] = c; });
 
+    // ---- Ribbon, drawn as an instruction (flat, numbered) instead of 3D loops ----
+    const RB = scene.rb || {}, RW = scene.rw || {};
+    const ribbonPlan = { layer: null, marks: [], kind: null, loopsPerSpot: 0 };
+    if (RB.base) {
+      const c = layer(W, H), g = c.getContext("2d"), u = G.unit;
+      const outline = Math.max(1.5, u * .22);
+      const flatLoop = (x, y, ang, len, wid, rb, over) => {
+        g.save(); g.translate(x, y); g.rotate(ang);
+        g.beginPath(); g.ellipse(len / 2, 0, len / 2, wid / 2, 0, 0, TAU);
+        g.fillStyle = rb.color; g.globalAlpha = .92; g.fill(); g.globalAlpha = 1;
+        g.lineWidth = outline; g.strokeStyle = "rgba(255,255,255,.95)"; g.stroke();
+        if (over) { g.beginPath(); g.ellipse(len / 2, 0, len / 2 * .86, wid / 2 * .42, 0, 0, TAU); g.fillStyle = over.color; g.fill(); }
+        g.restore();
+      };
+      if (scene.runsMain && scene.runsMain.length) {
+        // OPEN trees: each piece of ribbon is a band with an arrow showing the drape
+        const band = (run, w, rb, over) => {
+          const path = () => { g.beginPath(); run.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); };
+          g.lineCap = "round"; g.lineJoin = "round";
+          path(); g.lineWidth = w + outline * 2; g.strokeStyle = "rgba(255,255,255,.95)"; g.stroke();
+          path(); g.lineWidth = w; g.strokeStyle = rb.color; g.stroke();
+          if (over) { path(); g.lineWidth = w * .45; g.strokeStyle = over.color; g.stroke(); }
+          const [x1, y1] = run[run.length - 1], [x0, y0] = run[run.length - 6] || run[0], a = Math.atan2(y1 - y0, x1 - x0), ah = Math.max(6, w * .7);
+          g.beginPath(); g.moveTo(x1 + Math.cos(a) * ah, y1 + Math.sin(a) * ah); g.lineTo(x1 + Math.cos(a + 2.4) * ah, y1 + Math.sin(a + 2.4) * ah); g.lineTo(x1 + Math.cos(a - 2.4) * ah, y1 + Math.sin(a - 2.4) * ah); g.closePath();
+          g.fillStyle = "#fff"; g.fill();
+        };
+        if (RB.accent) (scene.runsAccent || []).forEach(run => band(run, Math.max(3, RW.accent), RB.accent, null));
+        const runs = scene.runsMain.slice().sort((a, b) => a[0][1] - b[0][1]);
+        runs.forEach(run => band(run, Math.max(5, RW.base), RB.base, RB.overlay));
+        ribbonPlan.marks = runs.map(r => [r[0][0], r[0][1]]);
+        ribbonPlan.kind = "cascade";
+      }
+      // Loop spots (dense trees, and beside flowers on open trees)
+      const spots = [];
+      (scene.loops || []).filter(L => !L.tail).forEach(L => {
+        let sp = spots.find(p => p.x === L.x && p.y === L.y);
+        if (!sp) spots.push(sp = { x: L.x, y: L.y, loops: [] });
+        sp.loops.push(L);
+      });
+      if (RB.accent) (scene.accentLoops || []).forEach(L => flatLoop(L.x, L.y, L.ang, L.len, L.wid, RB.accent, null));
+      if (ribbonPlan.kind === "cascade") {
+        // Open trees: the bands are the instruction; flower-side loops are mentioned in the text only.
+        ribbonPlan.flowerLoops = spots.length;
+      } else {
+        spots.forEach(sp => {
+          sp.loops.forEach(L => flatLoop(sp.x, sp.y, L.ang, L.len, Math.max(L.wid, RW.base * .7), RB.base, RB.overlay));
+          g.beginPath(); g.arc(sp.x, sp.y, Math.max(3, RW.base * .38), 0, TAU); g.fillStyle = "#fff"; g.fill();
+        });
+        // One number per cluster, so nearby spots don't get overlapping numbers
+        const D = G.treeH * .075, groups = [];
+        spots.slice().sort((a, b) => a.y - b.y).forEach(sp => {
+          const gp = groups.find(q => Math.hypot(q.x - sp.x, q.y - sp.y) < D);
+          if (gp) { gp.pts.push(sp); gp.x = gp.pts.reduce((a, p) => a + p.x, 0) / gp.pts.length; gp.y = gp.pts.reduce((a, p) => a + p.y, 0) / gp.pts.length; gp.n += sp.loops.length; }
+          else groups.push({ x: sp.x, y: sp.y, pts: [sp], n: sp.loops.length });
+        });
+        groups.sort((a, b) => a.y - b.y);
+        ribbonPlan.kind = "loops";
+        ribbonPlan.marks = groups.map(q => [q.x, q.y]);
+        ribbonPlan.loopsPerSpot = groups.length ? Math.round(groups.reduce((a, q) => a + q.n, 0) / groups.length) : 0;
+      }
+      ribbonPlan.layer = c;
+    }
+    const layerFor = k => k === "ribbon" ? (ribbonPlan.layer || planL.ribbon) : planL[k];
+    let afterImg = null;
+
     // Which steps this tree needs
     const has = {};
     STEP_ORDER.forEach(k => { has[k] = !!planL[k]; });
@@ -113,11 +178,17 @@
       const o = ctx, u = G.unit, vs = viewScale(), S = scene, sizes = ORN_IN(data);
       placed = [];
       if (peek) { o.drawImage(img, 0, 0, W, H); return; }
+      if (key === "all" && afterImg) {
+        const k2 = Math.max(W / afterImg.naturalWidth, H / afterImg.naturalHeight), aw = afterImg.naturalWidth * k2, ah = afterImg.naturalHeight * k2;
+        o.drawImage(afterImg, (W - aw) / 2, (H - ah) / 2, aw, ah);
+        drawPins(o, vs, u);
+        return;
+      }
       o.globalAlpha = 1; o.drawImage(planL.dim, 0, 0);
       if (key === "all") { o.globalAlpha = .55; o.drawImage(img, 0, 0, W, H); o.globalAlpha = 1; }
       const curPos = steps.indexOf(key);
       DRAW_ORDER.forEach(k => {
-        const lay = planL[k]; if (!lay) return;
+        const lay = layerFor(k); if (!lay) return;
         const pos = steps.indexOf(k);
         if (key === "all") { o.drawImage(lay, 0, 0); return; }
         if (pos < curPos) { o.globalAlpha = .38; o.drawImage(lay, 0, 0); o.globalAlpha = 1; }
@@ -149,10 +220,11 @@
         if (path[0]) pill(o, path[0].x, path[0].y, "Start low and full", { align: path[0].x > W * .55 ? "right" : "left", gap: u * 3, leaderFrom: [path[0].x, path[0].y] });
         const hi = path[path.length - 1]; if (hi && path.length > 2) pill(o, hi.x, hi.y, "Thinner as it climbs", { align: hi.x > W * .55 ? "right" : "left", gap: u * 2.4, leaderFrom: [hi.x, hi.y] });
       }
-      if (key === "ribbon" && S.ribbonOut) {
-        S.ribbonOut.tucks.forEach(([x, y]) => ring(o, x, y, u * .8, "#FFE7A3"));
-        const first = S.ribbonOut.tucks.slice().sort((a, b) => a[1] - b[1])[0];
-        if (first) pill(o, first[0], first[1], "Start at the top", { align: first[0] > W * .55 ? "right" : "left", gap: u * 1.6, leaderFrom: first });
+      if (key === "ribbon" && ribbonPlan.marks.length) {
+        const r = Math.max(12 * vs, u * 1.3);
+        const [fx, fy] = ribbonPlan.marks[0];
+        pill(o, fx, fy, ribbonPlan.kind === "cascade" ? "Start here" : "Start at the top", { align: fx > W * .55 ? "right" : "left", gap: r * 2.2, leaderFrom: [fx, fy] });
+        ribbonPlan.marks.forEach(([x, y], i) => badge(o, x, y, r, i + 1, "#1f3a2e"));
       }
       if (key === "florals") S.all.filter(m => m.floral).forEach(m => ring(o, m.x, m.y, FLOWER_IN[data.picks.floral.kind || "rose"] * S.pxIn * .6 + u * .4));
       if (["statement", "medium", "small"].includes(key)) {
@@ -168,16 +240,26 @@
         pill(o, G.A[0], G.A[1] + G.treeH * .12, data.topper.delicate ? "Add extra up here, topper goes on last" : "Wire the topper on, then add around it", { gap: 0 });
       }
       if (key === "base") pill(o, (G.L[0] + G.R[0]) / 2, Math.min(H - 20 * vs, G.L[1] + G.treeH * .06), "Keep the base in proportion");
-      if (key === "all" && mode === "check") {
-        data.quick.forEach((q, i) => {
-          if (q.x == null || q.y == null) return;
-          const x = q.x * W, y = q.y * H, r = Math.max(13 * vs, u * 1.4);
-          o.fillStyle = "#A9844C"; o.beginPath(); o.arc(x, y, r, 0, TAU); o.fill(); o.lineWidth = Math.max(2, r * .16); o.strokeStyle = "#fff"; o.stroke();
-          o.fillStyle = "#fff"; o.font = `700 ${Math.round(r * 1.1)}px Inter, system-ui, sans-serif`; o.textAlign = "center"; o.textBaseline = "middle"; o.fillText(String(i + 1), x, y + r * .05);
-        });
-      }
+      if (key === "all") drawPins(o, vs, u);
+    }
+    function badge(o, x, y, r, n, col) {
+      o.save(); o.fillStyle = col; o.beginPath(); o.arc(x, y, r, 0, TAU); o.fill(); o.lineWidth = Math.max(2, r * .16); o.strokeStyle = "#fff"; o.stroke();
+      o.fillStyle = "#fff"; o.font = `700 ${Math.round(r * 1.05)}px Inter, system-ui, sans-serif`; o.textAlign = "center"; o.textBaseline = "middle"; o.fillText(String(n), x, y + r * .05); o.restore();
+    }
+    function drawPins(o, vs, u) {
+      if (mode !== "check") return;
+      data.quick.forEach((q, i) => { if (q.x != null && q.y != null) badge(o, q.x * W, q.y * H, Math.max(13 * vs, u * 1.4), i + 1, "#A9844C"); });
     }
 
+    function ribbonLead() {
+      const b = RB.base, ov = RB.overlay, ac = RB.accent; if (!b) return "";
+      const wide = `${b.width_in}" ${colorName(b.color)}`, loopIn = Math.round(b.width_in * 2), n = ribbonPlan.marks.length;
+      const overTxt = ov ? ` Lay the ${ov.width_in}" ${colorName(ov.color)} ribbon on top as you go, so each piece is two layers.` : "";
+      const acTxt = ac ? ` The thin ${ac.width_in}" ${colorName(ac.color)} ribbon is its own trail: small pieces tucked into the gaps between the numbered spots (the small ${colorName(ac.color)} shapes).` : "";
+      if (ribbonPlan.kind === "cascade")
+        return `Each numbered band is one piece of the ${wide} ribbon (${n} pieces). Starting at 1, tuck the top end deep into the tree, let it drape over two or three branches in the direction of the arrow, then tuck the bottom end in and cut. Each new piece starts a little lower and off to the side, never straight down or straight across.` + overTxt + acTxt + (ribbonPlan.flowerLoops ? ` Save some ribbon for a loop or two beside each flower in the flowers step.` : "");
+      return `Work through the ${n} numbered spots from the top down. At each one, make ${ribbonPlan.loopsPerSpot >= 4 ? "three or four" : ribbonPlan.loopsPerSpot >= 3 ? "two or three" : "one or two"} loops of the ${wide} ribbon about ${loopIn}" long, pinch them together, and push the pinched end deep into the branches so the loops pop out. The shapes on the picture show the size and direction.` + overTxt + acTxt;
+    }
     function lead(key) {
       const t = data.tree, open = t.density === "open", art = t.kind === "artificial", [lo, hi] = lightCount(), xl = ORN_IN(data).xl;
       return {
@@ -185,8 +267,7 @@
                    : "Shake out the branches and look for natural gaps. They aren't flaws: they're the perfect spots for your biggest pieces and for ornaments that need room to hang straight.",
         lights: `Plan on ${lo.toLocaleString()} to ${hi.toLocaleString()} lights for a ${t.height_ft} ft tree. ` + (art ? "If it's pre-lit, check for dark sections first. If you add lights, add them there and in two other spots so they don't look patched." : "Spiral up the tree, and on each major branch go deep toward the trunk and back out to the tip.") + " Match the cord color to the tree.",
         primary_picks: "Tuck greenery stems in at the marked spots, wrapping each wire stem around a branch so it holds. Picture a vine growing up from inside the tree and peeking out here and there: more and bigger near the bottom, fewer and smaller as you go up.",
-        ribbon: (open ? "Make short waterfalls: drop the ribbon down two or three branches, cut it, and start the next one lower, stepping diagonally. Never straight down or straight across."
-                      : "Make big loops of ribbon at the greenery spots: pinch each loop tight and push the pinched end deep into the branches so the loop pops out.") + " Lay the narrower ribbon over the wide one, and let the thin ribbon wander around the tree on its own.",
+        ribbon: ribbonLead(),
         florals: "Tuck the flower stems into the greenery spots, each with a ribbon loop and a few berries beside it. Put a few extra near the top.",
         statement: `Biggest first: about ${xl}" ornaments for this tree, pushed deep toward the trunk so they fill the background. Then give your most special ornaments the best spots, with a little room around them.`,
         medium: "Medium ornaments go around the big ones, in the spots marked. Mix shiny and matte.",
@@ -194,7 +275,7 @@
         small_picks: "Berry stems are inexpensive, so use plenty. Tuck them in all over to add texture and break up any plain patches.",
         crown: data.topper.delicate ? "The top is where everyone looks first. Gather extra greenery, ribbon and flowers here, then add the topper last so nothing knocks it." : "The top is where everyone looks first. Wire the topper on first, then gather extra greenery, ribbon and flowers around it.",
         base: "Choose a skirt or collar in proportion to the tree. A big base, or one that repeats a color already on the tree, pulls the eye down.",
-        all: mode === "check" ? "Everything in place. The numbered pins are your quick fixes." : "Everything in place. Tap any step to look again."
+        all: (afterImg ? "Your finished tree. " : "Everything in place. ") + (mode === "check" ? "The numbered pins are your quick fixes." : "Tap any step to look again.")
       }[key];
     }
 
@@ -219,7 +300,7 @@
     }
 
     const itemsFor = key => key === "all" ? [] : data.plan.filter(p => p.element === key);
-    return { steps, title: k => STEP_TITLE[k], draw, lead, legend, itemsFor, data };
+    return { steps, title: k => STEP_TITLE[k], draw, lead, legend, itemsFor, data, setAfter: im => { afterImg = im; } };
   }
 
   window.TreeGuide = { create, normalize };

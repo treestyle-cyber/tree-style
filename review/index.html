@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Tree Style · Feedback</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  main{max-width:980px;margin:0 auto;padding:20px 16px 60px}
+  h1{font-size:40px;margin:6px 0 4px}
+  .stats{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 22px}
+  .stat{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-width:130px}
+  .stat b{display:block;font-family:var(--serif);font-size:30px;color:var(--green);line-height:1.1}
+  .stat span{font-size:13px;color:var(--muted)}
+  .list{display:grid;gap:14px}
+  .entry{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;grid-template-columns:auto 1fr;gap:16px}
+  .pics{display:flex;gap:6px}
+  .pics img{width:110px;height:140px;object-fit:cover;border-radius:8px;background:#eee}
+  .meta{font-size:13px;color:var(--muted);margin-bottom:6px}
+  .orn{display:inline-flex;gap:3px;vertical-align:middle;margin-right:8px}
+  .orn i{width:13px;height:13px;border-radius:50%;background:var(--line);display:block}
+  .orn i.f{background:#8e2a32}
+  .pay{display:inline-block;font:600 12px var(--sans);padding:3px 9px;border-radius:99px;background:#efe6d4;margin-right:6px}
+  .pay.yes{background:#dcebdf;color:var(--green)} .pay.no{background:#f3dede;color:var(--berry)}
+  .comment{white-space:pre-wrap;margin:8px 0 0}
+  .empty{color:var(--muted);padding:30px 0}
+  @media (max-width:560px){ .entry{grid-template-columns:1fr} .pics img{width:48%;height:auto;aspect-ratio:3/4} }
+</style>
+</head>
+<body>
+<main>
+  <a class="brand" href="/"><svg viewBox="0 0 24 24"><path d="M12 3 4.5 20h15z" fill="#1f3a2e"/><circle cx="12" cy="3.2" r="1.8" fill="#a9844c"/></svg>Tree Style</a>
+  <h1>Tester feedback</h1>
+  <form id="pf" class="row" style="margin-top:10px">
+    <input type="password" id="pw" placeholder="Test password" style="flex:1;max-width:320px">
+    <button class="btn">Show feedback</button>
+  </form>
+  <div class="err" id="err"></div>
+  <div class="stats" id="stats" hidden></div>
+  <div class="list" id="list"></div>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let pw = ""; try { pw = sessionStorage.getItem("ts_pw") || ""; } catch {}
+async function load() {
+  $("#err").textContent = ""; $("#list").innerHTML = '<p class="muted">Loading…</p>';
+  const r = await fetch("/api/feedback", { headers: { "x-test-password": pw } });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) { $("#list").innerHTML = ""; $("#err").textContent = d.error || "Couldn't load."; return; }
+  try { sessionStorage.setItem("ts_pw", pw); } catch {}
+  $("#pf").hidden = true;
+  if (!d.setup) { $("#list").innerHTML = '<p class="empty">Feedback storage isn\'t connected yet. In Vercel: Storage → Create → Blob → connect it to the tree-style project, then redeploy. Until then, feedback is only in Vercel → Logs (search for FEEDBACK).</p>'; return; }
+  const E = d.entries || [];
+  if (!E.length) { $("#list").innerHTML = '<p class="empty">No feedback yet.</p>'; return; }
+  const rated = E.filter(e => e.rating), avg = rated.length ? (rated.reduce((a, e) => a + e.rating, 0) / rated.length).toFixed(1) : "–";
+  const pay = k => E.filter(e => e.pay === k).length;
+  $("#stats").hidden = false;
+  $("#stats").innerHTML = `<div class="stat"><b>${E.length}</b><span>responses</span></div><div class="stat"><b>${avg}</b><span>average rating (of 5)</span></div><div class="stat"><b>${pay("yes")} / ${pay("maybe")} / ${pay("no")}</b><span>would pay: yes / maybe / no</span></div>`;
+  $("#list").innerHTML = E.map(e => {
+    let o = ""; for (let i = 1; i <= 5; i++) o += `<i class="${e.rating >= i ? "f" : ""}"></i>`;
+    const when = new Date(e.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    return `<div class="entry"><div class="pics">${e.photo ? `<img src="${e.photo}" alt="Before">` : ""}${e.after ? `<img src="${e.after}" alt="After">` : ""}</div>
+      <div><div class="meta">${esc(when)}${e.name ? " · " + esc(e.name) : ""} · ${esc(e.mode === "design" ? "Design" : "Check")} · ${esc(e.style || "")}${e.theme ? " (" + esc(e.theme) + ")" : ""}${e.version > 1 ? " · version " + e.version : ""}${e.overall != null ? " · scored " + Math.max(1, Math.round(e.overall / 20 * 2) / 2) + "/5" : ""}</div>
+      <div>${e.rating ? `<span class="orn">${o}</span>` : ""}${e.pay ? `<span class="pay ${esc(e.pay)}">Pay: ${esc(e.pay)}</span>` : ""}</div>
+      ${e.headline ? `<div class="meta" style="margin-top:6px">“${esc(e.headline)}”</div>` : ""}
+      ${e.comment ? `<p class="comment">${esc(e.comment)}</p>` : ""}</div></div>`;
+  }).join("");
+}
+$("#pf").addEventListener("submit", e => { e.preventDefault(); pw = $("#pw").value; load(); });
+if (pw) load();
+</script>
+</body>
+</html>

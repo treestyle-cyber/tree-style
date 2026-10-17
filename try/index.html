@@ -155,6 +155,20 @@
   .extra small{display:block;color:var(--muted);font-size:13px}
   .extra label,.extra button{font:600 14px var(--sans);color:var(--green);cursor:pointer;background:none;border:0;white-space:nowrap}
 
+  /* feedback */
+  .fb h3{font-size:26px;margin:0 0 4px}
+  .fb .sub{margin:0 0 12px;font-size:14px}
+  .rate{display:flex;gap:8px;margin:4px 0 14px}
+  .rate button{appearance:none;border:0;background:none;padding:0;cursor:pointer;width:38px;height:42px;position:relative}
+  .rate button i{position:absolute;left:3px;bottom:0;width:32px;height:32px;border-radius:50%;background:var(--line);display:block;transition:transform .15s}
+  .rate button i::after{content:"";position:absolute;left:50%;top:-6px;width:10px;height:7px;margin-left:-5px;background:var(--brass);border-radius:2px}
+  .rate button.on i{background:radial-gradient(circle at 35% 30%,#f0a0aa,#8e2a32 58%,#561a20)}
+  .rate button:active i{transform:scale(.9)}
+  .fb textarea{width:100%;font:16px/1.4 var(--sans);padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;resize:vertical;color:var(--ink);margin:6px 0 10px}
+  .fb input[type=text]{width:100%;border-radius:12px;margin-bottom:12px}
+  .fb .q2{font-weight:600;margin:4px 0 8px}
+  .fb .thanks{text-align:center;padding:10px 0;font-family:var(--serif);font-size:24px;color:var(--green)}
+
   /* step guide */
   .steptabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;margin:0 -18px;padding-left:18px;padding-right:18px;scrollbar-width:none}
   .steptabs::-webkit-scrollbar{display:none}
@@ -368,6 +382,28 @@
       <button id="navDetails"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><span><b>Sharpen your recommendations</b><small>Tell us about your tree and we'll re-run it</small></span><span class="chev">›</span></button>
       <button data-go="s-score" id="navScoreBtn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span><b>How it scored</b><small>Balance, lights, the top and more</small></span><span class="chev">›</span></button>
       <button data-go="s-shop"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 7h12l-1 13H7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></span><span><b>Shopping list</b><small id="navShop"></small></span><span class="chev">›</span></button>
+    </div>
+    <div class="card fb" id="fbCard">
+      <div id="fbForm">
+        <h3>How did we do?</h3>
+        <p class="sub muted">You're one of our first testers. Your honest take shapes what we build.</p>
+        <div class="q2">Rate the results</div>
+        <div class="rate" id="fbRate" role="radiogroup" aria-label="Rating out of 5">
+          <button data-v="1" aria-label="1"><i></i></button><button data-v="2" aria-label="2"><i></i></button><button data-v="3" aria-label="3"><i></i></button><button data-v="4" aria-label="4"><i></i></button><button data-v="5" aria-label="5"><i></i></button>
+        </div>
+        <div class="q2">Would you pay $19.99 for a Holiday Pass?</div>
+        <div class="row" style="margin-bottom:12px">
+          <label class="chip"><input type="radio" name="pay" value="yes"><span>Yes</span></label>
+          <label class="chip"><input type="radio" name="pay" value="maybe"><span>Maybe</span></label>
+          <label class="chip"><input type="radio" name="pay" value="no"><span>No</span></label>
+        </div>
+        <div class="q2">What was confusing, wrong, or missing?</div>
+        <textarea id="fbText" rows="3" placeholder="Anything helps: the advice, the preview, the steps…"></textarea>
+        <input type="text" id="fbName" placeholder="Your name (optional)">
+        <button class="btn" id="fbSend" style="width:100%">Send feedback</button>
+        <div class="err" id="fbErr"></div>
+      </div>
+      <div class="thanks" id="fbThanks" hidden>Thank you! 🎄</div>
     </div>
     <button class="btn ghost" id="restart" style="width:100%">Try another tree</button>
     <details class="debug">
@@ -656,7 +692,7 @@ async function run() {
   after = null; stepIdx = 0; doneSteps = new Set(); guide = null;
   fill();
   await makePreview();
-  startVersions();
+  startVersions(); resetFeedback();
   L.done();
   fillReveal();
   show("s-reveal", ["s-home"]);
@@ -768,6 +804,7 @@ async function drawStep() {
   if (!guide) {
     try { guide = TreeGuide.create(await getPhotoImg(), $("#guideCv"), result, mode); }
     catch (e) { console.error(e); return; }
+    if (after) { const ai = new Image(); ai.onload = () => { if (!guide) return; guide.setAfter(ai); if (guide.steps[stepIdx] === "all") drawStep(); }; ai.src = after; }
     stepIdx = 0;
   }
   const steps = guide.steps;
@@ -803,6 +840,41 @@ const peekOn = () => guide && guide.draw(guide.steps[stepIdx], true), peekOff = 
 $("#peek").addEventListener("pointerdown", peekOn);
 ["pointerup", "pointerleave", "pointercancel"].forEach(ev => $("#peek").addEventListener(ev, peekOff));
 $("#peek").addEventListener("contextmenu", e => e.preventDefault());
+
+/* ---------------- feedback ---------------- */
+let fbRating = 0;
+function resetFeedback() {
+  fbRating = 0; $("#fbText").value = ""; $("#fbErr").textContent = "";
+  document.querySelectorAll("#fbRate button").forEach(b => b.classList.remove("on"));
+  document.querySelectorAll("input[name=pay]").forEach(r => r.checked = false);
+  $("#fbForm").hidden = false; $("#fbThanks").hidden = true;
+}
+document.querySelectorAll("#fbRate button").forEach(b => b.onclick = () => {
+  fbRating = +b.dataset.v;
+  document.querySelectorAll("#fbRate button").forEach(x => x.classList.toggle("on", +x.dataset.v <= fbRating));
+});
+function thumb(src, max) {
+  return new Promise(ok => {
+    if (!src) return ok("");
+    const im = new Image();
+    im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL("image/jpeg", .78)); };
+    im.onerror = () => ok(""); im.src = src;
+  });
+}
+$("#fbSend").onclick = async () => {
+  const comment = $("#fbText").value.trim(), pay = val("pay") || "";
+  if (!fbRating && !comment && !pay) { $("#fbErr").textContent = "Tap a rating or write a quick note first."; return; }
+  $("#fbSend").disabled = true; $("#fbErr").textContent = "";
+  try {
+    await api("/api/feedback", {
+      rating: fbRating, pay, comment, name: $("#fbName").value.trim(),
+      mode, style: val("style"), theme: $("#theme").value.trim(), overall: result?.overall ?? null, version: current + 1, headline: result?.headline || "",
+      photo: await thumb(photo, 480), after: await thumb(after, 480)
+    });
+    $("#fbForm").hidden = true; $("#fbThanks").hidden = false;
+  } catch (e) { $("#fbErr").textContent = "Couldn't send: " + e.message; }
+  $("#fbSend").disabled = false;
+};
 
 /* ---------------- design partner ---------------- */
 let versions = [], current = 0, chat = [], pickedColor = null, ornPhoto = null, busy = false;
@@ -879,7 +951,7 @@ async function partnerSend(req, label) {
     const reply = res.reply || "Here's the updated tree.";
     addMsg("ai", reply, { tag: `Version ${current + 1}`, list: (res.changes || []).slice(0, 5) });
     chat.push({ role: "user", text: req }, { role: "assistant", text: reply });
-    renderVersions();
+    renderVersions(); resetFeedback();
     $("#vNote").hidden = false; $("#vNote").textContent = `Version ${current + 1}: ${versions[current].label}. Older versions are under Change something.`;
     L.done();
     show("s-results", ["s-home"]);
