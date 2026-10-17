@@ -130,6 +130,8 @@ For ribbons with no accent color, set accent to "".`;
 async function callClaude(images, text, maxTokens, schema) {
   try { return await callClaudeOnce(images, text, maxTokens, schema); }
   catch (e) {
+    // Cut off: retry once with plenty more room and a nudge to keep the words tight.
+    if (e.cutoff) return await callClaudeOnce(images, text + "\n\nKeep every text field brief (one or two short sentences).", Math.max(maxTokens * 2, 32000), schema);
     // If the structured format itself is rejected, fall back to plain text + repair.
     if (schema && e.status === 400) return await callClaudeOnce(images, text + "\n\nReply with ONLY the JSON, no other text.", maxTokens, null);
     throw e;
@@ -161,7 +163,7 @@ async function callClaudeOnce(images, text, maxTokens, schema) {
   const body = await r.json();
   if (!r.ok) { const e = new Error(body?.error?.message || `Claude error ${r.status}`); e.status = r.status; throw e; }
   const out = (body.content || []).filter(b => b.type === "text").map(b => b.text).join("");
-  if (body.stop_reason === "max_tokens") throw new Error("The answer ran long and got cut off. Please try again.");
+  if (body.stop_reason === "max_tokens") { const e = new Error("The answer ran long and got cut off. Please try again."); e.cutoff = true; throw e; }
   return { json: extractJson(out), usage: body.usage };
 }
 
@@ -179,13 +181,13 @@ export default async function handler(req, res) {
     let result, usage;
     if (revise) {
       const ex = parseDataUrl(extra);
-      ({ json: result, usage } = await callClaude(ex ? [img, ex] : [img], revisePrompt(revise, !!ex), 8000, REVISE_SCHEMA));
+      ({ json: result, usage } = await callClaude(ex ? [img, ex] : [img], revisePrompt(revise, !!ex), 16000, REVISE_SCHEMA));
     } else {
       const imgs = [img], notes = ["Image 1 is their tree" + (mode === "design" ? " before decorating (bare, or with just lights)." : ".")];
       const pc = parseDataUrl(pieces), ins = mode === "design" ? parseDataUrl(inspo) : null;
       if (pc) { imgs.push(pc); notes.push(`Image ${imgs.length} shows special pieces they own (ornaments, heirlooms or found objects): design around them, give them the best spots, and let them set the theme and colors if they fit the style.`); }
       if (ins) { imgs.push(ins); notes.push(`Image ${imgs.length} is an inspiration photo: design toward its feel using the guide, adapted to their tree.`); }
-      ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" ") }), 8000, EVAL_SCHEMA));
+      ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" ") }), 16000, EVAL_SCHEMA));
       // Weighted overall score, 0-100
       if (Array.isArray(result.categories) && result.categories.length) {
         let sum = 0, w = 0;
