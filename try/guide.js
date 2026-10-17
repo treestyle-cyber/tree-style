@@ -109,10 +109,15 @@
     }
     if (key === "ribbon") {
       const rbs = d.ribbons, loops = d.technique === "loops";
-      rbs.filter(rb => !rb.owned).forEach(rb => {
+      rbs.forEach(rb => {
         const yards = Math.ceil(h * (RIBBON_YD_PER_FT[rb.role] || 1.5) * (mode === "design" ? 1 : .6));
         const rolls = Math.max(2, packs(yards * 1.1, ROLL_YD)), cn = colorName(rb.color);   // 10% extra for loops and mistakes
-        add(rb.color, `${rb.width_in}" ${cn} ${rb.texture}${rb.role === "accent" ? " (thin accent)" : rb.role === "overlay" ? " (laid on top)" : ""}`, `${plural(rolls, "roll", "rolls")} of ${ROLL_YD} yd (about ${yards} yards)`, `${rb.width_in} inch wired ${rb.texture} ribbon ${cn} ${ROLL_YD} yards`);
+        const role = rb.role === "accent" ? " (thin accent)" : rb.role === "overlay" ? " (laid on top)" : "";
+        // Ribbon they already own stays on the list as a top-up: they may not have enough.
+        const qty = rb.owned
+          ? `You have some. The tree needs about ${yards} yards, so add ${plural(Math.max(1, rolls - 1), "roll", "rolls")} if you're short`
+          : `${plural(rolls, "roll", "rolls")} of ${ROLL_YD} yd (about ${yards} yards)`;
+        add(rb.color, `${rb.width_in}" ${cn} ${rb.texture}${role}${rb.owned ? " · re-use yours" : ""}`, qty, `${rb.width_in} inch wired ${rb.texture} ribbon ${cn} ${ROLL_YD} yards`);
       });
     }
     if (key === "florals" && d.picks.floral.kind !== "none") {
