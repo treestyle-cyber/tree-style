@@ -19,7 +19,7 @@
       ribbons: arr(m.ribbons).slice(0, 3).map((rb, i) => (rb = obj(rb), {
         role: oneOf(rb.role, ["base", "overlay", "accent"], ["base", "overlay", "accent"][i]),
         width_in: clamp(rb.width_in || [6, 4, 2][i], 1, 8), color: hex(rb.color, ["#8E2236", "#C9A048", "#1F4A33"][i]),
-        texture: oneOf(rb.texture, RIBBON_TEX, "satin"), accent: hex(rb.accent, null)
+        texture: oneOf(rb.texture, RIBBON_TEX, "satin"), accent: hex(rb.accent, null), owned: !!rb.owned
       })),
       picks: {
         primary: { kind: oneOf(obj(picks.primary).kind, ["pine", "cedar", "eucalyptus", "magnolia", "none"], "pine"), finish: oneOf(obj(picks.primary).finish, ["natural", "frosted", "gold", "silver"], "natural") },
@@ -109,7 +109,7 @@
     }
     if (key === "ribbon") {
       const rbs = d.ribbons, loops = d.technique === "loops";
-      rbs.forEach(rb => {
+      rbs.filter(rb => !rb.owned).forEach(rb => {
         const yards = Math.ceil(h * (RIBBON_YD_PER_FT[rb.role] || 1.5) * (mode === "design" ? 1 : .6));
         const rolls = Math.max(2, packs(yards * 1.1, ROLL_YD)), cn = colorName(rb.color);   // 10% extra for loops and mistakes
         add(rb.color, `${rb.width_in}" ${cn} ${rb.texture}${rb.role === "accent" ? " (thin accent)" : rb.role === "overlay" ? " (laid on top)" : ""}`, `${plural(rolls, "roll", "rolls")} of ${ROLL_YD} yd (about ${yards} yards)`, `${rb.width_in} inch wired ${rb.texture} ribbon ${cn} ${ROLL_YD} yards`);
@@ -350,12 +350,13 @@
 
     function ribbonLead() {
       const b = RB.base, ov = RB.overlay, ac = RB.accent; if (!b) return "";
+      const ownedTxt = [b, ov, ac].filter(r => r && r.owned).length ? `Start by taking your existing ${[b, ov, ac].filter(r => r && r.owned).map(r => colorName(r.color) + " " + r.texture).join(" and ")} ribbon off the tree; you'll re-use it here. ` : "";
       const wide = `${b.width_in}" ${colorName(b.color)}`, loopIn = Math.round(b.width_in * 2), n = ribbonPlan.marks.length;
       const overTxt = ov ? ` Lay the ${ov.width_in}" ${colorName(ov.color)} ribbon on top as you go, so each piece is two layers.` : "";
       const acTxt = ac ? ` The thin ${ac.width_in}" ${colorName(ac.color)} ribbon is its own trail: small pieces tucked into the gaps between the numbered spots (the small ${colorName(ac.color)} shapes).` : "";
       if (ribbonPlan.kind === "cascade")
-        return `Each numbered band is one piece of the ${wide} ribbon (${n} pieces). Starting at 1, tuck the top end deep into the tree, let it drape over two or three branches in the direction of the arrow, then tuck the bottom end in and cut. Each new piece starts a little lower and off to the side, never straight down or straight across.` + overTxt + acTxt + (ribbonPlan.flowerLoops ? ` Save some ribbon for a loop or two beside each flower in the flowers step.` : "");
-      return `Work through the ${n} numbered spots from the top down. At each one, make ${ribbonPlan.loopsPerSpot >= 4 ? "three or four" : ribbonPlan.loopsPerSpot >= 3 ? "two or three" : "one or two"} loops of the ${wide} ribbon about ${loopIn}" long, pinch them together, and push the pinched end deep into the branches so the loops pop out. The shapes on the picture show the size and direction.` + overTxt + acTxt;
+        return ownedTxt + `Each numbered band is one piece of the ${wide} ribbon (${n} pieces). Starting at 1, tuck the top end deep into the tree, let it drape over two or three branches in the direction of the arrow, then tuck the bottom end in and cut. Each new piece starts a little lower and off to the side, never straight down or straight across.` + overTxt + acTxt + (ribbonPlan.flowerLoops ? ` Save some ribbon for a loop or two beside each flower in the flowers step.` : "");
+      return ownedTxt + `Work through the ${n} numbered spots from the top down. At each one, make ${ribbonPlan.loopsPerSpot >= 4 ? "three or four" : ribbonPlan.loopsPerSpot >= 3 ? "two or three" : "one or two"} loops of the ${wide} ribbon about ${loopIn}" long, pinch them together, and push the pinched end deep into the branches so the loops pop out. The shapes on the picture show the size and direction.` + overTxt + acTxt;
     }
     function lead(key) {
       const t = data.tree, open = t.density === "open", art = t.kind === "artificial", [lo, hi] = lightCount(), xl = ORN_IN(data).xl;
