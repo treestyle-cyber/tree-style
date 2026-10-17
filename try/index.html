@@ -528,8 +528,8 @@
   </div>
 </div>
 
-<script src="/try/engine.js?v=202610162331"></script>
-<script src="/try/guide.js?v=202610162331"></script>
+<script src="/try/engine.js?v=202610171307"></script>
+<script src="/try/guide.js?v=202610171307"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -741,11 +741,39 @@ async function run() {
   L.painting();
   after = null; stepIdx = 0; doneSteps = new Set(); guide = null;
   fill();
+  loadDetails();
   await makePreview();
   startVersions(); resetFeedback();
   L.done();
   fillReveal();
   show("s-reveal", ["s-home"]);
+}
+
+/* ---------------- written step instructions (second call, in the background) ---------------- */
+let detailsP = null, detailsReady = true;
+function loadDetails() {
+  if ((result?.plan || []).every(p => p.how)) { detailsReady = true; detailsP = null; return; }
+  detailsReady = false;
+  const forResult = result, body = { image: photo, details: { result: { tree: result.tree, plan: result.plan, mockup: result.mockup }, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts() } };
+  const attempt = () => api("/api/evaluate", body);
+  detailsP = attempt().catch(() => attempt()).then(d => {
+    (d.steps || []).forEach((st, i) => { const p = forResult.plan[i]; if (p) { p.how = st.how; p.effort = st.effort; } });
+    // Fill the same text into any saved copy of this plan (matched by step titles), never into a different version
+    const same = pl => pl && pl.length === forResult.plan.length && pl.every((q, i) => q.title === forResult.plan[i].title && !q.how);
+    if (result !== forResult && same(result.plan)) result.plan.forEach((q, i) => { q.how = forResult.plan[i].how; q.effort = forResult.plan[i].effort; });
+    versions.forEach(v => { if (v.result && v.result.plan && v.result.plan.length === forResult.plan.length && v.result.plan.every((p, i) => p.title === forResult.plan[i].title)) v.result.plan.forEach((p, i) => { p.how = forResult.plan[i].how; p.effort = forResult.plan[i].effort; }); });
+    if (guide && same(guide.data.plan.map(q => ({ title: q.title, how: q.how })))) guide.data.plan.forEach((p, i) => { const q = forResult.plan[i]; if (q) { p.how = q.how; p.effort = q.effort; } });
+    detailsReady = true;
+    if (stack[stack.length - 1] === "s-plan") drawStep();
+  }).catch(e => { detailsReady = true; console.error("details", e); });
+}
+async function openPlan() {
+  if (!detailsReady && detailsP) {
+    const L = startLoading("Writing your step-by-step plan", ["Reading your plan", "Writing each step", "Adding sizes and quantities"], 15);
+    await detailsP;
+    L.done();
+  }
+  show("s-plan");
 }
 
 /* ---------------- results ---------------- */
@@ -852,7 +880,7 @@ $("#save").onclick = () => { const a = document.createElement("a"); a.href = aft
 $("#restart").onclick = () => { photo = null; guide = null; photoImg = null; factsSet = false;
   clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d); $("#file").value = ""; $("#dropInner").innerHTML = "<strong>Tap to take or choose a photo</strong>"; show("s-photo", ["s-home"]); };
-document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => show(b.dataset.go));
+document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => b.dataset.go === "s-plan" ? openPlan() : show(b.dataset.go));
 
 const buyRow = b => `<a class="buyrow" href="${shopUrl(b.q)}" target="_blank" rel="noopener sponsored"><b style="background:${b.color || "#efe6d4"}"></b><span><strong>${esc(b.label)}</strong>${b.qty ? `<small>${esc(b.qty)}</small>` : ""}</span><em>Find it ›</em></a>`;
 
@@ -888,7 +916,7 @@ async function drawStep() {
   if (key === "primary_picks" || (key === "florals" && !steps.includes("primary_picks")))
     items += `<div class="newto"><b>New to stems?</b> They're short branches of greenery, flowers or berries on a bendable wire. You tuck them into the tree and wrap the wire around a branch. Stores call them "picks," so search for that when you shop.</div>`;
   if (buy.length) items += (factsSet ? "" : estNote(result)) + `<div class="buy"><div class="buyh">What to buy</div>${buy.map(buyRow).join("")}</div>`;
-  items += guide.itemsFor(key).map(p => `<div class="planitem"><h4>${esc(p.title)}</h4><p>${esc(p.how)}</p><div class="meta">${p.effort ? `<span>⏱ ${esc(p.effort)}</span>` : ""}</div></div>`).join("");
+  items += guide.itemsFor(key).map(p => `<div class="planitem"><h4>${esc(p.title)}</h4>${p.how ? `<p>${esc(p.how)}</p>` : ""}<div class="meta">${p.effort ? `<span>⏱ ${esc(p.effort)}</span>` : ""}</div></div>`).join("");
   $("#stepItems").innerHTML = items;
   $("#prevStep").disabled = stepIdx === 0;
   $("#nextStep").textContent = key === "all" ? "Back to my tree" : doneSteps.has(key) ? (stepIdx === total - 1 ? "See it all together" : "Next step") : (stepIdx === total - 1 ? "Done, see it all together" : "Done, next step");

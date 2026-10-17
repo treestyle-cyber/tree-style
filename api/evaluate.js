@@ -5,7 +5,7 @@
 //   -> the design partner: a revised plan based on the homeowner's request.
 import { GUIDE, CATS, STYLES } from "../lib/guide.js";
 import { checkPassword, parseDataUrl, extractJson } from "../lib/util.js";
-import { EVAL_SCHEMA, REVISE_SCHEMA } from "../lib/schema.js";
+import { EVAL_SCHEMA, REVISE_SCHEMA, DETAILS_SCHEMA } from "../lib/schema.js";
 
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
 
@@ -17,8 +17,8 @@ const COORDS = `COORDINATES: x,y are fractions of the image width and height (0,
 
 const BRIEF_RULES = (mode) => `RENDER BRIEF: instructions for a photo-editing AI that will edit the ORIGINAL photo to show the tree after this plan. Write direct edit instructions in plain physical terms (what object, how many, size in inches, color, finish, and where on the tree: e.g. "upper left third, pushed deep toward the trunk"). Cover ornament clusters (e.g. "a tight cluster of 5 green 3-inch balls, middle right"), ribbon (width, color, texture, and whether it's short drops or loops tucked into branches; list each ribbon placement as its own separate spot, e.g. "6 separate clusters of 2-3 loops: upper center, upper right, middle left...", and say the ribbon disappears into the branches between spots; never describe it as running, cascading, wrapping or swagging across or down the tree), stems, flowers, ornaments by size, the top of the tree, and lights if added. ${mode === "design" ? "Describe the complete finished tree." : "Describe what to REMOVE or MOVE first (e.g. \"remove the gold plaid ribbon that runs diagonally across the middle of the tree\"), then what to ADD (including re-placing the same ribbon as loops or short drops). Everything not mentioned stays exactly as it is."} Match the mockup. 90-180 words. No scores, no reasons, no designer jargon.`;
 
-const PLAN_SHAPE = (mode) => `"quick_fixes": [ {"title":"<plain, under 8 words>","how":"<one short sentence>","x":<0-1>,"y":<0-1>} ],
- "plan": [ {"element":"fluff|lights|primary_picks|ribbon|florals|statement|medium|small|small_picks|crown|base","step":"<plain step name, e.g. Ribbon>","title":"<under 8 words>","how":"<1-2 specific sentences: sizes, counts, where>","effort":"<e.g. 20 minutes>","shop":"<3-7 word store search, e.g. '6 inch wired velvet ribbon burgundy', or empty>"} ],
+const PLAN_SHAPE = (mode, compact) => `"quick_fixes": [ {"title":"<plain, under 8 words>","how":"<one short sentence>","x":<0-1>,"y":<0-1>} ],
+ "plan": [ {"element":"fluff|lights|primary_picks|ribbon|florals|statement|medium|small|small_picks|crown|base","step":"<plain step name, e.g. Ribbon>","title":"<under 8 words>",${compact ? "" : '"how":"<1-2 specific sentences: sizes, counts, where>","effort":"<e.g. 20 minutes>",'}"shop":"<3-7 word store search, e.g. '6 inch wired velvet ribbon burgundy', or empty>"} ],
  "ideas": [ {"label":"<2-4 words>","request":"<one sentence asking the design partner for this change>"} ],
  "mockup": {
    "lights": {"add":true|false,"kind":"warm|multicolor|solid","color":"#hex","density":"light|medium|heavy"},
@@ -33,8 +33,8 @@ const PLAN_SHAPE = (mode) => `"quick_fixes": [ {"title":"<plain, under 8 words>"
  },
  "render_brief": "<see RENDER BRIEF>"`;
 
-const PLAN_NOTES = (mode) => `quick_fixes: 3-5, ${mode === "check" ? "biggest improvement for the least effort first; x,y = where on the photo" : "the plan at a glance, in order"}.
-plan: 6-12 items following the order of work. Fill "shop" for every step that needs something bought (lights, stems, ribbon, flowers, each ornament step, berry stems, topper, a new skirt or collar); leave it empty only for steps like fluffing or moving what they already own.
+const PLAN_NOTES = (mode, compact) => `quick_fixes: 3-5, ${mode === "check" ? "biggest improvement for the least effort first; x,y = where on the photo" : "the plan at a glance, in order"}.
+plan: 6-12 items following the order of work.${compact ? " Titles only here: the written instructions for each step are written in a separate pass, so keep this part short." : ""} Fill "shop" for every step that needs something bought (lights, stems, ribbon, flowers, each ornament step, berry stems, topper, a new skirt or collar); leave it empty only for steps like fluffing or moving what they already own.
 EVERYTHING IS SOLD IN PACKS: almost nothing is bought as a single item (a topper is the exception). Give every quantity in "how" as packs, boxes or bolts: ribbon in 10-yard bolts (always say "bolts", not rolls). Use exactly this math so your steps match the shopping list: yards = tree height in feet × 2.0 for the widest ribbon, × 1.5 for the ribbon laid on top, × 1.3 for the thin accent${mode === "check" ? ", then × 0.6 because the tree is already decorated" : ""}. Give ribbon as the estimated yards plus a range of 10-yard bolts (e.g. "about 15 yards, 2-3 bolts"), since loop sizes vary. (Designers use about 20-30 yards of main and supporting ribbon plus about 10 of accent on a 7.5 ft tree.) Stems and flowers come in packs of 6, berry stems in packs of 12, lights in strands of 100. For a full designer look use about 2-3 greenery stems per foot of tree.
 ORNAMENTS ARE SOLD IN BOXES: nobody buys one ornament. Use a tight palette: 2-3 colors, and at most 2 finishes per size. In plan "how", give ornament quantities in boxes (e.g. "2 boxes of 12 matte gold 3-inch balls"), never single ornaments (except heirlooms they already own).
 ideas: exactly 3 genuinely different directions worth seeing for this tree.
@@ -90,9 +90,9 @@ Reply with this JSON:
  "summary": "<2 short sentences>",
  "categories": ${mode === "check" ? `[\n${cats}\n ]` : "[]"},
  ${mode === "check" ? '"potential": {"after_quick_fixes":<0-100>,"after_full_plan":<0-100>},\n ' : ""}"cone": {"apex":[x,y],"left":[x,y],"right":[x,y]},
- ${PLAN_SHAPE(mode)}
+ ${PLAN_SHAPE(mode, true)}
 }
-${PLAN_NOTES(mode)}
+${PLAN_NOTES(mode, true)}
 ${mode === "design" ? 'Because this is a design (not a check): set tree.stage to "bare", eye_first to "", categories to [], and potential to 0 and 0.' : 'tree.stage is "partial" or "finished".'} For ribbons with no accent color, set accent to "".`;
 }
 
@@ -125,6 +125,29 @@ Reply with this JSON:
 }
 ${PLAN_NOTES(mode)}
 For ribbons with no accent color, set accent to "".`;
+}
+
+function detailsPrompt(dt) {
+  const r = dt.result || {}, mode = dt.mode === "design" ? "design" : "check", t = r.tree || {};
+  const plan = (r.plan || []).map((p, i) => ({ n: i + 1, element: p.element, step: p.step, title: p.title, shop: p.shop }));
+  return `You are an expert Christmas tree designer. You already planned this tree; now write the step-by-step instructions the homeowner will follow. The image is their tree${mode === "design" ? " before decorating" : ""}.
+
+${GUIDE}
+
+TREE: ${t.kind || "artificial"}, about ${t.height_ft || 7} ft, ${t.density || "dense"}${t.flocked ? ", snowy (flocked)" : ""}. STYLE: ${styleLine(dt.style, dt.theme)}. MODE: ${mode === "design" ? "designing from scratch" : "improving their tree; fix what's already there first, then add"}.
+${factsLine(dt.facts)}
+
+THE PLAN (write instructions for exactly these steps, in this order):
+${JSON.stringify(plan)}
+
+WHAT GOES ON THE TREE (the diagrams show this; your words must match it):
+${JSON.stringify(r.mockup || {})}
+
+${PLAN_NOTES(mode).split("\n").filter(l => /^(EVERYTHING IS SOLD|ORNAMENTS ARE SOLD)/.test(l)).join("\n")}
+
+For each step write "how": one or two short, specific sentences in plain words (sizes, quantities in boxes/packs/bolts, and where on the tree), and "effort": rough time (e.g. "20 minutes"). Phone readers skim, so keep it tight.
+
+Reply with: {"steps":[{"how":"...","effort":"..."}]} with exactly ${plan.length} items, one per plan step, same order.`;
 }
 
 async function callClaude(images, text, maxTokens, schema) {
@@ -172,14 +195,16 @@ export default async function handler(req, res) {
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
   if (!process.env.ANTHROPIC_API_KEY) return res.status(500).json({ error: "ANTHROPIC_API_KEY is not set in Vercel" });
 
-  const { image, mode = "check", style = "keep", theme = "", revise, extra, facts, pieces, inspo } = req.body || {};
+  const { image, mode = "check", style = "keep", theme = "", revise, extra, facts, pieces, inspo, details } = req.body || {};
   const img = parseDataUrl(image);
   if (!img) return res.status(400).json({ error: "Missing photo" });
 
   const started = Date.now();
   try {
     let result, usage;
-    if (revise) {
+    if (details) {
+      ({ json: result, usage } = await callClaude([img], detailsPrompt(details), 8000, DETAILS_SCHEMA));
+    } else if (revise) {
       const ex = parseDataUrl(extra);
       ({ json: result, usage } = await callClaude(ex ? [img, ex] : [img], revisePrompt(revise, !!ex), 16000, REVISE_SCHEMA));
     } else {
