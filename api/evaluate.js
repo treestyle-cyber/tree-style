@@ -5,6 +5,7 @@
 //   -> the design partner: a revised plan based on the homeowner's request.
 import { GUIDE, CATS, STYLES } from "../lib/guide.js";
 import { checkPassword, parseDataUrl, extractJson } from "../lib/util.js";
+import { EVAL_SCHEMA, REVISE_SCHEMA } from "../lib/schema.js";
 
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
 
@@ -77,7 +78,7 @@ ${COORDS}
 
 ${BRIEF_RULES(mode)}
 
-Call the submit tool with exactly this JSON shape:
+Reply with this JSON:
 {
  "tree": {"kind":"artificial|natural","density":"open|dense","flocked":true|false,"height_ft":<number>${mode === "check" ? ',"stage":"partial|finished"' : ""}},
  "eye_first": "${mode === "check" ? "<where the eye lands first and why, one plain sentence>" : ""}",
@@ -87,7 +88,8 @@ Call the submit tool with exactly this JSON shape:
  ${mode === "check" ? '"potential": {"after_quick_fixes":<0-100>,"after_full_plan":<0-100>},\n ' : ""}"cone": {"apex":[x,y],"left":[x,y],"right":[x,y]},
  ${PLAN_SHAPE(mode)}
 }
-${PLAN_NOTES(mode)}`;
+${PLAN_NOTES(mode)}
+${mode === "design" ? 'Because this is a design (not a check): set tree.stage to "bare", eye_first to "", categories to [], and potential to 0 and 0.' : 'tree.stage is "partial" or "finished".'} For ribbons with no accent color, set accent to "".`;
 }
 
 function revisePrompt(rv, hasExtra) {
@@ -110,17 +112,27 @@ Rules: change only what the request calls for and keep everything else exactly a
 
 ${BRIEF_RULES(mode)} The brief must describe the whole revised plan relative to the ORIGINAL photo, not just this change.
 
-Call the submit tool with exactly this JSON shape:
+Reply with this JSON:
 {
  "reply": "<1-2 friendly sentences>",
  "changes": ["<1-5 short items>"],
  "version_label": "<3-5 words>",
  ${PLAN_SHAPE(mode)}
 }
-${PLAN_NOTES(mode)}`;
+${PLAN_NOTES(mode)}
+For ribbons with no accent color, set accent to "".`;
 }
 
-async function callClaude(images, text, maxTokens) {
+async function callClaude(images, text, maxTokens, schema) {
+  try { return await callClaudeOnce(images, text, maxTokens, schema); }
+  catch (e) {
+    // If the structured format itself is rejected, fall back to plain text + repair.
+    if (schema && e.status === 400) return await callClaudeOnce(images, text + "\n\nReply with ONLY the JSON, no other text.", maxTokens, null);
+    throw e;
+  }
+}
+
+async function callClaudeOnce(images, text, maxTokens, schema) {
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -131,9 +143,8 @@ async function callClaude(images, text, maxTokens) {
     body: JSON.stringify({
       model: MODEL,
       max_tokens: maxTokens,
-      // Answering through a tool guarantees well-formed JSON back.
-      tools: [{ name: "submit", description: "Submit your answer as the JSON object described in the instructions.", input_schema: { type: "object", additionalProperties: true } }],
-      tool_choice: { type: "tool", name: "submit" },
+      // Structured outputs: the API guarantees the reply matches this shape.
+      ...(schema ? { output_config: { format: { type: "json_schema", schema } } } : {}),
       messages: [{
         role: "user",
         content: [
@@ -144,9 +155,7 @@ async function callClaude(images, text, maxTokens) {
     })
   });
   const body = await r.json();
-  if (!r.ok) throw new Error(body?.error?.message || `Claude error ${r.status}`);
-  const tool = (body.content || []).find(b => b.type === "tool_use");
-  if (tool && tool.input && typeof tool.input === "object" && Object.keys(tool.input).length) return { json: tool.input, usage: body.usage };
+  if (!r.ok) { const e = new Error(body?.error?.message || `Claude error ${r.status}`); e.status = r.status; throw e; }
   const out = (body.content || []).filter(b => b.type === "text").map(b => b.text).join("");
   if (body.stop_reason === "max_tokens") throw new Error("The answer ran long and got cut off. Please try again.");
   return { json: extractJson(out), usage: body.usage };
@@ -166,13 +175,13 @@ export default async function handler(req, res) {
     let result, usage;
     if (revise) {
       const ex = parseDataUrl(extra);
-      ({ json: result, usage } = await callClaude(ex ? [img, ex] : [img], revisePrompt(revise, !!ex), 7000));
+      ({ json: result, usage } = await callClaude(ex ? [img, ex] : [img], revisePrompt(revise, !!ex), 8000, REVISE_SCHEMA));
     } else {
       const imgs = [img], notes = ["Image 1 is their tree" + (mode === "design" ? " before decorating (bare, or with just lights)." : ".")];
       const pc = parseDataUrl(pieces), ins = mode === "design" ? parseDataUrl(inspo) : null;
       if (pc) { imgs.push(pc); notes.push(`Image ${imgs.length} shows special pieces they own (ornaments, heirlooms or found objects): design around them, give them the best spots, and let them set the theme and colors if they fit the style.`); }
       if (ins) { imgs.push(ins); notes.push(`Image ${imgs.length} is an inspiration photo: design toward its feel using the guide, adapted to their tree.`); }
-      ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" ") }), 7000));
+      ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" ") }), 8000, EVAL_SCHEMA));
       // Weighted overall score, 0-100
       if (Array.isArray(result.categories) && result.categories.length) {
         let sum = 0, w = 0;
