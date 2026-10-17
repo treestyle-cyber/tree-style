@@ -33,8 +33,9 @@
   .hero h1 em{font-style:italic;color:var(--berry)}
   .hero p.lede{font-size:18px;color:var(--muted);max-width:30em;margin:0 0 26px}
 
-  form.signup{display:flex;gap:10px;max-width:460px}
-  form.signup input{flex:1}
+  form.signup{display:flex;gap:10px;max-width:560px}
+  form.signup input{flex:1;min-width:0}
+  form.signup input.fname{flex:.7}
   .formnote{font-size:13px;color:var(--muted);margin-top:10px;min-height:1.4em}
   .formnote.ok{color:var(--green);font-weight:600}
   .formnote.err{color:var(--berry)}
@@ -99,6 +100,7 @@
       <h1>Your tree, <em>styled</em> like a designer did it.</h1>
       <p class="lede">Snap a photo of your Christmas tree. Get a clear, step-by-step plan from a professional decorator's playbook, and see your finished tree before you hang a single ornament.</p>
       <form class="signup" id="signup" novalidate>
+        <input type="text" name="FNAME" class="fname" placeholder="First name" autocomplete="given-name" required aria-label="First name">
         <input type="email" name="EMAIL" placeholder="Your email" autocomplete="email" required aria-label="Email address">
         <button class="btn" type="submit">Get early access</button>
       </form>
@@ -174,6 +176,7 @@
     <h2>Make this the year your tree looks designed.</h2>
     <p>Join the list for early access before the holiday rush.</p>
     <form class="signup" novalidate>
+      <input type="text" name="FNAME" class="fname" placeholder="First name" autocomplete="given-name" required aria-label="First name">
       <input type="email" name="EMAIL" placeholder="Your email" autocomplete="email" required aria-label="Email address">
       <button class="btn" type="submit">Get early access</button>
     </form>
@@ -189,7 +192,7 @@
   // ===== Paste your Mailchimp embedded form "action" URL here =====
   // Mailchimp: Audience → Signup forms → Embedded form → copy the URL inside action="..."
   // It looks like: https://XXXX.us21.list-manage.com/subscribe/post?u=...&id=...
-  const MAILCHIMP_ACTION = "";
+  const MAILCHIMP_ACTION = "https://treestyle.us22.list-manage.com/subscribe/post?u=8dd10973fdd6a50f647b41b9d&id=649b7e8c86&f_id=00b4c2e1f0";
 
   // Before/after slider
   (function(){
@@ -209,9 +212,10 @@
     const note = form.nextElementSibling;
     form.addEventListener("submit", e => {
       e.preventDefault();
-      const email = form.EMAIL.value.trim();
+      const email = form.EMAIL.value.trim(), fname = form.FNAME.value.trim();
       const btn = form.querySelector("button");
       note.className = "formnote";
+      if (!fname) { note.textContent = "Please add your first name."; note.classList.add("err"); return; }
       if (!/^\S+@\S+\.\S+$/.test(email)) { note.textContent = "Please enter a valid email."; note.classList.add("err"); return; }
       if (!MAILCHIMP_ACTION) { note.textContent = "Sign-ups open very soon. Please check back shortly!"; return; }
       btn.disabled = true;
@@ -224,7 +228,7 @@
         else done(false, (r.msg || "Something went wrong.").replace(/<[^>]+>/g, "").replace(/^\d+ - /, ""));
       };
       s.onerror = () => done(false, "Couldn't reach the sign-up service. Please try again.");
-      s.src = MAILCHIMP_ACTION.replace("/post?", "/post-json?") + "&EMAIL=" + encodeURIComponent(email) + "&c=" + cb;
+      s.src = MAILCHIMP_ACTION.replace("/post?", "/post-json?") + "&EMAIL=" + encodeURIComponent(email) + "&FNAME=" + encodeURIComponent(fname) + "&b_8dd10973fdd6a50f647b41b9d_649b7e8c86=&c=" + cb;
       document.body.appendChild(s);
     });
   });
