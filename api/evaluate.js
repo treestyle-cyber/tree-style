@@ -77,7 +77,7 @@ ${COORDS}
 
 ${BRIEF_RULES(mode)}
 
-Reply with ONLY this JSON:
+Call the submit tool with exactly this JSON shape:
 {
  "tree": {"kind":"artificial|natural","density":"open|dense","flocked":true|false,"height_ft":<number>${mode === "check" ? ',"stage":"partial|finished"' : ""}},
  "eye_first": "${mode === "check" ? "<where the eye lands first and why, one plain sentence>" : ""}",
@@ -110,7 +110,7 @@ Rules: change only what the request calls for and keep everything else exactly a
 
 ${BRIEF_RULES(mode)} The brief must describe the whole revised plan relative to the ORIGINAL photo, not just this change.
 
-Reply with ONLY this JSON:
+Call the submit tool with exactly this JSON shape:
 {
  "reply": "<1-2 friendly sentences>",
  "changes": ["<1-5 short items>"],
@@ -131,6 +131,9 @@ async function callClaude(images, text, maxTokens) {
     body: JSON.stringify({
       model: MODEL,
       max_tokens: maxTokens,
+      // Answering through a tool guarantees well-formed JSON back.
+      tools: [{ name: "submit", description: "Submit your answer as the JSON object described in the instructions.", input_schema: { type: "object", additionalProperties: true } }],
+      tool_choice: { type: "tool", name: "submit" },
       messages: [{
         role: "user",
         content: [
@@ -142,7 +145,10 @@ async function callClaude(images, text, maxTokens) {
   });
   const body = await r.json();
   if (!r.ok) throw new Error(body?.error?.message || `Claude error ${r.status}`);
+  const tool = (body.content || []).find(b => b.type === "tool_use");
+  if (tool && tool.input && typeof tool.input === "object" && Object.keys(tool.input).length) return { json: tool.input, usage: body.usage };
   const out = (body.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+  if (body.stop_reason === "max_tokens") throw new Error("The answer ran long and got cut off. Please try again.");
   return { json: extractJson(out), usage: body.usage };
 }
 
