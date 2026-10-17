@@ -209,26 +209,51 @@
     const RB = scene.rb || {}, RW = scene.rw || {};
     const ribbonPlan = { layer: null, marks: [], kind: null, loopsPerSpot: 0 };
     if (RB.base) {
-      const c = layer(W, H), g = c.getContext("2d"), u = G.unit;
+      const c = layer(W, H), u = G.unit; let g = c.getContext("2d");
       const outline = Math.max(1.5, u * .22);
-      // A ribbon loop drawn as ribbon: a band that leaves the tuck point, curves out and comes back,
-      // leaving an open center, with a white halo and dark edges so it reads on any photo.
-      const flatLoop = (x, y, ang, len, wid, rb, over) => {
-        const bw = Math.max(4, Math.min(wid * .5, len * .2));      // the ribbon itself
-        const hw = Math.max(bw * 1.6, len * .3);                   // half-width of the loop
-        const edge = shade(rb.color, -.55);
-        g.save(); g.translate(x, y); g.rotate(ang);
-        const path = () => { g.beginPath(); g.moveTo(0, 0); g.bezierCurveTo(len * .2, -hw * 1.15, len * .98, -hw * 1.1, len, 0); g.bezierCurveTo(len * .98, hw * 1.1, len * .2, hw * 1.15, 0, 0); };
-        g.lineJoin = "round"; g.lineCap = "round";
-        path(); g.lineWidth = bw + outline * 3.2; g.strokeStyle = "#fff"; g.stroke();
-        path(); g.lineWidth = bw + outline * 1.2; g.strokeStyle = edge; g.stroke();
-        path(); g.lineWidth = bw; g.strokeStyle = rb.color; g.stroke();
-        if (over) { path(); g.lineWidth = bw * .42; g.strokeStyle = over.color; g.stroke(); }
-        // a glint along the outer curve so it reads as satin, not a line
-        g.beginPath(); g.moveTo(len * .45, -hw * .98); g.quadraticCurveTo(len * .85, -hw * .95, len * .97, -hw * .35);
-        g.lineWidth = Math.max(1, bw * .18); g.strokeStyle = "rgba(255,255,255,.55)"; g.stroke();
+      // Ribbon loops drawn as flat ribbon: pinched at the tuck point, opening up to a fold at the far end,
+      // the back of the ribbon visible inside the loop, the narrower ribbon laid on top, crisp edges and a white halo.
+      const ribbonLoop = (x, y, ang, len, rb, over) => {
+        len *= .72;
+        const bw = Math.max(4, Math.min(RW.base * .55, len * .26)), hw = Math.max(bw * 1.2, len * .3);
+        const N = 28, T = 1.08, pinch = bw * .22;
+        const ow = t => Math.max(0, pinch * (1 - t) + hw * Math.sqrt(Math.max(0, 1 - Math.pow((t - .54) / .54, 2))));
+        const bandW = t => bw * (.35 + .65 * Math.min(1, t * 1.4));
+        const X = t => t / T * len;
+        const outer = [], inner = [];
+        for (let i = 0; i <= N; i++) { const t = T * i / N; outer.push([X(t), -ow(t)]); }
+        for (let i = N; i >= 0; i--) { const t = T * i / N; outer.push([X(t), ow(t)]); }
+        for (let i = 2; i <= N - 2; i++) { const t = T * i / N, w = ow(t) - bandW(t); if (w > 0) inner.push([X(t), -w]); }
+        const hole = inner.concat(inner.slice().reverse().map(([a, b]) => [a, -b]));
+        const poly = pts => { pts.forEach(([a, b], i) => i ? g.lineTo(a, b) : g.moveTo(a, b)); g.closePath(); };
+        g.save(); g.translate(x, y); g.rotate(ang); g.lineJoin = "round";
+        g.beginPath(); poly(outer); g.lineWidth = outline * 3; g.strokeStyle = "#fff"; g.stroke();
+        if (hole.length > 4) { g.beginPath(); poly(hole); const gr = g.createLinearGradient(0, -hw, 0, hw); gr.addColorStop(0, shade(rb.color, -.55)); gr.addColorStop(1, shade(rb.color, -.25)); g.fillStyle = gr; g.globalAlpha = .55; g.fill(); g.globalAlpha = 1; }
+        g.beginPath(); poly(outer); if (hole.length > 4) poly(hole);
+        const gb = g.createLinearGradient(0, -hw, 0, hw); gb.addColorStop(0, shade(rb.color, .12)); gb.addColorStop(.5, rb.color); gb.addColorStop(1, shade(rb.color, -.18));
+        g.fillStyle = gb; g.fill("evenodd");
+        if (over) [-1, 1].forEach(sg => {
+          g.beginPath(); for (let i = 1; i <= N - 1; i++) { const t = T * i / N, px = X(t), py = sg * (ow(t) - bandW(t) / 2); i > 1 ? g.lineTo(px, py) : g.moveTo(px, py); }
+          g.lineWidth = bw * .36; g.lineCap = "butt"; g.strokeStyle = over.color; g.stroke();
+        });
+        g.beginPath(); poly(outer); if (hole.length > 4) poly(hole); g.lineWidth = Math.max(1, outline * .9); g.strokeStyle = shade(rb.color, -.6); g.stroke();
+        g.beginPath(); g.moveTo(X(T * .9), -ow(T * .9) * .9); g.quadraticCurveTo(X(T * .99), 0, X(T * .9), ow(T * .9) * .9); g.lineWidth = Math.max(1, outline * .8); g.strokeStyle = shade(rb.color, -.45); g.stroke();
         g.restore();
       };
+      const ribbonTail = (x, y, ang, len, rb, over) => {
+        len *= .7;
+        const bw = Math.max(4, RW.base * .55), w0 = bw * .3, w1 = bw * .9, wav = len * .06;
+        const pts = [[0, -w0], [len * .5, -w1 / 2 + wav], [len, -w1 / 2], [len * .86, 0], [len, w1 / 2], [len * .5, w1 / 2 + wav], [0, w0]];
+        const path = () => { g.beginPath(); pts.forEach(([a, b], i) => i ? g.lineTo(a, b) : g.moveTo(a, b)); g.closePath(); };
+        g.save(); g.translate(x, y); g.rotate(ang); g.lineJoin = "round";
+        path(); g.lineWidth = outline * 3; g.strokeStyle = "#fff"; g.stroke();
+        path(); const gb = g.createLinearGradient(0, -w1, 0, w1); gb.addColorStop(0, shade(rb.color, .1)); gb.addColorStop(1, shade(rb.color, -.2)); g.fillStyle = gb; g.fill();
+        if (over) { g.beginPath(); g.moveTo(len * .05, 0); g.lineTo(len * .84, wav * .5); g.lineWidth = bw * .3; g.strokeStyle = over.color; g.stroke(); }
+        path(); g.lineWidth = Math.max(1, outline * .9); g.strokeStyle = shade(rb.color, -.6); g.stroke();
+        g.restore();
+      };
+      // small accent loops: same shape, narrower ribbon
+      const flatLoop = (x, y, ang, len, wid, rb) => ribbonLoop(x, y, ang, len * .8, rb, null);
       if (scene.runsMain && scene.runsMain.length) {
         // OPEN trees: each piece of ribbon is a band with an arrow showing the drape
         const band = (run, w, rb, over) => {
@@ -255,14 +280,22 @@
         if (!sp) spots.push(sp = { x: L.x, y: L.y, loops: [] });
         sp.loops.push(L);
       });
-      if (RB.accent) (scene.accentLoops || []).forEach(L => flatLoop(L.x, L.y, L.ang, L.len, L.wid, RB.accent, null));
+      if (RB.accent) { const keep = RW.base; RW.base = Math.max(3, RW.accent * 1.1); (scene.accentLoops || []).forEach(L => flatLoop(L.x, L.y, L.ang, L.len, L.wid, RB.accent)); RW.base = keep; }
       if (ribbonPlan.kind === "cascade") {
         // Open trees: the bands are the instruction; flower-side loops are mentioned in the text only.
         ribbonPlan.flowerLoops = spots.length;
       } else {
         spots.forEach(sp => {
-          sp.loops.forEach(L => flatLoop(sp.x, sp.y, L.ang, L.len, Math.max(L.wid, RW.base * .7), RB.base, RB.overlay));
-          g.beginPath(); g.arc(sp.x, sp.y, Math.max(3, RW.base * .3), 0, TAU); g.fillStyle = shade(RB.base.color, -.4); g.fill(); g.lineWidth = outline; g.strokeStyle = "#fff"; g.stroke();
+          // Each cluster is drawn on its own layer, then faded where it goes into the branches,
+          // so it reads as ribbon tucked in and poking out, not a bow sitting on top.
+          const main = g, sc = layer(W, H), sg = sc.getContext("2d");
+          g = sg;
+          (scene.loops || []).filter(L => L.tail && L.x === sp.x && L.y === sp.y).slice(0, 1).forEach(L => ribbonTail(sp.x, sp.y, L.ang, L.len, RB.base, RB.overlay));
+          sp.loops.slice(0, 2).forEach(L => ribbonLoop(sp.x, sp.y, L.ang, L.len, RB.base, RB.overlay));
+          const fr = Math.max(6, RW.base * .9), fade = sg.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, fr);
+          fade.addColorStop(0, "rgba(0,0,0,.85)"); fade.addColorStop(1, "rgba(0,0,0,0)");
+          sg.globalCompositeOperation = "destination-out"; sg.fillStyle = fade; sg.beginPath(); sg.arc(sp.x, sp.y, fr, 0, TAU); sg.fill();
+          g = main; g.drawImage(sc, 0, 0);
         });
         // One number per cluster, so nearby spots don't get overlapping numbers
         const D = G.treeH * .075, groups = [];
@@ -445,9 +478,21 @@
       return out;
     }
 
+    // A plain position map for the image model: the photo with soft colored marks where things go.
+    function drawMap(o) {
+      o.globalAlpha = 1; o.drawImage(img, 0, 0, W, H);
+      o.fillStyle = "rgba(255,255,255,.25)"; o.fillRect(0, 0, W, H);
+      const u = G.unit, sizes = ORN_IN(data), S = scene;
+      const mark = (x, y, r, col, ring) => { o.save(); o.beginPath(); o.arc(x, y, r, 0, TAU); o.fillStyle = col; o.globalAlpha = .85; o.fill(); o.globalAlpha = 1; o.lineWidth = Math.max(2, r * .15); o.strokeStyle = ring || "#fff"; o.stroke(); o.restore(); };
+      if (RB.base) ribbonPlan.marks.forEach(([x, y]) => { o.save(); o.beginPath(); o.ellipse(x, y, RW.base * .75, RW.base * .5, 0, 0, TAU); o.fillStyle = RB.base.color; o.globalAlpha = .85; o.fill(); o.globalAlpha = 1; o.lineWidth = Math.max(2, u * .25); o.strokeStyle = RB.overlay ? RB.overlay.color : "#fff"; o.stroke(); o.restore(); });
+      if (RB.accent) (S.accentLoops || []).forEach((L, i) => { if (i % 2) return; mark(L.x, L.y, Math.max(3, RW.accent * .8), RB.accent.color); });
+      if (data.picks.floral.kind !== "none") S.all.filter(m => m.floral).forEach(m => mark(m.x + RW.base * .9, m.y + RW.base * .3, FLOWER_IN[data.picks.floral.kind] * S.pxIn * .45, data.picks.floral.color, "#2b5a3a"));
+      data.ornaments.forEach(b => mark(b.x * W, b.y * H, Math.max(3, sizes[b.size] * S.pxIn / 2), b.color));
+    }
+
     const itemsFor = key => key === "all" ? [] : data.plan.filter(p => p.element === key);
     const buy = key => key === "all" ? [] : buyList(data, mode, key);
-    return { steps, title: k => STEP_TITLE[k], draw, lead, legend, itemsFor, buy, data, setAfter: im => { afterImg = im; } };
+    return { steps, title: k => STEP_TITLE[k], draw, drawMap: () => drawMap(ctx), lead, legend, itemsFor, buy, data, setAfter: im => { afterImg = im; } };
   }
 
   window.TreeGuide = { create, normalize, shoppingList };

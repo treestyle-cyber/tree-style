@@ -18,10 +18,12 @@ The first image is the photo to edit. Keep exactly the same room, camera angle, 
 Changes to make:
 ${brief}
 
+RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or spiral across or down the tree. It appears as SEPARATE short pieces: loops or short drops that start and stop, each tucked deep into the branches at one spot, with plenty of green branches showing between them. Picture a vine hidden inside the tree that peeks out here and there. Never wrap ribbon around the tree or drape it from the top to the bottom.
+
 The result must look like an ordinary real photograph of the same tree in the same room, not an illustration.`;
 }
 
-async function callGemini(model, img, prompt, aspect, pieces) {
+async function callGemini(model, img, prompt, aspect, pieces, map) {
   const generationConfig = { responseModalities: ["IMAGE"] };
   if (aspect) generationConfig.imageConfig = { aspectRatio: aspect };
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
@@ -31,6 +33,7 @@ async function callGemini(model, img, prompt, aspect, pieces) {
       contents: [{ parts: [
         { text: prompt },
         { inline_data: { mime_type: img.mediaType, data: img.data } },
+        ...(map ? [{ text: "Placement map (reference only, do not edit or copy its drawing style): the same photo with colored marks showing WHERE each addition goes: soft ovals in the ribbon color = a spot where ribbon loops poke out of the branches; small dots in the accent ribbon color = small accent loops; dots ringed in green = flowers; plain colored circles = ornaments at their real size and color. Follow its positions and spacing so the result matches the homeowner's step-by-step guide." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : []),
         ...(pieces ? [{ text: "Reference only (do not edit this one): the homeowner's own special pieces. Show these exact pieces on the tree where the instructions place them." }, { inline_data: { mime_type: pieces.mediaType, data: pieces.data } }] : [])
       ] }],
       generationConfig
@@ -45,8 +48,8 @@ export default async function handler(req, res) {
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
 
-  const { image, brief, aspect, pieces } = req.body || {};
-  const pc = parseDataUrl(pieces);
+  const { image, brief, aspect, pieces, map } = req.body || {};
+  const pc = parseDataUrl(pieces), mp = parseDataUrl(map);
   const img = parseDataUrl(image);
   if (!img || !brief) return res.status(400).json({ error: "Missing photo or brief" });
   const ar = ASPECTS.includes(aspect) ? aspect : null;
@@ -54,9 +57,9 @@ export default async function handler(req, res) {
   const started = Date.now();
   let lastErr = "";
   for (const model of MODELS) {
-    let out = await callGemini(model, img, editPrompt(brief), ar, pc);
+    let out = await callGemini(model, img, editPrompt(brief), ar, pc, mp);
     // Some models reject imageConfig; retry once without it.
-    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, editPrompt(brief), null, pc);
+    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, editPrompt(brief), null, pc, mp);
     if (!out.ok) {
       lastErr = out.body?.error?.message || `Gemini error ${out.status}`;
       // Model not available, or no quota for it on this account: try the next one
