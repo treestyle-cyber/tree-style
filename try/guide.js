@@ -140,12 +140,14 @@
       const rbs = d.ribbons, loops = d.technique === "loops";
       rbs.forEach(rb => {
         const yards = Math.ceil(h * (RIBBON_YD_PER_FT[rb.role] || 1.5) * (mode === "design" ? 1 : .6));
-        const rolls = packs(yards * 1.1, ROLL_YD), cn = colorName(rb.color);   // whole rolls, with ~10% extra for loops and mistakes
+        // A range, since loop sizes vary: e.g. 9 yd -> 1-2 rolls, 15 yd -> 2-3, 30 yd -> 3-4
+        const lo = Math.max(1, Math.ceil(yards / ROLL_YD - .2)), hi = Math.max(lo + 1, Math.ceil(yards * 1.25 / ROLL_YD));
+        const rolls = `${lo}–${hi} rolls`, cn = colorName(rb.color);
         const role = rb.role === "accent" ? " (thin accent)" : rb.role === "overlay" ? " (laid on top)" : "";
         // Ribbon they already own stays on the list as a top-up: they may not have enough.
         const qty = rb.owned
-          ? `You have some. The tree uses about ${yards} yards; if you have less, add ${plural(rolls, "roll", "rolls")} of ${ROLL_YD} yd`
-          : `${plural(rolls, "roll", "rolls")} of ${ROLL_YD} yd (${rolls * ROLL_YD} yards; the tree uses about ${yards})`;
+          ? `About ${yards} yards needed. You have some; add ${rolls} (${ROLL_YD} yd each) if you're short`
+          : `About ${yards} yards · ${rolls} (${ROLL_YD} yd each)`;
         add(rb.color, `${rb.width_in}" ${cn} ${rb.texture}${role}${rb.owned ? " · re-use yours" : ""}`, qty, `${rb.width_in} inch wired ${rb.texture} ribbon ${cn} ${ROLL_YD} yards`);
       });
     }
