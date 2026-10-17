@@ -166,6 +166,17 @@
   .extra small{display:block;color:var(--muted);font-size:13px}
   .extra label,.extra button{font:600 14px var(--sans);color:var(--green);cursor:pointer;background:none;border:0;white-space:nowrap}
 
+  /* what to buy */
+  .buy{margin:6px 0 14px}
+  .buyh{font:600 12px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--brass);margin:10px 0 4px}
+  .buyrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line);text-decoration:none;color:inherit}
+  .buyrow:first-of-type{border-top:0}
+  .buyrow b{width:22px;height:22px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+  .buyrow span{flex:1;min-width:0}
+  .buyrow strong{display:block;font-weight:600;font-size:15px}
+  .buyrow small{display:block;color:var(--muted);font-size:13px}
+  .buyrow em{font-style:normal;font-weight:600;font-size:14px;color:var(--green);white-space:nowrap}
+
   /* feedback */
   .fb h3{font-size:26px;margin:0 0 4px}
   .fb .sub{margin:0 0 12px;font-size:14px}
@@ -737,14 +748,14 @@ function fill() {
   const fixes = r.quick_fixes || [], plan = r.plan || [];
   $("#navFixes").textContent = `${fixes.length} changes with the biggest payoff`;
   $("#navPlan").textContent = `${plan.length} steps, in the order a designer works`;
-  const shop = plan.filter(p => p.shop);
-  $("#navShop").textContent = shop.length ? `${shop.length} things to look for` : "Nothing new needed";
+  const shopping = TreeGuide.shoppingList(r, mode), nItems = shopping.reduce((a, g) => a + g.items.length, 0);
+  $("#navShop").textContent = nItems ? `${nItems} things to look for, with quantities` : "Nothing new needed";
   $("#navScoreBtn").hidden = !(r.categories || []).length;
   $("#fixesSub").textContent = mode === "design" ? "The plan at a glance." : "Biggest difference for the least effort, best first.";
   $("#fixes").innerHTML = fixes.map((f, i) => `<div class="fix"><span class="n">${i + 1}</span><div><b>${esc(f.title)}</b>${esc(f.how)}</div></div>`).join("");
   $("#scoreSub").textContent = r.overall != null ? `${toOrn(r.overall)} of 5 ornaments overall.` : "";
   $("#cats").innerHTML = (r.categories || []).map(c => `<div class="cat"><div class="top"><span>${esc(c.name)}</span><span>${c.score}/10</span></div><div class="b"><i style="width:${c.score * 10}%"></i></div><p>${esc(c.note)}</p></div>`).join("");
-  $("#shop").innerHTML = shop.length ? shop.map(p => `<a class="shopitem" href="${shopUrl(p.shop)}" target="_blank" rel="noopener"><div><b>${esc(p.shop)}</b><small>${esc(p.step)}: ${esc(p.title)}</small></div><span class="go">Find it ›</span></a>`).join("") : `<p class="muted">You already have what you need. It's all in how you place it.</p>`;
+  $("#shop").innerHTML = nItems ? shopping.map(g => `<div class="buy"><div class="buyh">${esc(g.title)}</div>${g.items.map(buyRow).join("")}</div>`).join("") : `<p class="muted">You already have what you need. It's all in how you place it.</p>`;
   $("#brief").textContent = r.render_brief || "";
   $("#ideas").innerHTML = (r.ideas || []).slice(0, 3).map((x, i) => `<button data-i="${i}">Try: ${esc(x.label)}</button>`).join("") + (r.ideas?.length ? `<button data-more>Something else…</button>` : "");
   $("#ideas").querySelectorAll("button").forEach(b => b.onclick = () => {
@@ -804,6 +815,8 @@ $("#restart").onclick = () => { photo = null; guide = null; photoImg = null; fac
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d); $("#file").value = ""; $("#dropInner").innerHTML = "<strong>Tap to take or choose a photo</strong>"; show("s-photo", ["s-home"]); };
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => show(b.dataset.go));
 
+const buyRow = b => `<a class="buyrow" href="${shopUrl(b.q)}" target="_blank" rel="noopener sponsored"><b style="background:${b.color || "#efe6d4"}"></b><span><strong>${esc(b.label)}</strong>${b.qty ? `<small>${esc(b.qty)}</small>` : ""}</span><em>Find it ›</em></a>`;
+
 /* ---------------- step-by-step diagrams ---------------- */
 let guide = null, photoImg = null;
 function getPhotoImg() {
@@ -829,13 +842,14 @@ async function drawStep() {
   $("#stepK").textContent = key === "all" ? `Final look · ${nd} of ${total} steps done` : `Step ${stepIdx + 1} of ${total}${nd ? ` · ${nd} done` : ""}`;
   $("#stepTitle").textContent = guide.title(key);
   $("#stepLead").textContent = guide.lead(key);
-  const lg = guide.legend(key);
+  const buy = guide.buy(key), lg = buy.length ? [] : guide.legend(key);
   $("#stepLegend").hidden = !lg.length;
   $("#stepLegend").innerHTML = lg.map(l => `<li><b style="background:${l.color}"></b>${esc(l.text)}</li>`).join("");
   let items = "";
   if (key === "primary_picks" || (key === "florals" && !steps.includes("primary_picks")))
     items += `<div class="newto"><b>New to stems?</b> They're short branches of greenery, flowers or berries on a bendable wire. You tuck them into the tree and wrap the wire around a branch. Stores call them "picks," so search for that when you shop.</div>`;
-  items += guide.itemsFor(key).map(p => `<div class="planitem"><h4>${esc(p.title)}</h4><p>${esc(p.how)}</p><div class="meta">${p.effort ? `<span>⏱ ${esc(p.effort)}</span>` : ""}${p.shop ? `<a class="shoplink" style="margin:0" href="${shopUrl(p.shop)}" target="_blank" rel="noopener sponsored">Shop: ${esc(p.shop)} ›</a>` : ""}</div></div>`).join("");
+  if (buy.length) items += `<div class="buy"><div class="buyh">What to buy</div>${buy.map(buyRow).join("")}</div>`;
+  items += guide.itemsFor(key).map(p => `<div class="planitem"><h4>${esc(p.title)}</h4><p>${esc(p.how)}</p><div class="meta">${p.effort ? `<span>⏱ ${esc(p.effort)}</span>` : ""}</div></div>`).join("");
   $("#stepItems").innerHTML = items;
   $("#prevStep").disabled = stepIdx === 0;
   $("#nextStep").textContent = key === "all" ? "Back to my tree" : doneSteps.has(key) ? (stepIdx === total - 1 ? "See it all together" : "Next step") : (stepIdx === total - 1 ? "Done, see it all together" : "Done, next step");

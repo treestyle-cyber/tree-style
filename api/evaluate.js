@@ -33,11 +33,13 @@ const PLAN_SHAPE = (mode) => `"quick_fixes": [ {"title":"<plain, under 8 words>"
  "render_brief": "<see RENDER BRIEF>"`;
 
 const PLAN_NOTES = (mode) => `quick_fixes: 3-5, ${mode === "check" ? "biggest improvement for the least effort first; x,y = where on the photo" : "the plan at a glance, in order"}.
-plan: 6-12 items following the order of work.
+plan: 6-12 items following the order of work. Fill "shop" for every step that needs something bought (lights, stems, ribbon, flowers, each ornament step, berry stems, topper, a new skirt or collar); leave it empty only for steps like fluffing or moving what they already own.
+EVERYTHING IS SOLD IN PACKS: almost nothing is bought as a single item (a topper is the exception). Give every quantity in "how" as packs, boxes or rolls: ribbon in 10-yard rolls (a 7.5 ft tree uses about 20-30 yards of main and supporting ribbon plus about 10 yards of accent; 9 ft about 30-40 plus 10-15; 12 ft about 50-60 plus 20), stems and flowers in packs of 6, berry stems in packs of 12, lights in strands of 100. For a full designer look use about 2-3 greenery stems per foot of tree.
+ORNAMENTS ARE SOLD IN BOXES: nobody buys one ornament. Use a tight palette: 2-3 colors, and at most 2 finishes per size. In plan "how", give ornament quantities in boxes (e.g. "2 boxes of 12 matte gold 3-inch balls"), never single ornaments (except heirlooms they already own).
 ideas: exactly 3 genuinely different directions worth seeing for this tree.
 mockup.ribbon_technique: cascade for OPEN trees, loops for DENSE. ribbons: 2-3, widest first, following the layering rule; [] if no ribbon should be added.
 mockup.moments: 5-12 hidden-vine moments: larger and fuller low, smaller and sparser high, never in rows.
-mockup.ornaments: 12-26 NEW ornaments: a few xl in gaps, then l, mostly m and s; shapes and finishes true to the style.
+mockup.ornaments: 12-26 NEW ornaments: a few xl in gaps, then l, mostly m and s; shapes and finishes true to the style. These are sample placements: repeat each color/size/finish combination several times (it stands for a box) rather than many one-off combinations.
 mockup.topper.style: none if the current topper is right.${mode === "check" ? " The mockup shows only what they should ADD." : ""}`;
 
 function factsLine(f) {
