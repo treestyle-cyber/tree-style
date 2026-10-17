@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Tree Style · Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  main{max-width:720px;margin:0 auto;padding:10px 16px 60px}
+  header.top{display:flex;justify-content:space-between;align-items:center;padding:18px 16px;max-width:720px;margin:0 auto}
+  .pill{font:600 11px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--brass)}
+  .screen[hidden]{display:none}
+  h1{font-size:40px;margin:8px 0 10px}
+  .card{padding:20px;margin:16px 0}
+  label.drop{display:grid;place-items:center;text-align:center;border:2px dashed var(--line);border-radius:var(--radius);padding:28px;cursor:pointer;background:var(--paper);min-height:200px}
+  label.drop img{max-height:340px;border-radius:10px}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{position:relative}
+  .chip input{position:absolute;opacity:0}
+  .chip span{display:inline-block;padding:9px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--paper);cursor:pointer;font-weight:500}
+  .chip input:checked + span{background:var(--green);border-color:var(--green);color:#fff}
+  .chip input:focus-visible + span{outline:2px solid var(--brass)}
+  .lbl{font-weight:600;margin:18px 0 8px}
+  #theme{width:100%;border-radius:10px;margin-top:10px}
+  .go{width:100%;margin-top:22px;padding:16px}
+  .err{color:var(--berry);font-weight:500;margin-top:12px;white-space:pre-wrap}
+
+  /* loading */
+  #loading{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:9;padding:20px}
+  #loading[hidden]{display:none}
+  #loading .box{max-width:380px;width:100%}
+  #loading ol{list-style:none;padding:0;margin:20px 0}
+  #loading li{padding:7px 0 7px 30px;position:relative;color:var(--muted)}
+  #loading li::before{content:"";position:absolute;left:0;top:10px;width:16px;height:16px;border-radius:50%;border:2px solid var(--line)}
+  #loading li.on{color:var(--ink);font-weight:600}
+  #loading li.on::before{border-color:var(--brass);border-top-color:transparent;animation:spin .8s linear infinite}
+  #loading li.done{color:var(--ink)}
+  #loading li.done::before{background:var(--green);border-color:var(--green)}
+  .bar{height:6px;background:var(--line);border-radius:9px;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:var(--green);transition:width .4s}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* results */
+  .score{display:flex;align-items:center;gap:16px}
+  .orns{display:flex;gap:6px}
+  .orns i{width:26px;height:26px;border-radius:50%;background:var(--line);display:block;position:relative}
+  .orns i::after{content:"";position:absolute;left:50%;top:-5px;width:8px;height:6px;margin-left:-4px;background:var(--brass);border-radius:2px}
+  .orns i.f{background:radial-gradient(circle at 35% 30%,#e9a,#8e2a32 60%,#561a20)}
+  .orns i.h{background:linear-gradient(90deg,#8e2a32 50%,var(--line) 50%)}
+  .compare{position:relative;border-radius:var(--radius);overflow:hidden;background:#ddd;user-select:none;touch-action:none;cursor:ew-resize}
+  .compare img{width:100%;display:block}
+  .compare img.after{position:absolute;inset:0;height:100%;object-fit:cover;clip-path:inset(0 0 0 var(--cut,50%))}
+  .compare .line{position:absolute;top:0;bottom:0;left:var(--cut,50%);width:2px;background:#fff}
+  .compare .tag{position:absolute;top:10px;font:600 11px var(--sans);letter-spacing:.1em;text-transform:uppercase;background:rgba(255,253,248,.9);padding:5px 9px;border-radius:99px}
+  .compare .tag.l{left:10px}.compare .tag.r{right:10px}
+  .renderwait{padding:40px 20px;text-align:center;color:var(--muted)}
+  .spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--green);animation:spin .8s linear infinite;margin:0 auto 12px}
+  ul.fixes{padding-left:20px;margin:8px 0}
+  ul.fixes li{margin:8px 0}
+  .plan .item{border-top:1px solid var(--line);padding:12px 0}
+  .plan .item:first-child{border-top:0}
+  .plan .step{font:600 11px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--brass)}
+  .plan .meta{font-size:13px;color:var(--muted);margin-top:4px}
+  .cat{display:grid;grid-template-columns:130px 1fr 28px;gap:10px;align-items:center;margin:8px 0;font-size:14px}
+  .cat .b{height:8px;background:var(--line);border-radius:9px;overflow:hidden}
+  .cat .b i{display:block;height:100%;background:var(--green)}
+  .cat .note{grid-column:1/-1;font-size:13px;color:var(--muted);margin:-4px 0 4px}
+  details summary{cursor:pointer;font-weight:600}
+  pre{white-space:pre-wrap;font-size:12px;background:#f1ebde;padding:12px;border-radius:10px}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .small{font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/"><svg viewBox="0 0 24 24"><path d="M12 3 4.5 20h15z" fill="#1f3a2e"/><circle cx="12" cy="3.2" r="1.8" fill="#a9844c"/></svg>Tree Style</a>
+  <span class="pill">Private test</span>
+</header>
+
+<main>
+  <!-- Password -->
+  <section class="screen" id="s-pass">
+    <h1>Test access</h1>
+    <p class="muted">Enter the test password to try the full evaluation and preview.</p>
+    <form id="passForm" class="row">
+      <input type="password" id="pw" placeholder="Password" style="flex:1" autocomplete="current-password">
+      <button class="btn">Enter</button>
+    </form>
+    <div class="err" id="passErr"></div>
+  </section>
+
+  <!-- Upload + options -->
+  <section class="screen" id="s-start" hidden>
+    <h1>Let's look at your tree.</h1>
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept="image/*" hidden>
+      <div id="dropInner"><strong>Tap to add a photo of your tree</strong><div class="small">Stand back so the whole tree and the top are in the shot.</div></div>
+    </label>
+
+    <div class="lbl">What do you need?</div>
+    <div class="row">
+      <label class="chip"><input type="radio" name="mode" value="check" checked><span>Check my tree</span></label>
+      <label class="chip"><input type="radio" name="mode" value="design"><span>Design my tree</span></label>
+    </div>
+
+    <div class="lbl">Style</div>
+    <div class="row" id="styles">
+      <label class="chip"><input type="radio" name="style" value="keep" checked><span>Keep my style</span></label>
+      <label class="chip"><input type="radio" name="style" value="classic"><span>Classic</span></label>
+      <label class="chip"><input type="radio" name="style" value="rustic"><span>Rustic</span></label>
+      <label class="chip"><input type="radio" name="style" value="modern"><span>Modern</span></label>
+      <label class="chip"><input type="radio" name="style" value="elegant"><span>Elegant</span></label>
+      <label class="chip"><input type="radio" name="style" value="playful"><span>Playful</span></label>
+      <label class="chip"><input type="radio" name="style" value="themed"><span>Themed</span></label>
+    </div>
+    <input type="text" id="theme" placeholder="Your theme (e.g. vintage blue and silver)" hidden>
+
+    <button class="btn go" id="go" disabled>Evaluate my tree</button>
+    <div class="err" id="startErr"></div>
+  </section>
+
+  <!-- Results -->
+  <section class="screen" id="s-results" hidden>
+    <div class="score" id="scoreRow">
+      <div class="orns" id="orns"></div>
+      <div><div style="font-weight:600" id="scoreWord"></div><div class="small" id="potential"></div></div>
+    </div>
+    <h1 id="headline" style="margin-top:14px"></h1>
+    <p id="summary"></p>
+    <p class="muted" id="eye"></p>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <div id="renderBox"></div>
+    </div>
+    <div class="tools">
+      <button class="btn ghost" id="again">Make another version</button>
+      <button class="btn ghost" id="save" hidden>Save the preview</button>
+      <button class="btn ghost" id="restart">Try another photo</button>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size:28px">Quick fixes</h2>
+      <ul class="fixes" id="fixes"></ul>
+    </div>
+    <div class="card plan">
+      <h2 style="font-size:28px;margin-bottom:6px">Step-by-step plan</h2>
+      <div id="plan"></div>
+    </div>
+    <div class="card" id="catsCard">
+      <h2 style="font-size:28px;margin-bottom:6px">How it scored</h2>
+      <div id="cats"></div>
+    </div>
+    <details class="card">
+      <summary>Behind the scenes (for testing)</summary>
+      <p class="small" id="timing"></p>
+      <div class="lbl">Instructions sent to the image model</div>
+      <pre id="brief"></pre>
+    </details>
+  </section>
+</main>
+
+<div id="loading" hidden>
+  <div class="box">
+    <h2 style="font-size:30px" id="loadTitle">Looking at your tree</h2>
+    <ol id="loadSteps"></ol>
+    <div class="bar"><i id="loadFill"></i></div>
+    <p class="small" id="loadNote" style="margin-top:10px">This takes about 20–40 seconds.</p>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const show = id => { document.querySelectorAll(".screen").forEach(s => s.hidden = s.id !== id); scrollTo(0, 0); };
+let password = "";
+try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
+let photo = null, photoAspect = "3:4", result = null, lastRender = null;
+
+async function api(path, body) {
+  const r = await fetch(path, { method: "POST", headers: { "content-type": "application/json", "x-test-password": password }, body: JSON.stringify(body) });
+  let data = {};
+  try { data = await r.json(); } catch { data = { error: `Server error ${r.status}` }; }
+  if (!r.ok) { const e = new Error(data.error || `Error ${r.status}`); e.status = r.status; throw e; }
+  return data;
+}
+
+// ---------- password ----------
+$("#passForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  password = $("#pw").value;
+  try { sessionStorage.setItem("ts_pw", password); } catch {}
+  show("s-start");
+});
+if (password) show("s-start"); else show("s-pass");
+
+// ---------- photo ----------
+const ASPECTS = [["1:1",1],["2:3",2/3],["3:2",1.5],["3:4",.75],["4:3",4/3],["4:5",.8],["5:4",1.25],["9:16",9/16],["16:9",16/9]];
+async function loadPhoto(file) {
+  const bmp = await createImageBitmap(file);
+  const max = 1536, k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas");
+  c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  const r = c.width / c.height;
+  photoAspect = ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0];
+  return c.toDataURL("image/jpeg", 0.88);
+}
+$("#file").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  $("#startErr").textContent = "";
+  try {
+    photo = await loadPhoto(f);
+    $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="small" style="margin-top:8px">Tap to change photo</div>`;
+    $("#go").disabled = false;
+  } catch { $("#startErr").textContent = "Couldn't read that photo. Try a JPG or PNG."; }
+});
+document.querySelectorAll("input[name=style]").forEach(r => r.addEventListener("change", () => $("#theme").hidden = r.value !== "themed" || !r.checked));
+document.querySelectorAll("input[name=mode]").forEach(r => r.addEventListener("change", () => { $("#go").textContent = val("mode") === "design" ? "Design my tree" : "Evaluate my tree"; }));
+const val = n => (document.querySelector(`input[name=${n}]:checked`) || {}).value;
+
+// ---------- loading ----------
+function startLoading(title, steps, seconds) {
+  $("#loadTitle").textContent = title;
+  $("#loadSteps").innerHTML = steps.map(s => `<li>${s}</li>`).join("");
+  $("#loading").hidden = false;
+  const lis = [...$("#loadSteps").children];
+  const t0 = Date.now();
+  const tick = () => {
+    const k = Math.min(0.95, (Date.now() - t0) / 1000 / seconds);
+    const n = Math.min(lis.length - 1, Math.floor(k * lis.length));
+    lis.forEach((li, i) => li.className = i < n ? "done" : i === n ? "on" : "");
+    $("#loadFill").style.width = (k * 100) + "%";
+  };
+  tick(); const iv = setInterval(tick, 400);
+  return () => { clearInterval(iv); $("#loading").hidden = true; };
+}
+
+// ---------- evaluate ----------
+$("#go").addEventListener("click", async () => {
+  if (!photo) return;
+  const mode = val("mode");
+  const stop = startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree",
+    mode === "design"
+      ? ["Reading your tree's shape and size", "Choosing ribbon and stems for your style", "Planning ornament sizes and spots", "Building the top of the tree", "Writing your step-by-step plan"]
+      : ["Evaluating tree shape and fullness", "Checking for eye-catching spots", "Looking at ornament placement", "Checking overall balance", "Evaluating the topper and base", "Planning your improvements"],
+    30);
+  $("#startErr").textContent = "";
+  try {
+    result = await api("/api/evaluate", { image: photo, mode, style: val("style"), theme: $("#theme").value.trim() });
+    stop();
+    renderResults(mode);
+    show("s-results");
+    makePreview();
+  } catch (e) {
+    stop();
+    if (e.status === 401) { try { sessionStorage.removeItem("ts_pw"); } catch {} $("#passErr").textContent = "That password didn't work."; show("s-pass"); return; }
+    $("#startErr").textContent = "Something went wrong: " + e.message;
+  }
+});
+
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const toOrn = v => Math.max(1, Math.round(v / 20 * 2) / 2);
+function ornHtml(n) { let h = ""; for (let i = 1; i <= 5; i++) h += `<i class="${n >= i ? "f" : n >= i - .5 ? "h" : ""}"></i>`; return h; }
+
+function renderResults(mode) {
+  const r = result;
+  const check = mode === "check" && r.overall != null;
+  $("#scoreRow").hidden = !check;
+  if (check) {
+    const o = toOrn(r.overall);
+    $("#orns").innerHTML = ornHtml(o);
+    $("#scoreWord").textContent = `${o} of 5 ornaments`;
+    const p = r.potential || {};
+    $("#potential").textContent = p.after_full_plan ? `Could reach ${toOrn(p.after_quick_fixes || p.after_full_plan)} with the quick fixes, ${toOrn(p.after_full_plan)} with the full plan` : "";
+  }
+  $("#headline").textContent = r.headline || "";
+  $("#summary").textContent = r.summary || "";
+  $("#eye").textContent = r.eye_first ? "Where the eye lands first: " + r.eye_first : "";
+  $("#fixes").innerHTML = (r.quick_fixes || []).map(f => `<li><strong>${esc(f.title)}.</strong> ${esc(f.how)}</li>`).join("");
+  $("#plan").innerHTML = (r.plan || []).map(p => `<div class="item"><div class="step">${esc(p.step)}</div><strong>${esc(p.title)}</strong><div>${esc(p.how)}</div><div class="meta">${esc(p.effort)}${p.shop ? ` · Shop: <a href="https://www.amazon.com/s?k=${encodeURIComponent(p.shop)}" target="_blank" rel="noopener">${esc(p.shop)}</a>` : ""}</div></div>`).join("");
+  $("#catsCard").hidden = !(r.categories || []).length;
+  $("#cats").innerHTML = (r.categories || []).map(c => `<div class="cat"><span>${esc(c.name)}</span><span class="b"><i style="width:${c.score * 10}%"></i></span><span>${c.score}</span><div class="note">${esc(c.note)}</div></div>`).join("");
+  $("#brief").textContent = r.render_brief || "";
+  $("#timing").textContent = `Evaluation: ${r._meta?.model} · ${r._meta?.seconds}s`;
+}
+
+// ---------- preview ----------
+async function makePreview() {
+  $("#save").hidden = true;
+  $("#again").disabled = true;
+  $("#renderBox").innerHTML = `<div class="renderwait"><div class="spin"></div>Creating a realistic preview of your tree…<div class="small">About 15–30 seconds</div></div>`;
+  try {
+    const out = await api("/api/render", { image: photo, brief: result.render_brief, aspect: photoAspect });
+    lastRender = out.image;
+    $("#renderBox").innerHTML = `<div class="compare" id="cmp"><img src="${photo}" alt="Before"><img class="after" src="${out.image}" alt="After"><div class="line"></div><span class="tag l">Before</span><span class="tag r">After</span></div><div class="small" style="padding:10px 14px">Drag across the photo to compare.</div>`;
+    wireCompare($("#cmp"));
+    $("#save").hidden = false;
+    $("#timing").textContent += ` · Preview: ${out._meta?.model} · ${out._meta?.seconds}s`;
+  } catch (e) {
+    $("#renderBox").innerHTML = `<div class="renderwait err">The preview didn't come through: ${esc(e.message)}</div>`;
+  }
+  $("#again").disabled = false;
+}
+function wireCompare(box) {
+  let drag = false;
+  const set = x => { const r = box.getBoundingClientRect(); box.style.setProperty("--cut", Math.min(100, Math.max(0, (x - r.left) / r.width * 100)) + "%"); };
+  box.addEventListener("pointerdown", e => { drag = true; box.setPointerCapture(e.pointerId); set(e.clientX); });
+  box.addEventListener("pointermove", e => drag && set(e.clientX));
+  box.addEventListener("pointerup", () => drag = false);
+  let t0; const sw = t => { if (drag) return; t0 ??= t; const k = (t - t0) / 1600; if (k > 1) { box.style.setProperty("--cut", "50%"); return; } box.style.setProperty("--cut", (50 + Math.sin(k * Math.PI * 2) * 30) + "%"); requestAnimationFrame(sw); };
+  requestAnimationFrame(sw);
+}
+$("#again").addEventListener("click", makePreview);
+$("#restart").addEventListener("click", () => show("s-start"));
+$("#save").addEventListener("click", () => { const a = document.createElement("a"); a.href = lastRender; a.download = "tree-style-preview.png"; a.click(); });
+</script>
+</body>
+</html>

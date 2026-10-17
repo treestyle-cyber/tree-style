@@ -1,0 +1,6 @@
+{
+  "name": "tree-style",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" }
+}
