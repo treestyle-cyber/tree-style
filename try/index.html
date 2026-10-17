@@ -178,6 +178,14 @@
   .estnote{background:#fbf3e2;border-left:3px solid var(--brass);border-radius:8px;padding:10px 12px;font-size:14px;margin:8px 0 12px}
   .estnote button{appearance:none;border:0;background:none;color:var(--green);font:600 14px var(--sans);text-decoration:underline;cursor:pointer;padding:0}
 
+  /* quick change under the preview */
+  .quickask{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin:12px 0}
+  .quickask label{display:block;font-weight:600;margin-bottom:8px;color:var(--green)}
+  .qarow{display:flex;gap:8px}
+  .qarow input{flex:1;min-width:0;border-radius:12px;padding:12px 14px}
+  .qarow .btn{padding:12px 16px}
+  .qahint{font-size:13px;color:var(--muted);margin-top:8px}
+
   /* tips while waiting */
   .tipcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px 12px;margin-bottom:22px;min-height:132px;display:flex;flex-direction:column}
   .tipk{font:600 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
@@ -417,6 +425,14 @@
       <button class="btn ghost" id="again">New version</button>
       <button class="btn ghost" id="save" hidden>Save image</button>
     </div>
+    <form class="quickask" id="quickAsk">
+      <label for="qaText">Want something different?</label>
+      <div class="qarow">
+        <input type="text" id="qaText" placeholder="e.g. More flowers, or go purple" autocomplete="off" enterkeyhint="send">
+        <button class="btn" id="qaSend" aria-label="Update my tree">Update</button>
+      </div>
+      <div class="qahint">Tell us in your own words. We'll redo the plan and the preview, and keep this version too.</div>
+    </form>
     <div class="tellcard" id="tellCard">
       <div class="tellic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21V9M4 5V3M12 21v-6M12 11V3M20 21v-4M20 13V3"/><circle cx="4" cy="7" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="20" cy="15" r="2"/></svg></div>
       <div class="telltx"><b>For more accurate recommendations, tell us a bit more about your tree.</b><span id="tellSub">Its height, real or artificial, and how full it is. Quantities are based on our best guess from the photo.</span></div>
@@ -1058,6 +1074,15 @@ function addMsg(who, text, opts = {}) {
     + (opts.list && opts.list.length ? `<ul>${opts.list.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : "");
   $("#log").append(m); m.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
+$("#quickAsk").addEventListener("submit", e => {
+  e.preventDefault();
+  const req = $("#qaText").value.trim();
+  if (!req) { $("#qaText").focus(); return; }
+  $("#qaText").value = "";
+  $("#pText").value = req;   // shows in the design partner's history as their own words
+  partnerSend(req, null);
+});
+
 async function partnerSend(req, label) {
   if (!result || busy) return;
   busy = true; $("#pSend").disabled = true; document.querySelectorAll("#ideas button").forEach(b => b.disabled = true);
