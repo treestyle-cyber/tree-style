@@ -2,7 +2,7 @@
 // Uses the drawing engine in engine.js (ported from the prototype).
 (function () {
   const E = window.__TG_INTERNAL;
-  const { clamp, hex, pt, obj, arr, str, oneOf, RIBBON_TEX, planEl, TAU, rgbOf, layer, photoSampler, makeGeo, buildScene, drawGroup, DRAW_ORDER, ORN_IN, FLOWER_IN, pickColor } = E;
+  const { clamp, hex, pt, obj, arr, str, oneOf, RIBBON_TEX, planEl, TAU, rgbOf, shade, layer, photoSampler, makeGeo, buildScene, drawGroup, DRAW_ORDER, ORN_IN, FLOWER_IN, pickColor } = E;
 
   // Clean up whatever the AI sent so the painter never trips on it.
   function normalize(r, mode) {
@@ -33,7 +33,36 @@
       topper: { style: oneOf(top.style, ["star", "bow", "floral", "finial", "none"], "none"), color: hex(top.color, "#E2B65A"), delicate: !!top.delicate }
     };
     if (out.picks.primary.kind === "none" && !arr(m.moments).length) out.moments = [];
+    balanceFlowers(out);
     return out;
+  }
+
+  // Flowers should feel balanced (equal visual weight left and right), not symmetric.
+  // Only steps in when one side is clearly heavier, or when most flowers stack down the center.
+  function balanceFlowers(d) {
+    const A = d.cone.apex, L = d.cone.left, R = d.cone.right, baseY = (L[1] + R[1]) / 2;
+    const t = y => clamp((y - A[1]) / Math.max(.05, baseY - A[1]), 0, 1);
+    const cx = y => A[0] + t(y) * ((L[0] + R[0]) / 2 - A[0]), hw = y => t(y) * (R[0] - L[0]) / 2;
+    const fl = d.moments.filter(m => m.floral && t(m.y) > .12).sort((a, b) => a.y - b.y);   // leave the very top alone
+    if (fl.length < 2) return;
+    const off = m => (m.x - cx(m.y)) / Math.max(.001, hw(m.y));
+    const wt = m => m.size;   // visual weight: bigger clusters count more
+    const sideW = s => fl.filter(m => s < 0 ? off(m) < -.25 : off(m) > .25).reduce((a, m) => a + wt(m), 0);
+    // A stack down the middle: only when more than half the flowers sit on the center line
+    const centered = fl.filter(m => Math.abs(off(m)) <= .25);
+    if (centered.length > fl.length / 2) {
+      centered.forEach((m, i) => { if (i % 2 === 0) return;   // leave every other one where it is
+        const s = sideW(-1) <= sideW(1) ? -1 : 1; m.x = clamp(cx(m.y) + s * (.45 + .2 * ((i * 37) % 10) / 10) * hw(m.y), 0, 1); });
+    }
+    // A clearly heavy side: move one flower across at a time until the weights are close
+    for (let i = 0; i < 4; i++) {
+      const Lw = sideW(-1), Rw = sideW(1), total = Lw + Rw;
+      if (Math.abs(Lw - Rw) <= Math.max(2, total * .35)) break;
+      const heavy = Lw > Rw ? -1 : 1, pool = fl.filter(m => heavy < 0 ? off(m) < -.25 : off(m) > .25).sort((a, b) => wt(a) - wt(b));
+      const m = pool.find(p => !fl.some(q => q !== p && Math.hypot(q.x - (2 * cx(p.y) - p.x), q.y - p.y) < .06)) || pool[0];
+      if (!m) break;
+      m.x = clamp(cx(m.y) - (m.x - cx(m.y)) * (.8 + ((i * 53) % 10) / 25), 0, 1);   // across, but not a mirror image
+    }
   }
 
   const STEP_ORDER = ["fluff", "lights", "primary_picks", "ribbon", "florals", "statement", "medium", "small", "small_picks", "crown", "base"];
@@ -111,12 +140,12 @@
       const rbs = d.ribbons, loops = d.technique === "loops";
       rbs.forEach(rb => {
         const yards = Math.ceil(h * (RIBBON_YD_PER_FT[rb.role] || 1.5) * (mode === "design" ? 1 : .6));
-        const rolls = Math.max(2, packs(yards * 1.1, ROLL_YD)), cn = colorName(rb.color);   // 10% extra for loops and mistakes
+        const rolls = packs(yards * 1.1, ROLL_YD), cn = colorName(rb.color);   // whole rolls, with ~10% extra for loops and mistakes
         const role = rb.role === "accent" ? " (thin accent)" : rb.role === "overlay" ? " (laid on top)" : "";
         // Ribbon they already own stays on the list as a top-up: they may not have enough.
         const qty = rb.owned
-          ? `You have some. The tree needs about ${yards} yards, so add ${plural(Math.max(1, rolls - 1), "roll", "rolls")} if you're short`
-          : `${plural(rolls, "roll", "rolls")} of ${ROLL_YD} yd (about ${yards} yards)`;
+          ? `You have some. The tree uses about ${yards} yards; if you have less, add ${plural(rolls, "roll", "rolls")} of ${ROLL_YD} yd`
+          : `${plural(rolls, "roll", "rolls")} of ${ROLL_YD} yd (${rolls * ROLL_YD} yards; the tree uses about ${yards})`;
         add(rb.color, `${rb.width_in}" ${cn} ${rb.texture}${role}${rb.owned ? " · re-use yours" : ""}`, qty, `${rb.width_in} inch wired ${rb.texture} ribbon ${cn} ${ROLL_YD} yards`);
       });
     }
@@ -180,12 +209,22 @@
     if (RB.base) {
       const c = layer(W, H), g = c.getContext("2d"), u = G.unit;
       const outline = Math.max(1.5, u * .22);
+      // A ribbon loop drawn as ribbon: a band that leaves the tuck point, curves out and comes back,
+      // leaving an open center, with a white halo and dark edges so it reads on any photo.
       const flatLoop = (x, y, ang, len, wid, rb, over) => {
+        const bw = Math.max(4, Math.min(wid * .5, len * .2));      // the ribbon itself
+        const hw = Math.max(bw * 1.6, len * .3);                   // half-width of the loop
+        const edge = shade(rb.color, -.55);
         g.save(); g.translate(x, y); g.rotate(ang);
-        g.beginPath(); g.ellipse(len / 2, 0, len / 2, wid / 2, 0, 0, TAU);
-        g.fillStyle = rb.color; g.globalAlpha = .92; g.fill(); g.globalAlpha = 1;
-        g.lineWidth = outline; g.strokeStyle = "rgba(255,255,255,.95)"; g.stroke();
-        if (over) { g.beginPath(); g.ellipse(len / 2, 0, len / 2 * .86, wid / 2 * .42, 0, 0, TAU); g.fillStyle = over.color; g.fill(); }
+        const path = () => { g.beginPath(); g.moveTo(0, 0); g.bezierCurveTo(len * .2, -hw * 1.15, len * .98, -hw * 1.1, len, 0); g.bezierCurveTo(len * .98, hw * 1.1, len * .2, hw * 1.15, 0, 0); };
+        g.lineJoin = "round"; g.lineCap = "round";
+        path(); g.lineWidth = bw + outline * 3.2; g.strokeStyle = "#fff"; g.stroke();
+        path(); g.lineWidth = bw + outline * 1.2; g.strokeStyle = edge; g.stroke();
+        path(); g.lineWidth = bw; g.strokeStyle = rb.color; g.stroke();
+        if (over) { path(); g.lineWidth = bw * .42; g.strokeStyle = over.color; g.stroke(); }
+        // a glint along the outer curve so it reads as satin, not a line
+        g.beginPath(); g.moveTo(len * .45, -hw * .98); g.quadraticCurveTo(len * .85, -hw * .95, len * .97, -hw * .35);
+        g.lineWidth = Math.max(1, bw * .18); g.strokeStyle = "rgba(255,255,255,.55)"; g.stroke();
         g.restore();
       };
       if (scene.runsMain && scene.runsMain.length) {
@@ -193,7 +232,8 @@
         const band = (run, w, rb, over) => {
           const path = () => { g.beginPath(); run.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); };
           g.lineCap = "round"; g.lineJoin = "round";
-          path(); g.lineWidth = w + outline * 2; g.strokeStyle = "rgba(255,255,255,.95)"; g.stroke();
+          path(); g.lineWidth = w + outline * 3.2; g.strokeStyle = "#fff"; g.stroke();
+          path(); g.lineWidth = w + outline * 1.2; g.strokeStyle = shade(rb.color, -.55); g.stroke();
           path(); g.lineWidth = w; g.strokeStyle = rb.color; g.stroke();
           if (over) { path(); g.lineWidth = w * .45; g.strokeStyle = over.color; g.stroke(); }
           const [x1, y1] = run[run.length - 1], [x0, y0] = run[run.length - 6] || run[0], a = Math.atan2(y1 - y0, x1 - x0), ah = Math.max(6, w * .7);
@@ -220,7 +260,7 @@
       } else {
         spots.forEach(sp => {
           sp.loops.forEach(L => flatLoop(sp.x, sp.y, L.ang, L.len, Math.max(L.wid, RW.base * .7), RB.base, RB.overlay));
-          g.beginPath(); g.arc(sp.x, sp.y, Math.max(3, RW.base * .38), 0, TAU); g.fillStyle = "#fff"; g.fill();
+          g.beginPath(); g.arc(sp.x, sp.y, Math.max(3, RW.base * .3), 0, TAU); g.fillStyle = shade(RB.base.color, -.4); g.fill(); g.lineWidth = outline; g.strokeStyle = "#fff"; g.stroke();
         });
         // One number per cluster, so nearby spots don't get overlapping numbers
         const D = G.treeH * .075, groups = [];
@@ -287,6 +327,7 @@
         return;
       }
       o.globalAlpha = 1; o.drawImage(planL.dim, 0, 0);
+      if (key === "ribbon") { o.fillStyle = "rgba(0,0,0,.3)"; o.fillRect(0, 0, W, H); }
       if (key === "all") { o.globalAlpha = .55; o.drawImage(img, 0, 0, W, H); o.globalAlpha = 1; }
       const curPos = steps.indexOf(key);
       DRAW_ORDER.forEach(k => {
