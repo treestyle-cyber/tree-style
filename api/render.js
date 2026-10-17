@@ -13,7 +13,7 @@ const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"
 function editPrompt(brief) {
   return `Edit this photo of a Christmas tree to show it after a professional holiday decorator finished it.
 
-Keep exactly the same room, camera angle, framing, lighting, tree shape and tree size. Keep everything already on the tree unless the instructions say otherwise. Make every addition photorealistic, at true real-world scale, lit by the room's light, and physically tucked into the branches (not floating or pasted on).
+The first image is the photo to edit. Keep exactly the same room, camera angle, framing, lighting, tree shape and tree size. Keep everything already on the tree unless the instructions say otherwise. Make every addition photorealistic, at true real-world scale, lit by the room's light, and physically tucked into the branches (not floating or pasted on).
 
 Changes to make:
 ${brief}
@@ -21,14 +21,18 @@ ${brief}
 The result must look like an ordinary real photograph of the same tree in the same room, not an illustration.`;
 }
 
-async function callGemini(model, img, prompt, aspect) {
+async function callGemini(model, img, prompt, aspect, pieces) {
   const generationConfig = { responseModalities: ["IMAGE"] };
   if (aspect) generationConfig.imageConfig = { aspectRatio: aspect };
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: "POST",
     headers: { "x-goog-api-key": process.env.GEMINI_API_KEY, "content-type": "application/json" },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: img.mediaType, data: img.data } }] }],
+      contents: [{ parts: [
+        { text: prompt },
+        { inline_data: { mime_type: img.mediaType, data: img.data } },
+        ...(pieces ? [{ text: "Reference only (do not edit this one): the homeowner's own special pieces. Show these exact pieces on the tree where the instructions place them." }, { inline_data: { mime_type: pieces.mediaType, data: pieces.data } }] : [])
+      ] }],
       generationConfig
     })
   });
@@ -41,7 +45,8 @@ export default async function handler(req, res) {
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
 
-  const { image, brief, aspect } = req.body || {};
+  const { image, brief, aspect, pieces } = req.body || {};
+  const pc = parseDataUrl(pieces);
   const img = parseDataUrl(image);
   if (!img || !brief) return res.status(400).json({ error: "Missing photo or brief" });
   const ar = ASPECTS.includes(aspect) ? aspect : null;
@@ -49,9 +54,9 @@ export default async function handler(req, res) {
   const started = Date.now();
   let lastErr = "";
   for (const model of MODELS) {
-    let out = await callGemini(model, img, editPrompt(brief), ar);
+    let out = await callGemini(model, img, editPrompt(brief), ar, pc);
     // Some models reject imageConfig; retry once without it.
-    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, editPrompt(brief), null);
+    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, editPrompt(brief), null, pc);
     if (!out.ok) {
       lastErr = out.body?.error?.message || `Gemini error ${out.status}`;
       // Model not available, or no quota for it on this account: try the next one

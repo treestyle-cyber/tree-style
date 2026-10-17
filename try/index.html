@@ -140,6 +140,66 @@
   .stepnav{display:flex;gap:10px;margin-top:14px}
   .stepnav .btn{flex:1}
 
+  /* details + extras */
+  .q{margin:18px 0 0}
+  .q .lbl{font-weight:600;margin-bottom:8px}
+  .q .hint2{font-size:13px;color:var(--muted);margin:6px 2px 0}
+  .skip{display:block;margin:18px auto 0;background:none;border:0;color:var(--muted);font:500 14px var(--sans);text-decoration:underline;cursor:pointer}
+  .extrasCard{margin-top:22px}
+  .extrasCard h3{font-size:22px;margin:0 0 4px}
+  .extra{display:grid;grid-template-columns:56px 1fr auto;column-gap:12px;row-gap:2px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+  .extra .thumb,.extra > div{grid-row:span 2}
+  .extra label,.extra button{grid-column:3;text-align:right;padding:2px 0}
+  .extra:first-of-type{border-top:0}
+  .extra .thumb{width:56px;height:56px;border-radius:10px;background:#efe6d4 center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--brass);font-size:22px}
+  .extra small{display:block;color:var(--muted);font-size:13px}
+  .extra label,.extra button{font:600 14px var(--sans);color:var(--green);cursor:pointer;background:none;border:0;white-space:nowrap}
+
+  /* step guide */
+  .steptabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;margin:0 -18px;padding-left:18px;padding-right:18px;scrollbar-width:none}
+  .steptabs::-webkit-scrollbar{display:none}
+  .steptabs button{flex:none;appearance:none;border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:7px 12px 7px 7px;font:500 13px var(--sans);color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .steptabs button i{font-style:normal;width:22px;height:22px;border-radius:50%;background:#efe6d4;display:grid;place-items:center;font-size:11px;font-weight:700}
+  .steptabs button.on{background:var(--green);border-color:var(--green);color:#fff}
+  .steptabs button.on i{background:rgba(255,255,255,.2);color:#fff}
+  .steptabs button.done i{background:var(--brass);color:#fff}
+  .guidebox{position:relative;border-radius:var(--radius);overflow:hidden;background:#222}
+  .guidebox canvas{display:block;width:100%;height:auto}
+  .peek{position:absolute;right:10px;bottom:10px;appearance:none;border:0;background:rgba(255,253,248,.92);color:var(--green);font:600 12px var(--sans);padding:7px 11px;border-radius:99px;cursor:pointer}
+  .legend{list-style:none;padding:0;margin:0 0 14px;display:flex;flex-direction:column;gap:6px}
+  .legend li{display:flex;align-items:center;gap:10px;font-size:15px}
+  .legend b{width:18px;height:18px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+  .planitem{border-top:1px solid var(--line);padding:12px 0 2px}
+  .planitem h4{margin:0 0 4px;font-size:16px}
+  .planitem p{font-size:15px;margin:0 0 8px}
+  .newto{background:#f3ecdf;border-radius:10px;padding:12px 14px;font-size:14px;margin:6px 0 10px}
+
+  /* ideas + partner */
+  .ideas{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}
+  .ideas button{appearance:none;border:1.5px dashed var(--brass);background:transparent;border-radius:999px;padding:8px 13px;font:500 14px var(--sans);color:var(--green);cursor:pointer}
+  .ideas button:disabled{opacity:.5}
+  .starters{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+  .starters button{appearance:none;border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:8px 13px;font:500 14px var(--sans);cursor:pointer;color:var(--ink)}
+  .log{display:flex;flex-direction:column;gap:10px;margin:10px 0}
+  .msg{max-width:88%;padding:11px 14px;border-radius:16px;font-size:15px}
+  .msg.me{align-self:flex-end;background:var(--green);color:#fff;border-bottom-right-radius:4px}
+  .msg.ai{align-self:flex-start;background:var(--paper);border:1px solid var(--line);border-bottom-left-radius:4px}
+  .msg ul{margin:6px 0 0;padding-left:18px}
+  .msg img{max-width:160px;border-radius:8px;margin-top:8px}
+  .msg .vtag{display:inline-block;font:600 11px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--brass);margin-bottom:4px}
+  .extras{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+  .pbtn{position:relative;display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:8px 13px;font:500 14px var(--sans);cursor:pointer}
+  .pbtn.on{border-color:var(--green);color:var(--green);font-weight:600}
+  .pbtn input[type=color]{width:22px;height:22px;border:0;padding:0;background:none;border-radius:50%;cursor:pointer}
+  .pbtn .x{margin-left:2px;font-weight:700;color:var(--muted)}
+  .ask{display:flex;gap:8px;align-items:flex-end}
+  .ask textarea{flex:1;font:16px/1.4 var(--sans);padding:12px 14px;border:1.5px solid var(--line);border-radius:14px;background:var(--paper);resize:none;color:var(--ink)}
+  .ask textarea:focus{outline:none;border-color:var(--brass)}
+  .versions{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:14px;font-size:14px}
+  .versions button{appearance:none;border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:5px 11px;font:600 13px var(--sans);cursor:pointer;color:var(--ink)}
+  .versions button.on{background:var(--green);border-color:var(--green);color:#fff}
+  .vnote{font-size:13px;color:var(--muted);text-align:center;margin:6px 0 0}
+
   /* score */
   .cat{padding:12px 0;border-top:1px solid var(--line)}
   .cat:first-child{border-top:0}
@@ -194,7 +254,8 @@
 
   <!-- Photo -->
   <section class="screen" id="s-photo" data-title="Your tree" data-foot="photoNext" hidden>
-    <h1>Add a photo of your tree</h1>
+    <h1 id="photoH">Add a photo of your tree</h1>
+    <p class="sub" id="photoSub"></p>
     <label class="drop">
       <input type="file" id="file" accept="image/*" hidden>
       <div id="dropInner">
@@ -202,11 +263,43 @@
         <strong>Tap to take or choose a photo</strong>
       </div>
     </label>
-    <ul class="tips">
-      <li>Stand back so the whole tree, including the top, is in the shot.</li>
-      <li>Turn the tree lights on. Daytime or evening both work.</li>
-    </ul>
+    <ul class="tips" id="photoTips"></ul>
     <div class="err" id="photoErr"></div>
+  </section>
+
+  <!-- Tree details (optional) -->
+  <section class="screen" id="s-details" data-title="Your tree" data-foot="details" hidden>
+    <h1>About your tree</h1>
+    <p class="sub" id="detailsSub">Optional, but it makes the plan and the preview more accurate.</p>
+    <div class="q"><div class="lbl">What kind of tree?</div>
+      <div class="row">
+        <label class="chip"><input type="radio" name="kind" value="artificial"><span>Artificial</span></label>
+        <label class="chip"><input type="radio" name="kind" value="natural"><span>Real</span></label>
+        <label class="chip"><input type="radio" name="kind" value="" checked><span>Not sure</span></label>
+      </div></div>
+    <div class="q"><div class="lbl">How tall?</div>
+      <div class="row">
+        <label class="chip"><input type="radio" name="height" value="4"><span>4 ft or less</span></label>
+        <label class="chip"><input type="radio" name="height" value="6"><span>5–6 ft</span></label>
+        <label class="chip"><input type="radio" name="height" value="7.5"><span>7–7½ ft</span></label>
+        <label class="chip"><input type="radio" name="height" value="9"><span>8–9 ft</span></label>
+        <label class="chip"><input type="radio" name="height" value="11"><span>10 ft+</span></label>
+        <label class="chip"><input type="radio" name="height" value="" checked><span>Not sure</span></label>
+      </div></div>
+    <div class="q"><div class="lbl">How full are the branches?</div>
+      <div class="row">
+        <label class="chip"><input type="radio" name="density" value="dense"><span>Full and dense</span></label>
+        <label class="chip"><input type="radio" name="density" value="open"><span>Open, with gaps</span></label>
+        <label class="chip"><input type="radio" name="density" value="" checked><span>Not sure</span></label>
+      </div>
+      <div class="hint2">Most artificial trees are full. Open trees (like a noble fir) have space between branches.</div></div>
+    <div class="q" id="stageQ"><div class="lbl">Where are you with decorating?</div>
+      <div class="row">
+        <label class="chip"><input type="radio" name="stage" value="partial"><span>Partway there</span></label>
+        <label class="chip"><input type="radio" name="stage" value="finished"><span>Finished</span></label>
+        <label class="chip"><input type="radio" name="stage" value="" checked><span>Let you decide</span></label>
+      </div></div>
+    <button class="skip" id="detailsSkip">Skip this</button>
   </section>
 
   <!-- Style -->
@@ -224,6 +317,21 @@
     </div>
     <input type="text" id="theme" placeholder="Your theme (e.g. vintage blue and silver)" hidden>
     <p class="styleNote" id="styleNote"></p>
+    <div class="card extrasCard">
+      <h3>Optional extras</h3>
+      <div class="extra">
+        <span class="thumb" id="keyThumb">★</span>
+        <div><b>Special pieces</b><small>Heirlooms, favorite ornaments or a found object. We'll build the design around them.</small></div>
+        <label id="keyLbl">Add photo<input type="file" id="keyFile" accept="image/*" hidden></label>
+        <button id="keyClear" hidden>Remove</button>
+      </div>
+      <div class="extra" id="inspoRow">
+        <span class="thumb" id="inspoThumb">✦</span>
+        <div><b>Inspiration photo</b><small>A tree you love from a store, magazine or Pinterest.</small></div>
+        <label id="inspoLbl">Add photo<input type="file" id="inspoFile" accept="image/*" hidden></label>
+        <button id="inspoClear" hidden>Remove</button>
+      </div>
+    </div>
     <div class="err" id="startErr"></div>
   </section>
 
@@ -247,13 +355,17 @@
       <button data-m="before">Before</button><button data-m="compare" class="on">Compare</button><button data-m="after">After</button>
     </div>
     <div class="hint" id="hint" hidden>Drag across the photo to compare</div>
+    <p class="vnote" id="vNote" hidden></p>
     <div class="tools">
       <button class="btn ghost" id="again">New version</button>
       <button class="btn ghost" id="save" hidden>Save image</button>
     </div>
+    <div class="ideas" id="ideas"></div>
     <div class="navlist">
       <button data-go="s-fixes"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><span><b>Quick fixes</b><small id="navFixes"></small></span><span class="chev">›</span></button>
       <button data-go="s-plan"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></span><span><b>Step-by-step plan</b><small id="navPlan"></small></span><span class="chev">›</span></button>
+      <button data-go="s-partner"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span><span><b>Change something</b><small>Ask for a color, a style, or your own pieces</small></span><span class="chev">›</span></button>
+      <button id="navDetails"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><span><b>Sharpen your recommendations</b><small>Tell us about your tree and we'll re-run it</small></span><span class="chev">›</span></button>
       <button data-go="s-score" id="navScoreBtn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span><b>How it scored</b><small>Balance, lights, the top and more</small></span><span class="chev">›</span></button>
       <button data-go="s-shop"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 7h12l-1 13H7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></span><span><b>Shopping list</b><small id="navShop"></small></span><span class="chev">›</span></button>
     </div>
@@ -274,12 +386,43 @@
 
   <!-- Plan -->
   <section class="screen" id="s-plan" data-title="Step by step" hidden>
-    <div class="dots" id="dots"></div>
-    <div class="card stepcard" id="stepCard"></div>
+    <div class="steptabs" id="stepTabs" role="tablist"></div>
+    <div class="guidebox"><canvas id="guideCv" aria-label="Diagram of this step on your tree"></canvas><button class="peek" id="peek">Hold to see my photo</button></div>
+    <div class="card stepcard">
+      <div class="k" id="stepK"></div>
+      <h2 id="stepTitle"></h2>
+      <p id="stepLead"></p>
+      <ul class="legend" id="stepLegend"></ul>
+      <div id="stepItems"></div>
+    </div>
     <div class="stepnav">
       <button class="btn ghost" id="prevStep">Back</button>
       <button class="btn" id="nextStep">Done, next step</button>
     </div>
+  </section>
+
+  <!-- Design partner -->
+  <section class="screen" id="s-partner" data-title="Design partner" hidden>
+    <h1>Change something</h1>
+    <p class="sub">Tell me what you'd like and I'll adjust the plan and the preview without starting over. Every change is saved as a version you can go back to.</p>
+    <div class="starters" id="starters">
+      <button data-p="I want to work this color into the tree: ">Work in a color</button>
+      <button data-p="Design the tree around these pieces I already own: ">Design around my pieces</button>
+      <button data-p="Add ">Add something</button>
+      <button data-p="Take out ">Take something away</button>
+      <button data-p="Make it feel more ">Change the mood</button>
+    </div>
+    <div class="log" id="log" aria-live="polite"></div>
+    <div class="extras">
+      <label class="pbtn" id="colorBtn"><input type="color" id="pColor" value="#2E6E8E" aria-label="Pick a color"><span id="colorLbl">Include a color</span><span class="x" id="colorClear" hidden>×</span></label>
+      <label class="pbtn" id="ornBtn"><span id="ornLbl">📷 Photo of your pieces</span><input type="file" id="pPhoto" accept="image/*" hidden></label>
+    </div>
+    <div class="ask">
+      <textarea id="pText" rows="2" placeholder="e.g. Use my grandmother's blue glass ornaments, and make the ribbon softer"></textarea>
+      <button class="btn" id="pSend">Update</button>
+    </div>
+    <div class="err" id="pStatus"></div>
+    <div class="versions" id="versions"></div>
   </section>
 
   <!-- Score -->
@@ -310,6 +453,8 @@
   </div>
 </div>
 
+<script src="/try/engine.js"></script>
+<script src="/try/guide.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -317,12 +462,16 @@ const AMAZON_TAG = ""; // add the Amazon Associates tracking ID here
 const shopUrl = q => "https://www.amazon.com/s?k=" + encodeURIComponent(q) + (AMAZON_TAG ? "&tag=" + encodeURIComponent(AMAZON_TAG) : "");
 
 let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
+let factsSet = false, keyPhoto = null, inspoPhoto = null, rerunFromHub = false;
 let mode = "check", photo = null, photoAspect = "3:4", result = null, after = null, stepIdx = 0, doneSteps = new Set();
 
 /* ---------------- navigation ---------------- */
 let stack = [];
 const FOOT = {
-  photoNext: () => ({ label: "Next", disabled: !photo, act: () => show("s-style") }),
+  photoNext: () => ({ label: "Next", disabled: !photo, act: () => show(mode === "design" ? "s-details" : "s-style") }),
+  details: () => rerunFromHub
+    ? ({ label: "Update my results", act: () => { factsSet = true; run(); } })
+    : ({ label: "Next", act: () => { factsSet = true; show("s-style"); } }),
   go: () => ({ label: mode === "design" ? "Design my tree" : "Evaluate my tree", act: run }),
   seeIt: () => ({ label: mode === "design" ? "See your finished tree" : "See your improved tree", act: () => show("s-results", ["s-home"]) })
 };
@@ -372,9 +521,52 @@ $("#passForm").addEventListener("submit", e => {
 });
 
 /* ---------------- home / photo / style ---------------- */
-document.querySelectorAll(".choice").forEach(b => b.onclick = () => { mode = b.dataset.mode; show("s-photo"); });
+const PHOTO_COPY = {
+  design: { h: "Add a photo of your bare tree", sub: "Before you decorate: just the tree, or the tree with lights on.", tips: ["Stand back so the whole tree, including the top, is in the shot.", "Set it up where it will stay, so the room is in the picture too.", "If it's artificial, it's fine if it isn't fluffed yet."] },
+  check: { h: "Add a photo of your decorated tree", sub: "Finished, or partway there. Either works.", tips: ["Stand back so the whole tree, including the top, is in the shot.", "Turn the tree lights on. Daytime or evening both work."] }
+};
+document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
+  mode = b.dataset.mode; rerunFromHub = false; factsSet = false;
+  clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
+  clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d);
+  const c = PHOTO_COPY[mode];
+  $("#photoH").textContent = c.h; $("#photoSub").textContent = c.sub;
+  $("#photoTips").innerHTML = c.tips.map(t => `<li>${t}</li>`).join("");
+  $("#stageQ").hidden = mode === "design";
+  $("#inspoRow").hidden = mode !== "design";
+  $("#detailsSub").textContent = "Optional, but it makes the plan and the preview more accurate.";
+  show("s-photo");
+});
+$("#detailsSkip").onclick = () => { if (rerunFromHub) { history.back(); return; } factsSet = false; show("s-style"); };
+$("#navDetails").onclick = () => {
+  rerunFromHub = true; $("#stageQ").hidden = mode === "design";
+  $("#detailsSub").textContent = "Tell us what the photo can't, and we'll re-run your results with it.";
+  show("s-details");
+};
+function facts() {
+  if (!factsSet) return undefined;
+  return { kind: val("kind") || "", height: Number(val("height")) || 0, density: val("density") || "", stage: mode === "check" ? (val("stage") || "") : "" };
+}
+async function pickExtra(input, thumb, lbl, clearBtn, set) {
+  const f = input.files[0]; if (!f) return;
+  try { const d = await shrink(f, 1024); set(d); thumb.style.backgroundImage = `url(${d})`; thumb.textContent = ""; lbl.firstChild.textContent = "Change"; clearBtn.hidden = false; }
+  catch { $("#startErr").textContent = "Couldn't read that photo."; }
+}
+function clearExtra(input, thumb, lbl, clearBtn, sym, set) { set(null); input.value = ""; thumb.style.backgroundImage = ""; thumb.textContent = sym; lbl.firstChild.textContent = "Add photo"; clearBtn.hidden = true; }
+$("#keyFile").addEventListener("change", () => pickExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), d => keyPhoto = d));
+$("#inspoFile").addEventListener("change", () => pickExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), d => inspoPhoto = d));
+$("#keyClear").onclick = () => clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
+$("#inspoClear").onclick = () => clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d);
 
 const ASPECTS = [["1:1",1],["2:3",2/3],["3:2",1.5],["3:4",.75],["4:3",4/3],["4:5",.8],["5:4",1.25],["9:16",9/16],["16:9",16/9]];
+async function shrink(file, max) {
+  const bmp = await createImageBitmap(file);
+  const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas");
+  c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", 0.86);
+}
 async function loadPhoto(file) {
   const bmp = await createImageBitmap(file);
   const k = Math.min(1, 1536 / Math.max(bmp.width, bmp.height));
@@ -451,16 +643,20 @@ async function run() {
   $("#startErr").textContent = "";
   const L = startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree", mode === "design" ? DESIGN_STEPS : CHECK_STEPS, 30);
   try {
-    result = await api("/api/evaluate", { image: photo, mode, style: val("style"), theme: $("#theme").value.trim() });
+    result = await api("/api/evaluate", { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined, inspo: mode === "design" ? (inspoPhoto || undefined) : undefined });
+    rerunFromHub = false;
   } catch (e) {
     L.done();
     if (e.status === 401) { try { sessionStorage.removeItem("ts_pw"); } catch {} $("#passErr").textContent = "That password didn't work."; show("s-pass", []); return; }
-    $("#startErr").textContent = "Something went wrong: " + e.message; return;
+    $("#startErr").textContent = "Something went wrong: " + e.message;
+    if (rerunFromHub) { $("#detailsSub").textContent = "That didn't go through: " + e.message; }
+    return;
   }
   L.painting();
-  after = null; stepIdx = 0; doneSteps = new Set();
+  after = null; stepIdx = 0; doneSteps = new Set(); guide = null;
   fill();
   await makePreview();
+  startVersions();
   L.done();
   fillReveal();
   show("s-reveal", ["s-home"]);
@@ -503,13 +699,18 @@ function fill() {
   $("#cats").innerHTML = (r.categories || []).map(c => `<div class="cat"><div class="top"><span>${esc(c.name)}</span><span>${c.score}/10</span></div><div class="b"><i style="width:${c.score * 10}%"></i></div><p>${esc(c.note)}</p></div>`).join("");
   $("#shop").innerHTML = shop.length ? shop.map(p => `<a class="shopitem" href="${shopUrl(p.shop)}" target="_blank" rel="noopener"><div><b>${esc(p.shop)}</b><small>${esc(p.step)}: ${esc(p.title)}</small></div><span class="go">Find it ›</span></a>`).join("") : `<p class="muted">You already have what you need. It's all in how you place it.</p>`;
   $("#brief").textContent = r.render_brief || "";
+  $("#ideas").innerHTML = (r.ideas || []).slice(0, 3).map((x, i) => `<button data-i="${i}">Try: ${esc(x.label)}</button>`).join("") + (r.ideas?.length ? `<button data-more>Something else…</button>` : "");
+  $("#ideas").querySelectorAll("button").forEach(b => b.onclick = () => {
+    if (b.dataset.more != null) { show("s-partner"); $("#pText").focus({ preventScroll: true }); return; }
+    const idea = r.ideas[+b.dataset.i]; partnerSend(idea.request, idea.label);
+  });
   $("#timing").textContent = `Evaluation: ${r._meta?.model} · ${r._meta?.seconds}s`;
 }
 
 /* ---------------- preview ---------------- */
-async function makePreview() {
+async function makePreview(extraPieces) {
   try {
-    const out = await api("/api/render", { image: photo, brief: result.render_brief, aspect: photoAspect });
+    const out = await api("/api/render", { image: photo, brief: result.render_brief, aspect: photoAspect, pieces: extraPieces || keyPhoto || undefined });
     after = out.image;
     $("#timing").textContent = `Evaluation: ${result._meta?.model} · ${result._meta?.seconds}s · Preview: ${out._meta?.model} · ${out._meta?.seconds}s`;
     drawViewer();
@@ -551,27 +752,147 @@ $("#again").onclick = async () => {
   $("#again").disabled = false;
 };
 $("#save").onclick = () => { const a = document.createElement("a"); a.href = after; a.download = "tree-style-preview.png"; a.click(); };
-$("#restart").onclick = () => { photo = null; $("#file").value = ""; $("#dropInner").innerHTML = "<strong>Tap to take or choose a photo</strong>"; show("s-photo", ["s-home"]); };
+$("#restart").onclick = () => { photo = null; guide = null; photoImg = null; factsSet = false;
+  clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
+  clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d); $("#file").value = ""; $("#dropInner").innerHTML = "<strong>Tap to take or choose a photo</strong>"; show("s-photo", ["s-home"]); };
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => show(b.dataset.go));
 
-/* ---------------- step-by-step ---------------- */
-function drawStep() {
-  const plan = result?.plan || []; if (!plan.length) return;
-  stepIdx = Math.max(0, Math.min(stepIdx, plan.length - 1));
-  const p = plan[stepIdx];
-  $("#dots").innerHTML = plan.map((_, i) => `<button class="${i === stepIdx ? "on" : doneSteps.has(i) ? "done" : ""}" data-i="${i}" aria-label="Step ${i + 1}"></button>`).join("");
-  $("#dots").querySelectorAll("button").forEach(b => b.onclick = () => { stepIdx = +b.dataset.i; drawStep(); });
-  $("#stepCard").innerHTML = `<div class="k">Step ${stepIdx + 1} of ${plan.length} · ${esc(p.step)}</div><h2>${esc(p.title)}</h2><p>${esc(p.how)}</p><div class="meta">${p.effort ? `<span>⏱ ${esc(p.effort)}</span>` : ""}${doneSteps.has(stepIdx) ? "<span>✓ Done</span>" : ""}</div>${p.shop ? `<a class="shoplink" href="${shopUrl(p.shop)}" target="_blank" rel="noopener">Shop: ${esc(p.shop)} ›</a>` : ""}`;
+/* ---------------- step-by-step diagrams ---------------- */
+let guide = null, photoImg = null;
+function getPhotoImg() {
+  if (photoImg && photoImg.src === photo) return Promise.resolve(photoImg);
+  return new Promise((ok, bad) => { const im = new Image(); im.onload = () => { photoImg = im; ok(im); }; im.onerror = bad; im.src = photo; });
+}
+async function drawStep() {
+  if (!result) return;
+  if (!guide) {
+    try { guide = TreeGuide.create(await getPhotoImg(), $("#guideCv"), result, mode); }
+    catch (e) { console.error(e); return; }
+    stepIdx = 0;
+  }
+  const steps = guide.steps;
+  stepIdx = Math.max(0, Math.min(stepIdx, steps.length - 1));
+  const key = steps[stepIdx], total = steps.length - 1;
+  $("#stepTabs").innerHTML = steps.map((k, i) => `<button role="tab" data-i="${i}" class="${i === stepIdx ? "on" : ""} ${doneSteps.has(k) ? "done" : ""}"><i>${k === "all" ? "★" : doneSteps.has(k) ? "✓" : i + 1}</i>${esc(guide.title(k))}</button>`).join("");
+  $("#stepTabs").querySelectorAll("button").forEach(b => b.onclick = () => { stepIdx = +b.dataset.i; drawStep(); });
+  const on = $("#stepTabs .on"); if (on) on.scrollIntoView({ block: "nearest", inline: "center" });
+  guide.draw(key, false);
+  const nd = steps.filter(k => doneSteps.has(k)).length;
+  $("#stepK").textContent = key === "all" ? `Final look · ${nd} of ${total} steps done` : `Step ${stepIdx + 1} of ${total}${nd ? ` · ${nd} done` : ""}`;
+  $("#stepTitle").textContent = guide.title(key);
+  $("#stepLead").textContent = guide.lead(key);
+  const lg = guide.legend(key);
+  $("#stepLegend").hidden = !lg.length;
+  $("#stepLegend").innerHTML = lg.map(l => `<li><b style="background:${l.color}"></b>${esc(l.text)}</li>`).join("");
+  let items = "";
+  if (key === "primary_picks" || (key === "florals" && !steps.includes("primary_picks")))
+    items += `<div class="newto"><b>New to stems?</b> They're short branches of greenery, flowers or berries on a bendable wire. You tuck them into the tree and wrap the wire around a branch. Stores call them "picks," so search for that when you shop.</div>`;
+  items += guide.itemsFor(key).map(p => `<div class="planitem"><h4>${esc(p.title)}</h4><p>${esc(p.how)}</p><div class="meta">${p.effort ? `<span>⏱ ${esc(p.effort)}</span>` : ""}${p.shop ? `<a class="shoplink" style="margin:0" href="${shopUrl(p.shop)}" target="_blank" rel="noopener sponsored">Shop: ${esc(p.shop)} ›</a>` : ""}</div></div>`).join("");
+  $("#stepItems").innerHTML = items;
   $("#prevStep").disabled = stepIdx === 0;
-  $("#nextStep").textContent = stepIdx === plan.length - 1 ? "Done, back to my tree" : "Done, next step";
+  $("#nextStep").textContent = key === "all" ? "Back to my tree" : doneSteps.has(key) ? (stepIdx === total - 1 ? "See it all together" : "Next step") : (stepIdx === total - 1 ? "Done, see it all together" : "Done, next step");
 }
 $("#prevStep").onclick = () => { stepIdx--; drawStep(); scrollTo(0, 0); };
 $("#nextStep").onclick = () => {
-  const plan = result?.plan || [];
-  doneSteps.add(stepIdx);
-  if (stepIdx >= plan.length - 1) { history.back(); return; }
-  stepIdx++; drawStep(); scrollTo(0, 0);
+  if (!guide) return;
+  const key = guide.steps[stepIdx];
+  if (key === "all") { history.back(); return; }
+  doneSteps.add(key); stepIdx++; drawStep(); scrollTo(0, 0);
 };
+const peekOn = () => guide && guide.draw(guide.steps[stepIdx], true), peekOff = () => guide && guide.draw(guide.steps[stepIdx], false);
+$("#peek").addEventListener("pointerdown", peekOn);
+["pointerup", "pointerleave", "pointercancel"].forEach(ev => $("#peek").addEventListener(ev, peekOff));
+$("#peek").addEventListener("contextmenu", e => e.preventDefault());
+
+/* ---------------- design partner ---------------- */
+let versions = [], current = 0, chat = [], pickedColor = null, ornPhoto = null, busy = false;
+function startVersions() { versions = [{ label: "Original", result: JSON.parse(JSON.stringify(result)), after }]; current = 0; chat = []; $("#log").innerHTML = ""; $("#pStatus").textContent = ""; $("#vNote").hidden = true; renderVersions(); }
+function useVersion(i) {
+  current = i; const v = versions[i];
+  result = JSON.parse(JSON.stringify(v.result)); after = v.after; guide = null; doneSteps = new Set();
+  fill(); if (after) drawViewer(); else $("#viewer").innerHTML = "";
+  $("#vNote").hidden = versions.length < 2;
+  $("#vNote").textContent = i === 0 ? "Showing the original plan." : `Version ${i + 1}: ${v.label}`;
+  renderVersions();
+}
+function renderVersions() {
+  const el = $("#versions");
+  if (versions.length < 2) { el.innerHTML = ""; return; }
+  el.innerHTML = `<b>Versions:</b>` + versions.map((v, i) => `<button data-i="${i}" class="${i === current ? "on" : ""}" title="${esc(v.label)}">${i === 0 ? "Original" : "V" + (i + 1)}</button>`).join("");
+  el.querySelectorAll("button").forEach(b => b.onclick = () => { useVersion(+b.dataset.i); $("#pStatus").textContent = current === 0 ? "Showing the original." : `Showing version ${current + 1}. New changes build on this one.`; });
+}
+$("#starters").onclick = e => { const b = e.target.closest("button"); if (!b) return; const t = $("#pText"); t.value = b.dataset.p; t.focus(); t.setSelectionRange(t.value.length, t.value.length); };
+$("#pColor").addEventListener("input", () => { pickedColor = $("#pColor").value.toUpperCase(); $("#colorLbl").textContent = "Include " + pickedColor; $("#colorBtn").classList.add("on"); $("#colorClear").hidden = false; });
+$("#colorClear").addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); clearColor(); });
+function clearColor() { pickedColor = null; $("#colorLbl").textContent = "Include a color"; $("#colorBtn").classList.remove("on"); $("#colorClear").hidden = true; }
+$("#pPhoto").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { ornPhoto = await shrink(f, 1024); $("#ornLbl").textContent = "📷 Photo added ✓"; $("#ornBtn").classList.add("on"); }
+  catch { $("#pStatus").textContent = "Couldn't read that photo."; }
+});
+function clearOrn() { ornPhoto = null; $("#pPhoto").value = ""; $("#ornLbl").textContent = "📷 Photo of your pieces"; $("#ornBtn").classList.remove("on"); }
+$("#pText").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("#pSend").click(); } });
+$("#pSend").onclick = () => {
+  let req = $("#pText").value.trim();
+  if (pickedColor) req = (req ? req + " " : "") + `Include the color ${pickedColor}.`;
+  if (!req && ornPhoto) req = "Design the tree around the pieces in my photo.";
+  if (!req) { $("#pText").focus(); $("#pStatus").textContent = "Tell me what you'd like to change."; return; }
+  partnerSend(req, null);
+};
+function addMsg(who, text, opts = {}) {
+  const m = document.createElement("div"); m.className = "msg " + who;
+  m.innerHTML = (opts.tag ? `<span class="vtag">${esc(opts.tag)}</span><br>` : "") + esc(text)
+    + (opts.swatch ? ` <span style="display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;background:${opts.swatch};border:1px solid rgba(255,255,255,.6)"></span>` : "")
+    + (opts.img ? `<br><img src="${opts.img}" alt="Your pieces">` : "")
+    + (opts.list && opts.list.length ? `<ul>${opts.list.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : "");
+  $("#log").append(m); m.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+async function partnerSend(req, label) {
+  if (!result || busy) return;
+  busy = true; $("#pSend").disabled = true; document.querySelectorAll("#ideas button").forEach(b => b.disabled = true);
+  $("#pStatus").textContent = "";
+  const sentColor = pickedColor, sentOrn = ornPhoto;
+  addMsg("me", label ? `Try: ${label}` : ($("#pText").value.trim() || "Design around these pieces."), { swatch: label ? null : sentColor, img: label ? null : sentOrn });
+  if (!label) { $("#pText").value = ""; clearColor(); clearOrn(); }
+  const L = startLoading("Updating your tree", ["Reading your request", "Reworking the plan", "Adjusting ribbon, stems and ornaments", "Creating a preview of the new version"], 35);
+  try {
+    const cur = { quick_fixes: result.quick_fixes, plan: result.plan, ideas: result.ideas, mockup: result.mockup };
+    const res = await api("/api/evaluate", {
+      image: photo, extra: sentOrn || undefined,
+      revise: { current: cur, request: req, history: chat, style: val("style"), theme: $("#theme").value.trim(), mode, tree: result.tree, cone: result.cone }
+    });
+    const next = Object.assign(JSON.parse(JSON.stringify(result)), {
+      quick_fixes: (res.quick_fixes || []).length ? res.quick_fixes : result.quick_fixes,
+      plan: (res.plan || []).length ? res.plan : result.plan,
+      ideas: (res.ideas || []).length ? res.ideas : result.ideas,
+      mockup: Object.assign({}, result.mockup, res.mockup || {}),
+      render_brief: res.render_brief || result.render_brief,
+      _meta: res._meta
+    });
+    result = next; guide = null; doneSteps = new Set();
+    L.painting();
+    fill();
+    await makePreview(sentOrn);
+    versions = versions.slice(0, current + 1);
+    versions.push({ label: String(res.version_label || label || req).slice(0, 60), result: JSON.parse(JSON.stringify(result)), after });
+    current = versions.length - 1;
+    const reply = res.reply || "Here's the updated tree.";
+    addMsg("ai", reply, { tag: `Version ${current + 1}`, list: (res.changes || []).slice(0, 5) });
+    chat.push({ role: "user", text: req }, { role: "assistant", text: reply });
+    renderVersions();
+    $("#vNote").hidden = false; $("#vNote").textContent = `Version ${current + 1}: ${versions[current].label}. Older versions are under Change something.`;
+    L.done();
+    show("s-results", ["s-home"]);
+  } catch (e) {
+    L.done();
+    if (sentColor) { $("#pColor").value = sentColor; $("#pColor").dispatchEvent(new Event("input")); }
+    if (sentOrn) { ornPhoto = sentOrn; $("#ornLbl").textContent = "📷 Photo added ✓"; $("#ornBtn").classList.add("on"); }
+    $("#pStatus").textContent = "That didn't go through: " + e.message;
+    if (!stack.includes("s-partner")) show("s-partner");
+  } finally {
+    busy = false; $("#pSend").disabled = false; document.querySelectorAll("#ideas button").forEach(b => b.disabled = false);
+  }
+}
 
 /* ---------------- start ---------------- */
 show(password ? "s-home" : "s-pass", []);
