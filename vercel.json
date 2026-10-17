@@ -1,4 +1,28 @@
 {
-  "functions": { "api/*.js": { "maxDuration": 300 } },
-  "cleanUrls": true
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 300
+    }
+  },
+  "cleanUrls": true,
+  "headers": [
+    {
+      "source": "/try/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "/try",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    }
+  ]
 }
