@@ -140,9 +140,9 @@
       const rbs = d.ribbons, loops = d.technique === "loops";
       rbs.forEach(rb => {
         const yards = Math.ceil(h * (RIBBON_YD_PER_FT[rb.role] || 1.5) * (mode === "design" ? 1 : .6));
-        // A range, since loop sizes vary: e.g. 9 yd -> 1-2 rolls, 15 yd -> 2-3, 30 yd -> 3-4
+        // A range, since loop sizes vary: e.g. 9 yd -> 1-2 bolts, 15 yd -> 2-3, 30 yd -> 3-4
         const lo = Math.max(1, Math.ceil(yards / ROLL_YD - .2)), hi = Math.max(lo + 1, Math.ceil(yards * 1.25 / ROLL_YD));
-        const rolls = `${lo}–${hi} rolls`, cn = colorName(rb.color);
+        const rolls = `${lo}–${hi} bolts`, cn = colorName(rb.color);
         const role = rb.role === "accent" ? " (thin accent)" : rb.role === "overlay" ? " (laid on top)" : "";
         // Ribbon they already own stays on the list as a top-up: they may not have enough.
         const qty = rb.owned
