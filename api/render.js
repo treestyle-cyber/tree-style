@@ -54,7 +54,8 @@ export default async function handler(req, res) {
     if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, editPrompt(brief), null);
     if (!out.ok) {
       lastErr = out.body?.error?.message || `Gemini error ${out.status}`;
-      if (out.status === 404) continue; // model name not available: try the next one
+      // Model not available, or no quota for it on this account: try the next one
+      if (out.status === 404 || (out.status === 429 && /limit: 0/.test(lastErr))) continue;
       return res.status(502).json({ error: lastErr, model });
     }
     const parts = out.body?.candidates?.[0]?.content?.parts || [];
