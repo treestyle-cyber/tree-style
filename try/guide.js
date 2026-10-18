@@ -215,6 +215,7 @@
     });
     return out;
   }
+  const rgbaOf = (h, a) => { const [r, g, b] = rgbOf(h); return `rgba(${r},${g},${b},${a})`; };
   const PICK_HEX = { pine: "#3B7550", cedar: "#5E8C45", eucalyptus: "#8FA89C", magnolia: "#2E4A2C" };
   const BUY_ORDER = ["lights", "primary_picks", "ribbon", "florals", "statement", "medium", "small", "small_picks", "crown", "base"];
   function shoppingList(raw, mode) {
@@ -538,11 +539,20 @@
       o.globalAlpha = 1; o.drawImage(img, 0, 0, W, H);
       o.fillStyle = "rgba(255,255,255,.25)"; o.fillRect(0, 0, W, H);
       const u = G.unit, sizes = ORN_IN(data), S = scene;
-      const mark = (x, y, r, col, ring) => { o.save(); o.beginPath(); o.arc(x, y, r, 0, TAU); o.fillStyle = col; o.globalAlpha = .85; o.fill(); o.globalAlpha = 1; o.lineWidth = Math.max(2, r * .15); o.strokeStyle = ring || "#fff"; o.stroke(); o.restore(); };
-      if (RB.base) ribbonPlan.marks.forEach(([x, y]) => { o.save(); o.beginPath(); o.ellipse(x, y, RW.base * .75, RW.base * .5, 0, 0, TAU); o.fillStyle = RB.base.color; o.globalAlpha = .85; o.fill(); o.globalAlpha = 1; o.lineWidth = Math.max(2, u * .25); o.strokeStyle = RB.overlay ? RB.overlay.color : "#fff"; o.stroke(); o.restore(); });
-      if (RB.accent) (S.accentLoops || []).forEach((L, i) => { if (i % 2) return; mark(L.x, L.y, Math.max(3, RW.accent * .8), RB.accent.color); });
-      if (data.picks.floral.kind !== "none") S.all.filter(m => m.floral).forEach(m => mark(m.x + RW.base * .9, m.y + RW.base * .3, FLOWER_IN[data.picks.floral.kind] * S.pxIn * .45, data.picks.floral.color, "#2b5a3a"));
-      data.ornaments.forEach(b => mark(b.x * W, b.y * H, Math.max(3, sizes[b.size] * S.pxIn / 2), b.color));
+      // Soft, feathered blobs only: no outlines or rings the image model could copy into the photo
+      const blob = (x, y, rx, ry, col, a) => {
+        o.save(); o.translate(x, y); o.scale(1, ry / rx);
+        const g2 = o.createRadialGradient(0, 0, 0, 0, 0, rx);
+        g2.addColorStop(0, rgbaOf(col, a)); g2.addColorStop(.65, rgbaOf(col, a * .85)); g2.addColorStop(1, rgbaOf(col, 0));
+        o.fillStyle = g2; o.beginPath(); o.arc(0, 0, rx, 0, TAU); o.fill(); o.restore();
+      };
+      if (RB.base) ribbonPlan.marks.forEach(([x, y]) => blob(x, y, RW.base * 1.0, RW.base * .7, RB.base.color, .9));
+      if (RB.accent) (S.accentLoops || []).forEach((L, i) => { if (i % 2) return; blob(L.x, L.y, Math.max(4, RW.accent), Math.max(3, RW.accent * .8), RB.accent.color, .9); });
+      if (data.picks.floral.kind !== "none") S.all.filter(m => m.floral).forEach(m => {
+        const fx = m.x + RW.base * .9, fy = m.y + RW.base * .3, r = FLOWER_IN[data.picks.floral.kind] * S.pxIn * .55;
+        blob(fx, fy, r, r, data.picks.floral.color, .9); blob(fx, fy, r * .28, r * .28, "#E8C44A", .95);   // flower = color with a yellow center
+      });
+      data.ornaments.forEach(b => { const r = Math.max(4, sizes[b.size] * S.pxIn / 2 * 1.15); blob(b.x * W, b.y * H, r, r, b.color, .95); });
     }
 
     const itemsFor = key => key === "all" ? [] : data.plan.filter(p => p.element === key);
