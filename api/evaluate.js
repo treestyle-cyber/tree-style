@@ -122,9 +122,9 @@ Reply with this JSON:
  "changes": ["<1-5 short items>"],
  "version_label": "<3-5 words>",
  "change_brief": "<edit instructions for the CURRENT preview photo, which already shows the previous version: describe ONLY what to add, remove or swap for this request, with sizes, colors, how many and where (e.g. 'Add red and black buffalo check wired ribbon, 2.5 inches wide, as 2-3 loops tucked into the branches at each of the 7 existing ribbon spots: upper left, upper right, ...'). Everything else stays exactly as it is. 40-120 words.>",
- ${PLAN_SHAPE(mode)}
+ ${PLAN_SHAPE(mode, true)}
 }
-${PLAN_NOTES(mode)}
+${PLAN_NOTES(mode, true)}
 For ribbons with no accent color, set accent to "".`;
 }
 

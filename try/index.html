@@ -95,6 +95,8 @@
   .potential{display:inline-block;background:#efe6d4;border-radius:999px;padding:8px 14px;font-size:14px;margin:6px 0 18px}
   .teaser{position:relative;border-radius:var(--radius);overflow:hidden;margin:6px auto 0;max-width:300px;cursor:pointer;border:0;padding:0;display:block}
   .teaser img{width:100%;filter:blur(6px) brightness(.9);transform:scale(1.06)}
+  .teaser.wait span{animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.55}}
   .teaser span{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font:600 16px var(--sans);text-shadow:0 1px 8px rgba(0,0,0,.5)}
   .eye{font-size:15px;color:var(--muted);margin:16px 0 0}
 
@@ -424,7 +426,7 @@
     <h1 id="headline"></h1>
     <p id="summary"></p>
     <div class="potential" id="potential" hidden></div>
-    <button class="teaser" id="teaser" hidden><img id="teaserImg" alt=""><span>Your improved tree is ready</span></button>
+    <button class="teaser" id="teaser" hidden><img id="teaserImg" alt=""><span id="teaserTxt">Your improved tree is ready</span></button>
     <p class="eye" id="eye"></p>
   </section>
 
@@ -808,8 +810,8 @@ function startLoading(title, steps, evalSeconds) {
   };
 }
 
-const CHECK_STEPS = ["Evaluating tree shape and fullness", "Checking for eye-catching spots", "Identifying ornament placement", "Checking overall balance", "Evaluating the topper and base", "Planning your improvements", "Creating a preview of your improved tree"];
-const DESIGN_STEPS = ["Reading your tree's shape and size", "Choosing ribbon and stems for your style", "Planning ornament sizes and spots", "Building up the top of the tree", "Writing your step-by-step plan", "Creating a preview of your finished tree"];
+const CHECK_STEPS = ["Evaluating tree shape and fullness", "Checking for eye-catching spots", "Identifying ornament placement", "Checking overall balance", "Evaluating the topper and base", "Planning your improvements"];
+const DESIGN_STEPS = ["Reading your tree's shape and size", "Choosing ribbon and stems for your style", "Planning ornament sizes and spots", "Building up the top of the tree", "Choosing what to buy"];
 
 async function run() {
   if (!photo) return;
@@ -825,15 +827,33 @@ async function run() {
     if (rerunFromHub) { $("#detailsSub").textContent = "That didn't go through: " + e.message; }
     return;
   }
-  L.painting();
-  after = null; stepIdx = 0; doneSteps = new Set(); guide = null;
+  after = null; stepIdx = 0; doneSteps = new Set(); guide = null; swept = false;
   fill();
-  loadDetails();
-  await makePreview();
+  loadDetails();                 // written steps: in the background
   startVersions(); resetFeedback();
+  paintFirst();                  // preview: in the background too
   L.done();
   fillReveal();
   show("s-reveal", ["s-home"]);
+}
+
+/* ---------------- first preview (in the background, while they read their results) ---------------- */
+let previewP = null;
+function paintWait() {
+  $("#viewer").innerHTML = `<div class="renderwait"><div class="spin"></div>Painting your preview…<div style="font-size:13px">About 30 seconds. Look around while you wait.</div></div>`;
+  $("#seg").hidden = $("#hint").hidden = $("#save").hidden = true;
+}
+function paintFirst() {
+  const forResult = result;
+  paintWait();
+  previewP = makePreview().then(() => {
+    previewP = null;
+    if (result !== forResult) return;
+    if (versions[0]) versions[0].after = after;
+    fillReveal();
+    if (stack[stack.length - 1] === "s-results") sweep();
+    if (after && guide) { const ai = new Image(); ai.onload = () => { if (!guide) return; guide.setAfter(ai); if (guide.steps[stepIdx] === "all") drawStep(); }; ai.src = after; }
+  });
 }
 
 /* ---------------- written step instructions (second call, in the background) ---------------- */
@@ -898,8 +918,10 @@ function fillReveal() {
   $("#headline").textContent = r.headline || "";
   $("#summary").textContent = r.summary || "";
   $("#eye").textContent = r.eye_first ? "Where the eye lands first: " + r.eye_first : "";
-  $("#teaser").hidden = !after;
-  if (after) $("#teaserImg").src = after;
+  $("#teaser").hidden = !after && !previewP;
+  $("#teaserImg").src = after || photo;
+  $("#teaserTxt").textContent = after ? "Your improved tree is ready" : "Painting your preview…";
+  $("#teaser").classList.toggle("wait", !after);
 }
 $("#teaser").onclick = () => show("s-results", ["s-home"]);
 
@@ -981,6 +1003,7 @@ function setSeg(m) {
 }
 document.querySelectorAll("#seg button").forEach(b => b.onclick = () => setSeg(b.dataset.m));
 $("#again").onclick = async () => {
+  if (previewP) return;
   $("#again").disabled = true;
   $("#viewer").innerHTML = `<div class="renderwait"><div class="spin"></div>Creating another version…<div style="font-size:13px">About 20 seconds</div></div>`;
   $("#seg").hidden = $("#hint").hidden = true;
@@ -1189,6 +1212,7 @@ $("#quickAsk").addEventListener("submit", e => {
 
 async function partnerSend(req, label) {
   if (!result || busy) return;
+  if (previewP) { $("#pStatus").textContent = "One moment: your first preview is still painting."; await previewP; $("#pStatus").textContent = ""; }
   busy = true; $("#pSend").disabled = true; document.querySelectorAll("#ideas button").forEach(b => b.disabled = true);
   $("#pStatus").textContent = "";
   const sentColor = pickedColor, sentOrn = ornPhoto;
@@ -1212,6 +1236,7 @@ async function partnerSend(req, label) {
     result = next; guide = null; doneSteps = new Set();
     L.painting();
     fill();
+    loadDetails();
     const prevAfter = after;
     await makePreview(sentOrn, prevAfter && res.change_brief ? { base: prevAfter, brief: res.change_brief } : null);
     versions = versions.slice(0, current + 1);
