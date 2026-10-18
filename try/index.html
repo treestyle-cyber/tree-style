@@ -896,9 +896,13 @@ async function placementMap() {
     return c2.toDataURL("image/jpeg", .8);
   } catch (e) { console.error(e); return undefined; }
 }
-async function makePreview(extraPieces) {
+async function makePreview(extraPieces, change) {
   try {
-    const out = await api("/api/render", { image: photo, brief: result.render_brief, aspect: photoAspect, pieces: extraPieces || keyPhoto || undefined, map: await placementMap() });
+    // A design-partner change edits the preview they're looking at, so nothing else shifts.
+    const body = change && change.base
+      ? { image: await thumb(change.base, 1536, .92), brief: change.brief, aspect: photoAspect, pieces: extraPieces || undefined, revision: true }
+      : { image: photo, brief: result.render_brief, aspect: photoAspect, pieces: extraPieces || keyPhoto || undefined, map: await placementMap() };
+    const out = await api("/api/render", body);
     after = out.image;
     $("#timing").textContent = `Evaluation: ${result._meta?.model} · ${result._meta?.seconds}s · Preview: ${out._meta?.model} · ${out._meta?.seconds}s`;
     drawViewer();
@@ -1008,11 +1012,11 @@ document.querySelectorAll("#fbRate button").forEach(b => b.onclick = () => {
   fbRating = +b.dataset.v;
   document.querySelectorAll("#fbRate button").forEach(x => x.classList.toggle("on", +x.dataset.v <= fbRating));
 });
-function thumb(src, max) {
+function thumb(src, max, q = .78) {
   return new Promise(ok => {
     if (!src) return ok("");
     const im = new Image();
-    im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL("image/jpeg", .78)); };
+    im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL("image/jpeg", q)); };
     im.onerror = () => ok(""); im.src = src;
   });
 }
@@ -1108,7 +1112,8 @@ async function partnerSend(req, label) {
     result = next; guide = null; doneSteps = new Set();
     L.painting();
     fill();
-    await makePreview(sentOrn);
+    const prevAfter = after;
+    await makePreview(sentOrn, prevAfter && res.change_brief ? { base: prevAfter, brief: res.change_brief } : null);
     versions = versions.slice(0, current + 1);
     versions.push({ label: String(res.version_label || label || req).slice(0, 60), result: JSON.parse(JSON.stringify(result)), after });
     current = versions.length - 1;

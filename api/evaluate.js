@@ -112,7 +112,7 @@ ${history ? "\nEARLIER IN THIS CONVERSATION:\n" + history + "\n" : ""}
 HOMEOWNER'S REQUEST: ${String(rv.request || "").slice(0, 800)}
 
 Use plain everyday words in reply and changes (stems not picks, flowers not florals, top of the tree not crown).
-Rules: change only what the request calls for and keep everything else exactly as it is. Keep following the guide (ribbon widths and layering, hidden-vine moments, ornament sizes, finishes by style). If they pick a color, weave it into the mockup and the plan so it looks intentional. If the request would hurt the design, do it anyway and add one gentle tip in your reply.
+Rules: change only what the request calls for and keep everything else exactly as it is. Make the requested change CLEARLY VISIBLE: if they ask to add something, add enough of it, big enough to read from across the room, and give it a starring role (for example, a ribbon they ask for becomes the widest or the laid-on-top ribbon at every ribbon spot, not just the thin accent, unless they say accent). Keep following the guide (ribbon widths and layering, hidden-vine moments, ornament sizes, finishes by style). If they pick a color, weave it into the mockup and the plan so it looks intentional. If the request would hurt the design, do it anyway and add one gentle tip in your reply.
 
 ${BRIEF_RULES(mode)} The brief must describe the whole revised plan relative to the ORIGINAL photo, not just this change.
 
@@ -121,6 +121,7 @@ Reply with this JSON:
  "reply": "<1-2 friendly sentences>",
  "changes": ["<1-5 short items>"],
  "version_label": "<3-5 words>",
+ "change_brief": "<edit instructions for the CURRENT preview photo, which already shows the previous version: describe ONLY what to add, remove or swap for this request, with sizes, colors, how many and where (e.g. 'Add red and black buffalo check wired ribbon, 2.5 inches wide, as 2-3 loops tucked into the branches at each of the 7 existing ribbon spots: upper left, upper right, ...'). Everything else stays exactly as it is. 40-120 words.>",
  ${PLAN_SHAPE(mode)}
 }
 ${PLAN_NOTES(mode)}
