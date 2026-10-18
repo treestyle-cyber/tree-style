@@ -5,7 +5,7 @@
 //   -> the design partner: a revised plan based on the homeowner's request.
 import { GUIDE, CATS, STYLES } from "../lib/guide.js";
 import { checkPassword, parseDataUrl, extractJson } from "../lib/util.js";
-import { EVAL_SCHEMA, REVISE_SCHEMA, DETAILS_SCHEMA } from "../lib/schema.js";
+import { EVAL_SCHEMA, LOOK_SCHEMA, PLAN_SCHEMA, REVISE_SCHEMA, DETAILS_SCHEMA } from "../lib/schema.js";
 
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
 
@@ -52,7 +52,7 @@ function factsLine(f) {
   return `Tree (confirmed by the homeowner; trust these over the photo): ${kind}, ${height}, ${density}. Work out whether it's snowy (flocked) from the photo.`;
 }
 
-function evalPrompt({ mode, style, theme, facts, imgNotes }) {
+function evalPrompt({ mode, style, theme, facts, imgNotes, part }) {
   const stage = facts && ["partial", "finished"].includes(facts.stage) ? facts.stage : null;
   const task = mode === "design"
     ? `TASK: DESIGN this tree. They are starting fresh (the photo may show a bare or just-lit tree). Do not score it. Plan the whole tree following the order of work, and make the mockup a complete, finished design.`
@@ -79,22 +79,28 @@ ${factsLine(facts)}
 Style: ${styleLine(style, theme)}
 ${scoring}
 ${COORDS}
-
-${BRIEF_RULES(mode)}
+${part === "look" ? LOOK_PART : BRIEF_RULES(mode)}${part === "plan" ? PLAN_PART : ""}
 
 Reply with this JSON:
 {
- "tree": {"kind":"artificial|natural","density":"open|dense","flocked":true|false,"height_ft":<number>${mode === "check" ? ',"stage":"partial|finished"' : ""}},
+${[
+  part !== "plan" && ` "tree": {"kind":"artificial|natural","density":"open|dense","flocked":true|false,"height_ft":<number>${mode === "check" ? ',"stage":"partial|finished"' : ""}},
  "eye_first": "${mode === "check" ? "<where the eye lands first and why, one plain sentence>" : ""}",
  "headline": "<warm, specific, under 9 words>",
  "summary": "<2 short sentences>",
  "categories": ${mode === "check" ? `[\n${cats}\n ]` : "[]"},
- ${mode === "check" ? '"potential": {"after_quick_fixes":<0-100>,"after_full_plan":<0-100>},\n ' : ""}"cone": {"apex":[x,y],"left":[x,y],"right":[x,y]},
- ${PLAN_SHAPE(mode, true)}
+ "potential": ${mode === "check" ? '{"after_quick_fixes":<0-100>,"after_full_plan":<0-100>}' : '{"after_quick_fixes":0,"after_full_plan":0}'},
+ "cone": {"apex":[x,y],"left":[x,y],"right":[x,y]}`,
+  part !== "look" && ` ${PLAN_SHAPE(mode, true)}`
+].filter(Boolean).join(",\n")}
 }
-${PLAN_NOTES(mode, true)}
-${mode === "design" ? 'Because this is a design (not a check): set tree.stage to "bare", eye_first to "", categories to [], and potential to 0 and 0.' : 'tree.stage is "partial" or "finished".'} For ribbons with no accent color, set accent to "".`;
+${part === "look" ? "" : PLAN_NOTES(mode, true) + "\n"}${part === "plan" ? "" : mode === "design" ? 'Because this is a design (not a check): set tree.stage to "bare", eye_first to "", categories to [], and potential to 0 and 0.' : 'tree.stage is "partial" or "finished".'}${part === "look" ? "" : ' For ribbons with no accent color, set accent to "".'}`;
 }
+
+const LOOK_PART = `YOUR PART: you only write the first impression and the scores. The plan, mockup and preview brief are being written separately at the same time, so don't plan anything here. Be quick and specific.`;
+const PLAN_PART = `
+
+YOUR PART: the scores and first impression are being written separately at the same time. You write only the plan, ideas, mockup and render brief.`;
 
 function revisePrompt(rv, hasExtra) {
   const t = rv.tree || {}, mode = rv.mode === "design" ? "design" : "check";
@@ -196,7 +202,7 @@ export default async function handler(req, res) {
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
   if (!process.env.ANTHROPIC_API_KEY) return res.status(500).json({ error: "ANTHROPIC_API_KEY is not set in Vercel" });
 
-  const { image, mode = "check", style = "keep", theme = "", revise, extra, facts, pieces, inspo, details } = req.body || {};
+  const { image, mode = "check", style = "keep", theme = "", revise, extra, facts, pieces, inspo, details, part } = req.body || {};
   const img = parseDataUrl(image);
   if (!img) return res.status(400).json({ error: "Missing photo" });
 
@@ -213,7 +219,7 @@ export default async function handler(req, res) {
       const pc = parseDataUrl(pieces), ins = mode === "design" ? parseDataUrl(inspo) : null;
       if (pc) { imgs.push(pc); notes.push(`Image ${imgs.length} shows special pieces they own (ornaments, heirlooms or found objects): design around them, give them the best spots, and let them set the theme and colors if they fit the style.`); }
       if (ins) { imgs.push(ins); notes.push(`Image ${imgs.length} is an inspiration photo: design toward its feel using the guide, adapted to their tree.`); }
-      ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" ") }), 16000, EVAL_SCHEMA));
+      ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" "), part }), part === "look" ? 4000 : 16000, part === "look" ? LOOK_SCHEMA : part === "plan" ? PLAN_SCHEMA : EVAL_SCHEMA));
       // Weighted overall score, 0-100
       if (Array.isArray(result.categories) && result.categories.length) {
         let sum = 0, w = 0;

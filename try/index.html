@@ -604,7 +604,9 @@ const FOOT = {
     ? ({ label: "Update my shopping list and steps", act: () => { factsSet = true; applyFacts(); } })
     : ({ label: "Next", act: () => { factsSet = true; show("s-style"); } }),
   go: () => ({ label: mode === "design" ? "Design my tree" : "Evaluate my tree", act: run }),
-  seeIt: () => ({ label: mode === "design" ? "See your finished tree" : "See your improved tree", act: () => show("s-results", ["s-home"]) })
+  seeIt: () => planState === "wait" ? ({ label: "Finishing your plan…", disabled: true, act: () => {} })
+    : planState === "error" ? ({ label: "Try again", act: getPlan })
+    : ({ label: mode === "design" ? "See your finished tree" : "See your improved tree", act: () => show("s-results", ["s-home"]) })
 };
 function show(id, reset) {
   if (reset) stack = reset.slice();
@@ -620,6 +622,12 @@ function back() {
   paint(true);
 }
 addEventListener("popstate", () => { const z = document.getElementById("zoom"); if (z && !z.hidden) { z.hidden = true; return; } if (stack.length > 1) back(); });
+function setFoot() {
+  const el = document.getElementById(stack[stack.length - 1]);
+  const f = el && el.dataset.foot && FOOT[el.dataset.foot]();
+  $("#foot").hidden = !f;
+  if (f) { $("#footBtn").textContent = f.label; $("#footBtn").disabled = !!f.disabled; $("#footBtn").onclick = f.act; }
+}
 function paint(isBack) {
   const id = stack[stack.length - 1];
   document.querySelectorAll(".screen").forEach(s => {
@@ -631,9 +639,7 @@ function paint(isBack) {
   $("#appTitle").textContent = el.dataset.title || "Tree Style";
   $("#navBack").disabled = stack.length <= 1 || id === "s-pass";
   $("#navHome").disabled = id === "s-home" || id === "s-pass";
-  const f = el.dataset.foot && FOOT[el.dataset.foot]();
-  $("#foot").hidden = !f;
-  if (f) { $("#footBtn").textContent = f.label; $("#footBtn").disabled = !!f.disabled; $("#footBtn").onclick = f.act; }
+  setFoot();
   if (id === "s-plan") drawStep();
   if (id === "s-results") sweep();
   scrollTo(0, 0);
@@ -813,12 +819,19 @@ function startLoading(title, steps, evalSeconds) {
 const CHECK_STEPS = ["Evaluating tree shape and fullness", "Checking for eye-catching spots", "Identifying ornament placement", "Checking overall balance", "Evaluating the topper and base", "Planning your improvements"];
 const DESIGN_STEPS = ["Reading your tree's shape and size", "Choosing ribbon and stems for your style", "Planning ornament sizes and spots", "Building up the top of the tree", "Choosing what to buy"];
 
+// The evaluation is two calls at once: the first impression + scores come back fast and are
+// shown right away; the plan (with the mockup and preview brief) follows, then the preview paints.
+let planState = "ready", planP = null, evalBody = null, lookResult = null;
 async function run() {
   if (!photo) return;
   $("#startErr").textContent = "";
-  const L = startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree", mode === "design" ? DESIGN_STEPS : CHECK_STEPS, 30);
+  const L = startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree", mode === "design" ? DESIGN_STEPS : CHECK_STEPS, 20);
+  evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined, inspo: mode === "design" ? (inspoPhoto || undefined) : undefined };
+  const myPlan = api("/api/evaluate", { ...evalBody, part: "plan" });
+  myPlan.catch(() => {});
+  let look;
   try {
-    result = await api("/api/evaluate", { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined, inspo: mode === "design" ? (inspoPhoto || undefined) : undefined });
+    look = await api("/api/evaluate", { ...evalBody, part: "look" });
     rerunFromHub = false;
   } catch (e) {
     L.done();
@@ -827,14 +840,36 @@ async function run() {
     if (rerunFromHub) { $("#detailsSub").textContent = "That didn't go through: " + e.message; }
     return;
   }
-  after = null; stepIdx = 0; doneSteps = new Set(); guide = null; swept = false;
-  fill();
-  loadDetails();                 // written steps: in the background
-  startVersions(); resetFeedback();
-  paintFirst();                  // preview: in the background too
+  result = lookResult = Object.assign(look, { quick_fixes: [], plan: [], ideas: [], mockup: null, render_brief: "", _lookMeta: look._meta });
+  after = null; previewP = null; stepIdx = 0; doneSteps = new Set(); guide = null; swept = false;
   L.done();
+  getPlan(myPlan);
   fillReveal();
   show("s-reveal", ["s-home"]);
+}
+function getPlan(pending) {
+  const forLook = lookResult;
+  planState = "wait"; setFoot(); fillReveal();
+  const ask = () => api("/api/evaluate", { ...evalBody, part: "plan" });
+  const p = (pending && pending.then ? pending : ask()).catch(() => ask());
+  planP = p;
+  p.then(pl => {
+    if (result !== forLook) return;                 // they started over
+    const lm = forLook._lookMeta || {}, pm = pl._meta || {};
+    Object.assign(result, pl, { _meta: { model: pm.model || lm.model, seconds: Math.max(lm.seconds || 0, pm.seconds || 0), scoreSeconds: lm.seconds, planSeconds: pm.seconds } });
+    planState = "ready"; planP = null;
+    fill();
+    loadDetails();                 // written steps: in the background
+    startVersions(); resetFeedback();
+    paintFirst();                  // preview: in the background too
+    fillReveal(); setFoot();
+  }).catch(e => {
+    if (result !== forLook) return;
+    planState = "error"; planP = null;
+    $("#teaserTxt").textContent = "Your plan didn't come through. Tap Try again.";
+    console.error("plan", e);
+    setFoot(); fillReveal();
+  });
 }
 
 /* ---------------- first preview (in the background, while they read their results) ---------------- */
@@ -918,12 +953,12 @@ function fillReveal() {
   $("#headline").textContent = r.headline || "";
   $("#summary").textContent = r.summary || "";
   $("#eye").textContent = r.eye_first ? "Where the eye lands first: " + r.eye_first : "";
-  $("#teaser").hidden = !after && !previewP;
+  $("#teaser").hidden = !after && !previewP && planState === "ready";
   $("#teaserImg").src = after || photo;
-  $("#teaserTxt").textContent = after ? "Your improved tree is ready" : "Painting your preview…";
+  $("#teaserTxt").textContent = after ? "Your improved tree is ready" : planState === "wait" ? "Designing your plan…" : planState === "error" ? "Your plan didn't come through. Tap Try again." : "Painting your preview…";
   $("#teaser").classList.toggle("wait", !after);
 }
-$("#teaser").onclick = () => show("s-results", ["s-home"]);
+$("#teaser").onclick = () => { if (planState === "ready") show("s-results", ["s-home"]); };
 
 function fill() {
   const r = result;
@@ -945,9 +980,10 @@ function fill() {
     if (b.dataset.more != null) { show("s-partner"); $("#pText").focus({ preventScroll: true }); return; }
     const idea = r.ideas[+b.dataset.i]; partnerSend(idea.request, idea.label);
   });
-  $("#timing").textContent = `Evaluation: ${r._meta?.model} · ${r._meta?.seconds}s`;
+  $("#timing").textContent = evalTiming(r);
 }
 
+const evalTiming = r => { const m = r._meta || {}; return m.planSeconds != null ? `${m.model} · Scores: ${m.scoreSeconds}s · Plan: ${m.planSeconds}s (at the same time)` : `Evaluation: ${m.model} · ${m.seconds}s`; };
 /* ---------------- preview ---------------- */
 async function placementMap() {
   try {
@@ -967,7 +1003,7 @@ async function makePreview(extraPieces, change) {
       : { image: photo, brief: result.render_brief, aspect: photoAspect, pieces: extraPieces || keyPhoto || undefined, map: await placementMap() };
     const out = await api("/api/render", body);
     after = out.image;
-    $("#timing").textContent = `Evaluation: ${result._meta?.model} · ${result._meta?.seconds}s · Preview: ${out._meta?.model} · ${out._meta?.seconds}s`;
+    $("#timing").textContent = `${evalTiming(result)} · Preview: ${out._meta?.model} · ${out._meta?.seconds}s`;
     drawViewer();
   } catch (e) {
     after = null;
