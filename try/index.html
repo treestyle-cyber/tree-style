@@ -599,7 +599,7 @@ let stack = [];
 const FOOT = {
   photoNext: () => ({ label: "Next", disabled: !photo, act: () => show(mode === "design" ? "s-details" : "s-style") }),
   details: () => rerunFromHub
-    ? ({ label: "Update my results", act: () => { factsSet = true; run(); } })
+    ? ({ label: "Update my shopping list and steps", act: () => { factsSet = true; applyFacts(); } })
     : ({ label: "Next", act: () => { factsSet = true; show("s-style"); } }),
   go: () => ({ label: mode === "design" ? "Design my tree" : "Evaluate my tree", act: run }),
   seeIt: () => ({ label: mode === "design" ? "See your finished tree" : "See your improved tree", act: () => show("s-results", ["s-home"]) })
@@ -680,7 +680,7 @@ function syncTell(r) {
 document.addEventListener("click", e => { if (e.target.closest("[data-tell]")) $("#navDetails").click(); });
 $("#navDetails").onclick = () => {
   rerunFromHub = true; $("#stageQ").hidden = mode === "design";
-  $("#detailsSub").textContent = "Tell us what the photo can't, and we'll re-run your results with it.";
+  $("#detailsSub").textContent = "Tell us what the photo can't, and we'll make your shopping list and steps more accurate. Your preview stays the same.";
   show("s-details");
 };
 function facts() {
@@ -838,6 +838,23 @@ async function run() {
 
 /* ---------------- written step instructions (second call, in the background) ---------------- */
 let detailsP = null, detailsReady = true;
+// Tree details sharpen quantities and instructions only: keep the preview, versions, diagrams and rating.
+function applyFacts() {
+  rerunFromHub = false;
+  const f = facts() || {};
+  const patch = t => { if (!t) return; if (Number(f.height)) t.height_ft = Number(f.height); if (f.kind) t.kind = f.kind; if (f.density) t.density = f.density; if (f.stage) t.stage = f.stage; };
+  patch(result.tree);
+  versions.forEach(v => patch(v.result && v.result.tree));
+  // the written steps get rewritten for the real tree (in the background, like the first time)
+  result.plan.forEach(p => { delete p.how; delete p.effort; });
+  guide = null; stepIdx = 0; doneSteps = new Set();
+  fill();
+  loadDetails();
+  show("s-results", ["s-home"]);
+  const vn = $("#vNote"); vn.hidden = false;
+  vn.textContent = `Updated your shopping list and steps for your ${ftTxt(result.tree.height_ft)} ${result.tree.kind === "natural" ? "real" : "artificial"} tree. Your preview stays the same.`;
+}
+
 function loadDetails() {
   if ((result?.plan || []).every(p => p.how)) { detailsReady = true; detailsP = null; return; }
   detailsReady = false;
