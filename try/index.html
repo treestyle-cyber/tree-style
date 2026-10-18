@@ -186,6 +186,21 @@
   .qarow .btn{padding:12px 16px}
   .qahint{font-size:13px;color:var(--muted);margin-top:8px}
 
+  /* zoom */
+  .zoombtn{position:absolute;right:10px;bottom:10px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,253,248,.92);color:var(--green);display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18);z-index:2}
+  .zoombtn svg{width:20px;height:20px}
+  .guidebox .zoombtn{right:auto;left:10px}
+  .viewer{position:relative}
+  #zoom{position:fixed;inset:0;background:#111;z-index:20;display:flex;flex-direction:column}
+  .zbar{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top))}
+  .zseg{display:flex;background:rgba(255,255,255,.12);border-radius:999px;padding:3px}
+  .zseg button{appearance:none;border:0;background:none;color:#ddd;font:600 14px var(--sans);padding:8px 16px;border-radius:999px;cursor:pointer}
+  .zseg button.on{background:#fff;color:var(--green)}
+  .zclose{appearance:none;border:0;background:rgba(255,255,255,.14);color:#fff;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer}
+  .zstage{flex:1;overflow:hidden;position:relative;touch-action:none}
+  .zstage img{position:absolute;left:50%;top:50%;max-width:100%;max-height:100%;transform-origin:center center;user-select:none;-webkit-user-select:none;will-change:transform}
+  .zhint{color:#aaa;font-size:12px;text-align:center;padding:8px 12px max(12px,env(safe-area-inset-bottom))}
+
   /* tips while waiting */
   .tipcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px 12px;margin-bottom:22px;min-height:132px;display:flex;flex-direction:column}
   .tipk{font:600 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
@@ -487,7 +502,7 @@
   <!-- Plan -->
   <section class="screen" id="s-plan" data-title="Step by step" hidden>
     <div class="steptabs" id="stepTabs" role="tablist"></div>
-    <div class="guidebox"><canvas id="guideCv" aria-label="Diagram of this step on your tree"></canvas><button class="peek" id="peek">Hold to see my photo</button></div>
+    <div class="guidebox"><canvas id="guideCv" aria-label="Diagram of this step on your tree"></canvas><button class="peek" id="peek">Hold to see my photo</button><button class="zoombtn" id="zoomGuide" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6M10.5 7.5v6M7.5 10.5h6"/></svg></button></div>
     <div class="card stepcard">
       <div class="k" id="stepK"></div>
       <h2 id="stepTitle"></h2>
@@ -543,6 +558,15 @@
 
 <div class="foot" id="foot" hidden><button class="btn" id="footBtn"></button></div>
 
+<div id="zoom" hidden>
+  <div class="zbar">
+    <div class="zseg" id="zSeg"></div>
+    <button class="zclose" id="zClose" aria-label="Close">✕</button>
+  </div>
+  <div class="zstage" id="zStage"><img id="zImg" alt="Zoomed photo" draggable="false"></div>
+  <div class="zhint">Pinch to zoom · drag to look around · double-tap to zoom in or out</div>
+</div>
+
 <div id="loading" hidden>
   <div class="box">
     <div class="tipcard" aria-live="polite">
@@ -558,8 +582,8 @@
   </div>
 </div>
 
-<script src="/try/engine.js?v=202610180536"></script>
-<script src="/try/guide.js?v=202610180536"></script>
+<script src="/try/engine.js?v=202610180545"></script>
+<script src="/try/guide.js?v=202610180545"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -593,7 +617,7 @@ function back() {
   // never step back into the loading-driven reveal from the hub
   paint(true);
 }
-addEventListener("popstate", () => { if (stack.length > 1) back(); });
+addEventListener("popstate", () => { const z = document.getElementById("zoom"); if (z && !z.hidden) { z.hidden = true; return; } if (stack.length > 1) back(); });
 function paint(isBack) {
   const id = stack[stack.length - 1];
   document.querySelectorAll(".screen").forEach(s => {
@@ -914,7 +938,8 @@ async function makePreview(extraPieces, change) {
 }
 let swept = false;
 function drawViewer() {
-  $("#viewer").innerHTML = `<div class="compare" id="cmp"><img src="${photo}" alt="Before"><img class="after" src="${after}" alt="After"><div class="line"></div><div class="knob">↔</div><span class="tag l">Before</span><span class="tag r">After</span></div>`;
+  $("#viewer").innerHTML = `<div class="compare" id="cmp"><img src="${photo}" alt="Before"><img class="after" src="${after}" alt="After"><div class="line"></div><div class="knob">↔</div><span class="tag l">Before</span><span class="tag r">After</span></div><button class="zoombtn" id="zoomCmp" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6M10.5 7.5v6M7.5 10.5h6"/></svg></button>`;
+  $("#zoomCmp").onclick = () => openZoom([{ label: "Before", src: photo }, { label: "After", src: after }], curSeg === "before" ? 0 : 1);
   $("#seg").hidden = $("#hint").hidden = $("#save").hidden = false;
   setSeg("compare"); swept = false;
   const box = $("#cmp"); let drag = false;
@@ -929,7 +954,9 @@ function sweep() {
   let t0; const sw = t => { t0 ??= t; const k = (t - t0) / 1700; if (k > 1) { box.style.setProperty("--cut", "50%"); return; } box.style.setProperty("--cut", (50 + Math.sin(k * Math.PI * 2) * 32) + "%"); requestAnimationFrame(sw); };
   setTimeout(() => requestAnimationFrame(sw), 300);
 }
+let curSeg = "compare";
 function setSeg(m) {
+  curSeg = m;
   document.querySelectorAll("#seg button").forEach(b => b.classList.toggle("on", b.dataset.m === m));
   const box = $("#cmp"); if (!box) return;
   box.classList.remove("mode-before", "mode-after", "mode-compare"); box.classList.add("mode-" + m);
@@ -950,6 +977,61 @@ $("#restart").onclick = () => { photo = null; guide = null; photoImg = null; fac
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => b.dataset.go === "s-plan" ? openPlan() : show(b.dataset.go));
 
 const buyRow = b => `<a class="buyrow" href="${shopUrl(b.q)}" target="_blank" rel="noopener sponsored"><b style="background:${b.color || "#efe6d4"}"></b><span><strong>${esc(b.label)}</strong>${b.qty ? `<small>${esc(b.qty)}</small>` : ""}</span><em>Find it ›</em></a>`;
+
+/* ---------------- full-screen zoom (pinch, pan, double-tap) ---------------- */
+let zImgs = [], zIdx = 0, zS = 1, zX = 0, zY = 0;
+const zApply = () => { $("#zImg").style.transform = `translate(-50%,-50%) translate(${zX}px,${zY}px) scale(${zS})`; };
+function zClamp() {
+  const st = $("#zStage").getBoundingClientRect(), im = $("#zImg"), w = im.offsetWidth * zS, h = im.offsetHeight * zS;
+  const mx = Math.max(0, (w - st.width) / 2), my = Math.max(0, (h - st.height) / 2);
+  zX = Math.min(mx, Math.max(-mx, zX)); zY = Math.min(my, Math.max(-my, zY));
+}
+function zShow(i) {
+  zIdx = i; $("#zImg").src = zImgs[i].src;
+  $("#zSeg").innerHTML = zImgs.length > 1 ? zImgs.map((z, k) => `<button data-k="${k}" class="${k === i ? "on" : ""}">${z.label}</button>`).join("") : "";
+  $("#zSeg").querySelectorAll("button").forEach(b => b.onclick = () => zShow(+b.dataset.k));   // keeps the same zoom and position
+  zApply();
+}
+function openZoom(imgs, start) {
+  zImgs = imgs.filter(z => z.src); if (!zImgs.length) return;
+  zS = 1; zX = zY = 0; $("#zoom").hidden = false; zShow(Math.min(start || 0, zImgs.length - 1));
+  history.pushState({ zoom: 1 }, "");
+}
+function closeZoom() { $("#zoom").hidden = true; }
+$("#zClose").onclick = () => history.back();
+(function () {
+  const st = $("#zStage"), pts = new Map();
+  let start = null, lastTap = 0;
+  const snap = () => ({ s: zS, x: zX, y: zY, pts: [...pts.values()].map(p => ({ ...p })) });
+  const mid = a => ({ x: (a[0].x + a[1].x) / 2, y: (a[0].y + a[1].y) / 2 }), dist = a => Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y);
+  const zoomAt = (s, cx, cy) => {   // keep the point under the fingers in place
+    const r = st.getBoundingClientRect(), px = cx - r.left - r.width / 2, py = cy - r.top - r.height / 2, k = s / zS;
+    zX = px - (px - zX) * k; zY = py - (py - zY) * k; zS = s;
+  };
+  st.addEventListener("pointerdown", e => {
+    st.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); start = snap();
+    if (pts.size === 1) {
+      const now = Date.now();
+      if (now - lastTap < 300) { if (zS > 1.05) { zS = 1; zX = zY = 0; } else zoomAt(2.6, e.clientX, e.clientY); zClamp(); zApply(); lastTap = 0; }
+      else lastTap = now;
+    }
+  });
+  st.addEventListener("pointermove", e => {
+    if (!pts.has(e.pointerId)) return;
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const now = [...pts.values()];
+    if (now.length >= 2 && start.pts.length >= 2) {
+      const m0 = mid(start.pts), m1 = mid(now), s = Math.min(6, Math.max(1, start.s * dist(now) / Math.max(10, dist(start.pts))));
+      zS = start.s; zX = start.x + (m1.x - m0.x); zY = start.y + (m1.y - m0.y); zoomAt(s, m1.x, m1.y);
+    } else if (now.length === 1 && start.pts.length === 1 && zS > 1) {
+      zX = start.x + (now[0].x - start.pts[0].x); zY = start.y + (now[0].y - start.pts[0].y);
+    }
+    zClamp(); zApply();
+  });
+  const end = e => { pts.delete(e.pointerId); start = snap(); if (zS < 1.02) { zS = 1; zX = zY = 0; zApply(); } };
+  st.addEventListener("pointerup", end); st.addEventListener("pointercancel", end);
+  st.addEventListener("wheel", e => { e.preventDefault(); zoomAt(Math.min(6, Math.max(1, zS * (e.deltaY < 0 ? 1.15 : 1 / 1.15))), e.clientX, e.clientY); zClamp(); zApply(); }, { passive: false });
+})();
 
 /* ---------------- step-by-step diagrams ---------------- */
 let guide = null, photoImg = null;
@@ -997,6 +1079,7 @@ $("#nextStep").onclick = () => {
 };
 const peekOn = () => guide && guide.draw(guide.steps[stepIdx], true), peekOff = () => guide && guide.draw(guide.steps[stepIdx], false);
 $("#peek").addEventListener("pointerdown", peekOn);
+$("#zoomGuide").onclick = () => { if (!guide) return; openZoom([{ label: "Step", src: $("#guideCv").toDataURL("image/jpeg", .92) }, { label: "My photo", src: photo }], 0); };
 ["pointerup", "pointerleave", "pointercancel"].forEach(ev => $("#peek").addEventListener(ev, peekOff));
 $("#peek").addEventListener("contextmenu", e => e.preventDefault());
 
