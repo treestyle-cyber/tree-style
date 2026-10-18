@@ -983,7 +983,7 @@ function fill() {
   $("#timing").textContent = evalTiming(r);
 }
 
-const evalTiming = r => { const m = r._meta || {}; return m.planSeconds != null ? `${m.model} · Scores: ${m.scoreSeconds}s · Plan: ${m.planSeconds}s (at the same time)` : `Evaluation: ${m.model} · ${m.seconds}s`; };
+const evalTiming = r => { const m = r._meta || {}; return m.planSeconds != null ? `${m.model} · Scores: ${m.scoreSeconds}s · Plan: ${m.planSeconds}s (at the same time)` : (m.change ? `Change: ${m.model} · ${m.seconds}s` : `Evaluation (one call): ${m.model} · ${m.seconds}s`); };
 /* ---------------- preview ---------------- */
 async function placementMap() {
   try {
@@ -1267,7 +1267,7 @@ async function partnerSend(req, label) {
       ideas: (res.ideas || []).length ? res.ideas : result.ideas,
       mockup: Object.assign({}, result.mockup, res.mockup || {}),
       render_brief: res.render_brief || result.render_brief,
-      _meta: res._meta
+      _meta: Object.assign({}, res._meta, { change: true })
     });
     result = next; guide = null; doneSteps = new Set();
     L.painting();
