@@ -27,7 +27,7 @@
         small: { kind: oneOf(obj(picks.small).kind, ["berries", "spray", "none"], "none"), color: hex(obj(picks.small).color, "#A3151F") }
       },
       moments: arr(m.moments).slice(0, 14).map(o => (o = obj(o), { x: clamp(o.x, 0, 1), y: clamp(o.y, 0, 1), size: Math.round(clamp(o.size || 2, 1, 3)), floral: !!o.floral })),
-      ornaments: arr(m.ornaments).slice(0, 26).map(o => (o = obj(o), { x: clamp(o.x, 0, 1), y: clamp(o.y, 0, 1), color: hex(o.color, "#8E2236"),
+      ornaments: arr(m.ornaments).slice(0, 30).map(o => (o = obj(o), { x: clamp(o.x, 0, 1), y: clamp(o.y, 0, 1), color: hex(o.color, "#8E2236"),
         size: oneOf(o.size, ["xl", "l", "m", "s"], "m"), shape: oneOf(o.shape, ["ball", "drop", "finial", "geometric", "candy"], "ball"), finish: oneOf(o.finish, ["shiny", "matte", "glitter"], "shiny") })),
       clusters: arr(m.clusters).slice(0, 6).map(c => (c = obj(c), { x: clamp(c.x, 0, 1), y: clamp(c.y, 0, 1), color: hex(c.color, "#3E7A4A"),
         size: oneOf(c.size, ["m", "s"], "m"), count: Math.round(clamp(c.count || 4, 3, 5)), finish: oneOf(c.finish, ["shiny", "matte", "glitter"], "shiny") })),
@@ -36,125 +36,8 @@
     };
     if (out.picks.primary.kind === "none" && !arr(m.moments).length) out.moments = [];
     balanceFlowers(out);
-    windMoments(out);   // a winding vine is already balanced
-    keepInside(out);
-    unline(out, ["xl"]); unline(out, ["l"]); unline(out, ["xl", "l"]);
-    balanceBig(out);   // after unlining: moving pieces must never leave one side heavier
-    unline(out, ["xl", "l"]);   // and balancing must not create a new line (it swings toward the lighter side, so balance holds)
-    spreadGroups(out, arr(m.ornament_groups));   // last: needs the final vine spots
+    windMoments(out);   // last: a winding vine is already balanced
     return out;
-  }
-
-  // NO LINES: big ornaments must never stack in a column, sit in a row, or run in a diagonal.
-  // Look at them top to bottom in threes; if three line up, swing the middle one to the other side.
-  function unline(d, sizes) {
-    const A = d.cone.apex, L = d.cone.left, R = d.cone.right, baseY = (L[1] + R[1]) / 2;
-    const t = y => clamp((y - A[1]) / Math.max(.05, baseY - A[1]), 0, 1);
-    const cx = y => A[0] + t(y) * ((L[0] + R[0]) / 2 - A[0]), hw = y => Math.max(.02, t(y) * (R[0] - L[0]) / 2);
-    const off = o => (o.x - cx(o.y)) / hw(o.y);
-    const os = d.ornaments.filter(o => sizes.includes(o.size) && t(o.y) > .12).sort((a, b) => a.y - b.y);
-    for (let pass = 0; pass < 3; pass++) {
-      let moved = false;
-      for (let i = 2; i < os.length; i++) {
-        const a = os[i - 2], b = os[i - 1], c = os[i], oa = off(a), ob = off(b), oc = off(c);
-        const column = Math.max(oa, ob, oc) - Math.min(oa, ob, oc) < .35;
-        const row = Math.max(a.y, b.y, c.y) - Math.min(a.y, b.y, c.y) < .06;
-        // a diagonal: the middle one sits (almost) on the straight line between the other two, in the photo
-        const ux = c.x - a.x, uy = (c.y - a.y) * 1.3, len2 = ux * ux + uy * uy;
-        const dev = Math.abs(ux * (b.y - a.y) * 1.3 - uy * (b.x - a.x)) / Math.max(1e-6, len2);
-        const diag = !column && !row && Math.abs(ux) > .08 && dev < .12 && b.y > a.y && b.y < c.y;
-        if (!column && !row && !diag) continue;
-        if (row) { b.y = clamp(b.y + (i % 2 ? .09 : -.09), A[1] + .05, baseY - .03); }
-        else {
-          // swing toward whichever side of the tree carries less weight right now
-          const w = s => os.filter(o => o !== b && (s < 0 ? off(o) < -.2 : off(o) > .2)).reduce((n, o) => n + (o.size === "xl" ? 3 : 2), 0);
-          const side = w(-1) < w(1) ? -1 : w(1) < w(-1) ? 1 : (ob > 0 ? -1 : 1);
-          b.x = clamp(cx(b.y) + side * .65 * hw(b.y), 0, 1);
-          if (column && Math.abs(off(c)) < .3) c.x = clamp(cx(c.y) - side * .45 * hw(c.y), 0, 1);   // and keep zigzagging
-        }
-        moved = true;
-      }
-      if (!moved) break;
-      os.sort((a, b) => a.y - b.y);
-    }
-  }
-
-  // Everything hangs ON the tree: pull ornaments and clusters that sit outside the outline back in.
-  function keepInside(d) {
-    const A = d.cone.apex, L = d.cone.left, R = d.cone.right, baseY = (L[1] + R[1]) / 2;
-    const t = y => clamp((y - A[1]) / Math.max(.05, baseY - A[1]), 0, 1);
-    const cx = y => A[0] + t(y) * ((L[0] + R[0]) / 2 - A[0]), hw = y => Math.max(.01, t(y) * (R[0] - L[0]) / 2);
-    d.ornaments.concat(d.clusters).forEach(o => {
-      o.y = clamp(o.y, A[1] + .06 * (baseY - A[1]), baseY - .03 * (baseY - A[1]));
-      const lim = (d.clusters.includes(o) ? .7 : .82) * hw(o.y), dx = o.x - cx(o.y);
-      if (Math.abs(dx) > lim) o.x = cx(o.y) + Math.sign(dx) * lim;
-    });
-  }
-
-  // BALANCE for the big pieces: equal visual weight left and right (not symmetry).
-  // xl = 3, l = 2, a cluster = 2. If one side is clearly heavier, move the lightest piece
-  // that won't crowd anything across, to a similar height, not a mirror image.
-  function balanceBig(d) {
-    const A = d.cone.apex, L = d.cone.left, R = d.cone.right, baseY = (L[1] + R[1]) / 2;
-    const t = y => clamp((y - A[1]) / Math.max(.05, baseY - A[1]), 0, 1);
-    const cx = y => A[0] + t(y) * ((L[0] + R[0]) / 2 - A[0]), hw = y => Math.max(.01, t(y) * (R[0] - L[0]) / 2);
-    const off = o => (o.x - cx(o.y)) / hw(o.y);
-    const items = d.ornaments.filter(o => o.size === "xl" || o.size === "l").map(o => ({ o, w: o.size === "xl" ? 3 : 2 }))
-      .concat(d.clusters.map(c => ({ o: c, w: 2 }))).filter(it => t(it.o.y) > .12);
-    const sideW = s => items.filter(it => s < 0 ? off(it.o) < -.2 : off(it.o) > .2).reduce((n, it) => n + it.w, 0);
-    for (let i = 0; i < 6; i++) {
-      const Lw = sideW(-1), Rw = sideW(1);
-      if (Math.abs(Lw - Rw) <= Math.max(3, (Lw + Rw) * .25)) break;   // one big piece of difference is fine (a triangle of 3 is balanced)
-      const heavy = Lw > Rw ? -1 : 1;
-      const pool = items.filter(it => heavy < 0 ? off(it.o) < -.2 : off(it.o) > .2).sort((a, b) => a.w - b.w || Math.abs(off(b.o)) - Math.abs(off(a.o)));
-      // try the lightest pieces first; send each to the open spot on the light side farthest from everything else
-      let best = null;
-      for (const it of pool.slice(0, 3)) {
-        for (const dy of [-.1, -.05, 0, .05, .1]) for (const k of [.45, .65, .8]) {
-          const ny = clamp(it.o.y + dy, A[1] + .1 * (baseY - A[1]), baseY - .05 * (baseY - A[1]));
-          const nx = cx(ny) - heavy * k * hw(ny);
-          const gap = items.filter(q => q !== it).reduce((m, q) => Math.min(m, Math.hypot(q.o.x - nx, (q.o.y - ny) * 1.3)), 1);
-          const score = gap - it.w * .01;
-          if (!best || score > best.score) best = { it, nx, ny, score };
-        }
-      }
-      if (!best) break;
-      best.it.o.x = best.nx; best.it.o.y = best.ny;
-    }
-  }
-
-  // Medium and small ornaments arrive as groups ("6 matte pink 3-inch balls, middle left").
-  // Spread each group's spots over its area of the tree, evenly, and clear of ribbon/flower spots
-  // and of the ornaments already placed. Seeded, so the same plan always draws the same way.
-  const AREA = {
-    top: [.1, .34, -.75, .75], upper_left: [.2, .5, -.9, -.1], upper_right: [.2, .5, .1, .9],
-    middle_left: [.42, .7, -.9, -.12], middle_center: [.4, .72, -.45, .45], middle_right: [.42, .7, .12, .9],
-    lower_left: [.66, .94, -.9, -.12], lower_center: [.66, .94, -.45, .45], lower_right: [.66, .94, .12, .9], all_over: [.14, .93, -.88, .88]
-  };
-  function spreadGroups(d, groups) {
-    if (!groups.length) return;
-    const A = d.cone.apex, L = d.cone.left, R = d.cone.right, baseY = (L[1] + R[1]) / 2;
-    const cx = t => A[0] + t * ((L[0] + R[0]) / 2 - A[0]), hw = t => Math.max(.01, t * (R[0] - L[0]) / 2);
-    const at = (t, u) => ({ x: clamp(cx(t) + u * hw(t), 0, 1), y: clamp(A[1] + t * (baseY - A[1]), 0, 1) });
-    const taken = d.moments.map(m => ({ x: m.x, y: m.y, r: .025 + m.size * .008 })).concat(d.ornaments.map(o => ({ x: o.x, y: o.y, r: .035 })));
-    let seed = 7;
-    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-    groups.slice(0, 8).forEach(g => {
-      g = obj(g);
-      const size = oneOf(g.size, ["m", "s"], "m"), [t0, t1, u0, u1] = AREA[g.area] || AREA.all_over;
-      const n = Math.round(clamp(g.spots || 5, 1, 12)), look = { color: hex(g.color, "#C9A048"), size, shape: oneOf(g.shape, ["ball", "drop", "finial", "geometric", "candy"], "ball"), finish: oneOf(g.finish, ["shiny", "matte", "glitter"], "shiny") };
-      for (let i = 0; i < n; i++) {
-        // best of 40 random candidates: the one farthest from everything already on the tree
-        let best = null, bestD = -1;
-        for (let k = 0; k < 40; k++) {
-          const t = Math.sqrt(t0 * t0 + rnd() * (t1 * t1 - t0 * t0)), u = u0 + (u1 - u0) * rnd();   // more spots where the tree is wider
-          const p = at(t, u), dmin = taken.reduce((a, q) => Math.min(a, Math.hypot(p.x - q.x, (p.y - q.y) * 1.3) - q.r), 1);
-          if (dmin > bestD) { bestD = dmin; best = p; }
-        }
-        d.ornaments.push(Object.assign({ x: best.x, y: best.y }, look));
-        taken.push({ x: best.x, y: best.y, r: size === "m" ? .03 : .022 });
-      }
-    });
   }
 
   // The hidden vine WINDS: ribbon/greenery spots zigzag across the full width of the tree.
