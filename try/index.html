@@ -967,7 +967,7 @@ function fillReveal() {
   } else $("#potential").hidden = true;
   $("#headline").textContent = r.headline || "";
   $("#summary").textContent = r.summary || "";
-  $("#eye").textContent = r.eye_first ? "Where the eye lands first: " + r.eye_first : "";
+  $("#eye").textContent = "";   // the summary already says where the eye lands; no second line for it
   // Two things happen after the scores: the plan, then the preview. Show them as two steps.
   const step = (el, st, note) => { el.className = st; el.querySelector(".ic").textContent = st === "ok" ? "✓" : st === "bad" ? "!" : ""; el.querySelector("em").textContent = note; };
   const designWord = mode === "design" ? "finished" : "improved";

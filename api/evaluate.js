@@ -89,7 +89,7 @@ ${[
   part !== "plan" && ` "tree": {"kind":"artificial|natural","density":"open|dense","flocked":true|false,"height_ft":<number>${mode === "check" ? ',"stage":"partial|finished"' : ""}},
  "eye_first": "${mode === "check" ? "<where the eye lands first and why, one plain sentence>" : ""}",
  "headline": "<warm, specific, under 9 words>",
- "summary": "<2 short sentences>",
+ "summary": "<2 short sentences${mode === "check" ? ": start with where the eye lands first, then the biggest opportunity" : ""}>",
  "categories": ${mode === "check" ? `[\n${cats}\n ]` : "[]"},
  "potential": ${mode === "check" ? '{"after_quick_fixes":<0-100>,"after_full_plan":<0-100>}' : '{"after_quick_fixes":0,"after_full_plan":0}'},
  "cone": {"apex":[x,y],"left":[x,y],"right":[x,y]}`,
