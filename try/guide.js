@@ -37,8 +37,42 @@
     if (out.picks.primary.kind === "none" && !arr(m.moments).length) out.moments = [];
     balanceFlowers(out);
     windMoments(out);   // a winding vine is already balanced
+    unline(out, ["xl"]); unline(out, ["l"]); unline(out, ["xl", "l"]);
     spreadGroups(out, arr(m.ornament_groups));   // last: needs the final vine spots
     return out;
+  }
+
+  // NO LINES: big ornaments must never stack in a column, sit in a row, or run in a diagonal.
+  // Look at them top to bottom in threes; if three line up, swing the middle one to the other side.
+  function unline(d, sizes) {
+    const A = d.cone.apex, L = d.cone.left, R = d.cone.right, baseY = (L[1] + R[1]) / 2;
+    const t = y => clamp((y - A[1]) / Math.max(.05, baseY - A[1]), 0, 1);
+    const cx = y => A[0] + t(y) * ((L[0] + R[0]) / 2 - A[0]), hw = y => Math.max(.02, t(y) * (R[0] - L[0]) / 2);
+    const off = o => (o.x - cx(o.y)) / hw(o.y);
+    const os = d.ornaments.filter(o => sizes.includes(o.size) && t(o.y) > .12).sort((a, b) => a.y - b.y);
+    for (let pass = 0; pass < 3; pass++) {
+      let moved = false;
+      for (let i = 2; i < os.length; i++) {
+        const a = os[i - 2], b = os[i - 1], c = os[i], oa = off(a), ob = off(b), oc = off(c);
+        const column = Math.max(oa, ob, oc) - Math.min(oa, ob, oc) < .35;
+        const row = Math.max(a.y, b.y, c.y) - Math.min(a.y, b.y, c.y) < .06;
+        // a diagonal: the middle one sits (almost) on the straight line between the other two, in the photo
+        const ux = c.x - a.x, uy = (c.y - a.y) * 1.3, len2 = ux * ux + uy * uy;
+        const dev = Math.abs(ux * (b.y - a.y) * 1.3 - uy * (b.x - a.x)) / Math.max(1e-6, len2);
+        const diag = !column && !row && Math.abs(ux) > .08 && dev < .12 && b.y > a.y && b.y < c.y;
+        if (!column && !row && !diag) continue;
+        if (row) { b.y = clamp(b.y + (i % 2 ? .09 : -.09), A[1] + .05, baseY - .03); }
+        else {
+          const lean = column ? (oa + oc) / 2 : (a.x + c.x) / 2 - b.x;   // swing away from where the others lean
+          const side = column ? (lean > .02 ? -1 : lean < -.02 ? 1 : (i % 2 ? 1 : -1)) : (ob > 0 ? -1 : 1);
+          b.x = clamp(cx(b.y) + side * .65 * hw(b.y), 0, 1);
+          if (column && Math.abs(off(c)) < .3) c.x = clamp(cx(c.y) - side * .45 * hw(c.y), 0, 1);   // and keep zigzagging
+        }
+        moved = true;
+      }
+      if (!moved) break;
+      os.sort((a, b) => a.y - b.y);
+    }
   }
 
   // Medium and small ornaments arrive as groups ("6 matte pink 3-inch balls, middle left").

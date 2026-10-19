@@ -18,6 +18,8 @@ ${brief}
 
 RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or spiral across or down the tree. It appears as separate loops or short drops tucked into the branches, with green showing between them, winding back and forth across the tree, never lined up in a diagonal row.
 
+ORNAMENT RULES (important): ornaments never line up. The big ones especially must not stack in a straight column down the middle of the tree, sit in a row, or run in a diagonal; they are staggered left and right at different heights, in a loose zigzag.
+
 The result must look like an ordinary real photograph, with no circles, rings, outlines or other markings drawn on it.`;
   return `Edit this photo of a Christmas tree to show it after a professional holiday decorator finished it.
 
@@ -27,6 +29,8 @@ Changes to make:
 ${brief}
 
 RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or spiral across or down the tree. It appears as SEPARATE short pieces: loops or short drops that start and stop, each tucked deep into the branches at one spot, with plenty of green branches showing between them. Picture a vine hidden inside the tree that peeks out here and there, winding back and forth across the full width. The ribbon spots must NOT line up: no diagonal row of bows or loops from top to bottom, which reads as a swag. Never wrap ribbon around the tree or drape it from the top to the bottom.
+
+ORNAMENT RULES (important): ornaments never line up. The big ones especially must not stack in a straight column down the middle of the tree, sit in a row, or run in a diagonal; they are staggered left and right at different heights, in a loose zigzag. Follow the map's positions for the big ornaments.
 
 The result must look like an ordinary real photograph of the same tree in the same room, not an illustration, with no circles, rings, outlines or other markings drawn on it.`;
 }
