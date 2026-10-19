@@ -37,7 +37,10 @@
     if (out.picks.primary.kind === "none" && !arr(m.moments).length) out.moments = [];
     balanceFlowers(out);
     windMoments(out);   // a winding vine is already balanced
+    keepInside(out);
     unline(out, ["xl"]); unline(out, ["l"]); unline(out, ["xl", "l"]);
+    balanceBig(out);   // after unlining: moving pieces must never leave one side heavier
+    unline(out, ["xl", "l"]);   // and balancing must not create a new line (it swings toward the lighter side, so balance holds)
     spreadGroups(out, arr(m.ornament_groups));   // last: needs the final vine spots
     return out;
   }
@@ -63,8 +66,9 @@
         if (!column && !row && !diag) continue;
         if (row) { b.y = clamp(b.y + (i % 2 ? .09 : -.09), A[1] + .05, baseY - .03); }
         else {
-          const lean = column ? (oa + oc) / 2 : (a.x + c.x) / 2 - b.x;   // swing away from where the others lean
-          const side = column ? (lean > .02 ? -1 : lean < -.02 ? 1 : (i % 2 ? 1 : -1)) : (ob > 0 ? -1 : 1);
+          // swing toward whichever side of the tree carries less weight right now
+          const w = s => os.filter(o => o !== b && (s < 0 ? off(o) < -.2 : off(o) > .2)).reduce((n, o) => n + (o.size === "xl" ? 3 : 2), 0);
+          const side = w(-1) < w(1) ? -1 : w(1) < w(-1) ? 1 : (ob > 0 ? -1 : 1);
           b.x = clamp(cx(b.y) + side * .65 * hw(b.y), 0, 1);
           if (column && Math.abs(off(c)) < .3) c.x = clamp(cx(c.y) - side * .45 * hw(c.y), 0, 1);   // and keep zigzagging
         }
@@ -72,6 +76,50 @@
       }
       if (!moved) break;
       os.sort((a, b) => a.y - b.y);
+    }
+  }
+
+  // Everything hangs ON the tree: pull ornaments and clusters that sit outside the outline back in.
+  function keepInside(d) {
+    const A = d.cone.apex, L = d.cone.left, R = d.cone.right, baseY = (L[1] + R[1]) / 2;
+    const t = y => clamp((y - A[1]) / Math.max(.05, baseY - A[1]), 0, 1);
+    const cx = y => A[0] + t(y) * ((L[0] + R[0]) / 2 - A[0]), hw = y => Math.max(.01, t(y) * (R[0] - L[0]) / 2);
+    d.ornaments.concat(d.clusters).forEach(o => {
+      o.y = clamp(o.y, A[1] + .06 * (baseY - A[1]), baseY - .03 * (baseY - A[1]));
+      const lim = (d.clusters.includes(o) ? .7 : .82) * hw(o.y), dx = o.x - cx(o.y);
+      if (Math.abs(dx) > lim) o.x = cx(o.y) + Math.sign(dx) * lim;
+    });
+  }
+
+  // BALANCE for the big pieces: equal visual weight left and right (not symmetry).
+  // xl = 3, l = 2, a cluster = 2. If one side is clearly heavier, move the lightest piece
+  // that won't crowd anything across, to a similar height, not a mirror image.
+  function balanceBig(d) {
+    const A = d.cone.apex, L = d.cone.left, R = d.cone.right, baseY = (L[1] + R[1]) / 2;
+    const t = y => clamp((y - A[1]) / Math.max(.05, baseY - A[1]), 0, 1);
+    const cx = y => A[0] + t(y) * ((L[0] + R[0]) / 2 - A[0]), hw = y => Math.max(.01, t(y) * (R[0] - L[0]) / 2);
+    const off = o => (o.x - cx(o.y)) / hw(o.y);
+    const items = d.ornaments.filter(o => o.size === "xl" || o.size === "l").map(o => ({ o, w: o.size === "xl" ? 3 : 2 }))
+      .concat(d.clusters.map(c => ({ o: c, w: 2 }))).filter(it => t(it.o.y) > .12);
+    const sideW = s => items.filter(it => s < 0 ? off(it.o) < -.2 : off(it.o) > .2).reduce((n, it) => n + it.w, 0);
+    for (let i = 0; i < 6; i++) {
+      const Lw = sideW(-1), Rw = sideW(1);
+      if (Math.abs(Lw - Rw) <= Math.max(3, (Lw + Rw) * .25)) break;   // one big piece of difference is fine (a triangle of 3 is balanced)
+      const heavy = Lw > Rw ? -1 : 1;
+      const pool = items.filter(it => heavy < 0 ? off(it.o) < -.2 : off(it.o) > .2).sort((a, b) => a.w - b.w || Math.abs(off(b.o)) - Math.abs(off(a.o)));
+      // try the lightest pieces first; send each to the open spot on the light side farthest from everything else
+      let best = null;
+      for (const it of pool.slice(0, 3)) {
+        for (const dy of [-.1, -.05, 0, .05, .1]) for (const k of [.45, .65, .8]) {
+          const ny = clamp(it.o.y + dy, A[1] + .1 * (baseY - A[1]), baseY - .05 * (baseY - A[1]));
+          const nx = cx(ny) - heavy * k * hw(ny);
+          const gap = items.filter(q => q !== it).reduce((m, q) => Math.min(m, Math.hypot(q.o.x - nx, (q.o.y - ny) * 1.3)), 1);
+          const score = gap - it.w * .01;
+          if (!best || score > best.score) best = { it, nx, ny, score };
+        }
+      }
+      if (!best) break;
+      best.it.o.x = best.nx; best.it.o.y = best.ny;
     }
   }
 
