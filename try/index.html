@@ -95,6 +95,17 @@
   .potential{display:inline-block;background:#efe6d4;border-radius:999px;padding:8px 14px;font-size:14px;margin:6px 0 18px}
   .teaser{position:relative;border-radius:var(--radius);overflow:hidden;margin:6px auto 0;max-width:300px;cursor:pointer;border:0;padding:0;display:block}
   .teaser img{width:100%;filter:blur(6px) brightness(.9);transform:scale(1.06)}
+  .progress{list-style:none;margin:18px auto 4px;padding:0;max-width:330px;text-align:left;display:grid;gap:10px}
+  .progress li{display:flex;gap:12px;align-items:flex-start;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;transition:opacity .3s}
+  .progress li.next{opacity:.55}
+  .progress .ic{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font:700 13px var(--sans);margin-top:1px}
+  .progress .next .ic{border:2px solid var(--line)}
+  .progress .on .ic{border:3px solid var(--line);border-top-color:var(--green);animation:spin .8s linear infinite}
+  .progress .ok .ic{background:var(--green);color:#fff}
+  .progress .bad .ic{background:var(--berry);color:#fff}
+  .progress b{display:block;font-size:15px}
+  .progress small{display:block;color:var(--muted);font-size:13px;line-height:1.4}
+  .progress em{font-style:normal;color:var(--brass);font-weight:600}
   .teaser.wait span{animation:pulse 1.6s ease-in-out infinite}
   @keyframes pulse{50%{opacity:.55}}
   .teaser span{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font:600 16px var(--sans);text-shadow:0 1px 8px rgba(0,0,0,.5)}
@@ -426,6 +437,10 @@
     <h1 id="headline"></h1>
     <p id="summary"></p>
     <div class="potential" id="potential" hidden></div>
+    <ol class="progress" id="progress" hidden>
+      <li id="pg1"><span class="ic"></span><div><b>Your plan</b><small>Ribbon, stems, ornaments and your shopping list · <em></em></small></div></li>
+      <li id="pg2"><span class="ic"></span><div><b>Your preview</b><small>A picture of your finished tree · <em></em></small></div></li>
+    </ol>
     <button class="teaser" id="teaser" hidden><img id="teaserImg" alt=""><span id="teaserTxt">Your improved tree is ready</span></button>
     <p class="eye" id="eye"></p>
   </section>
@@ -606,7 +621,7 @@ const FOOT = {
   go: () => ({ label: mode === "design" ? "Design my tree" : "Evaluate my tree", act: run }),
   seeIt: () => planState === "wait" ? ({ label: "Finishing your plan…", disabled: true, act: () => {} })
     : planState === "error" ? ({ label: "Try again", act: getPlan })
-    : ({ label: mode === "design" ? "See your finished tree" : "See your improved tree", act: () => show("s-results", ["s-home"]) })
+    : ({ label: previewState === "done" ? (mode === "design" ? "See your finished tree" : "See your improved tree") : "See your plan", act: () => show("s-results", ["s-home"]) })
 };
 function show(id, reset) {
   if (reset) stack = reset.slice();
@@ -841,7 +856,7 @@ async function run() {
     return;
   }
   result = lookResult = Object.assign(look, { quick_fixes: [], plan: [], ideas: [], mockup: null, render_brief: "", _lookMeta: look._meta });
-  after = null; previewP = null; stepIdx = 0; doneSteps = new Set(); guide = null; swept = false;
+  after = null; previewP = null; previewState = "idle"; stepIdx = 0; doneSteps = new Set(); guide = null; swept = false;
   L.done();
   getPlan(myPlan);
   fillReveal();
@@ -873,7 +888,7 @@ function getPlan(pending) {
 }
 
 /* ---------------- first preview (in the background, while they read their results) ---------------- */
-let previewP = null;
+let previewP = null, previewState = "idle";
 function paintWait() {
   $("#viewer").innerHTML = `<div class="renderwait"><div class="spin"></div>Painting your preview…<div style="font-size:13px">About 30 seconds. Look around while you wait.</div></div>`;
   $("#seg").hidden = $("#hint").hidden = $("#save").hidden = true;
@@ -881,9 +896,11 @@ function paintWait() {
 function paintFirst() {
   const forResult = result;
   paintWait();
+  previewState = "wait";
   previewP = makePreview().then(() => {
     previewP = null;
     if (result !== forResult) return;
+    previewState = after ? "done" : "failed"; setFoot();
     if (versions[0]) versions[0].after = after;
     fillReveal();
     if (stack[stack.length - 1] === "s-results") sweep();
@@ -944,7 +961,7 @@ function fillReveal() {
   $("#revealScore").hidden = !check;
   if (check) {
     const o = toOrn(r.overall);
-    $("#orns").innerHTML = ornHtml(o);
+    if ($("#orns").dataset.o !== String(o) + r.headline) { $("#orns").innerHTML = ornHtml(o); $("#orns").dataset.o = String(o) + r.headline; }
     $("#ornWord").textContent = `${o} OF 5 ORNAMENTS`;
     const p = r.potential || {};
     $("#potential").hidden = !p.after_full_plan;
@@ -953,10 +970,18 @@ function fillReveal() {
   $("#headline").textContent = r.headline || "";
   $("#summary").textContent = r.summary || "";
   $("#eye").textContent = r.eye_first ? "Where the eye lands first: " + r.eye_first : "";
-  $("#teaser").hidden = !after && !previewP && planState === "ready";
-  $("#teaserImg").src = after || photo;
-  $("#teaserTxt").textContent = after ? "Your improved tree is ready" : planState === "wait" ? "Designing your plan…" : planState === "error" ? "Your plan didn't come through. Tap Try again." : "Painting your preview…";
-  $("#teaser").classList.toggle("wait", !after);
+  // Two things happen after the scores: the plan, then the preview. Show them as two steps.
+  const step = (el, st, note) => { el.className = st; el.querySelector(".ic").textContent = st === "ok" ? "✓" : st === "bad" ? "!" : ""; el.querySelector("em").textContent = note; };
+  const designWord = mode === "design" ? "finished" : "improved";
+  $("#pg2").querySelector("small").firstChild.textContent = `A picture of your ${designWord} tree · `;
+  step($("#pg1"), planState === "wait" ? "on" : planState === "error" ? "bad" : "ok", planState === "wait" ? "designing…" : planState === "error" ? "didn't come through. Tap Try again." : "ready");
+  step($("#pg2"), planState !== "ready" ? "next" : previewState === "done" ? "ok" : previewState === "failed" ? "bad" : "on",
+    planState !== "ready" ? "next" : previewState === "done" ? "ready" : previewState === "failed" ? "didn't come through. Try again from your results." : "painting, about 20 seconds…");
+  $("#progress").hidden = false;
+  $("#teaser").hidden = !after;
+  if (after) $("#teaserImg").src = after;
+  $("#teaserTxt").textContent = `Your ${designWord} tree is ready`;
+  $("#teaser").classList.remove("wait");
 }
 $("#teaser").onclick = () => { if (planState === "ready") show("s-results", ["s-home"]); };
 
