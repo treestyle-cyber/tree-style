@@ -27,7 +27,7 @@
         small: { kind: oneOf(obj(picks.small).kind, ["berries", "spray", "none"], "none"), color: hex(obj(picks.small).color, "#A3151F") }
       },
       moments: arr(m.moments).slice(0, 14).map(o => (o = obj(o), { x: clamp(o.x, 0, 1), y: clamp(o.y, 0, 1), size: Math.round(clamp(o.size || 2, 1, 3)), floral: !!o.floral })),
-      ornaments: arr(m.ornaments).slice(0, 30).map(o => (o = obj(o), { x: clamp(o.x, 0, 1), y: clamp(o.y, 0, 1), color: hex(o.color, "#8E2236"),
+      ornaments: arr(m.ornaments).slice(0, 26).map(o => (o = obj(o), { x: clamp(o.x, 0, 1), y: clamp(o.y, 0, 1), color: hex(o.color, "#8E2236"),
         size: oneOf(o.size, ["xl", "l", "m", "s"], "m"), shape: oneOf(o.shape, ["ball", "drop", "finial", "geometric", "candy"], "ball"), finish: oneOf(o.finish, ["shiny", "matte", "glitter"], "shiny") })),
       clusters: arr(m.clusters).slice(0, 6).map(c => (c = obj(c), { x: clamp(c.x, 0, 1), y: clamp(c.y, 0, 1), color: hex(c.color, "#3E7A4A"),
         size: oneOf(c.size, ["m", "s"], "m"), count: Math.round(clamp(c.count || 4, 3, 5)), finish: oneOf(c.finish, ["shiny", "matte", "glitter"], "shiny") })),
@@ -36,8 +36,43 @@
     };
     if (out.picks.primary.kind === "none" && !arr(m.moments).length) out.moments = [];
     balanceFlowers(out);
-    windMoments(out);   // last: a winding vine is already balanced
+    windMoments(out);   // a winding vine is already balanced
+    spreadGroups(out, arr(m.ornament_groups));   // last: needs the final vine spots
     return out;
+  }
+
+  // Medium and small ornaments arrive as groups ("6 matte pink 3-inch balls, middle left").
+  // Spread each group's spots over its area of the tree, evenly, and clear of ribbon/flower spots
+  // and of the ornaments already placed. Seeded, so the same plan always draws the same way.
+  const AREA = {
+    top: [.1, .34, -.75, .75], upper_left: [.2, .5, -.9, -.1], upper_right: [.2, .5, .1, .9],
+    middle_left: [.42, .7, -.9, -.12], middle_center: [.4, .72, -.45, .45], middle_right: [.42, .7, .12, .9],
+    lower_left: [.66, .94, -.9, -.12], lower_center: [.66, .94, -.45, .45], lower_right: [.66, .94, .12, .9], all_over: [.14, .93, -.88, .88]
+  };
+  function spreadGroups(d, groups) {
+    if (!groups.length) return;
+    const A = d.cone.apex, L = d.cone.left, R = d.cone.right, baseY = (L[1] + R[1]) / 2;
+    const cx = t => A[0] + t * ((L[0] + R[0]) / 2 - A[0]), hw = t => Math.max(.01, t * (R[0] - L[0]) / 2);
+    const at = (t, u) => ({ x: clamp(cx(t) + u * hw(t), 0, 1), y: clamp(A[1] + t * (baseY - A[1]), 0, 1) });
+    const taken = d.moments.map(m => ({ x: m.x, y: m.y, r: .025 + m.size * .008 })).concat(d.ornaments.map(o => ({ x: o.x, y: o.y, r: .035 })));
+    let seed = 7;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    groups.slice(0, 8).forEach(g => {
+      g = obj(g);
+      const size = oneOf(g.size, ["m", "s"], "m"), [t0, t1, u0, u1] = AREA[g.area] || AREA.all_over;
+      const n = Math.round(clamp(g.spots || 5, 1, 12)), look = { color: hex(g.color, "#C9A048"), size, shape: oneOf(g.shape, ["ball", "drop", "finial", "geometric", "candy"], "ball"), finish: oneOf(g.finish, ["shiny", "matte", "glitter"], "shiny") };
+      for (let i = 0; i < n; i++) {
+        // best of 40 random candidates: the one farthest from everything already on the tree
+        let best = null, bestD = -1;
+        for (let k = 0; k < 40; k++) {
+          const t = Math.sqrt(t0 * t0 + rnd() * (t1 * t1 - t0 * t0)), u = u0 + (u1 - u0) * rnd();   // more spots where the tree is wider
+          const p = at(t, u), dmin = taken.reduce((a, q) => Math.min(a, Math.hypot(p.x - q.x, (p.y - q.y) * 1.3) - q.r), 1);
+          if (dmin > bestD) { bestD = dmin; best = p; }
+        }
+        d.ornaments.push(Object.assign({ x: best.x, y: best.y }, look));
+        taken.push({ x: best.x, y: best.y, r: size === "m" ? .03 : .022 });
+      }
+    });
   }
 
   // The hidden vine WINDS: ribbon/greenery spots zigzag across the full width of the tree.

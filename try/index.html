@@ -856,7 +856,7 @@ function getPlan(pending) {
   p.then(pl => {
     if (result !== forLook) return;                 // they started over
     const lm = forLook._lookMeta || {}, pm = pl._meta || {};
-    Object.assign(result, pl, { _meta: { model: pm.model || lm.model, seconds: Math.max(lm.seconds || 0, pm.seconds || 0), scoreSeconds: lm.seconds, planSeconds: pm.seconds } });
+    Object.assign(result, pl, { _meta: { model: pm.model || lm.model, seconds: Math.max(lm.seconds || 0, pm.seconds || 0), scoreSeconds: lm.seconds, planSeconds: pm.seconds, scoreUsage: lm.usage, planUsage: pm.usage } });
     planState = "ready"; planP = null;
     fill();
     loadDetails();                 // written steps: in the background
@@ -983,7 +983,8 @@ function fill() {
   $("#timing").textContent = evalTiming(r);
 }
 
-const evalTiming = r => { const m = r._meta || {}; return m.planSeconds != null ? `${m.model} · Scores: ${m.scoreSeconds}s · Plan: ${m.planSeconds}s (at the same time)` : (m.change ? `Change: ${m.model} · ${m.seconds}s` : `Evaluation (one call): ${m.model} · ${m.seconds}s`); };
+const tok = u => u && u.output_tokens ? `, ${u.output_tokens.toLocaleString()} tokens` : "";
+const evalTiming = r => { const m = r._meta || {}; return m.planSeconds != null ? `${m.model} · Scores: ${m.scoreSeconds}s${tok(m.scoreUsage)} · Plan: ${m.planSeconds}s${tok(m.planUsage)} (at the same time)` : (m.change ? `Change: ${m.model} · ${m.seconds}s${tok(m.usage)}` : `Evaluation (one call): ${m.model} · ${m.seconds}s${tok(m.usage)}`); };
 /* ---------------- preview ---------------- */
 async function placementMap() {
   try {
