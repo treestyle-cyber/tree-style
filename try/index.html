@@ -215,9 +215,9 @@
   .zhint{color:#aaa;font-size:12px;text-align:center;padding:8px 12px max(12px,env(safe-area-inset-bottom))}
 
   /* tips while waiting */
-  .tipcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px 12px;margin-bottom:22px;min-height:132px;display:flex;flex-direction:column}
+  .tipcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px 12px;margin-bottom:22px;min-height:118px;display:flex;flex-direction:column}
   .tipk{font:600 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
-  .tipcard p{margin:6px 0 10px;font-size:15px;line-height:1.45;flex:1;transition:opacity .4s}
+  .tipcard p{margin:6px 0 10px;font:italic 500 22px/1.25 var(--serif);color:var(--green);flex:1;transition:opacity .4s}
   .tipcard p.fade{opacity:0}
   .tipdots{display:flex;gap:6px;justify-content:center}
   .tipdots i{width:6px;height:6px;border-radius:50%;background:var(--line);transition:background .3s}
@@ -587,7 +587,7 @@
 <div id="loading" hidden>
   <div class="box">
     <div class="tipcard" aria-live="polite">
-      <div class="tipk" id="tipK">Did you know?</div>
+      <div class="tipk" id="tipK">Try this</div>
       <p id="tipText"></p>
       <div class="tipdots" id="tipDots"></div>
     </div>
@@ -752,7 +752,7 @@ $("#file").addEventListener("change", async e => {
 
 const STYLE_NOTES = {
   keep: "We'll figure out the style you already have and help you refine it.",
-  classic: "Red, green, gold and silver. Shiny glass balls in many sizes, solid ribbon, pine and berry stems, poinsettias.",
+  classic: "Red, green, gold and silver. Shiny glass ornaments in many sizes, solid ribbon, pine and berry stems, poinsettias.",
   rustic: "Natural and textured: buffalo check, burlap, wood, pinecones. Mostly matte with a little shine.",
   modern: "Less is more. Fewer, cleaner eye-catching spots, simple shapes, solid ribbon.",
   elegant: "Sparkle and richness: velvet or sheer ribbon, pearls, gold or snowy stems, roses and magnolias.",
@@ -773,20 +773,18 @@ async function api(path, body) {
 }
 
 /* ---------------- loading ---------------- */
-// Read-only tips that rotate while people wait: app features mixed with quick design tips
+// Read-only tips that rotate while people wait: short nudges to try the app's features
 const TIPS = [
-  ["Did you know?", "Every step has a \"What to buy\" list with quantities in boxes, packs and bolts, plus a link to find each item."],
-  ["Designer tip", "Your biggest ornaments should be about as many inches across as your tree is tall in feet. A 7½ ft tree can carry 8 to 10 inch ornaments."],
-  ["Did you know?", "You can ask the design partner to change things: work in a color, design around your heirlooms, or try a whole new mood."],
-  ["Designer tip", "Push your largest ornaments deep toward the trunk. They fill gaps and give the tree depth."],
-  ["Did you know?", "Telling us your tree's height, and whether it's real or artificial, makes your shopping quantities more accurate."],
-  ["Designer tip", "Ribbon looks best as loops or short drops tucked in here and there, not wrapped around the tree."],
-  ["Did you know?", "The Shopping list gathers everything from your plan in one place, in the order you'll use it."],
-  ["Designer tip", "Mix shiny and matte ornaments in the same color. It looks more designed, with no extra colors needed."],
-  ["Did you know?", "Your step-by-step plan shows each step right on your own photo, so you know exactly where things go."],
-  ["Designer tip", "Fluffing an artificial tree is the most boring step, and the one that matters most."],
-  ["Did you know?", "Tap \"Try another tree\" to check a different tree, or try a new style on this one."],
-  ["Designer tip", "Most trees need more lights than you think: about 100 to 200 per foot of tree."]
+  "Not quite right? Ask for a change under your preview.",
+  "Pinch or tap the magnifier to zoom in on details.",
+  "Drag across your photo to compare before and after.",
+  "Tap a “Try” idea to see a whole new direction.",
+  "Add heirlooms and we’ll design around them.",
+  "Tell us your tree’s height for exact quantities.",
+  "Every step comes with its own shopping list.",
+  "Mark each step done as you go.",
+  "Every version is saved. Go back anytime.",
+  "Save your preview to share it."
 ];
 let tipTimer = null;
 function startTips() {
@@ -794,7 +792,7 @@ function startTips() {
   let k = 0;
   $("#tipDots").innerHTML = order.map(() => "<i></i>").join("");
   const showTip = () => {
-    const [kind, text] = TIPS[order[k % order.length]];
+    const text = TIPS[order[k % order.length]], kind = "Try this";
     $("#tipText").classList.add("fade");
     setTimeout(() => { $("#tipK").textContent = kind; $("#tipText").textContent = text; $("#tipText").classList.remove("fade"); }, k ? 350 : 0);
     [...$("#tipDots").children].forEach((d, i) => d.classList.toggle("on", i === k % order.length));
@@ -840,7 +838,7 @@ let planState = "ready", planP = null, evalBody = null, lookResult = null;
 async function run() {
   if (!photo) return;
   $("#startErr").textContent = "";
-  const L = startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree", mode === "design" ? DESIGN_STEPS : CHECK_STEPS, 20);
+  const L = startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree", mode === "design" ? DESIGN_STEPS : CHECK_STEPS, 12);
   evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined, inspo: mode === "design" ? (inspoPhoto || undefined) : undefined };
   const myPlan = api("/api/evaluate", { ...evalBody, part: "plan" });
   myPlan.catch(() => {});

@@ -158,7 +158,7 @@
   }
 
   const STEP_ORDER = ["fluff", "lights", "primary_picks", "ribbon", "florals", "statement", "medium", "small", "small_picks", "crown", "base"];
-  const STEP_TITLE = { fluff: "Fluff", lights: "Lights", primary_picks: "Greenery stems", ribbon: "Ribbon", florals: "Flowers", statement: "Big ornaments",
+  const STEP_TITLE = { fluff: "Shape the branches", lights: "Lights", primary_picks: "Greenery stems", ribbon: "Ribbon", florals: "Flowers", statement: "Big ornaments",
     medium: "Medium ornaments", small: "Small ornaments", small_picks: "Berry stems", crown: "Top of the tree", base: "Base", all: "All together" };
 
   const colorName = h => {
@@ -197,7 +197,7 @@
       const emitClusters = () => Object.entries(cg).forEach(([key, { c, n, k, merged }]) => {
         if (merged) return;
         const boxes = packs(n, PACK[sz]), ins = Math.round(inch[sz]), cn = colorName(c.color);
-        out.push({ color: c.color, label: `${ins}" ${c.finish} ${cn} balls, for ${plural(k, "cluster", "clusters")}`, qty: `${plural(boxes, "box", "boxes")} of ${PACK[sz]} (you'll use ${n})`, q: `${ins} inch ${c.finish} ${cn} ball christmas ornaments` });
+        out.push({ color: c.color, label: `${ins}" ${c.finish} ${cn} ornaments, for ${plural(k, "cluster", "clusters")}`, qty: `${plural(boxes, "box", "boxes")} of ${PACK[sz]} (you'll use ${n})`, q: `${ins} inch ${c.finish} ${cn} ball christmas ornaments` });
       });
       if (!list.length) { emitClusters(); return; }
       // Merge look-alikes (same color name, finish, shape) so one-offs become real purchases
@@ -220,7 +220,7 @@
         const ins = Math.round(inch[sz]), o = x.o, cn = colorName(o.color);
         out.push({
           color: o.color,
-          label: `${ins}" ${o.finish !== "shiny" ? o.finish + " " : "shiny "}${cn} ${SHAPE_Q[o.shape] === "ball" ? "balls" : SHAPE_Q[o.shape] + "s"}${x.clusters ? `, including ${plural(x.clusters, "cluster", "clusters")}` : ""}`,
+          label: `${ins}" ${o.finish !== "shiny" ? o.finish + " " : "shiny "}${cn} ${SHAPE_Q[o.shape] === "ball" ? "ornaments" : SHAPE_Q[o.shape] + (o.shape === "candy" ? "s" : " ornaments")}${x.clusters ? `, including ${plural(x.clusters, "cluster", "clusters")}` : ""}`,
           qty: `${plural(boxes, "box", "boxes")} of ${PACK[sz]} (${n})`,
           q: `${ins} inch ${o.finish} ${cn} ${SHAPE_Q[o.shape]} christmas ornaments${sz === "xl" || sz === "l" ? " shatterproof" : ""}`
         });
@@ -492,7 +492,7 @@
         }
       });
       if (key === "fluff") {
-        pill(o, (G.L[0] + G.R[0]) / 2, G.A[1] + G.treeH * .45, data.tree.kind === "artificial" ? "Unfold every branch, then fluff each tip" : "Shake out the branches");
+        pill(o, (G.L[0] + G.R[0]) / 2, G.A[1] + G.treeH * .45, data.tree.kind === "artificial" ? "Unfold every branch, then shape each tip" : "Shake out the branches");
         const gaps = S.moments.filter(m => m.size >= 2).slice(0, 3);
         gaps.forEach(m => ring(o, m.x, m.y, u * 2.2, "#FFE7A3"));
         if (gaps[0]) pill(o, gaps[0].x, gaps[0].y, data.tree.kind === "artificial" ? "Bend branches back to make room here" : "Natural gap: save it for a big piece", { align: gaps[0].x > W * .55 ? "right" : "left", gap: u * 2.6, leaderFrom: [gaps[0].x, gaps[0].y] });
@@ -562,7 +562,7 @@
     }
     function clusterTip(sz) {
       const cs = data.clusters.filter(c => c.size === sz); if (!cs.length) return "";
-      return ` Start with the ${cs.length === 1 ? "cluster" : cs.length + " clusters"} in the dashed circles: wire ${cs[0].count} ${colorName(cs[0].color)} balls together like a bunch of grapes (twist their hangers together), then tuck the bunch into the branches.`;
+      return ` Start with the ${cs.length === 1 ? "cluster" : cs.length + " clusters"} in the dashed circles: wire ${cs[0].count} ${colorName(cs[0].color)} ornaments together like a bunch of grapes (twist their hangers together), then tuck the bunch into the branches.`;
     }
     function lead(key) {
       const t = data.tree, open = t.density === "open", art = t.kind === "artificial", [lo, hi] = lightCount(), xl = ORN_IN(data).xl;
@@ -591,7 +591,7 @@
         data.ornaments.filter(b => sz.includes(b.size)).forEach(b => { const k = [b.color.toUpperCase(), b.size, b.shape, b.finish].join("|"); groups[k] = groups[k] || Object.assign({ n: 0 }, b); groups[k].n++; });
         Object.values(groups).sort((a, b) => "xllms".indexOf(a.size) - "xllms".indexOf(b.size)).forEach(gp => {
           const shape = { ball: "", drop: "teardrop ", finial: "long drop ", geometric: "geometric ", candy: "candy cane " }[gp.shape];
-          out.push({ color: gp.color, text: `${gp.n} × ${Math.round(sizes[gp.size])}" ${gp.finish !== "shiny" ? gp.finish + " " : ""}${colorName(gp.color)} ${shape || "ball"}`.trim() });
+          out.push({ color: gp.color, text: `${gp.n} × ${Math.round(sizes[gp.size])}" ${gp.finish !== "shiny" ? gp.finish + " " : ""}${colorName(gp.color)} ${shape}${gp.shape === "candy" ? "" : "ornaments"}`.trim() });
         });
       }
       if (key === "ribbon") [S.rb.base, S.rb.overlay, S.rb.accent].filter(Boolean).forEach(rb => out.push({ color: rb.color, text: `${rb.width_in}" ${colorName(rb.color)} ${rb.texture}${rb.role === "accent" ? " (accent)" : ""}` }));

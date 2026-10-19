@@ -154,7 +154,19 @@ ${JSON.stringify(r.mockup || {})}
 
 ${PLAN_NOTES(mode).split("\n").filter(l => /^(EVERYTHING IS SOLD|ORNAMENTS ARE SOLD)/.test(l)).join("\n")}
 
-For each step write "how": one or two short, specific sentences in plain words (sizes, quantities in boxes/packs/bolts, and where on the tree), and "effort": rough time (e.g. "20 minutes"). Phone readers skim, so keep it tight.
+ALREADY ON SCREEN: above your words, each step already shows the general technique, so never repeat it:
+- fluff (shape the branches): unfold every branch, spread each tip up and out, bend a few larger branches to open pockets; it's the step that matters most
+- lights: how many lights for the height; check pre-lit trees for dark sections; spiral in and out; match the cord color
+- primary_picks: tuck greenery stems at the marked spots and wrap the wire around a branch; more and bigger low, fewer and smaller high
+- ribbon: how to make and tuck each loop or drop at the numbered spots
+- florals: tuck flowers into the greenery spots with a ribbon loop and berries beside each; a few extra near the top
+- statement: biggest first, pushed deep toward the trunk; special pieces get the best spots
+- medium / small: spread each box around the tree; mix shiny and matte; how to wire a cluster
+- small_picks: use plenty, all over
+- crown: gather extra at the top; when the topper goes on
+- base: size the skirt or collar to the tree
+
+For each step write "how": one or two short sentences that add only what's specific to THIS tree and this plan: where on their tree (e.g. "the bare patch low on the left", "the flat spot below the topper"), what to fix in what's already there, which colors and how many boxes/packs/bolts. If you have nothing to add beyond the technique above, write one short line about where to focus on this tree. "effort": rough time (e.g. "20 minutes"). Phone readers skim, so keep it tight. Plain words: say "shape the branches", never "fluff"; say "ornaments", never "balls".
 
 Reply with: {"steps":[{"how":"...","effort":"..."}]} with exactly ${plan.length} items, one per plan step, same order.`;
 }
