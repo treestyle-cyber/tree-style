@@ -488,8 +488,8 @@
       const overTxt = ov ? ` Lay the ${ov.width_in}" ${colorName(ov.color)} ribbon on top as you go, so each piece is two layers.` : "";
       const acTxt = ac ? ` The thin ${ac.width_in}" ${colorName(ac.color)} ribbon is its own trail: small pieces tucked into the gaps between the numbered spots (the small ${colorName(ac.color)} shapes).` : "";
       if (ribbonPlan.kind === "cascade")
-        return ownedTxt + `Each numbered band is one piece of the ${wide} ribbon (${n} pieces). Starting at 1, tuck the top end deep into the tree, let it drape over two or three branches in the direction of the arrow, then tuck the bottom end in and cut. Each new piece starts a little lower and off to the side, never straight down or straight across.` + overTxt + acTxt + (ribbonPlan.flowerLoops ? ` Save some ribbon for a loop or two beside each flower in the flowers step.` : "");
-      return ownedTxt + `Work through the ${n} numbered spots from the top down. At each one, make ${ribbonPlan.loopsPerSpot >= 4 ? "three or four" : ribbonPlan.loopsPerSpot >= 3 ? "two or three" : "one or two"} loops of the ${wide} ribbon about ${loopIn}" long, pinch them together, and push the pinched end deep into the branches so the loops pop out. The shapes on the picture show the size and direction.` + overTxt + acTxt;
+        return ownedTxt + `Each numbered band is one piece of the ${wide} ribbon (${n} pieces). Starting at 1, tuck the top end well into the branches, let it drape over two or three branches in the direction of the arrow, then tuck the bottom end in and cut. Each new piece starts a little lower and off to the side, never straight down or straight across.` + overTxt + acTxt + (ribbonPlan.flowerLoops ? ` Save some ribbon for a loop or two beside each flower in the flowers step.` : "");
+      return ownedTxt + `Work through the ${n} numbered spots from the top down. At each one, make ${ribbonPlan.loopsPerSpot >= 4 ? "three or four" : ribbonPlan.loopsPerSpot >= 3 ? "two or three" : "one or two"} loops of the ${wide} ribbon about ${loopIn}" long, pinch them together, and tuck the pinched end well into the branches so the loops pop out. The shapes on the picture show the size and direction.` + overTxt + acTxt;
     }
     function clusterTip(sz) {
       const cs = data.clusters.filter(c => c.size === sz); if (!cs.length) return "";
@@ -504,7 +504,7 @@
         primary_picks: "Tuck greenery stems in at the marked spots, wrapping each wire stem around a branch so it holds. Picture a vine growing up from inside the tree and peeking out here and there: more and bigger near the bottom, fewer and smaller as you go up.",
         ribbon: ribbonLead(),
         florals: "Tuck the flower stems into the greenery spots, each with a ribbon loop and a few berries beside it. Put a few extra near the top.",
-        statement: `Biggest first: about ${xl}" ornaments for this tree, pushed deep toward the trunk so they fill the background. Then give your most special ornaments the best spots, with a little room around them.`,
+        statement: `Biggest first: about ${xl}" ornaments for this tree, set back toward the trunk so they fill the background. Then give your most special ornaments the best spots, with a little room around them.`,
         medium: "Medium ornaments go around the big ones, in the spots marked. The circles show where a few of them go; spread the rest of each box evenly around the tree. Mix shiny and matte." + clusterTip("m"),
         small: "Fill in around everything with the small ones, tucked in close to the branches. Use them for the accent color or a contrasting finish. Spread each box all the way around the tree." + clusterTip("s"),
         small_picks: "Berry stems are inexpensive, so use plenty. Tuck them in all over to add texture and break up any plain patches.",
