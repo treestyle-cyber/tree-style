@@ -6,7 +6,7 @@
 
   // Clean up whatever the AI sent so the painter never trips on it.
   function normalize(r, mode) {
-    r = obj(r); const m = obj(r.mockup), tree = obj(r.tree), cone = obj(r.cone), picks = obj(m.picks), lights = obj(m.lights), top = obj(m.topper);
+    r = obj(r); nameColors(obj(r.mockup)); const m = obj(r.mockup), tree = obj(r.tree), cone = obj(r.cone), picks = obj(m.picks), lights = obj(m.lights), top = obj(m.topper);
     const density = oneOf(tree.density, ["open", "dense"], "dense");
     const out = {
       mode,
@@ -24,7 +24,7 @@
       picks: {
         primary: { kind: oneOf(obj(picks.primary).kind, ["pine", "cedar", "eucalyptus", "magnolia", "none"], "pine"), finish: oneOf(obj(picks.primary).finish, ["natural", "frosted", "gold", "silver"], "natural") },
         floral: { kind: oneOf(obj(picks.floral).kind, ["poinsettia", "rose", "magnolia", "hydrangea", "orchid", "none"], "none"), color: hex(obj(picks.floral).color, "#B0242F") },
-        small: { kind: oneOf(obj(picks.small).kind, ["berries", "spray", "none"], "none"), color: hex(obj(picks.small).color, "#A3151F") }
+        small: { kind: oneOf(obj(picks.small).kind, ["berries", "spray", "none"], "none"), color: hex(obj(picks.small).color, "#A3151F"), label: str(obj(picks.small).label, 60) }
       },
       moments: arr(m.moments).slice(0, 14).map(o => (o = obj(o), { x: clamp(o.x, 0, 1), y: clamp(o.y, 0, 1), size: Math.round(clamp(o.size || 2, 1, 3)), floral: !!o.floral })),
       ornaments: arr(m.ornaments).slice(0, 30).map(o => (o = obj(o), { x: clamp(o.x, 0, 1), y: clamp(o.y, 0, 1), color: hex(o.color, "#8E2236"),
@@ -32,7 +32,7 @@
       clusters: arr(m.clusters).slice(0, 6).map(c => (c = obj(c), { x: clamp(c.x, 0, 1), y: clamp(c.y, 0, 1), color: hex(c.color, "#3E7A4A"),
         size: oneOf(c.size, ["m", "s"], "m"), count: Math.round(clamp(c.count || 4, 3, 5)), finish: oneOf(c.finish, ["shiny", "matte", "glitter"], "shiny") })),
       crown: oneOf(m.crown, ["light", "medium", "full"], "medium"),
-      topper: { style: oneOf(top.style, ["star", "bow", "floral", "finial", "none"], "none"), color: hex(top.color, "#E2B65A"), delicate: !!top.delicate }
+      topper: { style: oneOf(top.style, ["star", "bow", "floral", "finial", "none"], "none"), color: hex(top.color, "#E2B65A"), label: str(top.label, 80), delicate: !!top.delicate }
     };
     if (out.picks.primary.kind === "none" && !arr(m.moments).length) out.moments = [];
     balanceFlowers(out);
@@ -89,17 +89,28 @@
   }
 
   const STEP_ORDER = ["fluff", "lights", "primary_picks", "ribbon", "florals", "statement", "medium", "small", "small_picks", "crown", "base"];
-  const STEP_TITLE = { fluff: "Shape the branches", lights: "Lights", primary_picks: "Greenery stems", ribbon: "Ribbon", florals: "Flowers", statement: "Big ornaments",
-    medium: "Medium ornaments", small: "Small ornaments", small_picks: "Berry stems", crown: "Top of the tree", base: "Base", all: "All together" };
+  const STEP_TITLE = { fluff: "Shape the branches", lights: "Lights", primary_picks: "Greenery stems", ribbon: "Ribbon", florals: "Flowers", statement: "Extra-large ornaments",
+    medium: "Large & medium ornaments", small: "Small ornaments", small_picks: "Small accents", crown: "The crown", base: "Base", all: "All together" };
 
+  // Claude names its colors (champagne, olive, burgundy...); use those names everywhere, and only
+  // guess from the hex when it didn't give one.
+  let NAMES = {};
+  const nameColors = m => {
+    NAMES = {};
+    const put = o => { if (o && o.color && typeof o.color_name === "string" && o.color_name.trim()) NAMES[String(hex(o.color, o.color)).toUpperCase()] = o.color_name.trim().toLowerCase().slice(0, 30); };
+    arr(m.ribbons).forEach(put); arr(m.ornaments).forEach(put); arr(m.clusters).forEach(put);
+    put(obj(obj(m.picks).floral)); put(obj(obj(m.picks).small)); put(obj(m.topper));
+  };
   const colorName = h => {
+    if (h && NAMES[String(h).toUpperCase()]) return NAMES[String(h).toUpperCase()];
     const [r, g, b] = rgbOf(h), mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 510;
     if (mx - mn < 28) return l > .8 ? "white" : l > .55 ? "silver" : l > .25 ? "grey" : "black";
     let hue = 0; const dd = mx - mn;
     if (mx === r) hue = ((g - b) / dd) % 6; else if (mx === g) hue = (b - r) / dd + 2; else hue = (r - g) / dd + 4;
     hue = (hue * 60 + 360) % 360;
-    const base = hue < 15 || hue >= 340 ? "red" : hue < 40 ? (l < .45 ? "copper" : "orange") : hue < 65 ? (l > .8 ? "champagne" : "gold") : hue < 160 ? "green" : hue < 200 ? "teal" : hue < 255 ? "blue" : hue < 290 ? "purple" : "pink";
-    return (l < .3 && base !== "black" ? "deep " : "") + base;
+    const sat = dd / 255;
+    const base = hue < 15 || hue >= 340 ? (l < .35 ? "burgundy" : "red") : hue < 32 ? (l < .45 ? "copper" : "orange") : hue < 65 ? (l > .78 ? "champagne" : "gold") : hue < 160 ? (sat < .35 && hue < 100 ? "olive" : "green") : hue < 200 ? "teal" : hue < 255 ? "blue" : hue < 290 ? "purple" : "pink";
+    return (l < .3 && !["black", "burgundy"].includes(base) ? "deep " : "") + base;
   };
 
   // ---------- What to buy, in real quantities ----------
@@ -128,7 +139,7 @@
       const emitClusters = () => Object.entries(cg).forEach(([key, { c, n, k, merged }]) => {
         if (merged) return;
         const boxes = packs(n, PACK[sz]), ins = Math.round(inch[sz]), cn = colorName(c.color);
-        out.push({ color: c.color, label: `${ins}" ${c.finish} ${cn} ornaments, for ${plural(k, "cluster", "clusters")}`, qty: `${plural(boxes, "box", "boxes")} of ${PACK[sz]} (you'll use ${n})`, q: `${ins} inch ${c.finish} ${cn} ball christmas ornaments` });
+        out.push({ color: c.color, label: `${ins}" ${c.finish} ${cn} ornaments, for ${plural(k, "cluster", "clusters")}`, qty: `About ${boxes * PACK[sz]} (you'll use ${n})`, q: `${ins} inch ${c.finish} ${cn} ball christmas ornaments` });
       });
       if (!list.length) { emitClusters(); return; }
       // Merge look-alikes (same color name, finish, shape) so one-offs become real purchases
@@ -152,7 +163,7 @@
         out.push({
           color: o.color,
           label: `${ins}" ${o.finish !== "shiny" ? o.finish + " " : "shiny "}${cn} ${SHAPE_Q[o.shape] === "ball" ? "ornaments" : SHAPE_Q[o.shape] + (o.shape === "candy" ? "s" : " ornaments")}${x.clusters ? `, including ${plural(x.clusters, "cluster", "clusters")}` : ""}`,
-          qty: `${plural(boxes, "box", "boxes")} of ${PACK[sz]} (${n})`,
+          qty: `About ${n}`,
           q: `${ins} inch ${o.finish} ${cn} ${SHAPE_Q[o.shape]} christmas ornaments${sz === "xl" || sz === "l" ? " shatterproof" : ""}`
         });
       });
@@ -173,7 +184,7 @@
       // Full designer look: about 2-3 per foot of tree (basic look is 1 per foot)
       const want = mode === "design" ? Math.max(d.moments.length * 2, Math.round(h * 2.5)) : Math.max(6, d.moments.length * 2);
       const k = packs(want, 6), fin = d.picks.primary.finish !== "natural" ? d.picks.primary.finish + " " : "";
-      add(PICK_HEX[d.picks.primary.kind] || "#3B7550", `${fin}${d.picks.primary.kind} stems`, `${plural(k, "pack", "packs")} of 6 (${k * 6} stems)`, `${fin}${d.picks.primary.kind} picks christmas tree 6 pack`);
+      add(PICK_HEX[d.picks.primary.kind] || "#3B7550", `${fin}${d.picks.primary.kind} stems`, `About ${k * 6} stems`, `${fin}${d.picks.primary.kind} picks christmas tree 6 pack`);
     }
     if (key === "ribbon") {
       const rbs = d.ribbons, loops = d.technique === "loops";
@@ -188,25 +199,25 @@
         const qty = rb.owned
           ? `About ${yards} yards needed. You have some; add ${rolls} (${ROLL_YD} yd each) if you're short`
           : `About ${yards} yards · ${rolls} (${ROLL_YD} yd each)`;
-        add(rb.color, `${rb.width_in}" ${cn} ${rb.texture}${role}${rb.owned ? " · re-use yours" : ""}`, qty, `${rb.width_in} inch wired ${rb.texture} ribbon ${cn} ${ROLL_YD} yards`);
+        add(rb.color, `${rb.width_in}" ${cn} ${rb.texture} wired ribbon${role}${rb.owned ? " · re-use yours" : ""}`, qty, `${rb.width_in} inch wired ${rb.texture} ribbon ${cn} ${ROLL_YD} yards`);
       });
     }
     if (key === "florals" && d.picks.floral.kind !== "none") {
       const want = Math.max(6, d.moments.filter(m => m.floral).length + d.moments.filter(m => m.floral && m.size >= 3).length + (mode === "design" ? Math.round(h * .6) : 0));
       const k = packs(want, 6), cn = colorName(d.picks.floral.color);
-      add(d.picks.floral.color, `${cn} ${d.picks.floral.kind} stems`, `${plural(k, "pack", "packs")} of 6 (${k * 6} stems)`, `${cn} ${d.picks.floral.kind} picks christmas tree 6 pack`);
+      add(d.picks.floral.color, `${cn} ${d.picks.floral.kind} stems`, `About ${k * 6} stems`, `${cn} ${d.picks.floral.kind} picks christmas tree 6 pack`);
     }
-    if (key === "statement") out.push(...ornamentGroups(d, mode, ["xl", "l"]));
-    if (key === "medium") out.push(...ornamentGroups(d, mode, ["m"]));
+    if (key === "statement") out.push(...ornamentGroups(d, mode, ["xl"]));
+    if (key === "medium") out.push(...ornamentGroups(d, mode, ["l", "m"]));
     if (key === "small") out.push(...ornamentGroups(d, mode, ["s"]));
     if (key === "small_picks" && d.picks.small.kind !== "none") {
       const cn = colorName(d.picks.small.color), spray = d.picks.small.kind === "spray";
       const want = Math.max(12, Math.round(h * 3 * (mode === "design" ? 1 : .6))), k = packs(want, 12);
-      add(d.picks.small.color, `${cn} ${spray ? "sprays" : "berry stems"}`, `${plural(k, "pack", "packs")} of 12 (${k * 12} stems)`, `${cn} ${spray ? "glitter spray picks" : "berry picks"} christmas tree 12 pack`);
+      add(d.picks.small.color, d.picks.small.label || `${cn} ${spray ? "sprays" : "berry stems"}`, `About ${k * 12}`, `${cn} ${spray ? "glitter spray picks" : "berry picks"} christmas tree 12 pack`);
     }
     if (key === "crown" && d.topper.style !== "none") {
       const cn = colorName(d.topper.color), st = d.topper.style === "floral" ? "floral" : d.topper.style === "finial" ? "finial" : d.topper.style;
-      add(d.topper.color, `${cn} ${st} topper`, "1", `${cn} ${st} christmas tree topper`);
+      add(d.topper.color, d.topper.label ? d.topper.label.charAt(0).toUpperCase() + d.topper.label.slice(1) : `${cn} ${st} topper`, "1", `${cn} ${st} christmas tree topper`);
     }
     // Anything the plan asks for that isn't covered above
     d.plan.filter(p => p.element === key && p.shop).forEach(p => {
@@ -454,16 +465,16 @@
       }
       if (key === "florals") S.all.filter(m => m.floral).forEach(m => ring(o, m.x, m.y, FLOWER_IN[data.picks.floral.kind || "rose"] * S.pxIn * .6 + u * .4));
       if (["statement", "medium", "small"].includes(key)) {
-        const sz = key === "statement" ? ["xl", "l"] : key === "medium" ? ["m"] : ["s"];
+        const sz = key === "statement" ? ["xl"] : key === "medium" ? ["l", "m"] : ["s"];
         const list = data.ornaments.filter(b => sz.includes(b.size));
         list.filter(b => b.cl == null).forEach(b => ring(o, b.x * W, b.y * H, Math.max(3, sizes[b.size] * S.pxIn / 2) + u * .5));
         data.clusters.filter(c => sz.includes(c.size)).forEach((c, i) => {
           const r = ORN_IN(data)[c.size] * S.pxIn / 2 * 3.4, x = c.x * W, y = c.y * H;
-          o.save(); o.setLineDash([u * .7, u * .5]); o.lineWidth = Math.max(2, u * .25); o.strokeStyle = "#FFE7A3"; o.beginPath(); o.arc(x, y, r, 0, TAU); o.stroke(); o.restore();
+          o.save(); o.setLineDash([u * 1.6, u * 1.1]); o.lineWidth = Math.max(2.5, u * .32); o.strokeStyle = "#FFE7A3"; o.beginPath(); o.arc(x, y, r, 0, TAU); o.stroke(); o.restore();
           if (i === 0) pill(o, x, y, `Group of ${c.count}, packed tight`, { align: c.x > .55 ? "right" : "left", gap: r + u, leaderFrom: [x + (c.x > .55 ? -r : r), y] });
         });
         const xl = list.find(b => b.size === "xl");
-        if (xl) pill(o, xl.x * W, xl.y * H, "Push it in, toward the trunk", { align: xl.x > .55 ? "right" : "left", gap: sizes.xl * S.pxIn / 2 + u * 1.2, leaderFrom: [xl.x * W, xl.y * H] });
+        if (xl) pill(o, xl.x * W, xl.y * H, "Set it back toward the trunk", { align: xl.x > .55 ? "right" : "left", gap: sizes.xl * S.pxIn / 2 + u * 1.2, leaderFrom: [xl.x * W, xl.y * H] });
       }
       if (key === "small_picks") pill(o, (G.L[0] + G.R[0]) / 2, G.A[1] + G.treeH * .55, "Tuck these in everywhere");
       if (key === "crown") {
@@ -494,7 +505,7 @@
     }
     function clusterTip(sz) {
       const cs = data.clusters.filter(c => c.size === sz); if (!cs.length) return "";
-      return ` Start with the ${cs.length === 1 ? "cluster" : cs.length + " clusters"} in the dashed circles: wire ${cs[0].count} ${colorName(cs[0].color)} ornaments together like a bunch of grapes (twist their hangers together), then tuck the bunch into the branches.`;
+      return ` Start with the ${cs.length === 1 ? "cluster" : cs.length + " clusters"} in the gold dashed circles: wire ${cs[0].count} ${colorName(cs[0].color)} ornaments together like a bunch of grapes (twist their hangers together), then nestle the bunch into the branches.`;
     }
     function lead(key) {
       const t = data.tree, open = t.density === "open", art = t.kind === "artificial", [lo, hi] = lightCount(), xl = ORN_IN(data).xl;
@@ -505,11 +516,11 @@
         primary_picks: "Nestle the greenery stems in at the marked spots, wrapping each wire around a branch to hold it. Imagine a vine growing up from within the tree, revealing itself here and there: fuller near the base, lighter as it climbs.",
         ribbon: ribbonLead(),
         florals: "Nestle each flower into a greenery spot, framed by a ribbon loop and a few berries. Let a few extra gather near the top.",
-        statement: `Begin with the largest: ornaments of about ${xl}", set back toward the trunk to create a rich background. Then give your most treasured pieces the best spots, with a little breathing room.`,
-        medium: "Layer the medium ornaments around the larger ones. The circles mark a few placements; spread the rest of each box evenly around the tree, mixing shiny and matte." + clusterTip("m"),
-        small: "Finish with the small ornaments, tucked close to the branches to fill in around everything. They're the place for your accent color or a contrasting finish. Carry each box all the way around the tree." + clusterTip("s"),
-        small_picks: "Berry stems are an inexpensive luxury, so be generous. Tuck them in throughout to add texture and soften any quiet patches.",
-        crown: data.topper.delicate ? "The top is where every eye goes first. Build it up with extra greenery, ribbon and flowers, then set the topper last so nothing disturbs it." : "The top is where every eye goes first. Secure the topper first, then build extra greenery, ribbon and flowers around it.",
+        statement: `Begin with the extra-large ornaments, about ${Math.round(xl)}" across, set back toward the trunk to create a rich background. Then give your most treasured pieces the best spots, with a little breathing room.`,
+        medium: "Layer the large and medium ornaments around the extra-large ones. The circles mark a few placements; spread the rest evenly around the tree, mixing shiny and matte." + clusterTip("m"),
+        small: "Finish with the small ornaments, tucked close to the branches to fill in around everything. They're the place for your accent color or a contrasting finish, so spread them all the way around the tree, sides included." + clusterTip("s"),
+        small_picks: "Small accents, like berries, little flowers or crystal sprays, are an inexpensive luxury, so be generous. Tuck them in throughout to add texture and soften any quiet patches.",
+        crown: data.topper.delicate ? "The crown, the top of the tree, is where every eye goes first. Build it up with extra greenery, ribbon and flowers, then set the topper last so nothing disturbs it." : "The crown, the top of the tree, is where every eye goes first. Secure the topper first, then build extra greenery, ribbon and flowers around it.",
         base: "Choose a skirt or collar in proportion to the tree. A generous base, or one that echoes a color on the tree, grounds the whole design.",
         all: (afterImg ? "Your finished tree. " : "Everything in place. ") + (mode === "check" ? "The numbered pins are your quick fixes." : "Tap any step to look again.")
       }[key];
@@ -519,7 +530,7 @@
     function legend(key) {
       const S = scene, sizes = ORN_IN(data), out = [];
       if (["statement", "medium", "small"].includes(key)) {
-        const sz = key === "statement" ? ["xl", "l"] : key === "medium" ? ["m"] : ["s"], groups = {};
+        const sz = key === "statement" ? ["xl"] : key === "medium" ? ["l", "m"] : ["s"], groups = {};
         data.ornaments.filter(b => sz.includes(b.size)).forEach(b => { const k = [b.color.toUpperCase(), b.size, b.shape, b.finish].join("|"); groups[k] = groups[k] || Object.assign({ n: 0 }, b); groups[k].n++; });
         Object.values(groups).sort((a, b) => "xllms".indexOf(a.size) - "xllms".indexOf(b.size)).forEach(gp => {
           const shape = { ball: "", drop: "teardrop ", finial: "long drop ", geometric: "geometric ", candy: "candy cane " }[gp.shape];
@@ -558,7 +569,15 @@
 
     const itemsFor = key => key === "all" ? [] : data.plan.filter(p => p.element === key);
     const buy = key => key === "all" ? [] : buyList(data, mode, key);
-    return { steps, title: k => STEP_TITLE[k], draw, drawMap: () => drawMap(ctx), lead, legend, itemsFor, buy, data, setAfter: im => { afterImg = im; } };
+    // When the written instructions are in, the step shows only them, plus a short note on how to read
+    // the picture where the picture has its own marks (numbered ribbon spots, cluster circles).
+    function note(key) {
+      if (key === "ribbon" && ribbonPlan && ribbonPlan.marks.length) return `On the picture: the numbered spots show where each piece of ribbon goes, starting at 1${ribbonPlan.kind === "cascade" ? ", with arrows for the direction it falls" : ""}.`;
+      if (key === "medium" || key === "small") return clusterTip(key === "medium" ? "m" : "s").trim();
+      if (key === "all") return lead("all");
+      return "";
+    }
+    return { steps, title: k => STEP_TITLE[k], draw, drawMap: () => drawMap(ctx), lead, note, legend, itemsFor, buy, data, setAfter: im => { afterImg = im; } };
   }
 
   window.TreeGuide = { create, normalize, shoppingList };

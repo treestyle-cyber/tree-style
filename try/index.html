@@ -933,7 +933,7 @@ function applyFacts() {
 function loadDetails() {
   if ((result?.plan || []).every(p => p.how)) { detailsReady = true; detailsP = null; return; }
   detailsReady = false;
-  const forResult = result, body = { image: photo, details: { result: { tree: result.tree, plan: result.plan, mockup: result.mockup }, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts() } };
+  const forResult = result, body = { image: photo, details: { result: { tree: result.tree, plan: result.plan, mockup: result.mockup }, shopping: TreeGuide.shoppingList(result, mode).map(g => ({ title: g.title, items: g.items.map(i => ({ label: i.label, qty: i.qty })) })), mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts() } };
   const attempt = () => api("/api/evaluate", body);
   detailsP = attempt().catch(() => attempt()).then(d => {
     (d.steps || []).forEach((st, i) => { const p = forResult.plan[i]; if (p) { p.how = st.how; p.effort = st.effort; } });
@@ -1164,7 +1164,9 @@ async function drawStep() {
   const nd = steps.filter(k => doneSteps.has(k)).length;
   $("#stepK").textContent = key === "all" ? `Final look · ${nd} of ${total} steps done` : `Step ${stepIdx + 1} of ${total}${nd ? ` · ${nd} done` : ""}`;
   $("#stepTitle").textContent = guide.title(key);
-  $("#stepLead").textContent = guide.lead(key);
+  const its = guide.itemsFor(key), written = its.some(p => p.how);
+  const leadTxt = written ? guide.note(key) : guide.lead(key);   // one set of instructions, never two
+  $("#stepLead").textContent = leadTxt; $("#stepLead").hidden = !leadTxt;
   const buy = guide.buy(key), lg = buy.length ? [] : guide.legend(key);
   $("#stepLegend").hidden = !lg.length;
   $("#stepLegend").innerHTML = lg.map(l => `<li><b style="background:${l.color}"></b>${esc(l.text)}</li>`).join("");
@@ -1172,7 +1174,7 @@ async function drawStep() {
   if (key === "primary_picks" || (key === "florals" && !steps.includes("primary_picks")))
     items += `<div class="newto"><b>New to stems?</b> They're short branches of greenery, flowers or berries on a bendable wire. You tuck them into the tree and wrap the wire around a branch. Stores call them "picks," so search for that when you shop.</div>`;
   if (buy.length) items += (factsSet ? "" : estNote(result)) + `<div class="buy"><div class="buyh">What to buy</div>${buy.map(buyRow).join("")}</div>`;
-  items += guide.itemsFor(key).map(p => `<div class="planitem"><h4>${esc(p.title)}</h4>${p.how ? `<p>${esc(p.how)}</p>` : ""}<div class="meta">${p.effort ? `<span>⏱ ${esc(p.effort)}</span>` : ""}</div></div>`).join("");
+  items += its.map(p => `<div class="planitem"><h4>${esc(p.title)}</h4>${p.how ? `<p>${esc(p.how)}</p>` : ""}</div>`).join("");
   $("#stepItems").innerHTML = items;
   $("#prevStep").disabled = stepIdx === 0;
   $("#nextStep").textContent = key === "all" ? "Back to my tree" : doneSteps.has(key) ? (stepIdx === total - 1 ? "See it all together" : "Next step") : (stepIdx === total - 1 ? "Done, see it all together" : "Done, next step");

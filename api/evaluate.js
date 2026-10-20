@@ -23,26 +23,29 @@ const PLAN_SHAPE = (mode, compact) => `"quick_fixes": [ {"title":"<plain, under 
  "mockup": {
    "lights": {"add":true|false,"kind":"warm|multicolor|solid","color":"#hex","density":"light|medium|heavy"},
    "ribbon_technique": "cascade|loops",
-   "ribbons": [ {"role":"base|overlay|accent","width_in":<number>,"color":"#hex","texture":"satin|velvet|metallic|sheer|plaid|stripe|burlap","accent":"#hex or null","owned":true|false} ],
-   "picks": {"primary":{"kind":"pine|cedar|eucalyptus|magnolia|none","finish":"natural|frosted|gold|silver"},"floral":{"kind":"poinsettia|rose|magnolia|hydrangea|orchid|none","color":"#hex"},"small":{"kind":"berries|spray|none","color":"#hex"}},
+   "ribbons": [ {"role":"base|overlay|accent","width_in":<number>,"color":"#hex","color_name":"<the color as a designer would name it, e.g. burgundy, champagne, olive>","texture":"satin|velvet|metallic|sheer|plaid|stripe|burlap","accent":"#hex or null","owned":true|false} ],
+   "picks": {"primary":{"kind":"pine|cedar|eucalyptus|magnolia|none","finish":"natural|frosted|gold|silver"},"floral":{"kind":"poinsettia|rose|magnolia|hydrangea|orchid|none","color":"#hex","color_name":"<name>"},"small":{"kind":"berries|spray|none","color":"#hex","color_name":"<name>","label":"<what they are, plainly, e.g. red berry stems, crystal sprays, small white flowers, frosted pinecone picks>"}},
    "moments": [ {"x":<0-1>,"y":<0-1>,"size":1|2|3,"floral":true|false} ],
-   "ornaments": [ {"x":<0-1>,"y":<0-1>,"color":"#hex","size":"xl|l|m|s","shape":"ball|drop|finial|geometric|candy","finish":"shiny|matte|glitter"} ],
-   "clusters": [ {"x":<0-1>,"y":<0-1>,"color":"#hex","size":"m|s","count":3-5,"finish":"shiny|matte|glitter"} ],
+   "ornaments": [ {"x":<0-1>,"y":<0-1>,"color":"#hex","color_name":"<name>","size":"xl|l|m|s","shape":"ball|drop|finial|geometric|candy","finish":"shiny|matte|glitter"} ],
+   "clusters": [ {"x":<0-1>,"y":<0-1>,"color":"#hex","color_name":"<name>","size":"m|s","count":3-5,"finish":"shiny|matte|glitter"} ],
    "crown": "light|medium|full",
-   "topper": {"style":"star|bow|floral|finial|none","color":"#hex","delicate":true|false}
+   "topper": {"style":"star|bow|floral|finial|none","color":"#hex","color_name":"<name>","label":"<what it is, plainly, e.g. oversized velvet bow with long tails, spray of gold leaves and stems>","delicate":true|false}
  },
  "render_brief": "<see RENDER BRIEF>"`;
 
 const PLAN_NOTES = (mode, compact) => `quick_fixes: 3-5, ${mode === "check" ? "biggest improvement for the least effort first; x,y = where on the photo" : "the plan at a glance, in order"}.
 plan: 6-12 items following the order of work.${compact ? " Titles only here: the written instructions for each step are written in a separate pass, so keep this part short." : ""} Fill "shop" for every step that needs something bought (lights, stems, ribbon, flowers, each ornament step, berry stems, topper, a new skirt or collar); leave it empty only for steps like fluffing or moving what they already own.
-EVERYTHING IS SOLD IN PACKS: almost nothing is bought as a single item (a topper is the exception). Give every quantity in "how" as packs, boxes or bolts: ribbon in 10-yard bolts (always say "bolts", not rolls). Use exactly this math so your steps match the shopping list: yards = tree height in feet × 2.0 for the widest ribbon, × 1.5 for the ribbon laid on top, × 1.3 for the thin accent. Give ribbon as the estimated yards plus whole 10-yard bolts, always rounding up (e.g. "about 15 yards, 2 bolts"); give a range only when fuller loops could need one more (e.g. "about 18 yards, 2-3 bolts"). (Designers use about 20-30 yards of main and supporting ribbon plus about 10 of accent on a 7.5 ft tree.) Stems and flowers come in packs of 6, berry stems in packs of 12, lights in strands of 100. For a full designer look use about 2-3 greenery stems per foot of tree.
-ORNAMENTS ARE SOLD IN BOXES: nobody buys one ornament. Use a tight palette: 2-3 colors, and at most 2 finishes per size. In plan "how", give ornament quantities in boxes (e.g. "2 boxes of 12 matte gold 3-inch balls"), never single ornaments (except heirlooms they already own).
+QUANTITIES: pack sizes vary by store, so never mention packs or boxes. Give counts ("about 18 greenery stems", "about 6 extra-large ornaments"), lights in strands of 100, and ribbon in yards plus 10-yard bolts (always "bolts", not rolls). Ribbon math, so your words match the shopping list: yards = tree height in feet × 2.0 for the widest ribbon, × 1.5 for the ribbon laid on top, × 1.3 for the thin accent; give the yards plus whole bolts, rounding up (e.g. "about 15 yards, 2 bolts"), with a range only when fuller loops could need one more (e.g. "about 18 yards, 2-3 bolts"). For a full designer look use about 2-3 greenery stems per foot of tree.
+RIBBON NAMES: all ribbon is wired; always say so (e.g. "6-inch burgundy velvet wired ribbon"). Sheer ribbon is "sheer ribbon", never gauze or chiffon.
+ORNAMENTS: use a tight palette: 2-3 colors, and at most 2 finishes per size. Give sizes in whole inches. Call the biggest "extra-large ornaments".
+COLOR NAMES: every color_name is the name you use in your words (e.g. "champagne", "olive", "burgundy"), and your words never use a different name for the same thing.
 ideas: exactly 3 genuinely different directions worth seeing for this tree.
 mockup.ribbon_technique: cascade for OPEN trees, loops for DENSE. ribbons: 2-3, widest first, following the layering rule; [] if no ribbon should be added.
 mockup.moments: 5-12 hidden-vine moments: larger and fuller low, smaller and sparser high, never in rows. Going down the tree they zigzag left and right across the full width; three in a row must never line up into a diagonal.
 mockup.ornaments: 12-26 NEW ornaments: a few xl in gaps, then l, mostly m and s; shapes and finishes true to the style. These are sample placements: repeat each color/size/finish combination several times (it stands for a box) rather than many one-off combinations.
-mockup.clusters: optional ornament clusters (see ORNAMENT CLUSTERS). Neither a default nor something to avoid: include them (1-4) when they fit this design, otherwise []. Each is 3-5 medium or small balls of one color and finish grouped at one spot (x,y = the center of the group). Don't repeat cluster balls in mockup.ornaments. Anything you put here is drawn in the step-by-step guide and the preview, so only include what you want called out.
-mockup.topper.style: none if the current topper is right.${mode === "check" ? " The mockup shows what they should add or re-place, not what stays as it is. If the plan re-uses ribbon they already own, include it in mockup.ribbons with owned: true (it still shows on the shopping list as a top-up, since they may not have enough); new ribbon has owned: false. Owning some ribbon never excuses breaking the ribbon rules: if theirs is too narrow, too little, or only one width, add the right ribbon (e.g. a 5-6 inch wired ribbon as the widest layer, owned: false) and re-use theirs as the narrower layer or the accent. The same goes for everything else: if they have some large ornaments but not enough, still plan the right number and say to add to what they have." : " ribbons[].owned is false."}`;
+mockup.clusters: optional ornament clusters (see ORNAMENT CLUSTERS). They are one design tool among many, not a signature: many trees should have none, so people who try several trees see real variety. Include them (1-3) only when this particular design calls for them; otherwise []. Each is 3-5 medium or small balls of one color and finish grouped at one spot (x,y = the center of the group). Don't repeat cluster balls in mockup.ornaments. Anything you put here is drawn in the step-by-step guide and the preview, so only include what you want called out.
+mockup.topper.style: none if the current topper is right. Don't default to a star: consider an oversized bow with long tails, a burst of stems and flowers rising from the crown, a finial, or a spray of sprigs and ornaments; use a star only when the style truly calls for it. Vary toppers from tree to tree.
+mockup.picks.small: small accents are not only berries: small flowers, crystal or glitter sprays, frosted sprigs, pinecone picks and similar. Choose what suits the style, and say it plainly in small.label.${mode === "check" ? " The mockup shows what they should add or re-place, not what stays as it is. If the plan re-uses ribbon they already own, include it in mockup.ribbons with owned: true (it still shows on the shopping list as a top-up, since they may not have enough); new ribbon has owned: false. Owning some ribbon never excuses breaking the ribbon rules: if theirs is too narrow, too little, or only one width, add the right ribbon (e.g. a 5-6 inch wired ribbon as the widest layer, owned: false) and re-use theirs as the narrower layer or the accent. The same goes for everything else: if they have some large ornaments but not enough, still plan the right number and say to add to what they have." : " ribbons[].owned is false."}`;
 
 function factsLine(f) {
   if (!f) return "Tree facts: work them out from the photo: real or artificial, open or dense, snowy (flocked) or not, and the height (estimate it from the room; ceilings are usually 8-9 ft).";
@@ -150,23 +153,14 @@ ${JSON.stringify(plan)}
 WHAT GOES ON THE TREE (the diagrams show this; your words must match it):
 ${JSON.stringify(r.mockup || {})}
 
-${PLAN_NOTES(mode).split("\n").filter(l => /^(EVERYTHING IS SOLD|ORNAMENTS ARE SOLD)/.test(l)).join("\n")}
+${PLAN_NOTES(mode).split("\n").filter(l => /^(QUANTITIES|RIBBON NAMES|ORNAMENTS:|COLOR NAMES)/.test(l)).join("\n")}
+${dt.shopping && dt.shopping.length ? `
+THE SHOPPING LIST the homeowner sees (use exactly these names, colors and amounts when you mention something to buy; never a different color name or amount):
+${dt.shopping.map(g => `- ${g.title}: ${g.items.map(i => `${i.label} (${i.qty})`).join("; ")}`).join("\n")}
+` : ""}
+Your words are the ONLY instructions on each step's screen (there is no other paragraph above them), so each "how" must stand on its own: two or three short sentences that blend the technique with what's specific to THIS tree and plan: where on their tree (e.g. "the bare patch low on the left"), what to fix in what's already there, and which colors and how many. When one step has several plan items (e.g. three ribbons), each item covers only its own piece; don't repeat the shared technique in every item. Never mention packs, boxes or how long a step takes. Plain, elevated words: "shape the branches", never "fluff"; "ornaments", never "balls"; "the crown" for the top of the tree is fine.
 
-ALREADY ON SCREEN: above your words, each step already shows the general technique, so never repeat it:
-- fluff (shape the branches): unfold every branch, spread each tip up and out, bend a few larger branches to open pockets; it's the step that matters most
-- lights: how many lights for the height; check pre-lit trees for dark sections; spiral in and out; match the cord color
-- primary_picks: tuck greenery stems at the marked spots and wrap the wire around a branch; more and bigger low, fewer and smaller high
-- ribbon: how to make and tuck each loop or drop at the numbered spots
-- florals: tuck flowers into the greenery spots with a ribbon loop and berries beside each; a few extra near the top
-- statement: biggest first, pushed deep toward the trunk; special pieces get the best spots
-- medium / small: spread each box around the tree; mix shiny and matte; how to wire a cluster
-- small_picks: use plenty, all over
-- crown: gather extra at the top; when the topper goes on
-- base: size the skirt or collar to the tree
-
-For each step write "how": one or two short sentences that add only what's specific to THIS tree and this plan: where on their tree (e.g. "the bare patch low on the left", "the flat spot below the topper"), what to fix in what's already there, which colors and how many boxes/packs/bolts. If you have nothing to add beyond the technique above, write one short line about where to focus on this tree. "effort": rough time (e.g. "20 minutes"). Phone readers skim, so keep it tight. Plain words: say "shape the branches", never "fluff"; say "ornaments", never "balls".
-
-Reply with: {"steps":[{"how":"...","effort":"..."}]} with exactly ${plan.length} items, one per plan step, same order.`;
+Reply with: {"steps":[{"how":"..."}]} with exactly ${plan.length} items, one per plan step, same order.`;
 }
 
 async function callClaude(images, text, maxTokens, schema) {

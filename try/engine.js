@@ -544,7 +544,7 @@
   }
 
   // ---------- ornaments ----------
-  const ORN_IN = d => ({xl: clamp((d.tree.height_ft || 7) + 2, 6, 14), l: 5, m: 3.2, s: 2.2});
+  const ORN_IN = d => ({xl: Math.round(clamp((d.tree.height_ft || 7) + 2, 6, 14)), l: 5, m: 3, s: 2});
   function ornPath(g, shape, x, y, r){
     g.beginPath();
     if (shape === "drop"){
