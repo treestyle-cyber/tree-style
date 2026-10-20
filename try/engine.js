@@ -629,7 +629,14 @@
 
   // ---------- topper ----------
   function drawTopper(g, gl, G, S, d, rand){
-    const tp = d.topper, x = G.A[0], s = Math.max(G.unit*3.6, G.treeH*.075), y = G.A[1] - s*.55, col = tp.color;
+    // When the tree reaches the top of the photo, there's no room above it: lower the topper (and keep it
+    // a touch smaller) so the whole thing stays in the picture instead of being cut off.
+    const tp = d.topper, x = G.A[0], col = tp.color, room = G.A[1];
+    const reach = tp.style === "finial" ? 1.8 : tp.style === "star" ? 1.15 : .55;   // how far above y it draws, in s
+    let s = Math.max(G.unit*3.6, G.treeH*.075);
+    if (room < s*(.55 + reach) + 6) s = Math.max(G.unit*2.8, Math.min(s, G.treeH*.06));
+    const dy = Math.max(0, s*(.55 + reach) + s*.12 - room);
+    const y = G.A[1] - s*.55 + dy;
     if (tp.style === "none") return;
     if (tp.style === "floral"){
       const o = {x, y: G.A[1] + s*.2, size: 3, crown: true, floral: true};
@@ -644,7 +651,7 @@
     halo.addColorStop(0, rgba(col,.4)); halo.addColorStop(1, rgba(col,0));
     g.save(); g.globalCompositeOperation = "screen"; g.fillStyle = halo; g.beginPath(); g.arc(x, y, s*2.4, 0, TAU); g.fill(); g.restore();
     if (tp.style === "finial"){
-      const h = s*2.6, b0 = G.A[1] + s*.3;
+      const h = s*2.6, b0 = G.A[1] + s*.3 + dy;
       g.save(); g.shadowColor = "rgba(0,0,0,.4)"; g.shadowBlur = s*.2;
       g.beginPath(); g.moveTo(x, b0 - h); g.bezierCurveTo(x + s*.12, b0 - h*.55, x + s*.55, b0 - h*.35, x + s*.42, b0 - h*.2);
       g.bezierCurveTo(x + s*.3, b0 - h*.05, x + s*.12, b0, x, b0); g.bezierCurveTo(x - s*.12, b0, x - s*.3, b0 - h*.05, x - s*.42, b0 - h*.2);

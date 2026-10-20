@@ -428,7 +428,7 @@
         const lay = layerFor(k); if (!lay) return;
         const pos = steps.indexOf(k);
         if (key === "all") { o.drawImage(lay, 0, 0); return; }
-        if (pos < curPos) { o.globalAlpha = .38; o.drawImage(lay, 0, 0); o.globalAlpha = 1; }
+        if (pos < curPos) { o.globalAlpha = curPos - pos <= 1 ? .22 : .14; o.drawImage(lay, 0, 0); o.globalAlpha = 1; }   // earlier steps fade back so this one reads clearly
         else if (pos === curPos) {
           if (k !== "lights") { o.save(); o.shadowColor = "rgba(255,255,255,1)"; o.shadowBlur = Math.max(4, u * .6); o.drawImage(lay, 0, 0); o.restore(); }
           o.drawImage(lay, 0, 0);
