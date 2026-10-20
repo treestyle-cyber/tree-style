@@ -178,10 +178,11 @@
     if (key === "ribbon") {
       const rbs = d.ribbons, loops = d.technique === "loops";
       rbs.forEach(rb => {
-        const yards = Math.ceil(h * (RIBBON_YD_PER_FT[rb.role] || 1.5) * (mode === "design" ? 1 : .6));
-        // A range, since loop sizes vary: e.g. 9 yd -> 1-2 bolts, 15 yd -> 2-3, 30 yd -> 3-4
-        const lo = Math.max(1, Math.ceil(yards / ROLL_YD - .2)), hi = Math.max(lo + 1, Math.ceil(yards * 1.25 / ROLL_YD));
-        const rolls = `${lo}–${hi} bolts`, cn = colorName(rb.color);
+        const yards = Math.ceil(h * (RIBBON_YD_PER_FT[rb.role] || 1.5));   // a decorated tree still needs the full amount for new ribbon
+        // e.g. 12 yd -> 2 bolts, 15 yd -> 2 bolts, 18 yd -> 2-3 bolts
+        // Always enough bolts for the yards; a range only when fuller loops could need one more
+        const lo = Math.max(1, Math.ceil(yards / ROLL_YD)), hi = Math.max(lo, Math.ceil(yards * 1.25 / ROLL_YD));
+        const rolls = lo === hi ? plural(lo, "bolt", "bolts") : `${lo}–${hi} bolts`, cn = colorName(rb.color);
         const role = rb.role === "accent" ? " (thin accent)" : rb.role === "overlay" ? " (laid on top)" : "";
         // Ribbon they already own stays on the list as a top-up: they may not have enough.
         const qty = rb.owned
@@ -498,18 +499,18 @@
     function lead(key) {
       const t = data.tree, open = t.density === "open", art = t.kind === "artificial", [lo, hi] = lightCount(), xl = ORN_IN(data).xl;
       return {
-        fluff: art ? "Unfold every branch from its shipping fold, then spread each tip up and out. Bend a few larger branches back to open pockets for big pieces. It's the boring step, and the one that matters most."
-                   : "Shake out the branches and look for natural gaps. They aren't flaws: they're the perfect spots for your biggest pieces and for ornaments that need room to hang straight.",
-        lights: `Plan on ${lo.toLocaleString()} to ${hi.toLocaleString()} lights for a ${t.height_ft} ft tree. ` + (art ? "If it's pre-lit, check for dark sections first. If you add lights, add them there and in two other spots so they don't look patched." : "Spiral up the tree, and on each major branch go deep toward the trunk and back out to the tip.") + " Match the cord color to the tree.",
-        primary_picks: "Tuck greenery stems in at the marked spots, wrapping each wire stem around a branch so it holds. Picture a vine growing up from inside the tree and peeking out here and there: more and bigger near the bottom, fewer and smaller as you go up.",
+        fluff: art ? "Unfold each branch from its shipping fold, then coax every tip up and out. Open a few deeper pockets for your largest pieces. It's the quiet step that makes everything after it look effortless."
+                   : "Shake out the branches and look for natural openings. They aren't flaws: they're the perfect homes for your largest pieces and for ornaments that need room to hang freely.",
+        lights: "Add more lights, wrapping them deeper into the tree, toward the trunk and back out, so the tree glows from within and gains depth. Keep the cord color matched to the branches.",
+        primary_picks: "Nestle the greenery stems in at the marked spots, wrapping each wire around a branch to hold it. Imagine a vine growing up from within the tree, revealing itself here and there: fuller near the base, lighter as it climbs.",
         ribbon: ribbonLead(),
-        florals: "Tuck the flower stems into the greenery spots, each with a ribbon loop and a few berries beside it. Put a few extra near the top.",
-        statement: `Biggest first: about ${xl}" ornaments for this tree, set back toward the trunk so they fill the background. Then give your most special ornaments the best spots, with a little room around them.`,
-        medium: "Medium ornaments go around the big ones, in the spots marked. The circles show where a few of them go; spread the rest of each box evenly around the tree. Mix shiny and matte." + clusterTip("m"),
-        small: "Fill in around everything with the small ones, tucked in close to the branches. Use them for the accent color or a contrasting finish. Spread each box all the way around the tree." + clusterTip("s"),
-        small_picks: "Berry stems are inexpensive, so use plenty. Tuck them in all over to add texture and break up any plain patches.",
-        crown: data.topper.delicate ? "The top is where everyone looks first. Gather extra greenery, ribbon and flowers here, then add the topper last so nothing knocks it." : "The top is where everyone looks first. Wire the topper on first, then gather extra greenery, ribbon and flowers around it.",
-        base: "Choose a skirt or collar in proportion to the tree. A big base, or one that repeats a color already on the tree, pulls the eye down.",
+        florals: "Nestle each flower into a greenery spot, framed by a ribbon loop and a few berries. Let a few extra gather near the top.",
+        statement: `Begin with the largest: ornaments of about ${xl}", set back toward the trunk to create a rich background. Then give your most treasured pieces the best spots, with a little breathing room.`,
+        medium: "Layer the medium ornaments around the larger ones. The circles mark a few placements; spread the rest of each box evenly around the tree, mixing shiny and matte." + clusterTip("m"),
+        small: "Finish with the small ornaments, tucked close to the branches to fill in around everything. They're the place for your accent color or a contrasting finish. Carry each box all the way around the tree." + clusterTip("s"),
+        small_picks: "Berry stems are an inexpensive luxury, so be generous. Tuck them in throughout to add texture and soften any quiet patches.",
+        crown: data.topper.delicate ? "The top is where every eye goes first. Build it up with extra greenery, ribbon and flowers, then set the topper last so nothing disturbs it." : "The top is where every eye goes first. Secure the topper first, then build extra greenery, ribbon and flowers around it.",
+        base: "Choose a skirt or collar in proportion to the tree. A generous base, or one that echoes a color on the tree, grounds the whole design.",
         all: (afterImg ? "Your finished tree. " : "Everything in place. ") + (mode === "check" ? "The numbered pins are your quick fixes." : "Tap any step to look again.")
       }[key];
     }
