@@ -370,16 +370,14 @@
         <label class="chip"><input type="radio" name="kind" value="natural"><span>Real</span></label>
         <label class="chip"><input type="radio" name="kind" value="" checked><span>Not sure</span></label>
       </div></div>
-    <div class="q"><div class="lbl">How tall? <small style="font-weight:400;color:var(--muted)">Pick the closest size</small></div>
+    <div class="q"><div class="lbl">How tall?</div>
       <div class="row">
         <label class="chip"><input type="radio" name="height" value="4"><span>4 ft or less</span></label>
-        <label class="chip"><input type="radio" name="height" value="5"><span>5 ft</span></label>
-        <label class="chip"><input type="radio" name="height" value="6"><span>6 ft</span></label>
-        <label class="chip"><input type="radio" name="height" value="7"><span>7 ft</span></label>
-        <label class="chip"><input type="radio" name="height" value="8"><span>8 ft</span></label>
-        <label class="chip"><input type="radio" name="height" value="9"><span>9 ft</span></label>
-        <label class="chip"><input type="radio" name="height" value="10"><span>10 ft</span></label>
-        <label class="chip"><input type="radio" name="height" value="12"><span>12 ft+</span></label>
+        <label class="chip"><input type="radio" name="height" value="5.5"><span>5–6 ft</span></label>
+        <label class="chip"><input type="radio" name="height" value="7.5"><span>7–8 ft</span></label>
+        <label class="chip"><input type="radio" name="height" value="9.5"><span>9–10 ft</span></label>
+        <label class="chip"><input type="radio" name="height" value="11.5"><span>11–12 ft</span></label>
+        <label class="chip"><input type="radio" name="height" value="14"><span>13 ft+</span></label>
         <label class="chip"><input type="radio" name="height" value="" checked><span>Not sure</span></label>
       </div></div>
     <div class="q"><div class="lbl">How full are the branches?</div>
@@ -695,13 +693,15 @@ document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   show("s-photo");
 });
 $("#detailsSkip").onclick = () => { if (rerunFromHub) { history.back(); return; } factsSet = false; show("s-style"); };
-const ftTxt = h => { const n = Number(h) || 7; return (Math.round(n * 2) / 2).toString().replace(".5", "½") + " ft"; };
+// Height choices are bands; quantities use the middle of the band, and we show the band itself
+const HEIGHT_BANDS = { 4: "4 ft or less", 5.5: "5–6 ft", 7.5: "7–8 ft", 9.5: "9–10 ft", 11.5: "11–12 ft", 14: "13 ft+" };
+const ftTxt = h => { const n = Number(h) || 7; return (factsSet && HEIGHT_BANDS[n]) || (Math.round(n * 2) / 2).toString().replace(".5", "½") + " ft"; };
 function estNote(r) { return `<div class="estnote">Quantities are based on a tree we estimated at about <b>${ftTxt(r?.tree?.height_ft)}</b> from your photo. <button data-tell>Tell us your tree's height</button> for exact amounts.</div>`; }
 function syncTell(r) {
   $("#tellCard").hidden = factsSet; $("#tellDone").hidden = !factsSet;
   if (factsSet) {
     const k = val("kind"), dn = val("density");
-    const bits = [Number(val("height")) ? ftTxt(val("height")) : null, k === "natural" ? "real" : k === "artificial" ? "artificial" : null, dn === "open" ? "open branches" : dn === "dense" ? "full branches" : null].filter(Boolean);
+    const bits = [Number(val("height")) ? (HEIGHT_BANDS[Number(val("height"))] || ftTxt(val("height"))) : null, k === "natural" ? "real" : k === "artificial" ? "artificial" : null, dn === "open" ? "open branches" : dn === "dense" ? "full branches" : null].filter(Boolean);
     $("#tellDone").innerHTML = `Using your tree details${bits.length ? ": " + bits.join(", ") : ""}.<button data-tell>Edit</button>`;
   }
 }
