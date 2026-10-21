@@ -46,6 +46,7 @@
   .refcard h2{font-weight:400;font-size:26px}
   .refcard .where{font-size:12.5px;color:var(--muted);margin-top:-6px}
   .refrow{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .slot.tex .fixbox,.slot.tex .fromcur{display:none}
   .msg{font-size:13px;color:var(--muted);min-height:1.2em}
   .msg.err{color:var(--berry)}
   .msg.ok{color:var(--gold)}
@@ -90,7 +91,12 @@
 <script>
 const $ = s => document.querySelector(s);
 const LOOK = "Editorial interior photograph for a luxury holiday brand. Moody, candlelit, warm low light with soft glowing Christmas lights; deep midnight navy, winter berry red, evergreen and antique gold tones; rich textures like velvet ribbon, brass and walnut. Shot on a full-frame camera, shallow depth of field, magazine quality, photorealistic. No people, no text, no logos, no watermarks. How the tree is styled: wide wired ribbon weaves in and out of the tree: it emerges from deep inside the branches in soft billows and short drops at about seven separate spots, staggered left and right at different heights, then disappears back into the greenery, so green branches show between each appearance. There are no bows anywhere on the tree. Ornaments are scattered and staggered at different heights and depths, the largest set back toward the trunk, with balanced visual weight left and right.";
+const TEXLOOK = "Ultra-detailed close-up photograph of real fabric filling the entire frame edge to edge, as a seamless background texture. Soft directional studio light, rich deep tones, crisp fibre detail and natural sheen, photorealistic, sharp focus throughout. No objects, no people, no text, no logos, no borders.";
 const SLOTS = [
+  { id: "velvet", texture: true, name: "Midnight velvet", where: "Background of every app screen, the welcome, the loading screen and the website", aspect: "1:1",
+    prompt: "Deep midnight navy blue silk velvet (#141C2C), softly draped in a few broad diagonal folds, with subtle cool highlights catching along the crests of the folds and very dark shadows in the troughs. Luxurious, quiet, elegant." },
+  { id: "velvetberry", texture: true, name: "Winter Berry velvet", where: "The website's What you get section", aspect: "1:1",
+    prompt: "Deep winter berry red silk velvet (#6B2E2E), softly draped in a few broad diagonal folds, with warm highlights along the crests of the folds and rich dark shadows. Luxurious, quiet, elegant." },
   { id: "hero", name: "Welcome", where: "Top of the app's welcome screen and the website hero", aspect: "3:4",
     prompt: "A breathtaking, professionally styled 8 ft Christmas tree in an elegant living room at dusk: velvet ribbon billowing out of the branches and tucking back in, oversized antique gold and winter berry ornaments, frosted greenery stems and magnolias, a full, lush crown with a refined topper of stems and ornaments. Candles and a fireplace glow softly nearby. The tree is the hero of the frame, slightly off-center." },
   { id: "check", name: "Check my tree", where: "Home screen tile", aspect: "3:4",
@@ -132,7 +138,7 @@ const shrink = (src, max = 1600) => new Promise(res => {
 function build(current) {
   const ar = a => a.replace(":", " / ");
   $("#grid").innerHTML = SLOTS.map(s => `
-    <div class="slot" data-id="${s.id}">
+    <div class="slot${s.texture ? " tex" : ""}" data-id="${s.id}">
       <h2>${s.name}</h2><div class="where">${s.where}</div>
       <div class="frames">
         <div class="frame cur" style="aspect-ratio:${ar(s.aspect)}"><span class="lbl">In use</span>${current[s.id] ? `<img src="${current[s.id]}" alt="">` : "Fabric texture for now"}</div>
@@ -161,9 +167,9 @@ function build(current) {
       genB.disabled = true; useB.disabled = true; msg.className = "msg"; msg.textContent = "Creating… about 20 seconds";
       nf.innerHTML = '<span class="lbl">New</span><div class="spin"></div>';
       try {
-        const d = await call({ action: "generate", prompt: el.querySelector("textarea").value.trim() + "\n\n" + LOOK, aspect: s.aspect });
+        const d = await call({ action: "generate", prompt: el.querySelector("textarea").value.trim() + "\n\n" + (s.texture ? TEXLOOK : LOOK), aspect: s.aspect });
         img = await shrink(d.image);
-        nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; el.dispatchEvent(new Event("ts-img")); msg.textContent = "Like it? Tap Use this. If the tree breaks a rule, open Fix the tree below."; useB.disabled = false; fixBs.forEach(b => b.disabled = false); genB.textContent = "Generate again";
+        nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; el.dispatchEvent(new Event("ts-img")); msg.textContent = s.texture ? "Like it? Tap Use this." : "Like it? Tap Use this. If the tree breaks a rule, open Fix the tree below."; useB.disabled = false; fixBs.forEach(b => b.disabled = false); genB.textContent = "Generate again";
       } catch (e) {
         if (e.status === 401) return gate("That password didn't work.");
         nf.innerHTML = '<span class="lbl">New</span>Try again'; msg.className = "msg err"; msg.textContent = e.message;

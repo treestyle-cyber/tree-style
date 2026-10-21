@@ -96,7 +96,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   @keyframes spin{to{transform:rotate(360deg)}}
   /* ---------- TreeStyle brand surfaces ---------- */
   .welcome{position:relative;border-radius:var(--radius);overflow:hidden;margin:6px 0 26px;padding:30px 20px 26px;text-align:center;
-    background:linear-gradient(rgba(20,28,44,.55),rgba(20,28,44,.82)),url(/brand/velvet-midnight.jpg) center/cover;box-shadow:0 24px 40px -28px rgba(20,28,44,.7)}
+    background:linear-gradient(rgba(20,28,44,.55),rgba(20,28,44,.82)),var(--photo-velvet, url(/brand/velvet-midnight.jpg)) center/cover;box-shadow:0 24px 40px -28px rgba(20,28,44,.7)}
   .welcome .lockup{margin:0}
   .welcome .lockup b{color:var(--ivory)}
   .welcome .lockup small{color:var(--gold)}
@@ -116,7 +116,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .scard input:focus-visible + span{outline:2px solid var(--gold);outline-offset:3px}
   @media (min-width:520px){.sgrid{grid-template-columns:repeat(3,1fr)}}
   /* moody loading screen, like the board's photography */
-  #loading{background:linear-gradient(rgba(20,28,44,.78),rgba(20,28,44,.92)),url(/brand/velvet-midnight.jpg) center/cover !important;color:#E9E1D3}
+  #loading{background:linear-gradient(rgba(20,28,44,.78),rgba(20,28,44,.92)),var(--photo-velvet, url(/brand/velvet-midnight.jpg)) center/cover !important;color:#E9E1D3}
   #loading h2{color:var(--ivory)}
   #loading li{color:#A79F92}
   #loading li.on,#loading li.done{color:var(--ivory)}
@@ -393,7 +393,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .kicker{text-align:center;font:500 11px var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin:18px 0 8px}
   /* welcome */
   .hero{margin:0 -18px 30px;min-height:min(68vh,620px);display:flex;flex-direction:column;justify-content:space-between;padding:30px 26px 34px;
-    background:radial-gradient(120% 70% at 50% 18%,rgba(184,156,107,.16),transparent 60%),linear-gradient(180deg,rgba(20,28,44,.35),rgba(20,28,44,.9)),var(--photo-hero, url(/brand/velvet-midnight.jpg)) center/cover;
+    background:radial-gradient(120% 70% at 50% 18%,rgba(184,156,107,.16),transparent 60%),linear-gradient(180deg,rgba(20,28,44,.35),rgba(20,28,44,.9)),var(--photo-hero, var(--photo-velvet, url(/brand/velvet-midnight.jpg))) center/cover;
     border-bottom:1px solid rgba(184,156,107,.3)}
   .hero .lockup{margin:4px 0 0}
   .hero .lockup img{height:120px;filter:drop-shadow(0 8px 18px rgba(0,0,0,.5))}
