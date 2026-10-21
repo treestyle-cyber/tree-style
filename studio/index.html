@@ -28,6 +28,8 @@
   textarea{width:100%;min-height:96px;font:14px/1.45 var(--sans);padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper-2);color:var(--ink);resize:vertical}
   .row{display:flex;gap:8px;flex-wrap:wrap}
   .row .btn{flex:1;padding:12px 14px}
+  .fixbox summary{cursor:pointer;color:var(--gold);font-size:13.5px;margin:2px 0 6px}
+  .fixbox textarea{min-height:120px}
   .msg{font-size:13px;color:var(--muted);min-height:1.2em}
   .msg.err{color:var(--berry)}
   .msg.ok{color:var(--gold)}
@@ -65,28 +67,28 @@
 
 <script>
 const $ = s => document.querySelector(s);
-const LOOK = "Editorial interior photograph for a luxury holiday brand. Moody, candlelit, warm low light with soft glowing Christmas lights; deep midnight navy, winter berry red, evergreen and antique gold tones; rich textures like velvet ribbon, brass and walnut. Shot on a full-frame camera, shallow depth of field, magazine quality, photorealistic. No people, no text, no logos, no watermarks. Designer rules for the tree: ribbon never runs as long continuous streams, stripes, swags or spirals down or across the tree; it appears only as separate loops and short drops tucked into the branches, winding back and forth, with green showing between them. Ornaments never line up in a column, row or diagonal. Visual weight is balanced left and right.";
+const LOOK = "Editorial interior photograph for a luxury holiday brand. Moody, candlelit, warm low light with soft glowing Christmas lights; deep midnight navy, winter berry red, evergreen and antique gold tones; rich textures like velvet ribbon, brass and walnut. Shot on a full-frame camera, shallow depth of field, magazine quality, photorealistic. No people, no text, no logos, no watermarks. How the tree is styled: wired ribbon appears only as small clusters of two or three short loops, nestled into the branches at seven or so separate spots that are staggered left and right at different heights, each surrounded by green branches. Ornaments are scattered and staggered at different heights and depths, with the largest set back toward the trunk; the visual weight feels balanced left and right.";
 const SLOTS = [
   { id: "hero", name: "Welcome", where: "Top of the app's welcome screen and the website hero", aspect: "3:4",
-    prompt: "A breathtaking, professionally styled 8 ft Christmas tree in an elegant living room at dusk: wide wired velvet ribbon tucked in as loops, oversized antique gold and winter berry ornaments, frosted greenery stems and magnolias, a full, lush crown with a refined bow topper. Candles and a fireplace glow softly nearby. The tree is the hero of the frame, slightly off-center." },
+    prompt: "A breathtaking, professionally styled 8 ft Christmas tree in an elegant living room at dusk: clusters of short velvet ribbon loops nestled into the branches, oversized antique gold and winter berry ornaments, frosted greenery stems and magnolias, a full, lush crown with a refined bow topper. Candles and a fireplace glow softly nearby. The tree is the hero of the frame, slightly off-center." },
   { id: "check", name: "Check my tree", where: "Home screen tile", aspect: "3:4",
-    prompt: "Close, intimate view of a beautifully decorated Christmas tree: layered velvet ribbon loops, glass ornaments in winter berry and antique gold, glowing warm white lights deep in the branches, a small handwritten notecard resting on a branch." },
+    prompt: "Close, intimate view of a beautifully decorated Christmas tree: small clusters of velvet ribbon loops, glass ornaments in winter berry and antique gold, glowing warm white lights deep in the branches, a small handwritten notecard resting on a branch." },
   { id: "design", name: "Design my tree", where: "Home screen tile", aspect: "3:4",
     prompt: "A lush undecorated artificial Christmas tree with only warm white lights glowing, in a softly lit room. At its base, unopened boxes of glass ornaments, spools of wide velvet and sheer wired ribbon, and bundles of greenery stems wait to be styled. A sense of anticipation." },
   { id: "keep", name: "Keep my style", where: "Style card", aspect: "4:5",
     prompt: "A warm, collected Christmas tree full of personal heirloom ornaments, vintage glass and handmade pieces, beautifully edited and pulled together with ribbon and greenery. Cozy, personal, refined." },
   { id: "classic", name: "Classic", where: "Style card", aspect: "4:5",
-    prompt: "A classic Christmas tree: red, green and gold, shiny glass ornaments in many sizes, solid red velvet ribbon tucked in as loops, pine and berry stems, red poinsettias, warm white lights, a gold star. Timeless and rich." },
+    prompt: "A classic Christmas tree: red, green and gold, shiny glass ornaments in many sizes, small clusters of red velvet ribbon loops nestled into the branches, pine and berry stems, red poinsettias, warm white lights, a gold star. Timeless and rich." },
   { id: "rustic", name: "Rustic", where: "Style card", aspect: "4:5",
-    prompt: "A rustic Christmas tree: buffalo check and burlap ribbon, wood and matte ornaments, pinecones, natural berries, antler accents, warm lights, in a cabin-like room with walnut wood and a wool throw." },
+    prompt: "A rustic Christmas tree: small clusters of buffalo check and burlap ribbon loops, wood and matte ornaments, pinecones, natural berries, antler accents, warm lights, in a cabin-like room with walnut wood and a wool throw." },
   { id: "modern", name: "Modern", where: "Style card", aspect: "4:5",
-    prompt: "A modern Christmas tree: restrained and sculptural, matte ornaments in two tones, a few oversized geometric pieces, one clean ribbon, lots of breathing room, in a minimal room with marble and soft light." },
+    prompt: "A modern Christmas tree: restrained and sculptural, matte ornaments in two tones, a few oversized geometric pieces, a few clean ribbon loops, lots of breathing room, in a minimal room with marble and soft light." },
   { id: "elegant", name: "Elegant", where: "Style card", aspect: "4:5",
-    prompt: "An elegant Christmas tree: midnight velvet and sheer gold wired ribbon, champagne magnolias, gold-dusted greenery stems, strands of gold beads, glittering antique gold ornaments, in a candlelit formal room." },
+    prompt: "An elegant Christmas tree: clusters of midnight velvet and sheer gold ribbon loops, champagne magnolias, gold-dusted greenery stems, strands of gold beads, glittering antique gold ornaments, in a candlelit formal room." },
   { id: "playful", name: "Playful", where: "Style card", aspect: "4:5",
-    prompt: "A playful, joyful Christmas tree: candy-striped ribbon, whimsical ornaments, oversized candy canes, pops of bright color balanced with gold, still beautifully composed and high-end, warm cozy light." },
+    prompt: "A playful, joyful Christmas tree: small clusters of candy-striped ribbon loops, whimsical ornaments, oversized candy canes, pops of bright color balanced with gold, still beautifully composed and high-end, warm cozy light." },
   { id: "themed", name: "Themed", where: "Style card", aspect: "4:5",
-    prompt: "A themed Christmas tree with a winter woodland story: frosted branches, birds and feathers, pinecones, velvet ribbon in deep evergreen, small glowing lanterns, cohesive and enchanting." }
+    prompt: "A themed Christmas tree with a winter woodland story: frosted branches, birds and feathers, pinecones, small clusters of deep evergreen velvet ribbon loops, small glowing lanterns, cohesive and enchanting." }
 ];
 
 let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
@@ -116,10 +118,14 @@ function build(current) {
       </div>
       <textarea>${s.prompt}</textarea>
       <div class="row"><button class="btn ghost gen">Generate</button><button class="btn use" disabled>Use this</button></div>
+      <details class="fixbox"><summary>Fix the tree in the new photo</summary>
+        <textarea class="fixtxt">Remove every length of ribbon that runs down or across the tree, and any long tails hanging from the topper. In its place, nestle seven separate small clusters of two or three short ribbon loops (same ribbon and colors) into the branches, staggered left and right at different heights, with plenty of green branches between them. Move ornaments so none line up in a column, row or diagonal; scatter and stagger them, keeping the largest set back toward the trunk, with balanced visual weight left and right.</textarea>
+        <div class="row"><button class="btn ghost fix" disabled>Fix the tree</button></div>
+      </details>
       <div class="msg"></div>
     </div>`).join("");
   document.querySelectorAll(".slot").forEach(el => {
-    const s = SLOTS.find(x => x.id === el.dataset.id), msg = el.querySelector(".msg"), nf = el.querySelector(".frame.new"), useB = el.querySelector(".use"), genB = el.querySelector(".gen");
+    const s = SLOTS.find(x => x.id === el.dataset.id), msg = el.querySelector(".msg"), nf = el.querySelector(".frame.new"), useB = el.querySelector(".use"), genB = el.querySelector(".gen"), fixB = el.querySelector(".fix");
     let img = null;
     genB.onclick = async () => {
       genB.disabled = true; useB.disabled = true; msg.className = "msg"; msg.textContent = "Creating… about 20 seconds";
@@ -127,11 +133,21 @@ function build(current) {
       try {
         const d = await call({ action: "generate", prompt: el.querySelector("textarea").value.trim() + "\n\n" + LOOK, aspect: s.aspect });
         img = await shrink(d.image);
-        nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; msg.textContent = "Like it? Tap Use this. Or Generate again for another take."; useB.disabled = false; genB.textContent = "Generate again";
+        nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; msg.textContent = "Like it? Tap Use this. If the tree breaks a rule, open Fix the tree below."; useB.disabled = false; fixB.disabled = false; genB.textContent = "Generate again";
       } catch (e) {
         if (e.status === 401) return gate("That password didn't work.");
         nf.innerHTML = '<span class="lbl">New</span>Try again'; msg.className = "msg err"; msg.textContent = e.message;
       } finally { genB.disabled = false; }
+    };
+    fixB.onclick = async () => {
+      if (!img) return;
+      fixB.disabled = genB.disabled = useB.disabled = true; msg.className = "msg"; msg.textContent = "Fixing the tree… about 20 seconds";
+      try {
+        const d = await call({ action: "edit", image: img, prompt: el.querySelector(".fixtxt").value.trim(), aspect: s.aspect });
+        img = await shrink(d.image);
+        nf.innerHTML = `<span class="lbl">Fixed</span><img src="${img}" alt="">`; msg.textContent = "Fixed. Use this, or fix again with a different note.";
+      } catch (e) { msg.className = "msg err"; msg.textContent = e.message; }
+      finally { fixB.disabled = genB.disabled = useB.disabled = false; }
     };
     useB.onclick = async () => {
       if (!img) return;

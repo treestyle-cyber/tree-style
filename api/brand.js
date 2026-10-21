@@ -28,7 +28,7 @@ async function latest() {
   return out;
 }
 
-async function generate(prompt, aspect) {
+async function generate(prompt, aspect, base) {
   let lastErr = "";
   for (const model of MODELS) {
     const generationConfig = { responseModalities: ["IMAGE"] };
@@ -36,7 +36,7 @@ async function generate(prompt, aspect) {
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
       headers: { "x-goog-api-key": process.env.GEMINI_API_KEY, "content-type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig })
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, ...(base ? [{ inline_data: { mime_type: base.mediaType, data: base.data } }] : [])] }], generationConfig })
     });
     const body = await r.json().catch(() => ({}));
     if (!r.ok) {
@@ -84,6 +84,15 @@ export default async function handler(req, res) {
     if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
     if (!prompt) return res.status(400).json({ error: "Missing prompt" });
     try { return res.status(200).json({ image: await generate(String(prompt).slice(0, 3000), aspect) }); }
+    catch (e) { return res.status(502).json({ error: String(e.message || e) }); }
+  }
+
+  if (action === "edit") {
+    // Correct a generated photo: same scene, only the requested change (much more reliable than regenerating)
+    const base = parseDataUrl(image);
+    if (!base || !prompt) return res.status(400).json({ error: "Missing photo or instruction" });
+    const text = `Edit this photograph. Keep the room, camera angle, lighting, colors, style and everything else exactly the same, photorealistic, magazine quality. Make only these changes to the Christmas tree:\n${String(prompt).slice(0, 2000)}\nThe result must be an ordinary photograph with no text, markings or outlines.`;
+    try { return res.status(200).json({ image: await generate(text, aspect, base) }); }
     catch (e) { return res.status(502).json({ error: String(e.message || e) }); }
   }
 
