@@ -91,6 +91,19 @@
   .orns i.h{background:linear-gradient(90deg,#8e2a32 50%,var(--line) 50%)}
   @keyframes pop{to{opacity:1;transform:none}}
   .ornword{font:600 15px var(--sans);margin-top:12px;color:var(--brass);letter-spacing:.04em}
+  .rating{max-width:340px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px 12px;display:grid;gap:14px}
+  .rrow{display:grid;grid-template-columns:1fr;gap:6px;justify-items:center}
+  .rrow + .rrow{border-top:1px solid var(--line);padding-top:14px}
+  .rlbl{font:600 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .rating .orns{gap:7px}
+  .rating .orns i{width:30px;height:30px}
+  .rating .orns i::after{top:-6px;width:9px;height:7px;margin-left:-4.5px}
+  .rrow.after .orns i.f{background:radial-gradient(circle at 35% 30%,#f6dc9c,#b8913f 58%,#7a5b22)}
+  .rrow.after .orns i.h{background:linear-gradient(90deg,#b8913f 50%,var(--line) 50%)}
+  .rword{display:flex;gap:8px;align-items:baseline}
+  .rword b{font:italic 600 22px/1.1 var(--serif);color:var(--green)}
+  .rword span{font-size:13px;color:var(--muted)}
+  .rnote{margin:0;font-size:12.5px;color:var(--muted);text-align:center}
   .reveal h1{font-size:36px;margin:18px 0 10px}
   .potential{display:inline-block;background:#efe6d4;border-radius:999px;padding:8px 14px;font-size:14px;margin:6px 0 18px}
   .teaser{position:relative;border-radius:var(--radius);overflow:hidden;margin:6px auto 0;max-width:300px;cursor:pointer;border:0;padding:0;display:block}
@@ -431,9 +444,10 @@
 
   <!-- Reveal -->
   <section class="screen reveal" id="s-reveal" data-title="Your results" data-foot="seeIt" hidden>
-    <div id="revealScore">
-      <div class="orns" id="orns"></div>
-      <div class="ornword" id="ornWord"></div>
+    <div id="revealScore" class="rating">
+      <div class="rrow"><div class="rlbl">Your tree today</div><div class="orns" id="orns"></div><div class="rword"><b id="ornWord"></b><span id="ornNum"></span></div></div>
+      <div class="rrow after" id="afterRow"><div class="rlbl">After your plan</div><div class="orns" id="ornsAfter"></div><div class="rword"><b id="afterWord"></b><span id="afterNum"></span></div></div>
+      <p class="rnote">We rate trees from 1 to 5 ornaments, the way a designer would.</p>
     </div>
     <h1 id="headline"></h1>
     <p id="summary"></p>
@@ -957,19 +971,26 @@ async function openPlan() {
 
 /* ---------------- results ---------------- */
 const toOrn = v => Math.max(1, Math.floor(v / 20 * 2 + 1e-9) / 2);   // never round up: 58/100 is 2.5 ornaments, not 3
-const ornHtml = n => { let h = ""; for (let i = 1; i <= 5; i++) h += `<i class="${n >= i ? "f" : n >= i - .5 ? "h" : ""}" style="animation-delay:${.15 + i * .12}s"></i>`; return h; };
+const ornHtml = (n, delay = 0) => { let h = ""; for (let i = 1; i <= 5; i++) h += `<i class="${n >= i ? "f" : n >= i - .5 ? "h" : ""}" style="animation-delay:${delay + .15 + i * .12}s"></i>`; return h; };
+// Every rating has a word that always means the same thing (half steps take the lower word)
+const LEVELS = ["", "Just getting started", "Nice start", "Well done", "Polished", "Designer-ready"];
+const levelWord = n => LEVELS[Math.max(1, Math.min(5, Math.floor(n)))];
 
 function fillReveal() {
   const r = result, check = mode === "check" && r.overall != null;
   $("#revealScore").hidden = !check;
   if (check) {
     const o = toOrn(r.overall);
-    if ($("#orns").dataset.o !== String(o) + r.headline) { $("#orns").innerHTML = ornHtml(o); $("#orns").dataset.o = String(o) + r.headline; }
-    $("#ornWord").textContent = `${o} OF 5 ORNAMENTS`;
-    const p = r.potential || {};
-    $("#potential").hidden = !p.after_full_plan;
-    $("#potential").textContent = `With these changes: ${toOrn(p.after_full_plan)} ornaments`;
-  } else $("#potential").hidden = true;
+    const p = r.potential || {}, a = p.after_full_plan ? Math.max(o, toOrn(p.after_full_plan)) : null;
+    if ($("#orns").dataset.o !== String(o) + r.headline) {
+      $("#orns").innerHTML = ornHtml(o); $("#orns").dataset.o = String(o) + r.headline;
+      $("#ornsAfter").innerHTML = a ? ornHtml(a, .8) : "";
+    }
+    $("#ornWord").textContent = levelWord(o); $("#ornNum").textContent = `${o} of 5`;
+    $("#afterRow").hidden = !a || a <= o;
+    if (a) { $("#afterWord").textContent = levelWord(a); $("#afterNum").textContent = `${a} of 5`; }
+  }
+  $("#potential").hidden = true;
   $("#headline").textContent = r.headline || "";
   $("#summary").textContent = r.summary || "";
   $("#eye").textContent = "";   // the summary already says where the eye lands; no second line for it
@@ -999,7 +1020,7 @@ function fill() {
   $("#navScoreBtn").hidden = !(r.categories || []).length;
   $("#fixesSub").textContent = mode === "design" ? "The plan at a glance." : "Biggest difference for the least effort, best first.";
   $("#fixes").innerHTML = fixes.map((f, i) => `<div class="fix"><span class="n">${i + 1}</span><div><b>${esc(f.title)}</b>${esc(f.how)}</div></div>`).join("");
-  $("#scoreSub").textContent = r.overall != null ? `${toOrn(r.overall)} of 5 ornaments overall.` : "";
+  $("#scoreSub").textContent = r.overall != null ? `Your tree today: ${toOrn(r.overall)} of 5 ornaments, ${levelWord(toOrn(r.overall)).toLowerCase()}. Here's how each part scored, out of 10.` : "";
   $("#cats").innerHTML = (r.categories || []).map(c => `<div class="cat"><div class="top"><span>${esc(c.name)}</span><span>${c.score}/10</span></div><div class="b"><i style="width:${c.score * 10}%"></i></div><p>${esc(c.note)}</p></div>`).join("");
   $("#shop").innerHTML = (nItems && !factsSet ? estNote(r) : "") + (nItems ? shopping.map(g => `<div class="buy"><div class="buyh">${esc(g.title)}</div>${g.items.map(buyRow).join("")}</div>`).join("") : `<p class="muted">You already have what you need. It's all in how you place it.</p>`);
   $("#brief").textContent = r.render_brief || "";
