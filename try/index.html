@@ -90,6 +90,50 @@
   .bar{height:6px;background:var(--line);border-radius:9px;overflow:hidden}
   .bar i{display:block;height:100%;width:0;background:var(--green);transition:width .5s}
   @keyframes spin{to{transform:rotate(360deg)}}
+  /* ---------- TreeStyle brand surfaces ---------- */
+  .welcome{position:relative;border-radius:var(--radius);overflow:hidden;margin:6px 0 26px;padding:30px 20px 26px;text-align:center;
+    background:linear-gradient(rgba(20,28,44,.55),rgba(20,28,44,.82)),url(/brand/velvet-midnight.jpg) center/cover;box-shadow:0 24px 40px -28px rgba(20,28,44,.7)}
+  .welcome .lockup{margin:0}
+  .welcome .lockup b{color:var(--ivory)}
+  .welcome .lockup small{color:var(--gold)}
+  .welcome .lockup img{height:110px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.45))}
+  .welcome .wl{margin:14px 0 0;font:italic 500 24px/1.2 var(--serif);color:#E9E1D3}
+  .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .scard{position:relative;cursor:pointer}
+  .scard input{position:absolute;opacity:0}
+  .scard span{display:flex;flex-direction:column;justify-content:flex-end;min-height:118px;padding:12px 14px;border-radius:12px;background-size:cover;background-position:center;position:relative;overflow:hidden;
+    box-shadow:inset 0 0 0 1px rgba(20,28,44,.08);transition:transform .15s, box-shadow .15s}
+  .scard span::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,28,44,0) 25%,rgba(20,28,44,.82))}
+  .scard b,.scard small{position:relative;color:var(--ivory)}
+  .scard b{font:500 22px/1.05 var(--serif)}
+  .scard small{font-size:12px;opacity:.85;margin-top:2px}
+  .scard input:checked + span{box-shadow:0 0 0 3px var(--ivory),0 0 0 5px var(--gold);transform:translateY(-1px)}
+  .scard input:checked + span::after{content:"✓";position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;background:var(--gold);color:var(--midnight);display:grid;place-items:center;font:700 13px var(--sans)}
+  .scard input:focus-visible + span{outline:2px solid var(--gold);outline-offset:3px}
+  @media (min-width:520px){.sgrid{grid-template-columns:repeat(3,1fr)}}
+  /* moody loading screen, like the board's photography */
+  #loading{background:linear-gradient(rgba(20,28,44,.78),rgba(20,28,44,.92)),url(/brand/velvet-midnight.jpg) center/cover !important;color:#E9E1D3}
+  #loading h2{color:var(--ivory)}
+  #loading li{color:#A79F92}
+  #loading li.on,#loading li.done{color:var(--ivory)}
+  #loading li::before{border-color:rgba(184,156,107,.45)}
+  #loading li.on::before{border-color:var(--gold);border-top-color:transparent}
+  #loading li.done::before{background:var(--gold);border-color:var(--gold)}
+  #loading li.done::after{border-color:var(--midnight)}
+  #loading .big{border-color:rgba(184,156,107,.3);border-top-color:var(--gold)}
+  #loading .bar{background:rgba(184,156,107,.22)}
+  #loading .bar i{background:var(--gold)}
+  #loading .muted{color:#A79F92}
+  #loading .tipcard{background:rgba(243,238,231,.06);border-color:rgba(184,156,107,.35)}
+  #loading .tipcard p{color:var(--ivory)}
+  #loading .tipk{color:var(--gold)}
+  /* gold detailing */
+  .choice .ic{background:var(--midnight) !important}
+  .choice .ic svg{stroke:var(--gold) !important}
+  .choice:hover{border-color:var(--gold)}
+  .rating{border-color:rgba(184,156,107,.55)}
+  .chip input:checked + span{background:var(--midnight);border-color:var(--midnight);color:var(--ivory)}
+
 
   /* reveal */
   .reveal{text-align:center;padding-top:20px}
@@ -344,7 +388,7 @@
 <main>
   <!-- Password -->
   <section class="screen" id="s-pass" data-title="" hidden>
-    <div class="lockup"><img src="/brand/monogram.png" alt=""><b>TreeStyle</b><small>The art of styling</small></div>
+    <div class="welcome"><div class="lockup"><img src="/brand/monogram.png" alt=""><b>TreeStyle</b><small>The art of styling</small></div><p class="wl">A more beautiful tree starts here.</p></div>
     <h1>Test access</h1>
     <p class="sub">Enter the test password.</p>
     <form id="passForm" class="row">
@@ -356,7 +400,7 @@
 
   <!-- Home -->
   <section class="screen" id="s-home" data-title="" hidden>
-    <div class="lockup"><img src="/brand/monogram.png" alt=""><b>TreeStyle</b><small>The art of styling</small></div>
+    <div class="welcome"><div class="lockup"><img src="/brand/monogram.png" alt=""><b>TreeStyle</b><small>The art of styling</small></div><p class="wl">A more beautiful tree starts here.</p></div>
     <h1>What would you like to do with your tree?</h1>
     <p class="sub">Personal guidance, step by step, for a beautifully styled tree.</p>
     <button class="choice" data-mode="check">
@@ -424,14 +468,14 @@
   <section class="screen" id="s-style" data-title="Style" data-foot="go" hidden>
     <h1>Pick a style</h1>
     <p class="sub">A starting point, not a box. Your tree, your way.</p>
-    <div class="row">
-      <label class="chip"><input type="radio" name="style" value="keep" checked><span>Keep my style</span></label>
-      <label class="chip"><input type="radio" name="style" value="classic"><span>Classic</span></label>
-      <label class="chip"><input type="radio" name="style" value="rustic"><span>Rustic</span></label>
-      <label class="chip"><input type="radio" name="style" value="modern"><span>Modern</span></label>
-      <label class="chip"><input type="radio" name="style" value="elegant"><span>Elegant</span></label>
-      <label class="chip"><input type="radio" name="style" value="playful"><span>Playful</span></label>
-      <label class="chip"><input type="radio" name="style" value="themed"><span>Themed</span></label>
+    <div class="sgrid">
+      <label class="scard"><input type="radio" name="style" value="keep" checked><span style="background-image:url(/brand/walnut.jpg)"><b>Keep my style</b><small>Refine what you have</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="classic"><span style="background-image:url(/brand/velvet-berry.jpg)"><b>Classic</b><small>Red, green, gold</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="rustic"><span style="background-image:url(/brand/pattern-plaid.jpg)"><b>Rustic</b><small>Plaid, wood, berries</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="modern"><span style="background-image:url(/brand/marble.jpg)"><b>Modern</b><small>Clean and simple</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="elegant"><span style="background-image:url(/brand/velvet-midnight.jpg)"><b>Elegant</b><small>Velvet, sheen, gold</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="playful"><span style="background-image:url(/brand/pattern-stripe.jpg)"><b>Playful</b><small>Bright and whimsical</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="themed"><span style="background-image:url(/brand/pattern-damask.jpg)"><b>Themed</b><small>Your own idea</small></span></label>
     </div>
     <input type="text" id="theme" placeholder="Your theme (e.g. vintage blue and silver)" hidden>
     <p class="styleNote" id="styleNote"></p>
