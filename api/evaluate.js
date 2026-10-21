@@ -17,6 +17,17 @@ const COORDS = `COORDINATES: x,y are fractions of the image width and height (0,
 
 const BRIEF_RULES = (mode) => `RENDER BRIEF: instructions for a photo-editing AI that will edit the ORIGINAL photo to show the tree after this plan. Write direct edit instructions in plain physical terms (what object, how many, size in inches, color, finish, and where on the tree: e.g. "upper left third, pushed deep toward the trunk"). Cover ornament clusters (e.g. "a tight cluster of 5 green 3-inch balls, middle right"), ribbon (width, color, texture, and whether it's short drops or loops tucked into branches; list each ribbon placement as its own separate spot, e.g. "6 separate clusters of 2-3 loops: upper center, upper right, middle left...", and say the ribbon disappears into the branches between spots; never describe it as running, cascading, wrapping or swagging across or down the tree), stems, flowers, ornaments by size, the top of the tree, and lights if added. ${mode === "design" ? "Describe the complete finished tree." : "Describe what to REMOVE or MOVE first (e.g. \"remove the gold plaid ribbon that runs diagonally across the middle of the tree\"), then what to ADD (including re-placing the same ribbon as loops or short drops). Everything not mentioned stays exactly as it is."} Match the mockup. 90-180 words. No scores, no reasons, no designer jargon.`;
 
+// Proposed (v2) brief, tried side by side in /lab before it replaces the current one.
+const BRIEF_RULES_V2 = (mode) => `RENDER BRIEF: instructions for a photo-editing AI that will edit the ORIGINAL photo to show the tree after a professional designer styled it. Write in plain physical terms (what object, how many, size in inches, color, finish, where on the tree). A designer tree is FULL and LAYERED, never sparse, so describe every layer in the order of work:
+1. Greenery stems: how many (about 2-3 per foot of tree height), the kind and finish, tucked in throughout the whole tree, fuller low, so texture shows everywhere.
+2. Ribbon: on a full, dense tree, large loops of wide wired ribbon bursting out of the branches at 7-9 spots that wind back and forth across the tree; each burst shows only loops, with no knot, no center and no tails, as if the ribbon continues inside the tree. On an open tree, short waterfall cascades: each tucked in at the top, spilling over 2-3 branches, then tucked back in, each stepping left or right of the one above. Layer the narrower ribbon with the widest, and give the thin accent ribbon its own spots. Never use the word bow, except for a topper the plan calls for. Never let ribbon run the full length of the tree, wrap around it, or swag across it.
+3. Flowers, each with small accents beside it.
+4. Ornaments in real designer quantities by size, scattered and staggered, never in lines: extra-large about 0.6 per foot of tree height, set back toward the trunk; large about 2 per foot; medium about 4 per foot; small about 5 per foot${mode === "check" ? " (on a tree that's already decorated, about half as many new ones)" : ""}. Include any clusters.
+5. Small accents (berries, sprays, sprigs) tucked in throughout to fill every plain patch.
+6. The crown: noticeably fuller and richer than the rest of the tree, building up to the topper.
+7. Lights, if added.
+${mode === "design" ? "Describe the complete finished tree." : "First describe what to REMOVE or MOVE (e.g. \"remove the gold plaid ribbon that runs diagonally across the middle of the tree\"), then what to ADD. Everything not mentioned stays exactly as it is."} End with: "The finished tree looks lush, full and layered, like a magazine designer tree, with no bare patches." Match the mockup. 150-260 words. No scores, no reasons, no designer jargon.`;
+
 const PLAN_SHAPE = (mode, compact) => `"quick_fixes": [ {"title":"<plain, under 8 words>","how":"<one short sentence>","x":<0-1>,"y":<0-1>} ],
  "plan": [ {"element":"fluff|lights|primary_picks|ribbon|florals|statement|medium|small|small_picks|crown|base","step":"<plain step name, e.g. Ribbon>","title":"<under 8 words>",${compact ? "" : '"how":"<1-2 specific sentences: sizes, counts, where>","effort":"<e.g. 20 minutes>",'}"shop":"<3-7 word store search, e.g. '6 inch wired velvet ribbon burgundy', or empty>"} ],
  "ideas": [ {"label":"<2-4 words>","request":"<one sentence asking the design partner for this change>"} ],
@@ -55,7 +66,7 @@ function factsLine(f) {
   return `Tree (confirmed by the homeowner; trust these over the photo): ${kind}, ${height}, ${density}. Work out whether it's snowy (flocked) from the photo.`;
 }
 
-function evalPrompt({ mode, style, theme, facts, imgNotes, part }) {
+function evalPrompt({ mode, style, theme, facts, imgNotes, part, variant }) {
   const stage = facts && ["partial", "finished"].includes(facts.stage) ? facts.stage : null;
   const task = mode === "design"
     ? `TASK: DESIGN this tree. They are starting fresh (the photo may show a bare or just-lit tree). Do not score it. Plan the whole tree following the order of work, and make the mockup a complete, finished design.`
@@ -82,7 +93,7 @@ ${factsLine(facts)}
 Style: ${styleLine(style, theme)}
 ${scoring}
 ${COORDS}
-${part === "look" ? LOOK_PART : BRIEF_RULES(mode)}${part === "plan" ? PLAN_PART : ""}
+${part === "look" ? LOOK_PART : (variant === "v2" ? BRIEF_RULES_V2 : BRIEF_RULES)(mode)}${part === "plan" ? PLAN_PART : ""}
 
 Reply with this JSON:
 {
@@ -208,7 +219,7 @@ export default async function handler(req, res) {
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
   if (!process.env.ANTHROPIC_API_KEY) return res.status(500).json({ error: "ANTHROPIC_API_KEY is not set in Vercel" });
 
-  const { image, mode = "check", style = "keep", theme = "", revise, extra, facts, pieces, inspo, details, part } = req.body || {};
+  const { image, mode = "check", style = "keep", theme = "", revise, extra, facts, pieces, inspo, details, part, variant } = req.body || {};
   const img = parseDataUrl(image);
   if (!img) return res.status(400).json({ error: "Missing photo" });
 
@@ -225,7 +236,7 @@ export default async function handler(req, res) {
       const pc = parseDataUrl(pieces), ins = mode === "design" ? parseDataUrl(inspo) : null;
       if (pc) { imgs.push(pc); notes.push(`Image ${imgs.length} shows special pieces they own (ornaments, heirlooms or found objects): design around them, give them the best spots, and let them set the theme and colors if they fit the style.`); }
       if (ins) { imgs.push(ins); notes.push(`Image ${imgs.length} is an inspiration photo: design toward its feel using the guide, adapted to their tree.`); }
-      ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" "), part }), part === "look" ? 4000 : 16000, part === "look" ? LOOK_SCHEMA : part === "plan" ? PLAN_SCHEMA : EVAL_SCHEMA));
+      ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" "), part, variant }), part === "look" ? 4000 : 16000, part === "look" ? LOOK_SCHEMA : part === "plan" ? PLAN_SCHEMA : EVAL_SCHEMA));
       // Weighted overall score, 0-100
       if (Array.isArray(result.categories) && result.categories.length) {
         let sum = 0, w = 0;
