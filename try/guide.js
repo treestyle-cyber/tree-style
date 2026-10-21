@@ -559,18 +559,7 @@
         g2.addColorStop(0, rgbaOf(col, a)); g2.addColorStop(.65, rgbaOf(col, a * .85)); g2.addColorStop(1, rgbaOf(col, 0));
         o.fillStyle = g2; o.beginPath(); o.arc(0, 0, rx, 0, TAU); o.fill(); o.restore();
       };
-      if (RB.base && ribbonPlan.kind === "cascade" && ribbonPlan.runs) {
-        // each waterfall is drawn as a falling band along its path, so the preview paints a cascade, not a dot
-        const maxLen = G.treeH * .11;   // a short waterfall: two or three branches, never a long stripe
-        ribbonPlan.runs.forEach(run => {
-          let len = 0;
-          for (let i = 0; i < run.length; i++) {
-            if (i) len += Math.hypot(run[i][0] - run[i - 1][0], run[i][1] - run[i - 1][1]);
-            if (len > maxLen) break;
-            blob(run[i][0], run[i][1], RW.base * .75, RW.base * .75, RB.base.color, .88);
-          }
-        });
-      } else if (RB.base) ribbonPlan.marks.forEach(([x, y]) => blob(x, y, RW.base * 1.0, RW.base * .7, RB.base.color, .9));
+      if (RB.base) ribbonPlan.marks.forEach(([x, y]) => blob(x, y, RW.base * 1.0, RW.base * .7, RB.base.color, .9));
       if (RB.accent) (S.accentLoops || []).forEach((L, i) => { if (i % 2) return; blob(L.x, L.y, Math.max(4, RW.accent), Math.max(3, RW.accent * .8), RB.accent.color, .9); });
       if (data.picks.floral.kind !== "none") S.all.filter(m => m.floral).forEach(m => {
         const fx = m.x + RW.base * .9, fy = m.y + RW.base * .3, r = FLOWER_IN[data.picks.floral.kind] * S.pxIn * .55;
