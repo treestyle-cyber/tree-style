@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Tree Style · Try it</title>
+<title>TreeStyle · The art of styling</title>
 <meta name="description" content="Snap your Christmas tree. Get a designer's rating, a step-by-step plan, and a preview of the finished tree.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Tree Style">
-<meta property="og:title" content="Try Tree Style 🎄">
+<meta property="og:site_name" content="TreeStyle">
+<meta property="og:title" content="Try TreeStyle">
 <meta property="og:description" content="Snap your Christmas tree. Get a designer's rating, a step-by-step plan, and a preview of the finished tree.">
 <meta property="og:url" content="https://tree-style.vercel.app/try">
 <meta property="og:image" content="https://tree-style.vercel.app/og.png">
@@ -20,16 +20,25 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
+<link rel="icon" type="image/png" href="/brand/favicon.png">
+<link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+<meta name="theme-color" content="#F3EEE7">
 <style>
   body{min-height:100dvh}
   /* app bar */
   .appbar{position:sticky;top:0;z-index:5;background:var(--bg);display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));border-bottom:1px solid transparent;transition:border-color .2s}
   .appbar.line{border-bottom-color:var(--line)}
   .appbar button{appearance:none;border:0;background:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--green)}
-  .appbar button:hover{background:rgba(31,58,46,.07)}
+  .appbar button:hover{background:rgba(20,28,44,.06)}
   .appbar button[disabled]{visibility:hidden}
-  .appbar .title{text-align:center;font-family:var(--serif);font-weight:600;font-size:22px;color:var(--green)}
+  .appbar .title{text-align:center;font-family:var(--serif);font-weight:500;font-size:23px;letter-spacing:.02em;color:var(--ink)}
   .appbar svg{width:22px;height:22px}
+  .appbar .mono{height:28px;width:auto}
+  .lockup{display:grid;justify-items:center;gap:6px;margin:8px 0 22px;text-align:center}
+  .lockup img{height:96px;width:auto}
+  .lockup b{font:500 26px var(--serif);letter-spacing:.26em;text-transform:uppercase;padding-left:.26em;color:var(--ink)}
+  .lockup small{font:500 10px var(--sans);letter-spacing:.34em;text-transform:uppercase;color:var(--brass);padding-left:.34em}
+  .lockup::after{content:"";width:44px;height:1px;background:var(--gold);margin-top:8px}
 
   main{max-width:560px;margin:0 auto;padding:6px 18px 120px}
   .screen{animation:in .28s ease both}
@@ -47,7 +56,7 @@
   /* choices */
   .choice{display:flex;gap:16px;align-items:center;width:100%;text-align:left;background:var(--paper);border:1.5px solid var(--line);border-radius:var(--radius);padding:20px;margin:12px 0;cursor:pointer;font:inherit;color:inherit}
   .choice:hover{border-color:var(--brass)}
-  .choice .ic{width:52px;height:52px;border-radius:50%;background:#efe6d4;display:grid;place-items:center;flex:none}
+  .choice .ic{width:52px;height:52px;border-radius:50%;background:#ECE4D8;display:grid;place-items:center;flex:none}
   .choice h3{font-size:25px;margin:0 0 2px}
   .choice p{margin:0;color:var(--muted);font-size:15px}
 
@@ -87,8 +96,8 @@
   .orns{display:flex;gap:8px;justify-content:center}
   .orns i{width:38px;height:38px;border-radius:50%;background:var(--line);display:block;position:relative;opacity:0;transform:scale(.4);animation:pop .4s cubic-bezier(.3,1.6,.5,1) forwards}
   .orns i::after{content:"";position:absolute;left:50%;top:-7px;width:11px;height:8px;margin-left:-5.5px;background:var(--brass);border-radius:2px}
-  .orns i.f{background:radial-gradient(circle at 35% 30%,#f0a0aa,#8e2a32 58%,#561a20)}
-  .orns i.h{background:linear-gradient(90deg,#8e2a32 50%,var(--line) 50%)}
+  .orns i.f{background:radial-gradient(circle at 35% 30%,#c98f8a,#6B2E2E 58%,#3E1A1A)}
+  .orns i.h{background:linear-gradient(90deg,#6B2E2E 50%,var(--line) 50%)}
   @keyframes pop{to{opacity:1;transform:none}}
   .ornword{font:600 15px var(--sans);margin-top:12px;color:var(--brass);letter-spacing:.04em}
   .rating{max-width:340px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px 12px;display:grid;gap:14px}
@@ -98,14 +107,14 @@
   .rating .orns{gap:7px}
   .rating .orns i{width:30px;height:30px}
   .rating .orns i::after{top:-6px;width:9px;height:7px;margin-left:-4.5px}
-  .rrow.after .orns i.f{background:radial-gradient(circle at 35% 30%,#f6dc9c,#b8913f 58%,#7a5b22)}
-  .rrow.after .orns i.h{background:linear-gradient(90deg,#b8913f 50%,var(--line) 50%)}
+  .rrow.after .orns i.f{background:radial-gradient(circle at 35% 30%,#E6D3A8,#B89C6B 58%,#7A6440)}
+  .rrow.after .orns i.h{background:linear-gradient(90deg,#B89C6B 50%,var(--line) 50%)}
   .rword{display:flex;gap:8px;align-items:baseline}
   .rword b{font:italic 600 22px/1.1 var(--serif);color:var(--green)}
   .rword span{font-size:13px;color:var(--muted)}
   .rnote{margin:0;font-size:12.5px;color:var(--muted);text-align:center}
   .reveal h1{font-size:36px;margin:18px 0 10px}
-  .potential{display:inline-block;background:#efe6d4;border-radius:999px;padding:8px 14px;font-size:14px;margin:6px 0 18px}
+  .potential{display:inline-block;background:#ECE4D8;border-radius:999px;padding:8px 14px;font-size:14px;margin:6px 0 18px}
   .teaser{position:relative;border-radius:var(--radius);overflow:hidden;margin:6px auto 0;max-width:300px;cursor:pointer;border:0;padding:0;display:block}
   .teaser img{width:100%;filter:blur(6px) brightness(.9);transform:scale(1.06)}
   .progress{list-style:none;margin:18px auto 4px;padding:0;max-width:330px;text-align:left;display:grid;gap:10px}
@@ -150,7 +159,7 @@
   .navlist button{display:flex;align-items:center;gap:14px;width:100%;appearance:none;border:0;border-top:1px solid var(--line);background:none;padding:16px;text-align:left;font:inherit;color:inherit;cursor:pointer}
   .navlist button:first-child{border-top:0}
   .navlist button:hover{background:#faf6ee}
-  .navlist .ic{width:40px;height:40px;border-radius:50%;background:#efe6d4;display:grid;place-items:center;flex:none;color:var(--green)}
+  .navlist .ic{width:40px;height:40px;border-radius:50%;background:#ECE4D8;display:grid;place-items:center;flex:none;color:var(--green)}
   .navlist .ic svg{width:20px;height:20px}
   .navlist b{display:block;font-size:16px}
   .navlist small{color:var(--muted);font-size:13px}
@@ -172,7 +181,7 @@
   .stepcard h2{font-size:32px;margin:6px 0 12px}
   .stepcard p{font-size:17px;margin:0 0 16px}
   .meta{display:flex;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
-  .meta span{background:#efe6d4;border-radius:99px;padding:5px 11px}
+  .meta span{background:#ECE4D8;border-radius:99px;padding:5px 11px}
   .shoplink{display:inline-block;margin-top:14px;font-weight:600;color:var(--green)}
   .stepnav{display:flex;gap:10px;margin-top:14px}
   .stepnav .btn{flex:1}
@@ -188,7 +197,7 @@
   .extra .thumb,.extra > div{grid-row:span 2}
   .extra label,.extra button{grid-column:3;text-align:right;padding:2px 0}
   .extra:first-of-type{border-top:0}
-  .extra .thumb{width:56px;height:56px;border-radius:10px;background:#efe6d4 center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--brass);font-size:22px}
+  .extra .thumb{width:56px;height:56px;border-radius:10px;background:#ECE4D8 center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--brass);font-size:22px}
   .extra small{display:block;color:var(--muted);font-size:13px}
   .extra label,.extra button{font:600 14px var(--sans);color:var(--green);cursor:pointer;background:none;border:0;white-space:nowrap}
 
@@ -254,7 +263,7 @@
   .rate button{appearance:none;border:0;background:none;padding:0;cursor:pointer;width:38px;height:42px;position:relative}
   .rate button i{position:absolute;left:3px;bottom:0;width:32px;height:32px;border-radius:50%;background:var(--line);display:block;transition:transform .15s}
   .rate button i::after{content:"";position:absolute;left:50%;top:-6px;width:10px;height:7px;margin-left:-5px;background:var(--brass);border-radius:2px}
-  .rate button.on i{background:radial-gradient(circle at 35% 30%,#f0a0aa,#8e2a32 58%,#561a20)}
+  .rate button.on i{background:radial-gradient(circle at 35% 30%,#c98f8a,#6B2E2E 58%,#3E1A1A)}
   .rate button:active i{transform:scale(.9)}
   .fb textarea{width:100%;font:16px/1.4 var(--sans);padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;resize:vertical;color:var(--ink);margin:6px 0 10px}
   .fb input[type=text]{width:100%;border-radius:12px;margin-bottom:12px}
@@ -265,7 +274,7 @@
   .steptabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;margin:0 -18px;padding-left:18px;padding-right:18px;scrollbar-width:none}
   .steptabs::-webkit-scrollbar{display:none}
   .steptabs button{flex:none;appearance:none;border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:7px 12px 7px 7px;font:500 13px var(--sans);color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
-  .steptabs button i{font-style:normal;width:22px;height:22px;border-radius:50%;background:#efe6d4;display:grid;place-items:center;font-size:11px;font-weight:700}
+  .steptabs button i{font-style:normal;width:22px;height:22px;border-radius:50%;background:#ECE4D8;display:grid;place-items:center;font-size:11px;font-weight:700}
   .steptabs button.on{background:var(--green);border-color:var(--green);color:#fff}
   .steptabs button.on i{background:rgba(255,255,255,.2);color:#fff}
   .steptabs button.done i{background:var(--brass);color:#fff}
@@ -328,13 +337,14 @@
 
 <header class="appbar" id="appbar">
   <button id="navBack" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-  <div class="title" id="appTitle">Tree Style</div>
-  <button id="navHome" aria-label="Start over"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 4.5 20h15z"/></svg></button>
+  <div class="title" id="appTitle">TreeStyle</div>
+  <button id="navHome" aria-label="Start over"><img src="/brand/monogram.png" alt="" class="mono"></button>
 </header>
 
 <main>
   <!-- Password -->
-  <section class="screen" id="s-pass" data-title="Tree Style" hidden>
+  <section class="screen" id="s-pass" data-title="" hidden>
+    <div class="lockup"><img src="/brand/monogram.png" alt=""><b>TreeStyle</b><small>The art of styling</small></div>
     <h1>Test access</h1>
     <p class="sub">Enter the test password.</p>
     <form id="passForm" class="row">
@@ -345,15 +355,16 @@
   </section>
 
   <!-- Home -->
-  <section class="screen" id="s-home" data-title="Tree Style" hidden>
-    <h1>What can we help with?</h1>
-    <p class="sub">A designer's eye for your Christmas tree.</p>
+  <section class="screen" id="s-home" data-title="" hidden>
+    <div class="lockup"><img src="/brand/monogram.png" alt=""><b>TreeStyle</b><small>The art of styling</small></div>
+    <h1>What would you like to do with your tree?</h1>
+    <p class="sub">Personal guidance, step by step, for a beautifully styled tree.</p>
     <button class="choice" data-mode="check">
-      <span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1f3a2e" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
+      <span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#987C4C" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
       <span><h3>Check my tree</h3><p>It's decorated, or partway there. Rate it and show me what would make it better.</p></span>
     </button>
     <button class="choice" data-mode="design">
-      <span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1f3a2e" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 4.5 20h15z"/><circle cx="12" cy="3" r="1" fill="#1f3a2e"/></svg></span>
+      <span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#987C4C" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 4.5 20h15z"/><circle cx="12" cy="3" r="1" fill="#987C4C"/></svg></span>
       <span><h3>Design my tree</h3><p>Starting fresh. Plan the whole tree and show me the finished look.</p></span>
     </button>
   </section>
@@ -365,7 +376,7 @@
     <label class="drop">
       <input type="file" id="file" accept="image/*" hidden>
       <div id="dropInner">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#a9844c" stroke-width="1.6" stroke-linejoin="round" style="margin:0 auto 10px"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#B89C6B" stroke-width="1.6" stroke-linejoin="round" style="margin:0 auto 10px"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>
         <strong>Tap to take or choose a photo</strong>
       </div>
     </label>
@@ -586,7 +597,7 @@
     <h1>Shopping list</h1>
     <p class="sub">What to look for, in the order you'll use it.</p>
     <div class="card" id="shop"></div>
-    <p class="small muted" style="font-size:13px">Links open a store search. As an Amazon Associate, Tree Style may earn from qualifying purchases.</p>
+    <p class="small muted" style="font-size:13px">Links open a store search. As an Amazon Associate, TreeStyle may earn from qualifying purchases.</p>
   </section>
 </main>
 
@@ -668,7 +679,7 @@ function paint(isBack) {
     if (on) { s.classList.toggle("back", !!isBack); s.style.animation = "none"; s.offsetHeight; s.style.animation = ""; }
   });
   const el = document.getElementById(id);
-  $("#appTitle").textContent = el.dataset.title || "Tree Style";
+  $("#appTitle").textContent = el.dataset.title ?? "TreeStyle";
   $("#navBack").disabled = stack.length <= 1 || id === "s-pass";
   $("#navHome").disabled = id === "s-home" || id === "s-pass";
   setFoot();
@@ -1104,7 +1115,7 @@ $("#restart").onclick = () => { photo = null; guide = null; photoImg = null; fac
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d); $("#file").value = ""; $("#dropInner").innerHTML = "<strong>Tap to take or choose a photo</strong>"; show("s-photo", ["s-home"]); };
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => b.dataset.go === "s-plan" ? openPlan() : show(b.dataset.go));
 
-const buyRow = b => `<a class="buyrow" href="${shopUrl(b.q)}" target="_blank" rel="noopener sponsored"><b style="background:${b.color || "#efe6d4"}"></b><span><strong>${esc(b.label)}</strong>${b.qty ? `<small>${esc(b.qty)}</small>` : ""}</span><em>Find it ›</em></a>`;
+const buyRow = b => `<a class="buyrow" href="${shopUrl(b.q)}" target="_blank" rel="noopener sponsored"><b style="background:${b.color || "#ECE4D8"}"></b><span><strong>${esc(b.label)}</strong>${b.qty ? `<small>${esc(b.qty)}</small>` : ""}</span><em>Find it ›</em></a>`;
 
 /* ---------------- full-screen zoom (pinch, pan, double-tap) ---------------- */
 let zImgs = [], zIdx = 0, zS = 1, zX = 0, zY = 0;

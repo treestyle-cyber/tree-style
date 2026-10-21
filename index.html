@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tree Style · A designer's eye for holiday decor</title>
+<title>TreeStyle · The art of styling</title>
 <meta name="description" content="Snap a photo of your Christmas tree. Get a designer's step-by-step plan and see the finished tree before you hang a single ornament.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Tree Style">
-<meta property="og:title" content="Tree Style · A designer's eye for holiday decor">
+<meta property="og:site_name" content="TreeStyle">
+<meta property="og:title" content="TreeStyle · The art of styling">
 <meta property="og:description" content="Snap a photo of your tree. Get a designer's plan and see the finished look.">
 <meta property="og:url" content="https://tree-style.vercel.app/">
 <meta property="og:image" content="https://tree-style.vercel.app/og.png">
@@ -19,18 +19,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 4 20h16z' fill='%231f3a2e'/%3E%3Ccircle cx='12' cy='3' r='1.6' fill='%23a9844c'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="/brand/favicon.png">
+<link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+<meta name="theme-color" content="#F3EEE7">
 <style>
   /* ============ SETTINGS ============
      Paste your Mailchimp embedded-form action URL between the quotes in the script at the bottom (MAILCHIMP_ACTION). */
   header.top{padding:18px 0}
   header.top .wrap{display:flex;justify-content:space-between;align-items:center}
-  header.top a.join{font:600 14px var(--sans);text-decoration:none;color:var(--green)}
+  header.top a.join{font:500 12px var(--sans);letter-spacing:.18em;text-transform:uppercase;text-decoration:none;color:var(--ink)}
 
   .hero{padding:36px 0 64px}
   .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
   .hero h1{font-size:clamp(44px,6vw,72px);margin:14px 0 18px}
-  .hero h1 em{font-style:italic;color:var(--berry)}
+  .hero h1 em{font-style:italic;color:var(--winterberry)}
   .hero p.lede{font-size:18px;color:var(--muted);max-width:30em;margin:0 0 26px}
 
   form.signup{display:flex;gap:10px;max-width:560px}
@@ -40,7 +42,7 @@
   .formnote.ok{color:var(--green);font-weight:600}
   .formnote.err{color:var(--berry)}
 
-  .compare{position:relative;aspect-ratio:4/5;border-radius:20px;overflow:hidden;background:#efe6d4;box-shadow:0 30px 60px -30px rgba(31,58,46,.45);user-select:none;touch-action:none}
+  .compare{position:relative;aspect-ratio:4/5;border-radius:20px;overflow:hidden;background:#efe6d4;box-shadow:0 30px 60px -30px rgba(20,28,44,.5);user-select:none;touch-action:none}
   .compare svg{position:absolute;inset:0;width:100%;height:100%}
   .compare .after{clip-path:inset(0 0 0 var(--cut,50%))}
   .compare .bar{position:absolute;top:0;bottom:0;left:var(--cut,50%);width:2px;background:#fff;transform:translateX(-1px)}
@@ -56,16 +58,16 @@
   .steps h3{font-size:26px;margin:10px 0 8px}
   .steps p{margin:0;color:var(--muted)}
 
-  section.get{padding:64px 0;background:var(--green);color:#eef2ec}
-  section.get h2{color:#fff}
-  section.get .eyebrow{color:#d6b77f}
+  section.get{padding:64px 0;background:var(--midnight);color:#E9E3D9}
+  section.get h2{color:var(--ivory)}
+  section.get .eyebrow{color:var(--gold)}
   .gets{display:grid;grid-template-columns:repeat(2,1fr);gap:18px 40px}
-  .gets div{padding:18px 0;border-top:1px solid rgba(255,255,255,.16)}
-  .gets h3{color:#fff;font-size:24px;margin-bottom:6px}
-  .gets p{margin:0;color:#c9d5cd}
+  .gets div{padding:18px 0;border-top:1px solid rgba(184,156,107,.3)}
+  .gets h3{color:var(--ivory);font-size:26px;margin-bottom:6px}
+  .gets p{margin:0;color:#B9B2A6}
   .orns{display:inline-flex;gap:4px;vertical-align:middle;margin-left:6px}
-  .orns i{width:14px;height:14px;border-radius:50%;background:#d6b77f;display:block}
-  .orns i.h{background:linear-gradient(90deg,#d6b77f 50%,rgba(255,255,255,.2) 50%)}
+  .orns i{width:14px;height:14px;border-radius:50%;background:#B89C6B;display:block}
+  .orns i.h{background:linear-gradient(90deg,#B89C6B 50%,rgba(255,255,255,.2) 50%)}
 
   section.close{padding:72px 0 56px;text-align:center}
   section.close h2{font-size:clamp(34px,4.5vw,52px);margin:12px auto 14px;max-width:16em}
@@ -88,7 +90,7 @@
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="/"><svg viewBox="0 0 24 24"><path d="M12 3 4.5 20h15z" fill="#1f3a2e"/><circle cx="12" cy="3.2" r="1.8" fill="#a9844c"/></svg>Tree Style</a>
+    <a class="brand" href="/"><img src="/brand/monogram.png" alt=""><span class="wm"><b>TreeStyle</b><small>The art of styling</small></span></a>
     <a class="join" href="#signup">Join the list</a>
   </div>
 </header>
@@ -96,13 +98,13 @@
 <section class="hero">
   <div class="wrap">
     <div>
-      <div class="eyebrow">A designer's eye for holiday decor</div>
+      <div class="eyebrow">The art of styling · Christmas trees</div>
       <h1>Your tree, <em>styled</em> like a designer did it.</h1>
       <p class="lede">Snap a photo of your Christmas tree. Get a clear, step-by-step plan from a professional decorator's playbook, and see your finished tree before you hang a single ornament.</p>
       <form class="signup" id="signup" novalidate>
         <input type="text" name="FNAME" class="fname" placeholder="First name" autocomplete="given-name" required aria-label="First name">
         <input type="email" name="EMAIL" placeholder="Your email" autocomplete="email" required aria-label="Email address">
-        <button class="btn" type="submit">Get early access</button>
+        <button class="btn" type="submit">Get early access &rarr;</button>
       </form>
       <div class="formnote">Opening in November. Join the list to be first in line.</div>
     </div>
@@ -121,7 +123,7 @@
         <defs>
           <radialGradient id="glow" cx="50%" cy="55%" r="55%"><stop offset="0" stop-color="#ffd98a" stop-opacity=".45"/><stop offset="1" stop-color="#ffd98a" stop-opacity="0"/></radialGradient>
           <radialGradient id="gb" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#f4dca3"/><stop offset=".6" stop-color="#b48a45"/><stop offset="1" stop-color="#7a5a2a"/></radialGradient>
-          <radialGradient id="rb" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#d77"/><stop offset=".6" stop-color="#8e2a32"/><stop offset="1" stop-color="#561a20"/></radialGradient>
+          <radialGradient id="rb" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#d77"/><stop offset=".6" stop-color="#6B2E2E"/><stop offset="1" stop-color="#561a20"/></radialGradient>
         </defs>
         <rect width="400" height="500" fill="#ece1cb"/>
         <rect y="410" width="400" height="90" fill="#e0d1b4"/>
@@ -129,13 +131,13 @@
         <path d="M200 70 L95 400 H305 Z" fill="#2c4a3b"/>
         <path d="M200 70 L120 300 H280 Z" fill="#355a48" opacity=".6"/>
         <g fill="#ffe7a8"><circle cx="160" cy="330" r="2"/><circle cx="230" cy="300" r="2"/><circle cx="190" cy="250" r="2"/><circle cx="215" cy="190" r="2"/><circle cx="180" cy="150" r="2"/><circle cx="250" cy="370" r="2"/><circle cx="135" cy="375" r="2"/><circle cx="205" cy="120" r="2"/><circle cx="265" cy="330" r="2"/><circle cx="150" cy="280" r="2"/><circle cx="240" cy="230" r="2"/><circle cx="170" cy="210" r="2"/><circle cx="200" cy="350" r="2"/><circle cx="285" cy="385" r="2"/><circle cx="115" cy="390" r="2"/></g>
-        <g fill="none" stroke="#7a2e34" stroke-width="11" stroke-linecap="round" opacity=".95">
+        <g fill="none" stroke="#6B2E2E" stroke-width="11" stroke-linecap="round" opacity=".95">
           <path d="M185 120 q20 22 -2 48"/><path d="M230 175 q22 28 -6 60"/><path d="M150 245 q-18 30 10 62"/><path d="M250 285 q24 30 -4 70"/><path d="M175 335 q-14 26 8 50"/>
         </g>
         <g fill="none" stroke="#d9bf86" stroke-width="4" stroke-linecap="round"><path d="M188 122 q20 22 -2 48"/><path d="M233 177 q22 28 -6 60"/><path d="M253 287 q24 30 -4 70"/></g>
         <g><circle cx="200" cy="300" r="20" fill="url(#gb)"/><circle cx="150" cy="360" r="15" fill="url(#rb)"/><circle cx="255" cy="250" r="14" fill="url(#gb)"/><circle cx="172" cy="190" r="11" fill="url(#rb)"/><circle cx="225" cy="140" r="9" fill="url(#gb)"/><circle cx="270" cy="370" r="12" fill="url(#gb)"/><circle cx="130" cy="320" r="8" fill="url(#gb)"/><circle cx="215" cy="215" r="8" fill="url(#rb)"/><circle cx="185" cy="270" r="7" fill="url(#gb)"/><circle cx="235" cy="335" r="9" fill="url(#rb)"/><circle cx="160" cy="300" r="6" fill="url(#gb)"/><circle cx="198" cy="170" r="6" fill="url(#rb)"/></g>
         <g fill="#f3efe6"><circle cx="208" cy="95" r="9"/><circle cx="192" cy="98" r="8"/><circle cx="200" cy="85" r="8"/></g>
-        <path d="M200 46 l6 14 15 1 -12 9 4 15 -13 -8 -13 8 4 -15 -12 -9 15 -1z" fill="#d6b77f"/>
+        <path d="M200 46 l6 14 15 1 -12 9 4 15 -13 -8 -13 8 4 -15 -12 -9 15 -1z" fill="#B89C6B"/>
         <rect x="185" y="400" width="30" height="22" fill="#5b4330"/>
         <path d="M140 418 h120 l8 24 h-136 z" fill="#d6c7a6"/><path d="M140 418 h120 l2 6 h-124 z" fill="#c8b48c"/>
       </svg>
@@ -164,7 +166,7 @@
     <div class="gets">
       <div><h3>An honest rating <span class="orns"><i></i><i></i><i></i><i class="h"></i></span></h3><p>Balance, lights, the top of the tree, fullness, and more, each explained in one kind sentence.</p></div>
       <div><h3>Quick wins first</h3><p>The handful of changes that make the biggest difference for the least effort.</p></div>
-      <div><h3>A step-by-step plan</h3><p>The order the pros work in, from fluffing and lights to ribbon, stems and ornaments, with sizes and counts.</p></div>
+      <div><h3>A step-by-step plan</h3><p>The order the pros work in, from shaping the branches and lights to ribbon, stems and ornaments, with sizes and counts.</p></div>
       <div><h3>A shopping list</h3><p>Exactly what to look for (ribbon widths, ornament sizes, stems) so you buy less and get more.</p></div>
     </div>
   </div>
@@ -178,14 +180,14 @@
     <form class="signup" novalidate>
       <input type="text" name="FNAME" class="fname" placeholder="First name" autocomplete="given-name" required aria-label="First name">
       <input type="email" name="EMAIL" placeholder="Your email" autocomplete="email" required aria-label="Email address">
-      <button class="btn" type="submit">Get early access</button>
+      <button class="btn" type="submit">Get early access &rarr;</button>
     </form>
     <div class="formnote">No spam. Just a note when we open.</div>
   </div>
 </section>
 
 <footer>
-  <div class="wrap"><span>© 2026 Tree Style</span><span>A designer's eye for holiday decor</span></div>
+  <div class="wrap"><span>© 2026 TreeStyle</span><span>The art of styling</span></div>
 </footer>
 
 <script>

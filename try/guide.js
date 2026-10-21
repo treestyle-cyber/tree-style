@@ -461,7 +461,7 @@
         const r = Math.max(12 * vs, u * 1.3);
         const [fx, fy] = ribbonPlan.marks[0];
         pill(o, fx, fy, ribbonPlan.kind === "cascade" ? "Start here" : "Start at the top", { align: fx > W * .55 ? "right" : "left", gap: r * 2.2, leaderFrom: [fx, fy] });
-        ribbonPlan.marks.forEach(([x, y], i) => badge(o, x, y, r, i + 1, "#1f3a2e"));
+        ribbonPlan.marks.forEach(([x, y], i) => badge(o, x, y, r, i + 1, "#141C2C"));
       }
       if (key === "florals") S.all.filter(m => m.floral).forEach(m => ring(o, m.x, m.y, FLOWER_IN[data.picks.floral.kind || "rose"] * S.pxIn * .6 + u * .4));
       if (["statement", "medium", "small"].includes(key)) {
