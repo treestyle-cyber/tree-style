@@ -1,8 +1,9 @@
 :root{
   /* TreeStyle brand: Midnight, Winter Berry, Evergreen, Walnut, Oat, Ivory, Antique Gold */
   --midnight:#141C2C; --winterberry:#6B2E2E; --evergreen:#2C3E2E; --walnut:#4A3620; --oat:#D9CCC0; --ivory:#F3EEE7; --gold:#B89C6B;
-  --bg:var(--ivory); --paper:#FBF8F3; --ink:var(--midnight); --muted:#6E665C; --line:#E4DACE;
-  --green:var(--midnight); --green-2:#26324A; --brass:#987C4C; --berry:var(--winterberry);
+  /* Dark Midnight theme with ivory type and antique-gold accents, like the brand board */
+  --bg:var(--midnight); --paper:#1C2538; --paper-2:#232E45; --ink:var(--ivory); --muted:#ABA397; --line:rgba(184,156,107,.26);
+  --green:var(--gold); --green-2:#CBB183; --on-accent:var(--midnight); --brass:#C4A877; --berry:#D0857C;
   --radius:14px;
   --serif:"Cormorant Garamond", Georgia, serif;   /* stands in for Sentiero */
   --sans:"Inter", "Helvetica Neue", system-ui, -apple-system, Segoe UI, sans-serif;   /* stands in for Neue Haas Grotesk */
@@ -10,7 +11,7 @@
 *{box-sizing:border-box}
 [hidden]{display:none !important}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+body{background:linear-gradient(rgba(20,28,44,.9),rgba(20,28,44,.96)),url(/brand/velvet-midnight.jpg) center top/cover fixed,var(--bg);color:var(--ink);font:16px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
 img,svg{display:block;max-width:100%}
 a{color:inherit}
 .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
@@ -19,12 +20,13 @@ a{color:inherit}
 .brand .wm{display:grid;gap:2px;line-height:1}
 .brand b{font:500 21px var(--serif);letter-spacing:.24em;text-transform:uppercase;padding-left:.12em}
 .brand small{font:500 8.5px var(--sans);letter-spacing:.32em;text-transform:uppercase;color:var(--brass)}
-.btn{appearance:none;border:0;border-radius:999px;background:var(--green);color:var(--ivory);font:600 13px var(--sans);letter-spacing:.14em;text-transform:uppercase;padding:15px 24px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background .15s, transform .15s}
+.btn{appearance:none;border:0;border-radius:999px;background:var(--green);color:var(--on-accent);font:600 13px var(--sans);letter-spacing:.14em;text-transform:uppercase;padding:15px 24px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background .15s, transform .15s}
 .btn:hover{background:var(--green-2)}
 .btn:active{transform:translateY(1px)}
 .btn:disabled{opacity:.55;cursor:default}
 .btn.ghost{background:transparent;color:var(--green);box-shadow:inset 0 0 0 1.5px var(--green)}
-.btn.ghost:hover{background:rgba(20,28,44,.05)}
+.btn.ghost:hover{background:rgba(184,156,107,.1)}
+::placeholder{color:#8C8578}
 input[type=email],input[type=password],input[type=text]{font:16px var(--sans);padding:13px 16px;border:1.5px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);min-width:0}
 input:focus{outline:none;border-color:var(--brass)}
 .eyebrow{font:500 12px var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--brass)}
