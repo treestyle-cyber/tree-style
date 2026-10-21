@@ -29,7 +29,10 @@
   .row{display:flex;gap:8px;flex-wrap:wrap}
   .row .btn{flex:1;padding:12px 14px}
   .fixbox summary{cursor:pointer;color:var(--gold);font-size:13.5px;margin:2px 0 6px}
-  .fixbox textarea{min-height:120px}
+  .fixbox textarea{min-height:110px;margin:6px 0}
+  .fixstep{margin:10px 0 14px}
+  .fixstep b{font-size:13.5px}
+  .fixstep .btn{width:100%;padding:11px}
   .msg{font-size:13px;color:var(--muted);min-height:1.2em}
   .msg.err{color:var(--berry)}
   .msg.ok{color:var(--gold)}
@@ -119,13 +122,14 @@ function build(current) {
       <textarea>${s.prompt}</textarea>
       <div class="row"><button class="btn ghost gen">Generate</button><button class="btn use" disabled>Use this</button></div>
       <details class="fixbox"><summary>Fix the tree in the new photo</summary>
-        <textarea class="fixtxt">Remove every length of ribbon that runs down or across the tree, and any long tails hanging from the topper. In its place, nestle seven separate small clusters of two or three short ribbon loops (same ribbon and colors) into the branches, staggered left and right at different heights, with plenty of green branches between them. Move ornaments so none line up in a column, row or diagonal; scatter and stagger them, keeping the largest set back toward the trunk, with balanced visual weight left and right.</textarea>
-        <div class="row"><button class="btn ghost fix" disabled>Fix the tree</button></div>
+        <div class="fixstep"><b>1 · Clear the streams</b><textarea class="fixtxt rm">Remove every length of ribbon that runs down or across the tree, and any long ribbon tails hanging from the topper; fill those areas with natural green branches and lights. Move ornaments so none line up in a column, row or diagonal: scatter and stagger them, keep the largest set back toward the trunk, and keep the visual weight balanced left and right.</textarea><button class="btn ghost fix" data-k="rm" disabled>Clear the streams</button></div>
+        <div class="fixstep"><b>2 · Tuck in the ribbon</b><textarea class="fixtxt add">Add wired velvet ribbon to the tree as seven separate, clearly visible clusters of two or three short loops each (each loop about the size of a hand, no long tails), in the tree's ribbon colors, nestled into the branches so the loops pop out. Place them, staggered: 1 high on the upper left, 2 upper right, 3 middle left, 4 just right of center in the middle, 5 lower left, 6 lower right, 7 low near the center. Leave green branches visible between clusters; the ribbon must not connect from one cluster to the next.</textarea><button class="btn ghost fix" data-k="add" disabled>Tuck in the ribbon</button></div>
+        <div class="fixstep"><b>Or your own note</b><textarea class="fixtxt own" placeholder="e.g. Fewer gold ornaments on the left"></textarea><button class="btn ghost fix" data-k="own" disabled>Make this change</button></div>
       </details>
       <div class="msg"></div>
     </div>`).join("");
   document.querySelectorAll(".slot").forEach(el => {
-    const s = SLOTS.find(x => x.id === el.dataset.id), msg = el.querySelector(".msg"), nf = el.querySelector(".frame.new"), useB = el.querySelector(".use"), genB = el.querySelector(".gen"), fixB = el.querySelector(".fix");
+    const s = SLOTS.find(x => x.id === el.dataset.id), msg = el.querySelector(".msg"), nf = el.querySelector(".frame.new"), useB = el.querySelector(".use"), genB = el.querySelector(".gen"), fixBs = [...el.querySelectorAll(".fix")];
     let img = null;
     genB.onclick = async () => {
       genB.disabled = true; useB.disabled = true; msg.className = "msg"; msg.textContent = "Creating… about 20 seconds";
@@ -133,22 +137,25 @@ function build(current) {
       try {
         const d = await call({ action: "generate", prompt: el.querySelector("textarea").value.trim() + "\n\n" + LOOK, aspect: s.aspect });
         img = await shrink(d.image);
-        nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; msg.textContent = "Like it? Tap Use this. If the tree breaks a rule, open Fix the tree below."; useB.disabled = false; fixB.disabled = false; genB.textContent = "Generate again";
+        nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; msg.textContent = "Like it? Tap Use this. If the tree breaks a rule, open Fix the tree below."; useB.disabled = false; fixBs.forEach(b => b.disabled = false); genB.textContent = "Generate again";
       } catch (e) {
         if (e.status === 401) return gate("That password didn't work.");
         nf.innerHTML = '<span class="lbl">New</span>Try again'; msg.className = "msg err"; msg.textContent = e.message;
       } finally { genB.disabled = false; }
     };
-    fixB.onclick = async () => {
-      if (!img) return;
-      fixB.disabled = genB.disabled = useB.disabled = true; msg.className = "msg"; msg.textContent = "Fixing the tree… about 20 seconds";
+    fixBs.forEach(fixB => fixB.onclick = async () => {
+      const note = el.querySelector(".fixtxt." + fixB.dataset.k).value.trim();
+      if (!img || !note) return;
+      const all = [...fixBs, genB, useB]; all.forEach(b => b.disabled = true);
+      msg.className = "msg"; msg.textContent = "Editing the photo… about 20 seconds";
       try {
-        const d = await call({ action: "edit", image: img, prompt: el.querySelector(".fixtxt").value.trim(), aspect: s.aspect });
+        const d = await call({ action: "edit", image: img, prompt: note, aspect: s.aspect });
         img = await shrink(d.image);
-        nf.innerHTML = `<span class="lbl">Fixed</span><img src="${img}" alt="">`; msg.textContent = "Fixed. Use this, or fix again with a different note.";
+        nf.innerHTML = `<span class="lbl">Edited</span><img src="${img}" alt="">`;
+        msg.textContent = fixB.dataset.k === "rm" ? "Streams cleared. Now step 2: Tuck in the ribbon." : "Done. Use this, or edit again.";
       } catch (e) { msg.className = "msg err"; msg.textContent = e.message; }
-      finally { fixB.disabled = genB.disabled = useB.disabled = false; }
-    };
+      finally { all.forEach(b => b.disabled = false); }
+    });
     useB.onclick = async () => {
       if (!img) return;
       useB.disabled = true; msg.className = "msg"; msg.textContent = "Saving…";
