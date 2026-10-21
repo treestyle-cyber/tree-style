@@ -139,7 +139,10 @@ async function runOne(src, idx, mode, style) {
       const out = await api("/api/render", { image: src, brief: result.render_brief, aspect, map, variant });
       $(`#${id}-pic`).innerHTML = `<img src="${out.image}" alt="">`;
       $(`#${id}-meta`).textContent = `${Math.round((Date.now() - t0) / 1000)}s · ${(result.render_brief || "").split(/\s+/).length} words of instructions · ${out._meta?.model || ""}`;
-    } catch (e) { $(`#${id}-pic`).innerHTML = `<div class="err">${esc(e.message)}</div>`; }
+    } catch (e) {
+      $(`#${id}-pic`).innerHTML = `<div style="padding:14px;text-align:center"><div class="err">${esc(e.message)}</div><button class="btn ghost" style="margin-top:12px;padding:10px 16px">Try again</button></div>`;
+      $(`#${id}-pic`).querySelector("button").onclick = () => { $(`#${id}-pic`).innerHTML = '<div class="spin"></div>'; one(variant, id); };
+    }
   };
   await Promise.all([one(undefined, `c${idx}`), one("v2", `p${idx}`)]);
 }
