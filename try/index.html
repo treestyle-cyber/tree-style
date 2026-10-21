@@ -20,6 +20,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
+<script>
+// Brand photos chosen in the Studio replace the fabric textures (each spot keeps its texture until then)
+fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); } }).catch(() => {});
+</script>
 <link rel="icon" type="image/png" href="/brand/favicon.png">
 <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
 <meta name="theme-color" content="#F3EEE7">
@@ -389,7 +393,7 @@
   .kicker{text-align:center;font:500 11px var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin:18px 0 8px}
   /* welcome */
   .hero{margin:0 -18px 30px;min-height:min(68vh,620px);display:flex;flex-direction:column;justify-content:space-between;padding:30px 26px 34px;
-    background:radial-gradient(120% 70% at 50% 18%,rgba(184,156,107,.16),transparent 60%),linear-gradient(180deg,rgba(20,28,44,.35),rgba(20,28,44,.9)),url(/brand/velvet-midnight.jpg) center/cover;
+    background:radial-gradient(120% 70% at 50% 18%,rgba(184,156,107,.16),transparent 60%),linear-gradient(180deg,rgba(20,28,44,.35),rgba(20,28,44,.9)),var(--photo-hero, url(/brand/velvet-midnight.jpg)) center/cover;
     border-bottom:1px solid rgba(184,156,107,.3)}
   .hero .lockup{margin:4px 0 0}
   .hero .lockup img{height:120px;filter:drop-shadow(0 8px 18px rgba(0,0,0,.5))}
@@ -399,6 +403,7 @@
   .hero .hl h1{font:400 44px/1.04 var(--serif);color:var(--ivory);margin:0;text-align:left;max-width:9em}
   .hero .hl h1::after{display:none}
   .hero .rule{display:block;width:44px;height:1px;background:var(--gold);margin-bottom:16px}
+  .ph-hero .hero{background:linear-gradient(180deg,rgba(20,28,44,.55) 0%,rgba(20,28,44,.05) 30%,rgba(20,28,44,.15) 55%,rgba(20,28,44,.92) 100%),var(--photo-hero) center/cover}
   .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
   .choice.tile{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;text-align:center;gap:4px;aspect-ratio:3/4;margin:0;padding:18px 12px;border:0;border-radius:16px;
     background:linear-gradient(180deg,rgba(20,28,44,.05) 30%,rgba(20,28,44,.88)),var(--img) center/cover;box-shadow:0 18px 30px -18px rgba(0,0,0,.7),inset 0 0 0 1px rgba(184,156,107,.28);transition:transform .18s, box-shadow .18s}
@@ -453,8 +458,8 @@
     <div class="kicker">Begin</div>
     <h2 class="ttl">What would you like to do?</h2>
     <div class="tiles">
-      <button class="choice tile" data-mode="check" style="--img:url(/brand/velvet-berry.jpg)"><b>Check my tree</b><small>Decorated, or partway there</small></button>
-      <button class="choice tile" data-mode="design" style="--img:url(/brand/walnut.jpg)"><b>Design my tree</b><small>Starting fresh</small></button>
+      <button class="choice tile" data-mode="check" style="--img:var(--photo-check, url(/brand/velvet-berry.jpg))"><b>Check my tree</b><small>Decorated, or partway there</small></button>
+      <button class="choice tile" data-mode="design" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><b>Design my tree</b><small>Starting fresh</small></button>
     </div>
     <p class="tilenote">We rate it the way a designer would, then give you a plan, a shopping list and a picture of the finished tree.</p>
   </section>
@@ -515,13 +520,13 @@
     <h1>Pick a style</h1>
     <p class="sub">A starting point, not a box. Your tree, your way.</p>
     <div class="sgrid">
-      <label class="scard"><input type="radio" name="style" value="keep" checked><span style="background-image:url(/brand/walnut.jpg)"><b>Keep my style</b><small>Refine what you have</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="classic"><span style="background-image:url(/brand/velvet-berry.jpg)"><b>Classic</b><small>Red, green, gold</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="rustic"><span style="background-image:url(/brand/pattern-plaid.jpg)"><b>Rustic</b><small>Plaid, wood, berries</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="modern"><span style="background-image:url(/brand/marble.jpg)"><b>Modern</b><small>Clean and simple</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="elegant"><span style="background-image:url(/brand/velvet-midnight.jpg)"><b>Elegant</b><small>Velvet, sheen, gold</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="playful"><span style="background-image:url(/brand/pattern-stripe.jpg)"><b>Playful</b><small>Bright and whimsical</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="themed"><span style="background-image:url(/brand/pattern-damask.jpg)"><b>Themed</b><small>Your own idea</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="keep" checked><span style="background-image:var(--photo-keep, url(/brand/walnut.jpg))"><b>Keep my style</b><small>Refine what you have</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="classic"><span style="background-image:var(--photo-classic, url(/brand/velvet-berry.jpg))"><b>Classic</b><small>Red, green, gold</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="rustic"><span style="background-image:var(--photo-rustic, url(/brand/pattern-plaid.jpg))"><b>Rustic</b><small>Plaid, wood, berries</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="modern"><span style="background-image:var(--photo-modern, url(/brand/marble.jpg))"><b>Modern</b><small>Clean and simple</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="elegant"><span style="background-image:var(--photo-elegant, url(/brand/velvet-midnight.jpg))"><b>Elegant</b><small>Velvet, sheen, gold</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="playful"><span style="background-image:var(--photo-playful, url(/brand/pattern-stripe.jpg))"><b>Playful</b><small>Bright and whimsical</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="themed"><span style="background-image:var(--photo-themed, url(/brand/pattern-damask.jpg))"><b>Themed</b><small>Your own idea</small></span></label>
     </div>
     <input type="text" id="theme" placeholder="Your theme (e.g. vintage blue and silver)" hidden>
     <p class="styleNote" id="styleNote"></p>

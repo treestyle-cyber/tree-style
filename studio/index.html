@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TreeStyle · Studio</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" type="image/png" href="/brand/favicon.png">
+<style>
+  .wrap{max-width:1100px}
+  header{padding:22px 0;display:flex;justify-content:space-between;align-items:center}
+  .intro{text-align:center;margin:10px auto 30px;max-width:40em}
+  .intro h1{font-weight:400;font-size:44px;margin:8px 0 12px}
+  .intro p{color:var(--muted);margin:0}
+  .banner{border:1px solid var(--gold);background:rgba(184,156,107,.1);border-radius:12px;padding:14px 16px;margin:0 0 24px;font-size:14.5px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:22px;margin-bottom:60px}
+  .slot{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+  .slot h2{font-weight:400;font-size:26px}
+  .slot .where{font-size:12.5px;color:var(--muted);margin-top:-6px}
+  .frames{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .frame{border-radius:12px;overflow:hidden;background:rgba(184,156,107,.08);border:1px dashed var(--line);display:grid;place-items:center;position:relative;color:var(--muted);font-size:12px;text-align:center}
+  .frame img{width:100%;height:100%;object-fit:cover;display:block}
+  .frame .lbl{position:absolute;left:8px;top:8px;font:600 10px var(--sans);letter-spacing:.16em;text-transform:uppercase;background:rgba(20,28,44,.75);color:var(--gold);padding:4px 7px;border-radius:99px}
+  textarea{width:100%;min-height:96px;font:14px/1.45 var(--sans);padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper-2);color:var(--ink);resize:vertical}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .row .btn{flex:1;padding:12px 14px}
+  .msg{font-size:13px;color:var(--muted);min-height:1.2em}
+  .msg.err{color:var(--berry)}
+  .msg.ok{color:var(--gold)}
+  .spin{width:26px;height:26px;border-radius:50%;border:3px solid rgba(184,156,107,.3);border-top-color:var(--gold);animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  #gate{max-width:420px;margin:60px auto;text-align:center}
+  #gate form{display:flex;gap:8px;margin-top:18px}
+  #gate input{flex:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="/"><img src="/brand/monogram.png" alt=""><span class="wm"><b>TreeStyle</b><small>The art of styling</small></span></a>
+    <a class="eyebrow" href="/try/" style="text-decoration:none">Open the app →</a>
+  </header>
+
+  <div id="gate" hidden>
+    <div class="eyebrow">Studio</div>
+    <h1 style="font-weight:400;font-size:40px;margin-top:8px">Enter the test password</h1>
+    <form id="gateForm"><input type="password" id="pw" placeholder="Password" autocomplete="current-password"><button class="btn">Enter</button></form>
+    <p class="msg err" id="gateErr"></p>
+  </div>
+
+  <div id="studio" hidden>
+    <div class="intro">
+      <div class="eyebrow">Studio</div>
+      <h1>Brand photography</h1>
+      <p>Each slot is a photo the app and site use. Generate, adjust the wording if you like, and tap <b>Use this</b> on the one you love. It appears in the app right away. Until you choose one, that spot keeps its fabric texture.</p>
+    </div>
+    <div class="banner" id="setup" hidden><b>One step first:</b> photos you choose are saved in Vercel Blob storage, which isn't connected yet. In Vercel, open the tree-style project → <b>Storage</b> → <b>Create</b> → <b>Blob</b> → connect it to this project → then <b>Redeploy</b>. You can still generate and preview images in the meantime.</div>
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const LOOK = "Editorial interior photograph for a luxury holiday brand. Moody, candlelit, warm low light with soft glowing Christmas lights; deep midnight navy, winter berry red, evergreen and antique gold tones; rich textures like velvet ribbon, brass and walnut. Shot on a full-frame camera, shallow depth of field, magazine quality, photorealistic. No people, no text, no logos, no watermarks.";
+const SLOTS = [
+  { id: "hero", name: "Welcome", where: "Top of the app's welcome screen and the website hero", aspect: "3:4",
+    prompt: "A breathtaking, professionally styled 8 ft Christmas tree in an elegant living room at dusk: wide wired velvet ribbon tucked in as loops, oversized antique gold and winter berry ornaments, frosted greenery stems and magnolias, a full, lush crown with a refined bow topper. Candles and a fireplace glow softly nearby. The tree is the hero of the frame, slightly off-center." },
+  { id: "check", name: "Check my tree", where: "Home screen tile", aspect: "3:4",
+    prompt: "Close, intimate view of a beautifully decorated Christmas tree: layered velvet ribbon loops, glass ornaments in winter berry and antique gold, glowing warm white lights deep in the branches, a small handwritten notecard resting on a branch." },
+  { id: "design", name: "Design my tree", where: "Home screen tile", aspect: "3:4",
+    prompt: "A lush undecorated artificial Christmas tree with only warm white lights glowing, in a softly lit room. At its base, unopened boxes of glass ornaments, spools of wide velvet and sheer wired ribbon, and bundles of greenery stems wait to be styled. A sense of anticipation." },
+  { id: "keep", name: "Keep my style", where: "Style card", aspect: "4:5",
+    prompt: "A warm, collected Christmas tree full of personal heirloom ornaments, vintage glass and handmade pieces, beautifully edited and pulled together with ribbon and greenery. Cozy, personal, refined." },
+  { id: "classic", name: "Classic", where: "Style card", aspect: "4:5",
+    prompt: "A classic Christmas tree: red, green and gold, shiny glass ornaments in many sizes, solid red velvet ribbon tucked in as loops, pine and berry stems, red poinsettias, warm white lights, a gold star. Timeless and rich." },
+  { id: "rustic", name: "Rustic", where: "Style card", aspect: "4:5",
+    prompt: "A rustic Christmas tree: buffalo check and burlap ribbon, wood and matte ornaments, pinecones, natural berries, antler accents, warm lights, in a cabin-like room with walnut wood and a wool throw." },
+  { id: "modern", name: "Modern", where: "Style card", aspect: "4:5",
+    prompt: "A modern Christmas tree: restrained and sculptural, matte ornaments in two tones, a few oversized geometric pieces, one clean ribbon, lots of breathing room, in a minimal room with marble and soft light." },
+  { id: "elegant", name: "Elegant", where: "Style card", aspect: "4:5",
+    prompt: "An elegant Christmas tree: midnight velvet and sheer gold wired ribbon, champagne magnolias, gold-dusted greenery stems, strands of gold beads, glittering antique gold ornaments, in a candlelit formal room." },
+  { id: "playful", name: "Playful", where: "Style card", aspect: "4:5",
+    prompt: "A playful, joyful Christmas tree: candy-striped ribbon, whimsical ornaments, oversized candy canes, pops of bright color balanced with gold, still beautifully composed and high-end, warm cozy light." },
+  { id: "themed", name: "Themed", where: "Style card", aspect: "4:5",
+    prompt: "A themed Christmas tree with a winter woodland story: frosted branches, birds and feathers, pinecones, velvet ribbon in deep evergreen, small glowing lanterns, cohesive and enchanting." }
+];
+
+let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
+const call = async (body) => {
+  const r = await fetch("/api/brand", { method: "POST", headers: { "content-type": "application/json", "x-test-password": password }, body: JSON.stringify(body) });
+  let d = {}; try { d = await r.json(); } catch { d = { error: "Server error " + r.status }; }
+  if (!r.ok) { const e = new Error(d.error || "Error " + r.status); e.status = r.status; throw e; }
+  return d;
+};
+// Smaller, web-ready JPEG before saving
+const shrink = (src, max = 1600) => new Promise(res => {
+  const im = new Image(); im.onload = () => {
+    const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas");
+    c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+    res(c.toDataURL("image/jpeg", .86));
+  }; im.src = src;
+});
+
+function build(current) {
+  const ar = a => a.replace(":", " / ");
+  $("#grid").innerHTML = SLOTS.map(s => `
+    <div class="slot" data-id="${s.id}">
+      <h2>${s.name}</h2><div class="where">${s.where}</div>
+      <div class="frames">
+        <div class="frame cur" style="aspect-ratio:${ar(s.aspect)}"><span class="lbl">In use</span>${current[s.id] ? `<img src="${current[s.id]}" alt="">` : "Fabric texture for now"}</div>
+        <div class="frame new" style="aspect-ratio:${ar(s.aspect)}"><span class="lbl">New</span>Generate to see one here</div>
+      </div>
+      <textarea>${s.prompt}</textarea>
+      <div class="row"><button class="btn ghost gen">Generate</button><button class="btn use" disabled>Use this</button></div>
+      <div class="msg"></div>
+    </div>`).join("");
+  document.querySelectorAll(".slot").forEach(el => {
+    const s = SLOTS.find(x => x.id === el.dataset.id), msg = el.querySelector(".msg"), nf = el.querySelector(".frame.new"), useB = el.querySelector(".use"), genB = el.querySelector(".gen");
+    let img = null;
+    genB.onclick = async () => {
+      genB.disabled = true; useB.disabled = true; msg.className = "msg"; msg.textContent = "Creating… about 20 seconds";
+      nf.innerHTML = '<span class="lbl">New</span><div class="spin"></div>';
+      try {
+        const d = await call({ action: "generate", prompt: el.querySelector("textarea").value.trim() + "\n\n" + LOOK, aspect: s.aspect });
+        img = await shrink(d.image);
+        nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; msg.textContent = "Like it? Tap Use this. Or Generate again for another take."; useB.disabled = false; genB.textContent = "Generate again";
+      } catch (e) {
+        if (e.status === 401) return gate("That password didn't work.");
+        nf.innerHTML = '<span class="lbl">New</span>Try again'; msg.className = "msg err"; msg.textContent = e.message;
+      } finally { genB.disabled = false; }
+    };
+    useB.onclick = async () => {
+      if (!img) return;
+      useB.disabled = true; msg.className = "msg"; msg.textContent = "Saving…";
+      try {
+        await call({ action: "use", slot: s.id, image: img });
+        el.querySelector(".frame.cur").innerHTML = `<span class="lbl">In use</span><img src="${img}" alt="">`;
+        msg.className = "msg ok"; msg.textContent = "Saved. It's live in the app now.";
+      } catch (e) { msg.className = "msg err"; msg.textContent = e.message; useB.disabled = false; }
+    };
+  });
+}
+
+function gate(err) { $("#studio").hidden = true; $("#gate").hidden = false; $("#gateErr").textContent = err || ""; }
+$("#gateForm").onsubmit = e => { e.preventDefault(); password = $("#pw").value.trim(); try { sessionStorage.setItem("ts_pw", password); } catch {} start(); };
+async function start() {
+  if (!password) return gate();
+  $("#gate").hidden = true; $("#studio").hidden = false;
+  let info = { photos: {}, storage: false };
+  try { info = await (await fetch("/api/brand")).json(); } catch {}
+  $("#setup").hidden = !!info.storage;
+  build(info.photos || {});
+}
+start();
+</script>
+</body>
+</html>

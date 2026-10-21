@@ -19,6 +19,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
+<script>
+// Brand photos chosen in the Studio replace the fabric textures (each spot keeps its texture until then)
+fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); } }).catch(() => {});
+</script>
 <link rel="icon" type="image/png" href="/brand/favicon.png">
 <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
 <meta name="theme-color" content="#F3EEE7">
@@ -83,6 +87,7 @@
   header.top .brand small{color:var(--gold)}
   header.top a.join{color:var(--ivory)}
   .hero{padding:110px 0 72px;color:#E9E1D3;background:linear-gradient(100deg,rgba(20,28,44,.94) 30%,rgba(20,28,44,.72)),url(/brand/velvet-midnight.jpg) center/cover}
+  .ph-hero .hero{background:linear-gradient(100deg,rgba(20,28,44,.95) 28%,rgba(20,28,44,.55) 60%,rgba(20,28,44,.35)),var(--photo-hero) center/cover}
   .hero h1{color:var(--ivory);font-weight:400}
   .hero h1 em{color:var(--gold) !important}
   .hero .eyebrow{color:var(--gold)}
