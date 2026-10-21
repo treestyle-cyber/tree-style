@@ -42,6 +42,8 @@
   .mk-row .sw{width:24px;height:24px;border-radius:50%;border:2px solid transparent;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
   .mk-row .sw.on{border-color:var(--gold)}
   .mk-row .mk-clear,.mk-row .mk-suggest{appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:99px;padding:4px 10px;font:500 12px var(--sans);cursor:pointer}
+  .refcard{margin-bottom:22px;border-color:var(--gold)}
+  .refrow{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
   .msg{font-size:13px;color:var(--muted);min-height:1.2em}
   .msg.err{color:var(--berry)}
   .msg.ok{color:var(--gold)}
@@ -73,34 +75,40 @@
       <p>Each slot is a photo the app and site use. Generate, adjust the wording if you like, and tap <b>Use this</b> on the one you love. It appears in the app right away. Until you choose one, that spot keeps its fabric texture.</p>
     </div>
     <div class="banner" id="setup" hidden><b>One step first:</b> photos you choose are saved in Vercel Blob storage, which isn't connected yet. In Vercel, open the tree-style project → <b>Storage</b> → <b>Create</b> → <b>Blob</b> → connect it to this project → then <b>Redeploy</b>. You can still generate and preview images in the meantime.</div>
+    <div class="slot refcard" id="refCard">
+      <h2>Ribbon technique reference</h2>
+      <div class="where">One photo of a tree <b>you</b> styled with tucked ribbon. Every Studio photo, every fix, and every customer preview in the app is told to copy this ribbon technique (only the ribbon, never the room or colors). This is the most reliable way to stop the bows.</div>
+      <div class="refrow"><div class="frame" id="refCur" style="aspect-ratio:3/4;max-width:200px">No reference yet</div>
+        <div><label class="btn" style="cursor:pointer">Add your photo<input type="file" id="refFile" accept="image/*" hidden></label><p class="msg" id="refMsg"></p></div></div>
+    </div>
     <div class="grid" id="grid"></div>
   </div>
 </div>
 
 <script>
 const $ = s => document.querySelector(s);
-const LOOK = "Editorial interior photograph for a luxury holiday brand. Moody, candlelit, warm low light with soft glowing Christmas lights; deep midnight navy, winter berry red, evergreen and antique gold tones; rich textures like velvet ribbon, brass and walnut. Shot on a full-frame camera, shallow depth of field, magazine quality, photorealistic. No people, no text, no logos, no watermarks. How the tree is styled: wired ribbon appears only as small clusters of two or three short loops, nestled into the branches at seven or so separate spots that are staggered left and right at different heights, each surrounded by green branches. Ornaments are scattered and staggered at different heights and depths, with the largest set back toward the trunk; the visual weight feels balanced left and right.";
+const LOOK = "Editorial interior photograph for a luxury holiday brand. Moody, candlelit, warm low light with soft glowing Christmas lights; deep midnight navy, winter berry red, evergreen and antique gold tones; rich textures like velvet ribbon, brass and walnut. Shot on a full-frame camera, shallow depth of field, magazine quality, photorealistic. No people, no text, no logos, no watermarks. How the tree is styled: wide wired ribbon weaves in and out of the tree: it emerges from deep inside the branches in soft billows and short drops at about seven separate spots, staggered left and right at different heights, then disappears back into the greenery, so green branches show between each appearance. There are no bows anywhere on the tree. Ornaments are scattered and staggered at different heights and depths, the largest set back toward the trunk, with balanced visual weight left and right.";
 const SLOTS = [
   { id: "hero", name: "Welcome", where: "Top of the app's welcome screen and the website hero", aspect: "3:4",
-    prompt: "A breathtaking, professionally styled 8 ft Christmas tree in an elegant living room at dusk: clusters of short velvet ribbon loops nestled into the branches, oversized antique gold and winter berry ornaments, frosted greenery stems and magnolias, a full, lush crown with a refined bow topper. Candles and a fireplace glow softly nearby. The tree is the hero of the frame, slightly off-center." },
+    prompt: "A breathtaking, professionally styled 8 ft Christmas tree in an elegant living room at dusk: velvet ribbon billowing out of the branches and tucking back in, oversized antique gold and winter berry ornaments, frosted greenery stems and magnolias, a full, lush crown with a refined topper of stems and ornaments. Candles and a fireplace glow softly nearby. The tree is the hero of the frame, slightly off-center." },
   { id: "check", name: "Check my tree", where: "Home screen tile", aspect: "3:4",
-    prompt: "Close, intimate view of a beautifully decorated Christmas tree: small clusters of velvet ribbon loops, glass ornaments in winter berry and antique gold, glowing warm white lights deep in the branches, a small handwritten notecard resting on a branch." },
+    prompt: "Close, intimate view of a beautifully decorated Christmas tree: velvet ribbon billowing out of the branches and tucking back in, glass ornaments in winter berry and antique gold, glowing warm white lights deep in the branches, a small handwritten notecard resting on a branch." },
   { id: "design", name: "Design my tree", where: "Home screen tile", aspect: "3:4",
     prompt: "A lush undecorated artificial Christmas tree with only warm white lights glowing, in a softly lit room. At its base, unopened boxes of glass ornaments, spools of wide velvet and sheer wired ribbon, and bundles of greenery stems wait to be styled. A sense of anticipation." },
   { id: "keep", name: "Keep my style", where: "Style card", aspect: "4:5",
     prompt: "A warm, collected Christmas tree full of personal heirloom ornaments, vintage glass and handmade pieces, beautifully edited and pulled together with ribbon and greenery. Cozy, personal, refined." },
   { id: "classic", name: "Classic", where: "Style card", aspect: "4:5",
-    prompt: "A classic Christmas tree: red, green and gold, shiny glass ornaments in many sizes, small clusters of red velvet ribbon loops nestled into the branches, pine and berry stems, red poinsettias, warm white lights, a gold star. Timeless and rich." },
+    prompt: "A classic Christmas tree: red, green and gold, shiny glass ornaments in many sizes, red velvet ribbon billowing out of the branches and tucking back in, pine and berry stems, red poinsettias, warm white lights, a gold star. Timeless and rich." },
   { id: "rustic", name: "Rustic", where: "Style card", aspect: "4:5",
-    prompt: "A rustic Christmas tree: small clusters of buffalo check and burlap ribbon loops, wood and matte ornaments, pinecones, natural berries, antler accents, warm lights, in a cabin-like room with walnut wood and a wool throw." },
+    prompt: "A rustic Christmas tree: buffalo check and burlap ribbon billowing out of the branches and tucking back in, wood and matte ornaments, pinecones, natural berries, antler accents, warm lights, in a cabin-like room with walnut wood and a wool throw." },
   { id: "modern", name: "Modern", where: "Style card", aspect: "4:5",
-    prompt: "A modern Christmas tree: restrained and sculptural, matte ornaments in two tones, a few oversized geometric pieces, a few clean ribbon loops, lots of breathing room, in a minimal room with marble and soft light." },
+    prompt: "A modern Christmas tree: restrained and sculptural, matte ornaments in two tones, a few oversized geometric pieces, one ribbon billowing out of the branches here and there, lots of breathing room, in a minimal room with marble and soft light." },
   { id: "elegant", name: "Elegant", where: "Style card", aspect: "4:5",
-    prompt: "An elegant Christmas tree: clusters of midnight velvet and sheer gold ribbon loops, champagne magnolias, gold-dusted greenery stems, strands of gold beads, glittering antique gold ornaments, in a candlelit formal room." },
+    prompt: "An elegant Christmas tree: midnight velvet and sheer gold ribbon billowing out of the branches and tucking back in, champagne magnolias, gold-dusted greenery stems, strands of gold beads, glittering antique gold ornaments, in a candlelit formal room." },
   { id: "playful", name: "Playful", where: "Style card", aspect: "4:5",
-    prompt: "A playful, joyful Christmas tree: small clusters of candy-striped ribbon loops, whimsical ornaments, oversized candy canes, pops of bright color balanced with gold, still beautifully composed and high-end, warm cozy light." },
+    prompt: "A playful, joyful Christmas tree: candy-striped ribbon billowing out of the branches and tucking back in, whimsical ornaments, oversized candy canes, pops of bright color balanced with gold, still beautifully composed and high-end, warm cozy light." },
   { id: "themed", name: "Themed", where: "Style card", aspect: "4:5",
-    prompt: "A themed Christmas tree with a winter woodland story: frosted branches, birds and feathers, pinecones, small clusters of deep evergreen velvet ribbon loops, small glowing lanterns, cohesive and enchanting." }
+    prompt: "A themed Christmas tree with a winter woodland story: frosted branches, birds and feathers, pinecones, deep evergreen velvet ribbon billowing out of the branches and tucking back in, small glowing lanterns, cohesive and enchanting." }
 ];
 
 let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
@@ -134,12 +142,12 @@ function build(current) {
       <details class="fixbox"><summary>Fix the tree in the new photo</summary>
         <div class="fixstep"><b>1 · Clear the streams</b><textarea class="fixtxt rm">Remove every length of ribbon that runs down or across the tree, and any long ribbon tails hanging from the topper; fill those areas with natural green branches and lights. Move ornaments so none line up in a column, row or diagonal: scatter and stagger them, keep the largest set back toward the trunk, and keep the visual weight balanced left and right.</textarea><button class="btn ghost fix" data-k="rm" disabled>Clear the streams</button></div>
         <div class="fixstep"><b>2 · Tuck in the ribbon</b>
-          <div class="mk-help">Tap the photo where each cluster of loops should go. We've suggested seven staggered spots; tap <i>Clear</i> to place your own.</div>
+          <div class="mk-help">Tap the photo where the ribbon should peek out of the tree. We've suggested seven staggered spots; tap <i>Clear</i> to place your own.</div>
           <div class="mk"><img class="mkimg" alt=""><div class="mkdots"></div></div>
           <div class="mk-row"><span>Ribbon color</span>
             <button class="sw on" data-c="#6B2E2E" style="background:#6B2E2E" title="Winter Berry"></button><button class="sw" data-c="#1E2A44" style="background:#1E2A44" title="Midnight"></button><button class="sw" data-c="#B89C6B" style="background:#B89C6B" title="Antique Gold"></button><button class="sw" data-c="#2C3E2E" style="background:#2C3E2E" title="Evergreen"></button><button class="sw" data-c="#E8DCC4" style="background:#E8DCC4" title="Champagne"></button>
             <button class="mk-clear">Clear</button><button class="mk-suggest">Suggest</button></div>
-          <textarea class="fixtxt add">Add wired ribbon to the tree as separate, clearly visible clusters of two or three short loops each (each loop about the size of a hand, no long tails), one cluster at each oval on the placement map, in that oval's color, nestled into the branches so the loops pop out. Green branches stay visible between clusters; the ribbon never connects from one cluster to the next.</textarea><button class="btn ghost fix" data-k="add" disabled>Tuck in the ribbon</button></div>
+          <textarea class="fixtxt add">At each mark on the placement map, show wide wired ribbon in that color peeking out of the tree: a soft billow of ribbon that emerges from deep inside the branches and tucks back in, about a hand and a half wide, clearly visible. It looks like one ribbon weaving in and out of the tree. No bows, no knots, no tails, and the ribbon never runs from one mark to the next across the surface; green branches show between marks.</textarea><button class="btn ghost fix" data-k="add" disabled>Tuck in the ribbon</button></div>
         <div class="fixstep"><b>Or your own note</b><textarea class="fixtxt own" placeholder="e.g. Fewer gold ornaments on the left"></textarea><button class="btn ghost fix" data-k="own" disabled>Make this change</button></div>
       </details>
       <div class="msg"></div>
@@ -225,6 +233,18 @@ async function start() {
   let info = { photos: {}, storage: false };
   try { info = await (await fetch("/api/brand")).json(); } catch {}
   $("#setup").hidden = !!info.storage;
+  if ((info.photos || {}).ribbonref) $("#refCur").innerHTML = `<img src="${info.photos.ribbonref}" alt="">`;
+  $("#refFile").onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    $("#refMsg").className = "msg"; $("#refMsg").textContent = "Saving…";
+    try {
+      const raw = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); });
+      const data = await shrink(raw, 1400);
+      await call({ action: "use", slot: "ribbonref", image: data });
+      $("#refCur").innerHTML = `<img src="${data}" alt="">`;
+      $("#refMsg").className = "msg ok"; $("#refMsg").textContent = "Saved. New photos, fixes and app previews will copy this ribbon technique (allow up to 10 minutes for the app).";
+    } catch (err) { $("#refMsg").className = "msg err"; $("#refMsg").textContent = err.message; }
+  };
   build(info.photos || {});
 }
 start();

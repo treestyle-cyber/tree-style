@@ -1,6 +1,7 @@
 // POST { image: dataURL, brief: string, aspect: "3:4" etc. }
 // Edits the photo with Google's Gemini image model and returns { image: dataURL }.
 import { checkPassword, parseDataUrl } from "../lib/util.js";
+import { ribbonRef, RIBBON_REF_NOTE } from "../lib/ribbonref.js";
 
 const MODELS = [
   process.env.GEMINI_IMAGE_MODEL,
@@ -32,6 +33,7 @@ The result must look like an ordinary real photograph of the same tree in the sa
 }
 
 async function callGemini(model, img, prompt, aspect, pieces, map) {
+  const ref = await ribbonRef();
   // (map is skipped for small revisions: the current preview already shows the placements)
   const generationConfig = { responseModalities: ["IMAGE"] };
   if (aspect) generationConfig.imageConfig = { aspectRatio: aspect };
@@ -43,7 +45,8 @@ async function callGemini(model, img, prompt, aspect, pieces, map) {
         { text: prompt },
         { inline_data: { mime_type: img.mediaType, data: img.data } },
         ...(map ? [{ text: "Placement map (reference only, do not edit or copy its drawing style): the same photo with soft colored blobs showing WHERE each addition goes: ovals in the ribbon color = a spot where ribbon loops poke out of the branches; small blobs in the accent ribbon color = small accent loops; blobs with a yellow center = flowers; round blobs = ornaments in that color at that size. The blobs are position hints only: the finished photo must contain NO circles, rings, outlines, dots, blobs, labels or markings of any kind, only real decorations. Follow its positions and spacing so the result matches the homeowner's step-by-step guide, and don't add groupings or extra pieces the map and instructions don't show. If the written instructions and the map disagree about where something goes, follow the map." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : []),
-        ...(pieces ? [{ text: "Reference only (do not edit this one): the homeowner's own special pieces. Show these exact pieces on the tree where the instructions place them." }, { inline_data: { mime_type: pieces.mediaType, data: pieces.data } }] : [])
+        ...(pieces ? [{ text: "Reference only (do not edit this one): the homeowner's own special pieces. Show these exact pieces on the tree where the instructions place them." }, { inline_data: { mime_type: pieces.mediaType, data: pieces.data } }] : []),
+        ...(ref ? [{ text: RIBBON_REF_NOTE + " (Reference only: do not edit this one.)" }, { inline_data: { mime_type: ref.mediaType, data: ref.data } }] : []),
       ] }],
       generationConfig
     })

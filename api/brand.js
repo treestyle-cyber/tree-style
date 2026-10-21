@@ -6,9 +6,10 @@
 import { put, list, get } from "@vercel/blob";
 import { blobToken, blobVarNames, blobConnected } from "../lib/blob.js";
 const tok = () => (blobToken() ? { token: blobToken() } : {});
+import { ribbonRef, RIBBON_REF_NOTE } from "../lib/ribbonref.js";
 import { checkPassword, parseDataUrl } from "../lib/util.js";
 
-const SLOTS = ["hero", "check", "design", "keep", "classic", "rustic", "modern", "elegant", "playful", "themed"];
+const SLOTS = ["ribbonref", "hero", "check", "design", "keep", "classic", "rustic", "modern", "elegant", "playful", "themed"];
 const MODELS = [process.env.GEMINI_IMAGE_MODEL, "gemini-3.1-flash-image-preview", "gemini-2.5-flash-image"].filter(Boolean);
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
 
@@ -29,6 +30,7 @@ async function latest() {
 }
 
 async function generate(prompt, aspect, base, map) {
+  const ref = await ribbonRef();
   let lastErr = "";
   for (const model of MODELS) {
     const generationConfig = { responseModalities: ["IMAGE"] };
@@ -36,7 +38,7 @@ async function generate(prompt, aspect, base, map) {
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
       headers: { "x-goog-api-key": process.env.GEMINI_API_KEY, "content-type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, ...(base ? [{ inline_data: { mime_type: base.mediaType, data: base.data } }] : []), ...(map ? [{ text: "Placement map (reference only, do not copy its drawing style): the same photo with soft colored ovals marking EXACTLY where each cluster of ribbon loops goes. Put one cluster at every oval, in that color, and nowhere else. The finished photo must contain no ovals, blobs or markings, only real ribbon." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : [])] }], generationConfig })
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, ...(base ? [{ inline_data: { mime_type: base.mediaType, data: base.data } }] : []), ...(map ? [{ text: "Placement map (reference only, do not copy its drawing style): the same photo with soft colored marks showing EXACTLY where the ribbon peeks out of the branches. At every mark, a billow or short drop of wide ribbon in that color emerges from deep in the branches and tucks back in; nowhere else. The finished photo must contain no marks, blobs or outlines, only real ribbon." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : []), ...(ref ? [{ text: RIBBON_REF_NOTE }, { inline_data: { mime_type: ref.mediaType, data: ref.data } }] : [])] }], generationConfig })
     });
     const body = await r.json().catch(() => ({}));
     if (!r.ok) {
