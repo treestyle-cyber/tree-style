@@ -1,7 +1,6 @@
 // POST { image: dataURL, brief: string, aspect: "3:4" etc. }
 // Edits the photo with Google's Gemini image model and returns { image: dataURL }.
 import { checkPassword, parseDataUrl } from "../lib/util.js";
-import { ribbonRef, RIBBON_REF_NOTE } from "../lib/ribbonref.js";
 
 const MODELS = [
   process.env.GEMINI_IMAGE_MODEL,
@@ -17,7 +16,7 @@ function editPrompt(brief, revision) {
 Change to make:
 ${brief}
 
-RIBBON RULES (important): no bows anywhere on the tree (only a topper may be a bow, if asked for). Ribbon never forms a continuous line, stripe, swag or spiral across or down the tree. It weaves in and out of the tree: soft billows and short drops emerge from deep in the branches and tuck back in, with green showing between them, winding back and forth across the tree, never lined up in a diagonal row.
+RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or spiral across or down the tree. It appears as separate loops or short drops tucked into the branches, with green showing between them, winding back and forth across the tree, never lined up in a diagonal row.
 
 The result must look like an ordinary real photograph, with no circles, rings, outlines or other markings drawn on it.`;
   return `Edit this photo of a Christmas tree to show it after a professional holiday decorator finished it.
@@ -27,13 +26,12 @@ The first image is the photo to edit. Keep exactly the same room, camera angle, 
 Changes to make:
 ${brief}
 
-RIBBON RULES (important): no bows anywhere on the tree (only a topper may be a bow, if asked for). Ribbon never forms a continuous line, stripe, swag or spiral across or down the tree. It weaves in and out of the tree: at each spot a soft billow or short drop of ribbon emerges from deep in the branches and tucks back in, with plenty of green branches showing between them. Picture a vine hidden inside the tree that peeks out here and there, winding back and forth across the full width. The ribbon spots must NOT line up: no diagonal row of bows or loops from top to bottom, which reads as a swag. Never wrap ribbon around the tree or drape it from the top to the bottom.
+RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or spiral across or down the tree. It appears as SEPARATE short pieces: loops or short drops that start and stop, each tucked deep into the branches at one spot, with plenty of green branches showing between them. Picture a vine hidden inside the tree that peeks out here and there, winding back and forth across the full width. The ribbon spots must NOT line up: no diagonal row of bows or loops from top to bottom, which reads as a swag. Never wrap ribbon around the tree or drape it from the top to the bottom.
 
 The result must look like an ordinary real photograph of the same tree in the same room, not an illustration, with no circles, rings, outlines or other markings drawn on it.`;
 }
 
 async function callGemini(model, img, prompt, aspect, pieces, map) {
-  const ref = await ribbonRef();
   // (map is skipped for small revisions: the current preview already shows the placements)
   const generationConfig = { responseModalities: ["IMAGE"] };
   if (aspect) generationConfig.imageConfig = { aspectRatio: aspect };
@@ -44,9 +42,8 @@ async function callGemini(model, img, prompt, aspect, pieces, map) {
       contents: [{ parts: [
         { text: prompt },
         { inline_data: { mime_type: img.mediaType, data: img.data } },
-        ...(map ? [{ text: "Placement map (reference only, do not edit or copy its drawing style): the same photo with soft colored blobs showing WHERE each addition goes: ovals in the ribbon color = a spot where the ribbon billows out of the branches and tucks back in (never a bow); small blobs in the accent ribbon color = small accents of the thin ribbon peeking out; blobs with a yellow center = flowers; round blobs = ornaments in that color at that size. The blobs are position hints only: the finished photo must contain NO circles, rings, outlines, dots, blobs, labels or markings of any kind, only real decorations. Follow its positions and spacing so the result matches the homeowner's step-by-step guide, and don't add groupings or extra pieces the map and instructions don't show. If the written instructions and the map disagree about where something goes, follow the map." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : []),
-        ...(pieces ? [{ text: "Reference only (do not edit this one): the homeowner's own special pieces. Show these exact pieces on the tree where the instructions place them." }, { inline_data: { mime_type: pieces.mediaType, data: pieces.data } }] : []),
-        ...(ref ? [{ text: RIBBON_REF_NOTE + " (Reference only: do not edit this one.)" }, { inline_data: { mime_type: ref.mediaType, data: ref.data } }] : []),
+        ...(map ? [{ text: "Placement map (reference only, do not edit or copy its drawing style): the same photo with soft colored blobs showing WHERE each addition goes: ovals in the ribbon color = a spot where ribbon loops poke out of the branches; small blobs in the accent ribbon color = small accent loops; blobs with a yellow center = flowers; round blobs = ornaments in that color at that size. The blobs are position hints only: the finished photo must contain NO circles, rings, outlines, dots, blobs, labels or markings of any kind, only real decorations. Follow its positions and spacing so the result matches the homeowner's step-by-step guide, and don't add groupings or extra pieces the map and instructions don't show. If the written instructions and the map disagree about where something goes, follow the map." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : []),
+        ...(pieces ? [{ text: "Reference only (do not edit this one): the homeowner's own special pieces. Show these exact pieces on the tree where the instructions place them." }, { inline_data: { mime_type: pieces.mediaType, data: pieces.data } }] : [])
       ] }],
       generationConfig
     })
@@ -87,7 +84,7 @@ export default async function handler(req, res) {
     const d = pic.inlineData || pic.inline_data;
     return res.status(200).json({
       image: `data:${d.mimeType || d.mime_type || "image/png"};base64,${d.data}`,
-      _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, ribbonRef: !!(await ribbonRef()) }
+      _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10 }
     });
   }
   return res.status(502).json({ error: lastErr || "No image model available" });
