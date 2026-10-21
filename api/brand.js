@@ -4,6 +4,7 @@
 // POST /api/brand { action:"generate", prompt, aspect }   -> { image: dataURL }            (password)
 // POST /api/brand { action:"use", slot, image }           -> { url }                       (password)
 import { put, list, get } from "@vercel/blob";
+import { blobToken, blobVarNames } from "../lib/blob.js";
 import { checkPassword, parseDataUrl } from "../lib/util.js";
 
 const SLOTS = ["hero", "check", "design", "keep", "classic", "rustic", "modern", "elegant", "playful", "themed"];
@@ -11,11 +12,11 @@ const MODELS = [process.env.GEMINI_IMAGE_MODEL, "gemini-3.1-flash-image-preview"
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
 
 async function latest() {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
+  if (!blobToken()) return null;
   const out = {};
   let cursor;
   do {
-    const page = await list({ prefix: "brand/photos/", cursor, limit: 1000 });
+    const page = await list({ token: blobToken(), prefix: "brand/photos/", cursor, limit: 1000 });
     for (const b of page.blobs) {
       const slot = b.pathname.split("/")[2];
       if (!SLOTS.includes(slot)) continue;
@@ -59,18 +60,18 @@ export default async function handler(req, res) {
       if (slot) {
         const b = found && found[slot];
         if (!b) return res.status(404).end();
-        const r = await get(b.pathname, { access: "private" }).catch(() => null);
+        const r = await get(b.pathname, { token: blobToken(), access: "private" }).catch(() => null);
         res.setHeader("cache-control", "public, max-age=300");
         if (r && r.stream) { res.setHeader("content-type", b.contentType || "image/jpeg"); return res.status(200).send(Buffer.from(await new Response(r.stream).arrayBuffer())); }
         return res.redirect(302, b.url);
       }
       res.setHeader("cache-control", "public, max-age=60");
-      if (!found) return res.status(200).json({ photos: {}, storage: false });
+      if (!found) return res.status(200).json({ photos: {}, storage: false, vars: blobVarNames() });
       const photos = {};
       for (const [k, b] of Object.entries(found)) photos[k] = /\.public\.blob\.vercel-storage\.com/.test(b.url) ? b.url : `/api/brand?img=${k}&v=${encodeURIComponent(b.uploadedAt)}`;
       return res.status(200).json({ photos, storage: true });
     } catch (e) {
-      return res.status(200).json({ photos: {}, storage: !!process.env.BLOB_READ_WRITE_TOKEN, error: String(e.message || e) });
+      return res.status(200).json({ photos: {}, storage: !!blobToken(), error: String(e.message || e) });
     }
   }
 
@@ -87,15 +88,15 @@ export default async function handler(req, res) {
 
   if (action === "use") {
     if (!SLOTS.includes(slot)) return res.status(400).json({ error: "Unknown slot" });
-    if (!process.env.BLOB_READ_WRITE_TOKEN) return res.status(400).json({ error: "Storage isn't connected yet. In Vercel: Storage → Create → Blob → connect it to this project, then Redeploy." });
+    if (!blobToken()) return res.status(400).json({ error: "Storage isn't connected yet. In Vercel: Storage → Create → Blob → connect it to this project, then Redeploy." });
     const img = parseDataUrl(image);
     if (!img) return res.status(400).json({ error: "Missing image" });
     const buf = Buffer.from(img.data, "base64");
     const path = `brand/photos/${slot}/${Date.now()}.${img.mediaType.includes("png") ? "png" : "jpg"}`;
     try {
       let b;
-      try { b = await put(path, buf, { access: "public", contentType: img.mediaType }); }
-      catch (e) { b = await put(path, buf, { access: "private", contentType: img.mediaType }); }
+      try { b = await put(path, buf, { token: blobToken(), access: "public", contentType: img.mediaType }); }
+      catch (e) { b = await put(path, buf, { token: blobToken(), access: "private", contentType: img.mediaType }); }
       return res.status(200).json({ ok: true, url: b.url });
     } catch (e) {
       return res.status(500).json({ error: String(e.message || e) });

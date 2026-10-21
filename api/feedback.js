@@ -1,21 +1,22 @@
 // POST  { rating, pay, comment, name, mode, style, theme, overall, version, photo, after }  -> saves one feedback entry
 // GET   (x-test-password)                                                                    -> lists all entries, newest first
 import { put, list, get } from "@vercel/blob";
+import { blobToken } from "../lib/blob.js";
 import { checkPassword } from "../lib/util.js";
 
 const clip = (v, n) => String(v ?? "").slice(0, n);
 const smallImg = v => (typeof v === "string" && /^data:image\/(jpeg|png|webp);base64,/.test(v) && v.length < 400000) ? v : "";
 
 async function save(path, body) {
-  try { return await put(path, body, { access: "private", contentType: "application/json", addRandomSuffix: true }); }
+  try { return await put(path, body, { token: blobToken(), access: "private", contentType: "application/json", addRandomSuffix: true }); }
   catch (e) {
-    if (/access|private|public/i.test(String(e.message))) return await put(path, body, { access: "public", contentType: "application/json", addRandomSuffix: true });
+    if (/access|private|public/i.test(String(e.message))) return await put(path, body, { token: blobToken(), access: "public", contentType: "application/json", addRandomSuffix: true });
     throw e;
   }
 }
 async function readJson(b) {
   try {
-    const r = await get(b.pathname, { access: "private" });
+    const r = await get(b.pathname, { token: blobToken(), access: "private" });
     if (r && r.stream) return JSON.parse(await new Response(r.stream).text());
   } catch {}
   const r = await fetch(b.url); return r.json();
@@ -37,7 +38,7 @@ export default async function handler(req, res) {
     };
     // Always leave a copy in the Vercel logs, even if storage isn't set up yet.
     console.log("FEEDBACK", JSON.stringify({ ...entry, photo: !!entry.photo, after: !!entry.after }));
-    if (!process.env.BLOB_READ_WRITE_TOKEN) return res.status(200).json({ ok: true, stored: false });
+    if (!blobToken()) return res.status(200).json({ ok: true, stored: false });
     try {
       await save(`feedback/${entry.at.replace(/[:.]/g, "-")}.json`, JSON.stringify(entry));
       return res.status(200).json({ ok: true, stored: true });
@@ -48,11 +49,11 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "GET") {
-    if (!process.env.BLOB_READ_WRITE_TOKEN) return res.status(200).json({ entries: [], setup: false });
+    if (!blobToken()) return res.status(200).json({ entries: [], setup: false });
     try {
       const blobs = [];
       let cursor;
-      do { const page = await list({ prefix: "feedback/", cursor, limit: 1000 }); blobs.push(...page.blobs); cursor = page.hasMore ? page.cursor : null; } while (cursor && blobs.length < 500);
+      do { const page = await list({ token: blobToken(), prefix: "feedback/", cursor, limit: 1000 }); blobs.push(...page.blobs); cursor = page.hasMore ? page.cursor : null; } while (cursor && blobs.length < 500);
       blobs.sort((a, b) => String(b.pathname).localeCompare(String(a.pathname)));
       const entries = (await Promise.all(blobs.slice(0, 200).map(b => readJson(b).catch(() => null)))).filter(Boolean);
       return res.status(200).json({ entries, setup: true });
