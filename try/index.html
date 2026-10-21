@@ -1175,7 +1175,7 @@ async function makePreview(extraPieces, change) {
     if (lastMap) $("#mapImg").src = lastMap;
     const out = await api("/api/render", body);
     after = out.image;
-    $("#timing").textContent = `${evalTiming(result)} · Preview: ${out._meta?.model} · ${out._meta?.seconds}s`;
+    $("#timing").textContent = `${evalTiming(result)} · Preview: ${out._meta?.model} · ${out._meta?.seconds}s${out._meta?.ribbonRef ? " · your ribbon reference ✓" : " · no ribbon reference"}`;
     drawViewer();
   } catch (e) {
     after = null;
