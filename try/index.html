@@ -375,22 +375,71 @@
   .shopitem .go{color:var(--green);font-weight:600;font-size:14px;white-space:nowrap}
   details.debug{font-size:13px;color:var(--muted);margin-top:24px}
   details.debug pre{white-space:pre-wrap;background:var(--paper-2);padding:12px;border-radius:10px}
+  /* =========== TreeStyle layout, following the brand board's app screens =========== */
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .appbar{border-bottom-color:transparent !important;padding-top:max(8px,env(safe-area-inset-top))}
+  .appbar .title{display:grid;place-items:center}
+  .barmono{height:34px;width:auto;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
+  .appbar button{color:var(--gold)}
+  main{padding-top:0}
+  .screen > h1,.ttl{text-align:center;font-weight:400;font-size:40px;line-height:1.08;letter-spacing:-.005em;margin:6px auto 0;max-width:15em}
+  .screen > h1::after,.ttl::after{content:"";display:block;width:44px;height:1px;background:var(--gold);margin:16px auto 0}
+  .ttl{font-size:32px}
+  .screen > .sub{text-align:center;max-width:30em;margin:14px auto 26px;font-size:15.5px;line-height:1.55}
+  .kicker{text-align:center;font:500 11px var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin:18px 0 8px}
+  /* welcome */
+  .hero{margin:0 -18px 30px;min-height:min(68vh,620px);display:flex;flex-direction:column;justify-content:space-between;padding:30px 26px 34px;
+    background:radial-gradient(120% 70% at 50% 18%,rgba(184,156,107,.16),transparent 60%),linear-gradient(180deg,rgba(20,28,44,.35),rgba(20,28,44,.9)),url(/brand/velvet-midnight.jpg) center/cover;
+    border-bottom:1px solid rgba(184,156,107,.3)}
+  .hero .lockup{margin:4px 0 0}
+  .hero .lockup img{height:120px;filter:drop-shadow(0 8px 18px rgba(0,0,0,.5))}
+  .hero .lockup b{color:var(--ivory)}
+  .hero .lockup small{color:var(--gold)}
+  .hero .lockup::after{display:none}
+  .hero .hl h1{font:400 44px/1.04 var(--serif);color:var(--ivory);margin:0;text-align:left;max-width:9em}
+  .hero .hl h1::after{display:none}
+  .hero .rule{display:block;width:44px;height:1px;background:var(--gold);margin-bottom:16px}
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+  .choice.tile{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;text-align:center;gap:4px;aspect-ratio:3/4;margin:0;padding:18px 12px;border:0;border-radius:16px;
+    background:linear-gradient(180deg,rgba(20,28,44,.05) 30%,rgba(20,28,44,.88)),var(--img) center/cover;box-shadow:0 18px 30px -18px rgba(0,0,0,.7),inset 0 0 0 1px rgba(184,156,107,.28);transition:transform .18s, box-shadow .18s}
+  .choice.tile:hover{transform:translateY(-2px);box-shadow:0 22px 36px -18px rgba(0,0,0,.8),inset 0 0 0 1px var(--gold)}
+  .choice.tile b{font:400 25px/1.05 var(--serif);color:var(--ivory)}
+  .choice.tile small{font-size:12px;color:#D9CCC0;letter-spacing:.02em}
+  .tilenote{text-align:center;color:var(--muted);font-size:14px;max-width:26em;margin:20px auto 0}
+  #s-pass form{max-width:420px;margin:0 auto}
+  /* style cards: taller, label centered like the board */
+  .sgrid{gap:12px}
+  .scard span{aspect-ratio:4/5;min-height:0;align-items:center;text-align:center;padding:16px 10px;border-radius:16px}
+  .scard b{font-size:24px;font-weight:400}
+  /* photo */
+  label.drop{border:1px solid var(--line) !important;background:radial-gradient(90% 70% at 50% 40%,rgba(184,156,107,.1),transparent),var(--paper) !important;min-height:300px;border-radius:18px}
+  label.drop strong{font:400 22px var(--serif);color:var(--ivory)}
+  .tips{max-width:30em;margin:16px auto 0}
+  /* results menu: an elegant list */
+  .navlist{background:transparent !important;border:0 !important;border-top:1px solid var(--line) !important;border-radius:0 !important}
+  .navlist button{padding:18px 4px !important;border-bottom:1px solid var(--line) !important}
+  .navlist b{font:400 22px/1.15 var(--serif) !important;color:var(--ivory)}
+  .navlist .ic{background:transparent !important;box-shadow:inset 0 0 0 1px rgba(184,156,107,.45);color:var(--gold) !important}
+  .foot .btn{max-width:524px}
+  @media (min-width:700px){ .hero{margin:0 0 30px;border-radius:0 0 22px 22px} .tiles{gap:16px} }
+
 </style>
 </head>
 <body>
 
 <header class="appbar" id="appbar">
   <button id="navBack" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-  <div class="title" id="appTitle">TreeStyle</div>
-  <button id="navHome" aria-label="Start over"><img src="/brand/monogram.png" alt="" class="mono"></button>
+  <div class="title"><img class="barmono" src="/brand/monogram.png" alt="TreeStyle"><span id="appTitle" class="sr"></span></div>
+  <button id="navHome" aria-label="Start over"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></svg></button>
 </header>
 
 <main>
   <!-- Password -->
   <section class="screen" id="s-pass" data-title="" hidden>
-    <div class="welcome"><div class="lockup"><img src="/brand/monogram.png" alt=""><b>TreeStyle</b><small>The art of styling</small></div><p class="wl">A more beautiful tree starts here.</p></div>
-    <h1>Test access</h1>
-    <p class="sub">Enter the test password.</p>
+    <div class="hero"><div class="lockup"><img src="/brand/monogram.png" alt=""><b>TreeStyle</b><small>The art of styling</small></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
+    <div class="kicker">Early access</div>
+    <h2 class="ttl">Welcome, tester</h2>
+    <p class="sub">Enter the test password to begin.</p>
     <form id="passForm" class="row">
       <input type="password" id="pw" placeholder="Password" style="flex:1" autocomplete="current-password">
       <button class="btn">Enter</button>
@@ -400,17 +449,14 @@
 
   <!-- Home -->
   <section class="screen" id="s-home" data-title="" hidden>
-    <div class="welcome"><div class="lockup"><img src="/brand/monogram.png" alt=""><b>TreeStyle</b><small>The art of styling</small></div><p class="wl">A more beautiful tree starts here.</p></div>
-    <h1>What would you like to do with your tree?</h1>
-    <p class="sub">Personal guidance, step by step, for a beautifully styled tree.</p>
-    <button class="choice" data-mode="check">
-      <span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#987C4C" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
-      <span><h3>Check my tree</h3><p>It's decorated, or partway there. Rate it and show me what would make it better.</p></span>
-    </button>
-    <button class="choice" data-mode="design">
-      <span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#987C4C" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 4.5 20h15z"/><circle cx="12" cy="3" r="1" fill="#987C4C"/></svg></span>
-      <span><h3>Design my tree</h3><p>Starting fresh. Plan the whole tree and show me the finished look.</p></span>
-    </button>
+    <div class="hero"><div class="lockup"><img src="/brand/monogram.png" alt=""><b>TreeStyle</b><small>The art of styling</small></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
+    <div class="kicker">Begin</div>
+    <h2 class="ttl">What would you like to do?</h2>
+    <div class="tiles">
+      <button class="choice tile" data-mode="check" style="--img:url(/brand/velvet-berry.jpg)"><b>Check my tree</b><small>Decorated, or partway there</small></button>
+      <button class="choice tile" data-mode="design" style="--img:url(/brand/walnut.jpg)"><b>Design my tree</b><small>Starting fresh</small></button>
+    </div>
+    <p class="tilenote">We rate it the way a designer would, then give you a plan, a shopping list and a picture of the finished tree.</p>
   </section>
 
   <!-- Photo -->
@@ -713,7 +759,14 @@ function setFoot() {
   const el = document.getElementById(stack[stack.length - 1]);
   const f = el && el.dataset.foot && FOOT[el.dataset.foot]();
   $("#foot").hidden = !f;
-  if (f) { $("#footBtn").textContent = f.label; $("#footBtn").disabled = !!f.disabled; $("#footBtn").onclick = f.act; }
+  if (f) { $("#footBtn").textContent = f.disabled ? f.label : f.label + "  →"; $("#footBtn").disabled = !!f.disabled; $("#footBtn").onclick = f.act; }
+}
+// The small gold line above each page title, like "STEP 2 OF 3" on the brand board
+function kicker(id) {
+  const flow = mode === "design" ? ["s-photo", "s-details", "s-style"] : ["s-photo", "s-style"];
+  if (id === "s-details" && rerunFromHub) return "Your tree · optional";
+  if (flow.includes(id)) return `Step ${flow.indexOf(id) + 1} of ${flow.length}`;
+  return { "s-fixes": "Your plan", "s-partner": "Your design partner", "s-score": "Your rating", "s-shop": "Your plan" }[id] || "";
 }
 function paint(isBack) {
   const id = stack[stack.length - 1];
@@ -724,6 +777,10 @@ function paint(isBack) {
   });
   const el = document.getElementById(id);
   $("#appTitle").textContent = el.dataset.title ?? "TreeStyle";
+  const kick = kicker(id);
+  let k = el.querySelector(":scope > .kicker.auto");
+  if (kick) { if (!k) { k = document.createElement("div"); k.className = "kicker auto"; const h = el.querySelector(":scope > h1"); if (h) el.insertBefore(k, h); else el.prepend(k); } k.textContent = kick; }
+  else if (k) k.remove();
   $("#navBack").disabled = stack.length <= 1 || id === "s-pass";
   $("#navHome").disabled = id === "s-home" || id === "s-pass";
   setFoot();
