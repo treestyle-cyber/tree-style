@@ -33,6 +33,15 @@
   .fixstep{margin:10px 0 14px}
   .fixstep b{font-size:13.5px}
   .fixstep .btn{width:100%;padding:11px}
+  .mk{position:relative;border-radius:10px;overflow:hidden;margin:8px 0;cursor:crosshair;background:rgba(184,156,107,.08);min-height:60px}
+  .mk img{width:100%;display:block}
+  .mk:not(.ready)::after{content:"Generate a photo first";display:grid;place-items:center;height:60px;color:var(--muted);font-size:12px}
+  .mkdots i{position:absolute;width:30px;height:20px;margin:-10px 0 0 -15px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.35);pointer-events:none}
+  .mk-help{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .mk-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+  .mk-row .sw{width:24px;height:24px;border-radius:50%;border:2px solid transparent;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+  .mk-row .sw.on{border-color:var(--gold)}
+  .mk-row .mk-clear,.mk-row .mk-suggest{appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:99px;padding:4px 10px;font:500 12px var(--sans);cursor:pointer}
   .msg{font-size:13px;color:var(--muted);min-height:1.2em}
   .msg.err{color:var(--berry)}
   .msg.ok{color:var(--gold)}
@@ -119,11 +128,18 @@ function build(current) {
         <div class="frame cur" style="aspect-ratio:${ar(s.aspect)}"><span class="lbl">In use</span>${current[s.id] ? `<img src="${current[s.id]}" alt="">` : "Fabric texture for now"}</div>
         <div class="frame new" style="aspect-ratio:${ar(s.aspect)}"><span class="lbl">New</span>Generate to see one here</div>
       </div>
+      ${current[s.id] ? `<button class="fromcur" style="align-self:flex-start;appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:99px;padding:5px 12px;font:500 12.5px var(--sans);cursor:pointer">Start from the photo in use</button>` : ""}
       <textarea>${s.prompt}</textarea>
       <div class="row"><button class="btn ghost gen">Generate</button><button class="btn use" disabled>Use this</button></div>
       <details class="fixbox"><summary>Fix the tree in the new photo</summary>
         <div class="fixstep"><b>1 · Clear the streams</b><textarea class="fixtxt rm">Remove every length of ribbon that runs down or across the tree, and any long ribbon tails hanging from the topper; fill those areas with natural green branches and lights. Move ornaments so none line up in a column, row or diagonal: scatter and stagger them, keep the largest set back toward the trunk, and keep the visual weight balanced left and right.</textarea><button class="btn ghost fix" data-k="rm" disabled>Clear the streams</button></div>
-        <div class="fixstep"><b>2 · Tuck in the ribbon</b><textarea class="fixtxt add">Add wired velvet ribbon to the tree as seven separate, clearly visible clusters of two or three short loops each (each loop about the size of a hand, no long tails), in the tree's ribbon colors, nestled into the branches so the loops pop out. Place them, staggered: 1 high on the upper left, 2 upper right, 3 middle left, 4 just right of center in the middle, 5 lower left, 6 lower right, 7 low near the center. Leave green branches visible between clusters; the ribbon must not connect from one cluster to the next.</textarea><button class="btn ghost fix" data-k="add" disabled>Tuck in the ribbon</button></div>
+        <div class="fixstep"><b>2 · Tuck in the ribbon</b>
+          <div class="mk-help">Tap the photo where each cluster of loops should go. We've suggested seven staggered spots; tap <i>Clear</i> to place your own.</div>
+          <div class="mk"><img class="mkimg" alt=""><div class="mkdots"></div></div>
+          <div class="mk-row"><span>Ribbon color</span>
+            <button class="sw on" data-c="#6B2E2E" style="background:#6B2E2E" title="Winter Berry"></button><button class="sw" data-c="#1E2A44" style="background:#1E2A44" title="Midnight"></button><button class="sw" data-c="#B89C6B" style="background:#B89C6B" title="Antique Gold"></button><button class="sw" data-c="#2C3E2E" style="background:#2C3E2E" title="Evergreen"></button><button class="sw" data-c="#E8DCC4" style="background:#E8DCC4" title="Champagne"></button>
+            <button class="mk-clear">Clear</button><button class="mk-suggest">Suggest</button></div>
+          <textarea class="fixtxt add">Add wired ribbon to the tree as separate, clearly visible clusters of two or three short loops each (each loop about the size of a hand, no long tails), one cluster at each oval on the placement map, in that oval's color, nestled into the branches so the loops pop out. Green branches stay visible between clusters; the ribbon never connects from one cluster to the next.</textarea><button class="btn ghost fix" data-k="add" disabled>Tuck in the ribbon</button></div>
         <div class="fixstep"><b>Or your own note</b><textarea class="fixtxt own" placeholder="e.g. Fewer gold ornaments on the left"></textarea><button class="btn ghost fix" data-k="own" disabled>Make this change</button></div>
       </details>
       <div class="msg"></div>
@@ -137,21 +153,54 @@ function build(current) {
       try {
         const d = await call({ action: "generate", prompt: el.querySelector("textarea").value.trim() + "\n\n" + LOOK, aspect: s.aspect });
         img = await shrink(d.image);
-        nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; msg.textContent = "Like it? Tap Use this. If the tree breaks a rule, open Fix the tree below."; useB.disabled = false; fixBs.forEach(b => b.disabled = false); genB.textContent = "Generate again";
+        nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; el.dispatchEvent(new Event("ts-img")); msg.textContent = "Like it? Tap Use this. If the tree breaks a rule, open Fix the tree below."; useB.disabled = false; fixBs.forEach(b => b.disabled = false); genB.textContent = "Generate again";
       } catch (e) {
         if (e.status === 401) return gate("That password didn't work.");
         nf.innerHTML = '<span class="lbl">New</span>Try again'; msg.className = "msg err"; msg.textContent = e.message;
       } finally { genB.disabled = false; }
     };
+    const fromCur = el.querySelector(".fromcur");
+    if (fromCur) fromCur.onclick = async () => {
+      msg.className = "msg"; msg.textContent = "Loading the photo in use…";
+      try {
+        const blob = await (await fetch(current[s.id])).blob();
+        img = await shrink(await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); }));
+        nf.innerHTML = `<span class="lbl">Working copy</span><img src="${img}" alt="">`; el.dispatchEvent(new Event("ts-img"));
+        useB.disabled = false; fixBs.forEach(b => b.disabled = false); el.querySelector(".fixbox").open = true;
+        msg.textContent = "Ready. Use the steps below to fix it, then Use this.";
+      } catch (e) { msg.className = "msg err"; msg.textContent = "Couldn't load it: " + e.message; }
+    };
+    // ---- tap-to-place ribbon spots ----
+    const mk = el.querySelector(".mk"), mkImg = el.querySelector(".mkimg"), dots = el.querySelector(".mkdots");
+    const SUGGEST = [[.42, .27], [.58, .35], [.37, .47], [.61, .55], [.34, .67], [.65, .72], [.5, .83]];
+    let marks = SUGGEST.map(p => p.slice()), color = "#6B2E2E";
+    const drawDots = () => { dots.innerHTML = marks.map(([x, y]) => `<i style="left:${x * 100}%;top:${y * 100}%;background:${color}"></i>`).join(""); };
+    const showMk = () => { if (img) { mkImg.src = img; mk.classList.add("ready"); drawDots(); } };
+    mk.onclick = e => { if (!img) return; const r = mkImg.getBoundingClientRect(); marks.push([(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]); if (marks.length > 12) marks.shift(); drawDots(); };
+    el.querySelector(".mk-clear").onclick = () => { marks = []; drawDots(); };
+    el.querySelector(".mk-suggest").onclick = () => { marks = SUGGEST.map(p => p.slice()); drawDots(); };
+    el.querySelectorAll(".sw").forEach(b => b.onclick = () => { el.querySelectorAll(".sw").forEach(x => x.classList.toggle("on", x === b)); color = b.dataset.c; drawDots(); });
+    el.addEventListener("ts-img", showMk);
+    const placementMap = () => new Promise(res => {
+      const im = new Image(); im.onload = () => {
+        const k = Math.min(1, 1024 / Math.max(im.width, im.height)), c = document.createElement("canvas"), g = c.getContext("2d");
+        c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); g.drawImage(im, 0, 0, c.width, c.height);
+        const rw = c.width * .085, rh = rw * .62;
+        marks.forEach(([x, y]) => { g.save(); g.translate(x * c.width, y * c.height); g.scale(1, rh / rw); const gr = g.createRadialGradient(0, 0, 0, 0, 0, rw); gr.addColorStop(0, color); gr.addColorStop(.7, color + "cc"); gr.addColorStop(1, color + "00"); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, rw, 0, Math.PI * 2); g.fill(); g.restore(); });
+        res(c.toDataURL("image/jpeg", .85));
+      }; im.src = img;
+    });
     fixBs.forEach(fixB => fixB.onclick = async () => {
       const note = el.querySelector(".fixtxt." + fixB.dataset.k).value.trim();
       if (!img || !note) return;
       const all = [...fixBs, genB, useB]; all.forEach(b => b.disabled = true);
       msg.className = "msg"; msg.textContent = "Editing the photo… about 20 seconds";
       try {
-        const d = await call({ action: "edit", image: img, prompt: note, aspect: s.aspect });
+        if (fixB.dataset.k === "add" && !marks.length) { msg.className = "msg err"; msg.textContent = "Tap the photo to mark where the ribbon goes first."; all.forEach(b => b.disabled = false); return; }
+        const map = fixB.dataset.k === "add" ? await placementMap() : undefined;
+        const d = await call({ action: "edit", image: img, prompt: note, aspect: s.aspect, map });
         img = await shrink(d.image);
-        nf.innerHTML = `<span class="lbl">Edited</span><img src="${img}" alt="">`;
+        nf.innerHTML = `<span class="lbl">Edited</span><img src="${img}" alt="">`; el.dispatchEvent(new Event("ts-img"));
         msg.textContent = fixB.dataset.k === "rm" ? "Streams cleared. Now step 2: Tuck in the ribbon." : "Done. Use this, or edit again.";
       } catch (e) { msg.className = "msg err"; msg.textContent = e.message; }
       finally { all.forEach(b => b.disabled = false); }

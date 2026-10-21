@@ -28,7 +28,7 @@ async function latest() {
   return out;
 }
 
-async function generate(prompt, aspect, base) {
+async function generate(prompt, aspect, base, map) {
   let lastErr = "";
   for (const model of MODELS) {
     const generationConfig = { responseModalities: ["IMAGE"] };
@@ -36,7 +36,7 @@ async function generate(prompt, aspect, base) {
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
       headers: { "x-goog-api-key": process.env.GEMINI_API_KEY, "content-type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, ...(base ? [{ inline_data: { mime_type: base.mediaType, data: base.data } }] : [])] }], generationConfig })
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, ...(base ? [{ inline_data: { mime_type: base.mediaType, data: base.data } }] : []), ...(map ? [{ text: "Placement map (reference only, do not copy its drawing style): the same photo with soft colored ovals marking EXACTLY where each cluster of ribbon loops goes. Put one cluster at every oval, in that color, and nowhere else. The finished photo must contain no ovals, blobs or markings, only real ribbon." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : [])] }], generationConfig })
     });
     const body = await r.json().catch(() => ({}));
     if (!r.ok) {
@@ -78,7 +78,7 @@ export default async function handler(req, res) {
 
   if (req.method !== "POST") return res.status(405).end();
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
-  const { action, prompt, aspect, slot, image } = req.body || {};
+  const { action, prompt, aspect, slot, image, map } = req.body || {};
 
   if (action === "generate") {
     if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
@@ -92,7 +92,7 @@ export default async function handler(req, res) {
     const base = parseDataUrl(image);
     if (!base || !prompt) return res.status(400).json({ error: "Missing photo or instruction" });
     const text = `Edit this photograph. Keep the room, camera angle, lighting, colors, style and everything else exactly the same, photorealistic, magazine quality. Make only these changes to the Christmas tree:\n${String(prompt).slice(0, 2000)}\nThe result must be an ordinary photograph with no text, markings or outlines.`;
-    try { return res.status(200).json({ image: await generate(text, aspect, base) }); }
+    try { return res.status(200).json({ image: await generate(text, aspect, base, parseDataUrl(map)) }); }
     catch (e) { return res.status(502).json({ error: String(e.message || e) }); }
   }
 
