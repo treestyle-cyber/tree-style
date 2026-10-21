@@ -403,7 +403,10 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .hero .hl h1{font:400 44px/1.04 var(--serif);color:var(--ivory);margin:0;text-align:left;max-width:9em}
   .hero .hl h1::after{display:none}
   .hero .rule{display:block;width:44px;height:1px;background:var(--gold);margin-bottom:16px}
-  .ph-hero .hero{background:linear-gradient(180deg,rgba(20,28,44,.55) 0%,rgba(20,28,44,.05) 30%,rgba(20,28,44,.15) 55%,rgba(20,28,44,.92) 100%),var(--photo-hero) center/cover}
+  .ph-hero .hero{background:linear-gradient(180deg,rgba(20,28,44,.82) 0%,rgba(20,28,44,.25) 22%,rgba(20,28,44,0) 40%,rgba(20,28,44,.2) 60%,rgba(20,28,44,.94) 100%),var(--photo-hero) center/cover}
+  .ph-hero .hero .lockup img{display:none}
+  .ph-hero .hero .lockup b{text-shadow:0 2px 12px rgba(0,0,0,.6)}
+  .ph-hero .hero .hl h1{text-shadow:0 2px 18px rgba(0,0,0,.55)}
   .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
   .choice.tile{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;text-align:center;gap:4px;aspect-ratio:3/4;margin:0;padding:18px 12px;border:0;border-radius:16px;
     background:linear-gradient(180deg,rgba(20,28,44,.05) 30%,rgba(20,28,44,.88)),var(--img) center/cover;box-shadow:0 18px 30px -18px rgba(0,0,0,.7),inset 0 0 0 1px rgba(184,156,107,.28);transition:transform .18s, box-shadow .18s}
