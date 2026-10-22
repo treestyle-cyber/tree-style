@@ -74,7 +74,7 @@ ${CATS.map(c => `- ${c[0]}: ${c[2]}`).join("\n")}
 
   return `You are an expert Christmas tree designer helping someone who loves Christmas but is not a designer.
 
-${GUIDE}${variant === "v2" ? "\n\n" + LAB_RULE : ""}
+${GUIDE}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}
 
 ${task}
 
@@ -102,7 +102,7 @@ ${part === "look" ? "" : PLAN_NOTES(mode, true) + "\n"}${part === "plan" ? "" : 
 }
 
 // Under test in /lab (variant "v2"): one design rule at a time, against the live app.
-const LAB_RULE = `COLOR AND CONTRAST: build on the strongest color already on the tree to add contrast and definition (e.g. on a red and white tree, deepen and repeat the red in ribbon, flowers and ornaments so the tree reads crisp and defined). Don't introduce a near-match of a color already there (ivory or cream beside white, champagne beside gold, burgundy beside red): near-matches read as mistakes and muddy the tree. Read the existing palette carefully and name its colors precisely.`;
+const LAB_RULE = ``;   // nothing under test right now (the color & contrast rule is live in the guide)
 const LOOK_PART = `YOUR PART: you only write the first impression and the scores. The plan, mockup and preview brief are being written separately at the same time, so don't plan anything here. Be quick and specific.`;
 const PLAN_PART = `
 
