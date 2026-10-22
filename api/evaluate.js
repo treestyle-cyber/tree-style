@@ -17,16 +17,6 @@ const COORDS = `COORDINATES: x,y are fractions of the image width and height (0,
 
 const BRIEF_RULES = (mode) => `RENDER BRIEF: instructions for a photo-editing AI that will edit the ORIGINAL photo to show the tree after this plan. Write direct edit instructions in plain physical terms (what object, how many, size in inches, color, finish, and where on the tree: e.g. "upper left third, pushed deep toward the trunk"). Cover ornament clusters (e.g. "a tight cluster of 5 green 3-inch balls, middle right"), ribbon (width, color, texture, and whether it's short drops or loops tucked into branches; list each ribbon placement as its own separate spot, e.g. "6 separate clusters of 2-3 loops: upper center, upper right, middle left...", and say the ribbon disappears into the branches between spots; never describe it as running, cascading, wrapping or swagging across or down the tree), stems, flowers, ornaments by size, the top of the tree, and lights if added. ${mode === "design" ? "Describe the complete finished tree." : "Describe what to REMOVE or MOVE first (e.g. \"remove the gold plaid ribbon that runs diagonally across the middle of the tree\"), then what to ADD (including re-placing the same ribbon as loops or short drops). Everything not mentioned stays exactly as it is."} Match the mockup. 90-180 words. No scores, no reasons, no designer jargon.`;
 
-// Proposed (v2) brief, tried side by side in /lab before it replaces the current one.
-const BRIEF_RULES_V2 = (mode) => `RENDER BRIEF: instructions for a photo-editing AI that will edit the ORIGINAL photo to show the tree after a professional designer styled it. Write in plain physical terms (what object, how many, size in inches, color, finish, where on the tree). A designer tree is FULL and LAYERED, never sparse, so describe every layer in the order of work:
-1. Greenery stems: how many (about 2-3 per foot of tree height), the kind and finish, tucked in throughout the whole tree, fuller low, so texture shows everywhere.
-2. Ribbon: on a full, dense tree, large loops of wide wired ribbon bursting out of the branches at 7-9 spots that wind back and forth across the tree; each burst shows only loops, with no knot, no center and no tails, as if the ribbon continues inside the tree. On an open tree, short waterfall cascades: each tucked in at the top, spilling over 2-3 branches, then tucked back in, each stepping left or right of the one above. Layer the narrower ribbon with the widest, and give the thin accent ribbon its own spots. Never use the word bow, except for a topper the plan calls for. Never let ribbon run the full length of the tree, wrap around it, or swag across it.
-3. Flowers, each with small accents beside it.
-4. Ornaments in real designer quantities by size, scattered and staggered, never in lines: extra-large about 0.6 per foot of tree height, set back toward the trunk; large about 2 per foot; medium about 4 per foot; small about 5 per foot${mode === "check" ? " (on a tree that's already decorated, about half as many new ones)" : ""}. Include any clusters.
-5. Small accents (berries, sprays, sprigs) tucked in throughout to fill every plain patch.
-6. The crown: noticeably fuller and richer than the rest of the tree, building up to the topper.
-7. Lights, if added.
-${mode === "design" ? "Describe the complete finished tree." : "First describe what to REMOVE or MOVE (e.g. \"remove the gold plaid ribbon that runs diagonally across the middle of the tree\"), then what to ADD. Everything not mentioned stays exactly as it is."} End with: "The finished tree looks lush, full and layered, like a magazine designer tree, with no bare patches." Match the mockup. 150-260 words. No scores, no reasons, no designer jargon.`;
 
 const PLAN_SHAPE = (mode, compact) => `"quick_fixes": [ {"title":"<plain, under 8 words>","how":"<one short sentence>","x":<0-1>,"y":<0-1>} ],
  "plan": [ {"element":"fluff|lights|primary_picks|ribbon|florals|statement|medium|small|small_picks|crown|base","step":"<plain step name, e.g. Ribbon>","title":"<under 8 words>",${compact ? "" : '"how":"<1-2 specific sentences: sizes, counts, where>","effort":"<e.g. 20 minutes>",'}"shop":"<3-7 word store search, e.g. '6 inch wired velvet ribbon burgundy', or empty>"} ],
@@ -84,7 +74,7 @@ ${CATS.map(c => `- ${c[0]}: ${c[2]}`).join("\n")}
 
   return `You are an expert Christmas tree designer helping someone who loves Christmas but is not a designer.
 
-${GUIDE}
+${GUIDE}${variant === "v2" ? "\n\n" + LAB_RULE : ""}
 
 ${task}
 
@@ -93,7 +83,7 @@ ${factsLine(facts)}
 Style: ${styleLine(style, theme)}
 ${scoring}
 ${COORDS}
-${part === "look" ? LOOK_PART : (variant === "v2" ? BRIEF_RULES_V2 : BRIEF_RULES)(mode)}${part === "plan" ? PLAN_PART : ""}
+${part === "look" ? LOOK_PART : BRIEF_RULES(mode)}${part === "plan" ? PLAN_PART : ""}
 
 Reply with this JSON:
 {
@@ -111,6 +101,8 @@ ${[
 ${part === "look" ? "" : PLAN_NOTES(mode, true) + "\n"}${part === "plan" ? "" : mode === "design" ? 'Because this is a design (not a check): set tree.stage to "bare", eye_first to "", categories to [], and potential to 0 and 0.' : 'tree.stage is "partial" or "finished".'}${part === "look" ? "" : ' For ribbons with no accent color, set accent to "".'}`;
 }
 
+// Under test in /lab (variant "v2"): one design rule at a time, against the live app.
+const LAB_RULE = `COLOR AND CONTRAST: build on the strongest color already on the tree to add contrast and definition (e.g. on a red and white tree, deepen and repeat the red in ribbon, flowers and ornaments so the tree reads crisp and defined). Don't introduce a near-match of a color already there (ivory or cream beside white, champagne beside gold, burgundy beside red): near-matches read as mistakes and muddy the tree. Read the existing palette carefully and name its colors precisely.`;
 const LOOK_PART = `YOUR PART: you only write the first impression and the scores. The plan, mockup and preview brief are being written separately at the same time, so don't plan anything here. Be quick and specific.`;
 const PLAN_PART = `
 

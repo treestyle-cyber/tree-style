@@ -10,20 +10,7 @@ const MODELS = [
 
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
 
-const RULES_V2 = `RIBBON (important): ribbon never runs the full length of the tree, wraps around it, or swags across it. On a full tree it bursts out of the branches as loops with no knot, center or tails visible, never a bow (only a topper may be a bow, if asked for). On an open tree it falls in short waterfall cascades over two or three branches and tucks back in. The separate pieces wind back and forth across the tree with green between them, never lined up in a row or diagonal.
-
-DESIGNER FINISH (important): the finished tree looks lush, full and layered like a professional designer's tree: greenery stems, ribbon, flowers, ornaments in every size and small accents throughout, with no bare patches, and fuller and richer at the top. Ornaments never line up in columns, rows or diagonals.`;
-function editPrompt(brief, revision, variant) {
-  if (variant === "v2" && !revision) return `Edit this photo of a Christmas tree to show it after a professional holiday designer finished it.
-
-The first image is the photo to edit. Keep exactly the same room, camera angle, framing, lighting, tree shape and tree size. Keep everything already on the tree unless the instructions say otherwise. Make every addition photorealistic, at true real-world scale, lit by the room's light, and physically tucked into the branches (not floating or pasted on).
-
-Changes to make:
-${brief}
-
-${RULES_V2}
-
-The result must look like an ordinary real photograph of the same tree in the same room, not an illustration, with no circles, rings, outlines or other markings drawn on it.`;
+function editPrompt(brief, revision) {
   if (revision) return `This photo shows a decorated Christmas tree. Make ONLY the change described below and keep everything else exactly as it is: same room, camera angle, framing and lighting, and every ornament, ribbon, flower and stem not mentioned stays exactly where it is. Make the change photorealistic, at true real-world scale, tucked into the branches, and clearly visible.
 
 Change to make:
@@ -70,7 +57,7 @@ export default async function handler(req, res) {
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
 
-  const { image, brief, aspect, pieces, map, revision, variant } = req.body || {};
+  const { image, brief, aspect, pieces, map, revision } = req.body || {};
   const pc = parseDataUrl(pieces), mp = parseDataUrl(map);
   const img = parseDataUrl(image);
   if (!img || !brief) return res.status(400).json({ error: "Missing photo or brief" });
@@ -79,9 +66,9 @@ export default async function handler(req, res) {
   const started = Date.now();
   let lastErr = "";
   for (const model of MODELS) {
-    let out = await callGemini(model, img, editPrompt(brief, revision, variant), ar, pc, revision ? null : mp);
+    let out = await callGemini(model, img, editPrompt(brief, revision), ar, pc, revision ? null : mp);
     // Some models reject imageConfig; retry once without it.
-    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, editPrompt(brief, revision, variant), null, pc, revision ? null : mp);
+    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, editPrompt(brief, revision), null, pc, revision ? null : mp);
     if (!out.ok) {
       lastErr = out.body?.error?.message || `Gemini error ${out.status}`;
       // Model not available, or no quota for it on this account: try the next one
