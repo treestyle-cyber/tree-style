@@ -96,7 +96,8 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .hero .formnote.ok{color:var(--gold)}
   .hero .btn{background:var(--gold);color:var(--midnight)}
   .hero .btn:hover{background:#C7AD7E}
-  .hero input{background:rgba(243,238,231,.96);border-color:transparent}
+  .hero input{background:rgba(243,238,231,.96);border-color:transparent;color:var(--midnight);caret-color:var(--midnight)}
+  .hero input::placeholder{color:#7A7368}
   .hero .compare{box-shadow:0 30px 70px -20px rgba(0,0,0,.7),0 0 0 1px rgba(184,156,107,.45)}
   .materials{display:grid;grid-template-columns:repeat(10,1fr);height:84px}
   .materials i{background-size:cover;background-position:center}
