@@ -53,6 +53,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .compare .knob{position:absolute;top:50%;left:var(--cut,50%);width:42px;height:42px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.18);font:600 14px var(--sans);color:var(--green);cursor:ew-resize}
   .compare .tag{position:absolute;top:14px;font:600 11px var(--sans);letter-spacing:.12em;text-transform:uppercase;background:rgba(255,253,248,.9);color:var(--green);padding:6px 10px;border-radius:999px}
   .compare .tag.l{left:14px}.compare .tag.r{right:14px}
+  .compare img.real{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none}
 
   section.how{padding:64px 0}
   section.how h2,section.get h2{font-size:clamp(32px,4vw,44px);margin:10px 0 34px}
@@ -238,6 +239,15 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     let t0 = null; const sweep = t => { if (dragging) return; t0 ??= t; const k = (t - t0) / 1800; if (k > 1) return; const p = 50 + Math.sin(k * Math.PI * 2) * 22; box.style.setProperty("--cut", p + "%"); requestAnimationFrame(sweep); };
     setTimeout(() => requestAnimationFrame(sweep), 700);
   })();
+
+  // Real before/after made with the app in the Studio replaces the drawing
+  fetch("/api/brand").then(r => r.json()).then(d => {
+    const p = d.photos || {}; if (!p.before || !p.after) return;
+    const box = document.getElementById("compare");
+    box.querySelectorAll("svg").forEach(s => s.remove());
+    box.insertAdjacentHTML("afterbegin", `<img class="real" src="${p.before}" alt="A tree before styling"><img class="real after" src="${p.after}" alt="The same tree styled by TreeStyle">`);
+    box.style.background = "var(--paper)";
+  }).catch(() => {});
 
   // Waitlist sign-up (Mailchimp, stays on this page)
   document.querySelectorAll("form.signup").forEach(form => {

@@ -9,7 +9,7 @@ const tok = () => (blobToken() ? { token: blobToken() } : {});
 import { ribbonRef, RIBBON_REF_NOTE } from "../lib/ribbonref.js";
 import { checkPassword, parseDataUrl } from "../lib/util.js";
 
-const SLOTS = ["ribbonref", "velvet", "velvetberry", "hero", "check", "design", "keep", "classic", "rustic", "modern", "elegant", "playful", "themed"];
+const SLOTS = ["before", "after", "ribbonref", "velvet", "velvetberry", "hero", "check", "design", "keep", "classic", "rustic", "modern", "elegant", "playful", "themed"];
 const MODELS = [process.env.GEMINI_IMAGE_MODEL, "gemini-3.1-flash-image-preview", "gemini-2.5-flash-image"].filter(Boolean);
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
 

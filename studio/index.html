@@ -84,10 +84,27 @@
       <div class="refrow"><div class="frame" id="refCur" style="aspect-ratio:3/4;max-width:200px">No reference yet</div>
         <div><label class="btn" style="cursor:pointer">Add your photo<input type="file" id="refFile" accept="image/*" hidden></label><p class="msg" id="refMsg"></p></div></div>
     </div>
+    <div class="refcard" id="baCard">
+      <h2>Waitlist before &amp; after</h2>
+      <div class="where">The slider on the website. Add a real "before" photo, then make the "after" with the actual app (the same plan and preview your customers get). Make another until you love it, then use the pair.</div>
+      <div class="frames" style="max-width:520px">
+        <div class="frame" id="baBefore" style="aspect-ratio:4/5"><span class="lbl">Before</span>Add a photo</div>
+        <div class="frame" id="baAfter" style="aspect-ratio:4/5"><span class="lbl">After</span>Made by the app</div>
+      </div>
+      <div class="row" style="max-width:520px;align-items:end">
+        <label class="btn ghost" style="cursor:pointer;flex:1">Add before photo<input type="file" id="baFile" accept="image/*" hidden></label>
+        <select id="baMode" style="flex:1;font:14px var(--sans);padding:12px;border-radius:999px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink)"><option value="check">Check my tree</option><option value="design">Design my tree</option></select>
+        <select id="baStyle" style="flex:1;font:14px var(--sans);padding:12px;border-radius:999px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink)"><option value="keep">Keep my style</option><option value="classic">Classic</option><option value="rustic">Rustic</option><option value="modern">Modern</option><option value="elegant">Elegant</option><option value="playful">Playful</option></select>
+      </div>
+      <div class="row" style="max-width:520px"><button class="btn ghost" id="baMake" disabled>Make the after with the app</button><button class="btn" id="baUse" disabled>Use this pair</button></div>
+      <p class="msg" id="baMsg"></p>
+    </div>
     <div class="grid" id="grid"></div>
   </div>
 </div>
 
+<script src="/try/engine.js"></script>
+<script src="/try/guide.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const LOOK = "Editorial interior photograph for a luxury holiday brand. Moody, candlelit, warm low light with soft glowing Christmas lights; deep midnight navy, winter berry red, evergreen and antique gold tones; rich textures like velvet ribbon, brass and walnut. Shot on a full-frame camera, shallow depth of field, magazine quality, photorealistic. No people, no text, no logos, no watermarks. How the tree is styled: wide wired ribbon weaves in and out of the tree: it emerges from deep inside the branches in soft billows and short drops at about seven separate spots, staggered left and right at different heights, then disappears back into the greenery, so green branches show between each appearance. There are no bows anywhere on the tree. Ornaments are scattered and staggered at different heights and depths, the largest set back toward the trunk, with balanced visual weight left and right.";
@@ -233,6 +250,61 @@ function build(current) {
   });
 }
 
+// ---- Waitlist before & after, made with the real app ----
+function setupBA(ph) {
+  let before = null, after = null;
+  const ASPECTS = [["1:1", 1], ["2:3", 2 / 3], ["3:2", 1.5], ["3:4", .75], ["4:3", 4 / 3], ["4:5", .8], ["5:4", 1.25], ["9:16", 9 / 16], ["16:9", 16 / 9]];
+  const loadImg = src => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = src; });
+  const api = async (path, body) => {
+    const r = await fetch(path, { method: "POST", headers: { "content-type": "application/json", "x-test-password": password }, body: JSON.stringify(body) });
+    let d = {}; try { d = await r.json(); } catch { d = { error: "Server error " + r.status }; }
+    if (!r.ok) throw new Error(d.error || "Error " + r.status); return d;
+  };
+  const msg = (t, k) => { $("#baMsg").className = "msg" + (k ? " " + k : ""); $("#baMsg").textContent = t; };
+  if (ph.before) $("#baBefore").innerHTML = `<span class="lbl">Before · in use</span><img src="${ph.before}" alt="">`;
+  if (ph.after) $("#baAfter").innerHTML = `<span class="lbl">After · in use</span><img src="${ph.after}" alt="">`;
+  $("#baFile").onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    const raw = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); });
+    before = await shrink(raw, 1536); after = null;
+    $("#baBefore").innerHTML = `<span class="lbl">Before</span><img src="${before}" alt="">`;
+    $("#baAfter").innerHTML = `<span class="lbl">After</span>Tap Make the after`;
+    $("#baMake").disabled = false; $("#baUse").disabled = true; msg("");
+  };
+  $("#baMake").onclick = async () => {
+    if (!before) return;
+    $("#baMake").disabled = $("#baUse").disabled = true;
+    $("#baAfter").innerHTML = '<span class="lbl">After</span><div class="spin"></div>';
+    msg("The app is planning and painting your tree… about a minute. Keep this page open.");
+    try {
+      const mode = $("#baMode").value, style = $("#baStyle").value;
+      const [look, plan] = await Promise.all([api("/api/evaluate", { image: before, mode, style, part: "look" }), api("/api/evaluate", { image: before, mode, style, part: "plan" })]);
+      const result = Object.assign({}, look, plan), im = await loadImg(before), r = im.width / im.height;
+      const aspect = ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0];
+      let map;
+      try {
+        const cv = document.createElement("canvas"), g = TreeGuide.create(im, cv, result, mode); g.drawMap();
+        const k = Math.min(1, 1024 / Math.max(cv.width, cv.height)), c2 = document.createElement("canvas");
+        c2.width = Math.round(cv.width * k); c2.height = Math.round(cv.height * k); c2.getContext("2d").drawImage(cv, 0, 0, c2.width, c2.height); map = c2.toDataURL("image/jpeg", .8);
+      } catch (e) { console.error(e); }
+      const out = await api("/api/render", { image: before, brief: result.render_brief, aspect, map });
+      after = await shrink(out.image, 1536);
+      $("#baAfter").innerHTML = `<span class="lbl">After</span><img src="${after}" alt="">`;
+      $("#baUse").disabled = false; msg("Love it? Use this pair. Or make another.");
+    } catch (e) { $("#baAfter").innerHTML = '<span class="lbl">After</span>Try again'; msg(e.message, "err"); }
+    finally { $("#baMake").disabled = false; $("#baMake").textContent = "Make another"; }
+  };
+  $("#baUse").onclick = async () => {
+    if (!before || !after) return;
+    $("#baUse").disabled = true; msg("Saving…");
+    try {
+      await api("/api/brand", { action: "use", slot: "before", image: before });
+      await api("/api/brand", { action: "use", slot: "after", image: after });
+      msg("Saved. The waitlist slider shows this pair now.", "ok");
+    } catch (e) { msg(e.message, "err"); $("#baUse").disabled = false; }
+  };
+}
+
 function gate(err) { $("#studio").hidden = true; $("#gate").hidden = false; $("#gateErr").textContent = err || ""; }
 $("#gateForm").onsubmit = e => { e.preventDefault(); password = $("#pw").value.trim(); try { sessionStorage.setItem("ts_pw", password); } catch {} start(); };
 async function start() {
@@ -241,6 +313,7 @@ async function start() {
   let info = { photos: {}, storage: false };
   try { info = await (await fetch("/api/brand")).json(); } catch {}
   $("#setup").hidden = !!info.storage;
+  setupBA(info.photos || {});
   if ((info.photos || {}).ribbonref) $("#refCur").innerHTML = `<img src="${info.photos.ribbonref}" alt="">`;
   $("#refFile").onchange = async e => {
     const f = e.target.files[0]; if (!f) return;
