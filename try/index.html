@@ -556,6 +556,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
         <label class="chip"><input type="radio" name="stage" value="finished"><span>Finished</span></label>
         <label class="chip"><input type="radio" name="stage" value="" checked><span>Let you decide</span></label>
       </div></div>
+    <div class="err" id="detailsErr"></div>
     <button class="skip" id="detailsSkip">Skip this</button>
   </section>
 
@@ -785,12 +786,13 @@ const FOOT = {
   photoNext: () => ({ label: "Next", disabled: !photo, act: () => show(mode === "design" ? "s-details" : "s-style") }),
   ideaNext: () => ({ label: "Next", disabled: !($("#ideaText").value.trim() || ideaPhoto), act: () => {
     // the idea becomes the theme (they can still change the style on the next screens)
-    const t = $("#ideaText").value.trim();
-    if (t) { const th = document.querySelector('input[name=style][value=themed]'); if (th) th.checked = true; $("#theme").value = t.slice(0, 200); syncStyle(); }
+    useIdeaAsStyle();
     show("s-details");
   } }),
   details: () => rerunFromHub
     ? ({ label: "Update my shopping list and steps", act: () => { factsSet = true; applyFacts(); } })
+    : mode === "design" && src === "idea"
+    ? ({ label: "Design my tree", act: () => { factsSet = true; useIdeaAsStyle(); run(); } })
     : ({ label: "Next", act: () => { factsSet = true; show("s-style"); } }),
   go: () => ({ label: mode === "design" ? "Design my tree" : "Evaluate my tree", act: run }),
   seeIt: () => planState === "wait" ? ({ label: "Finishing your plan…", disabled: true, act: () => {} })
@@ -819,7 +821,7 @@ function setFoot() {
 }
 // The small gold line above each page title, like "STEP 2 OF 3" on the brand board
 function kicker(id) {
-  const flow = mode === "design" ? ["s-start", src === "idea" ? "s-idea" : "s-photo", "s-details", "s-style"] : ["s-photo", "s-style"];
+  const flow = mode === "design" ? (src === "idea" ? ["s-start", "s-idea", "s-details"] : ["s-start", "s-photo", "s-details", "s-style"]) : ["s-photo", "s-style"];
   if (id === "s-details" && rerunFromHub) return "Your tree · optional";
   if (flow.includes(id)) return `Step ${flow.indexOf(id) + 1} of ${flow.length}`;
   return { "s-fixes": "Your plan", "s-partner": "Your design partner", "s-score": "Your rating", "s-shop": "Your plan" }[id] || "";
@@ -895,7 +897,14 @@ $("#ideaText").addEventListener("input", () => { baseKey = ""; setFoot(); });
 // Room: tap where the tree will stand
 function drawRoomDot() { $("#rmDot").style.left = roomMark[0] * 100 + "%"; $("#rmDot").style.top = roomMark[1] * 100 + "%"; }
 $("#rmWrap").addEventListener("click", e => { const r = $("#rmImg").getBoundingClientRect(); roomMark = [Math.min(.98, Math.max(.02, (e.clientX - r.left) / r.width)), Math.min(.98, Math.max(.05, (e.clientY - r.top) / r.height))]; baseKey = ""; drawRoomDot(); });
-$("#detailsSkip").onclick = () => { if (rerunFromHub) { history.back(); return; } factsSet = false; show("s-style"); };
+$("#detailsSkip").onclick = () => { if (rerunFromHub) { history.back(); return; } factsSet = false; if (mode === "design" && src === "idea") { useIdeaAsStyle(); run(); } else show("s-style"); };
+// From an idea, their own words are the style: "themed", with the description as the theme
+function useIdeaAsStyle() {
+  const t = $("#ideaText").value.trim();
+  const st = document.querySelector('input[name=style][value=' + (t ? "themed" : "keep") + ']'); if (st) st.checked = true;
+  $("#theme").value = t ? t.slice(0, 200) : "";
+  syncStyle();
+}
 // Height choices are bands; quantities use the middle of the band, and we show the band itself
 const HEIGHT_BANDS = { 4: "4 ft or less", 5.5: "5–6 ft", 7.5: "7–8 ft", 9.5: "9–10 ft", 11.5: "11–12 ft", 14: "13 ft+" };
 const ftTxt = h => { const n = Number(h) || 7; return (factsSet && HEIGHT_BANDS[n]) || (Math.round(n * 2) / 2).toString().replace(".5", "½") + " ft"; };
@@ -1070,13 +1079,13 @@ async function makeBase() {
   } catch (e) {
     LB.done();
     if (e.status === 401) { try { sessionStorage.removeItem("ts_pw"); } catch {} show("s-pass", []); return false; }
-    $("#startErr").textContent = "We couldn't set up your tree: " + e.message; return false;
+    $("#startErr").textContent = $("#detailsErr").textContent = "We couldn't set up your tree: " + e.message; return false;
   }
 }
 async function run() {
   if (mode === "design" && src !== "tree") { if (!(await makeBase())) return; }
   if (!photo) return;
-  $("#startErr").textContent = "";
+  $("#startErr").textContent = $("#detailsErr").textContent = "";
   const L = startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree", mode === "design" ? DESIGN_STEPS : CHECK_STEPS, 12);
   evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined, inspo: mode === "design" ? (inspoPhoto || ideaPhoto || undefined) : undefined };
   const myPlan = api("/api/evaluate", { ...evalBody, part: "plan" });
@@ -1088,7 +1097,7 @@ async function run() {
   } catch (e) {
     L.done();
     if (e.status === 401) { try { sessionStorage.removeItem("ts_pw"); } catch {} $("#passErr").textContent = "That password didn't work."; show("s-pass", []); return; }
-    $("#startErr").textContent = "Something went wrong: " + e.message;
+    $("#startErr").textContent = $("#detailsErr").textContent = "Something went wrong: " + e.message;
     if (rerunFromHub) { $("#detailsSub").textContent = "That didn't go through: " + e.message; }
     return;
   }
