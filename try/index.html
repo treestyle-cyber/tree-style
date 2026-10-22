@@ -431,6 +431,19 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .foot .btn{max-width:524px}
   @media (min-width:700px){ .hero{margin:0 0 30px;border-radius:0 0 22px 22px} .tiles{gap:16px} }
 
+  /* design: starting points */
+  .src{display:flex;flex-direction:column;justify-content:flex-end;gap:3px;width:100%;min-height:128px;margin:12px 0;padding:18px 20px;border:0;border-radius:16px;text-align:left;cursor:pointer;color:var(--ivory);
+    background:linear-gradient(100deg,rgba(20,28,44,.9) 25%,rgba(20,28,44,.35)),var(--img) center/cover;box-shadow:0 16px 28px -18px rgba(0,0,0,.7),inset 0 0 0 1px rgba(184,156,107,.3);transition:transform .18s, box-shadow .18s}
+  .src:hover{transform:translateY(-2px);box-shadow:0 20px 32px -18px rgba(0,0,0,.8),inset 0 0 0 1px var(--gold)}
+  .src b{font:400 26px/1.05 var(--serif)}
+  .src small{font-size:13px;color:#D9CCC0;max-width:24em}
+  .ideatxt{width:100%;font:16px/1.5 var(--sans);padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);resize:vertical}
+  .roommark{margin-top:14px}
+  .rmhint{text-align:center;font:500 11px var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .rmwrap{position:relative;border-radius:14px;overflow:hidden;cursor:crosshair;box-shadow:inset 0 0 0 1px var(--line)}
+  .rmwrap img{width:100%;display:block}
+  .rmwrap i{position:absolute;width:44px;height:16px;margin:-8px 0 0 -22px;border-radius:50%;background:rgba(184,156,107,.75);box-shadow:0 0 0 2px #fff,0 0 18px rgba(184,156,107,.9);pointer-events:none}
+  .rmwrap i::before{content:"";position:absolute;left:50%;bottom:8px;width:2px;height:60px;margin-left:-1px;background:linear-gradient(transparent,#fff)}
 </style>
 </head>
 <body>
@@ -467,6 +480,30 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <p class="tilenote">We rate it the way a designer would, then give you a plan, a shopping list and a picture of the finished tree.</p>
   </section>
 
+  <!-- Design: how to start -->
+  <section class="screen" id="s-start" data-title="Design my tree" hidden>
+    <h1>How would you like to start?</h1>
+    <p class="sub">No tree up yet? No problem. Start from your room, or just an idea.</p>
+    <button class="src" data-src="tree" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><b>My bare tree</b><small>It's up, with or without lights</small></button>
+    <button class="src" data-src="room" style="--img:var(--photo-velvet, url(/brand/velvet-midnight.jpg))"><b>The room it'll go in</b><small>Photograph the space, then tap where the tree will stand</small></button>
+    <button class="src" data-src="idea" style="--img:url(/brand/pattern-damask.jpg)"><b>Start from an idea</b><small>Describe the look, and add a photo of anything that inspires you</small></button>
+  </section>
+
+  <!-- Design: from an idea -->
+  <section class="screen" id="s-idea" data-title="Your idea" data-foot="ideaNext" hidden>
+    <h1>Describe your dream tree</h1>
+    <p class="sub">Colors, a mood, a theme, a memory. The more you tell us, the better.</p>
+    <textarea id="ideaText" class="ideatxt" rows="4" placeholder="e.g. A winter woodland tree with birds, pinecones and deep green velvet ribbon"></textarea>
+    <div class="card extrasCard">
+      <div class="extra">
+        <span class="thumb" id="ideaThumb">✦</span>
+        <div><b>Something that inspires you</b><small>Optional: a pillow, wallpaper, a favorite ornament, a tree you love.</small></div>
+        <label id="ideaLbl">Add photo<input type="file" id="ideaFile" accept="image/*" hidden></label>
+        <button id="ideaClear" hidden>Remove</button>
+      </div>
+    </div>
+  </section>
+
   <!-- Photo -->
   <section class="screen" id="s-photo" data-title="Your tree" data-foot="photoNext" hidden>
     <h1 id="photoH">Add a photo of your tree</h1>
@@ -478,6 +515,10 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
         <strong>Tap to take or choose a photo</strong>
       </div>
     </label>
+    <div class="roommark" id="roomMark" hidden>
+      <div class="rmhint">Tap where the tree will stand</div>
+      <div class="rmwrap" id="rmWrap"><img id="rmImg" alt="Your room"><i id="rmDot"></i></div>
+    </div>
     <ul class="tips" id="photoTips"></ul>
     <div class="err" id="photoErr"></div>
   </section>
@@ -735,12 +776,19 @@ const shopUrl = q => "https://www.amazon.com/s?k=" + encodeURIComponent(q) + (AM
 
 let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
 let factsSet = false, keyPhoto = null, inspoPhoto = null, rerunFromHub = false;
+let src = "tree", roomPhoto = null, roomMark = [.5, .8], ideaPhoto = null, baseKey = "";   // design starting point
 let mode = "check", photo = null, photoAspect = "3:4", result = null, after = null, stepIdx = 0, doneSteps = new Set();
 
 /* ---------------- navigation ---------------- */
 let stack = [];
 const FOOT = {
   photoNext: () => ({ label: "Next", disabled: !photo, act: () => show(mode === "design" ? "s-details" : "s-style") }),
+  ideaNext: () => ({ label: "Next", disabled: !($("#ideaText").value.trim() || ideaPhoto), act: () => {
+    // the idea becomes the theme (they can still change the style on the next screens)
+    const t = $("#ideaText").value.trim();
+    if (t) { const th = document.querySelector('input[name=style][value=themed]'); if (th) th.checked = true; $("#theme").value = t.slice(0, 200); syncStyle(); }
+    show("s-details");
+  } }),
   details: () => rerunFromHub
     ? ({ label: "Update my shopping list and steps", act: () => { factsSet = true; applyFacts(); } })
     : ({ label: "Next", act: () => { factsSet = true; show("s-style"); } }),
@@ -771,7 +819,7 @@ function setFoot() {
 }
 // The small gold line above each page title, like "STEP 2 OF 3" on the brand board
 function kicker(id) {
-  const flow = mode === "design" ? ["s-photo", "s-details", "s-style"] : ["s-photo", "s-style"];
+  const flow = mode === "design" ? ["s-start", src === "idea" ? "s-idea" : "s-photo", "s-details", "s-style"] : ["s-photo", "s-style"];
   if (id === "s-details" && rerunFromHub) return "Your tree · optional";
   if (flow.includes(id)) return `Step ${flow.indexOf(id) + 1} of ${flow.length}`;
   return { "s-fixes": "Your plan", "s-partner": "Your design partner", "s-score": "Your rating", "s-shop": "Your plan" }[id] || "";
@@ -812,20 +860,41 @@ $("#passForm").addEventListener("submit", e => {
 /* ---------------- home / photo / style ---------------- */
 const PHOTO_COPY = {
   design: { h: "Add a photo of your bare tree", sub: "Before you decorate: just the tree, or the tree with lights on.", tips: ["Stand back so the whole tree, including the top, is in the shot.", "Set it up where it will stay, so the room is in the picture too.", "If it's artificial, it's fine if it isn't fluffed yet."] },
+  room: { h: "Add a photo of the room", sub: "The spot where your tree will go. Then tap where it will stand.", tips: ["Stand back so the whole wall or corner is in the shot, floor to ceiling.", "Take it in the light you usually see the room in."] },
   check: { h: "Add a photo of your decorated tree", sub: "Finished, or partway there. Either works.", tips: ["Stand back so the whole tree, including the top, is in the shot.", "Turn the tree lights on. Daytime or evening both work."] }
 };
 document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   mode = b.dataset.mode; rerunFromHub = false; factsSet = false;
   clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d);
-  const c = PHOTO_COPY[mode];
-  $("#photoH").textContent = c.h; $("#photoSub").textContent = c.sub;
-  $("#photoTips").innerHTML = c.tips.map(t => `<li>${t}</li>`).join("");
+  src = "tree"; roomPhoto = null; ideaPhoto = null; baseKey = ""; photo = null; photoImg = null; $("#roomMark").hidden = true;
+  $("#dropInner").innerHTML = "<strong>Tap to take or choose a photo</strong>";
+  setPhotoCopy(mode);
   $("#stageQ").hidden = mode === "design";
   $("#inspoRow").hidden = mode !== "design";
   $("#detailsSub").textContent = "Optional, but it makes the plan and the preview more accurate.";
+  show(mode === "design" ? "s-start" : "s-photo");
+});
+function setPhotoCopy(key) {
+  const c = PHOTO_COPY[key];
+  $("#photoH").textContent = c.h; $("#photoSub").textContent = c.sub;
+  $("#photoTips").innerHTML = c.tips.map(t => `<li>${t}</li>`).join("");
+}
+// Design: pick a starting point
+document.querySelectorAll(".src").forEach(b => b.onclick = () => {
+  src = b.dataset.src; baseKey = ""; photo = null; photoImg = null; roomPhoto = null; $("#roomMark").hidden = true;
+  $("#dropInner").innerHTML = "<strong>Tap to take or choose a photo</strong>";
+  $("#inspoRow").hidden = src === "idea";   // the idea screen has its own inspiration photo
+  if (src === "idea") { show("s-idea"); return; }
+  setPhotoCopy(src === "room" ? "room" : "design");
   show("s-photo");
 });
+$("#ideaFile").addEventListener("change", () => pickExtra($("#ideaFile"), $("#ideaThumb"), $("#ideaLbl"), $("#ideaClear"), d => { ideaPhoto = d; baseKey = ""; setFoot(); }));
+$("#ideaClear").onclick = () => { clearExtra($("#ideaFile"), $("#ideaThumb"), $("#ideaLbl"), $("#ideaClear"), "✦", d => ideaPhoto = d); baseKey = ""; setFoot(); };
+$("#ideaText").addEventListener("input", () => { baseKey = ""; setFoot(); });
+// Room: tap where the tree will stand
+function drawRoomDot() { $("#rmDot").style.left = roomMark[0] * 100 + "%"; $("#rmDot").style.top = roomMark[1] * 100 + "%"; }
+$("#rmWrap").addEventListener("click", e => { const r = $("#rmImg").getBoundingClientRect(); roomMark = [Math.min(.98, Math.max(.02, (e.clientX - r.left) / r.width)), Math.min(.98, Math.max(.05, (e.clientY - r.top) / r.height))]; baseKey = ""; drawRoomDot(); });
 $("#detailsSkip").onclick = () => { if (rerunFromHub) { history.back(); return; } factsSet = false; show("s-style"); };
 // Height choices are bands; quantities use the middle of the band, and we show the band itself
 const HEIGHT_BANDS = { 4: "4 ft or less", 5.5: "5–6 ft", 7.5: "7–8 ft", 9.5: "9–10 ft", 11.5: "11–12 ft", 14: "13 ft+" };
@@ -883,7 +952,12 @@ $("#file").addEventListener("change", async e => {
   const f = e.target.files[0]; if (!f) return;
   $("#photoErr").textContent = "";
   try {
-    photo = await loadPhoto(f);
+    photo = await loadPhoto(f); baseKey = "";
+    if (mode === "design" && src === "room") {
+      roomPhoto = photo; roomMark = [.5, .8];
+      $("#dropInner").innerHTML = `<strong>Change photo</strong>`;
+      $("#rmImg").src = roomPhoto; $("#roomMark").hidden = false; drawRoomDot();
+    } else
     $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="muted" style="font-size:13px;margin-top:8px">Tap to change photo</div>`;
     paint(false);
   } catch { $("#photoErr").textContent = "Couldn't read that photo. Try a JPG or PNG."; }
@@ -974,11 +1048,37 @@ const DESIGN_STEPS = ["Reading your tree's shape and size", "Choosing ribbon and
 // The evaluation is two calls at once: the first impression + scores come back fast and are
 // shown right away; the plan (with the mockup and preview brief) follows, then the preview paints.
 let planState = "ready", planP = null, evalBody = null, lookResult = null;
+// Room or idea: first make a realistic photo of a bare, lit tree, then everything runs as usual on it.
+const aspectOf = srcUrl => new Promise(ok => { const im = new Image(); im.onload = () => { const r = im.width / im.height; ok(ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0]); }; im.onerror = () => ok("3:4"); im.src = srcUrl; });
+async function makeBase() {
+  const f = facts() || {}, key = [src, JSON.stringify(f), roomMark.join(","), (roomPhoto || "").length, $("#ideaText").value.trim(), (ideaPhoto || "").length].join("|");
+  if (baseKey === key && photo) return true;
+  const LB = startLoading(src === "room" ? "Placing your tree in the room" : "Imagining your tree", src === "room" ? ["Finding the spot", "Sizing the tree to your room", "Turning on the lights"] : ["Setting the scene", "Shaping the tree", "Turning on the lights"], 25);
+  try {
+    let body;
+    if (src === "room") {
+      const im = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = roomPhoto; });
+      const k = Math.min(1, 1024 / Math.max(im.width, im.height)), c = document.createElement("canvas"), g = c.getContext("2d");
+      c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); g.drawImage(im, 0, 0, c.width, c.height);
+      const x = roomMark[0] * c.width, y = roomMark[1] * c.height, rw = c.width * .09;
+      g.save(); g.translate(x, y); g.scale(1, .35); const gr = g.createRadialGradient(0, 0, 0, 0, 0, rw); gr.addColorStop(0, "rgba(212,175,95,.95)"); gr.addColorStop(1, "rgba(212,175,95,0)"); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, rw, 0, Math.PI * 2); g.fill(); g.restore();
+      body = { kind: "room", image: roomPhoto, marker: c.toDataURL("image/jpeg", .82), facts: f, aspect: photoAspect };
+    } else body = { kind: "idea", idea: $("#ideaText").value.trim(), inspo: ideaPhoto || undefined, facts: f };
+    const out = await api("/api/base", body);
+    photo = await thumb(out.image, 1536, .9); photoImg = null; photoAspect = await aspectOf(photo); baseKey = key;
+    LB.done(); return true;
+  } catch (e) {
+    LB.done();
+    if (e.status === 401) { try { sessionStorage.removeItem("ts_pw"); } catch {} show("s-pass", []); return false; }
+    $("#startErr").textContent = "We couldn't set up your tree: " + e.message; return false;
+  }
+}
 async function run() {
+  if (mode === "design" && src !== "tree") { if (!(await makeBase())) return; }
   if (!photo) return;
   $("#startErr").textContent = "";
   const L = startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree", mode === "design" ? DESIGN_STEPS : CHECK_STEPS, 12);
-  evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined, inspo: mode === "design" ? (inspoPhoto || undefined) : undefined };
+  evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined, inspo: mode === "design" ? (inspoPhoto || ideaPhoto || undefined) : undefined };
   const myPlan = api("/api/evaluate", { ...evalBody, part: "plan" });
   myPlan.catch(() => {});
   let look;
@@ -1221,7 +1321,9 @@ $("#again").onclick = async () => {
 $("#save").onclick = () => { const a = document.createElement("a"); a.href = after; a.download = "tree-style-preview.png"; a.click(); };
 $("#restart").onclick = () => { photo = null; guide = null; photoImg = null; factsSet = false;
   clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
-  clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d); $("#file").value = ""; $("#dropInner").innerHTML = "<strong>Tap to take or choose a photo</strong>"; show("s-photo", ["s-home"]); };
+  clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d); $("#file").value = ""; $("#dropInner").innerHTML = "<strong>Tap to take or choose a photo</strong>";
+  roomPhoto = null; baseKey = ""; $("#roomMark").hidden = true;
+  if (mode === "design") show("s-start", ["s-home"]); else show("s-photo", ["s-home"]); };
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => b.dataset.go === "s-plan" ? openPlan() : show(b.dataset.go));
 
 const buyRow = b => `<a class="buyrow" href="${shopUrl(b.q)}" target="_blank" rel="noopener sponsored"><b style="background:${b.color || "#ECE4D8"}"></b><span><strong>${esc(b.label)}</strong>${b.qty ? `<small>${esc(b.qty)}</small>` : ""}</span><em>Find it ›</em></a>`;
