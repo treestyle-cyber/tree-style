@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TreeStyle · The art of styling</title>
+<title>Tree Style · The art of styling</title>
 <meta name="description" content="Snap a photo of your Christmas tree. Get a designer's step-by-step plan and see the finished tree before you hang a single ornament.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="TreeStyle">
-<meta property="og:title" content="TreeStyle · The art of styling">
+<meta property="og:site_name" content="Tree Style">
+<meta property="og:title" content="Tree Style · The art of styling">
 <meta property="og:description" content="Snap a photo of your tree. Get a designer's plan and see the finished look.">
 <meta property="og:url" content="https://tree-style.vercel.app/">
 <meta property="og:image" content="https://tree-style.vercel.app/og.png">
@@ -120,7 +120,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="/"><img src="/brand/monogram.png" alt=""><span class="wm"><b>TreeStyle</b><small>The art of styling</small></span></a>
+    <a class="brand" href="/"><img class="logoh" src="/brand/logo-horizontal.png" alt="Tree Style · The art of styling"></a>
     <a class="join" href="#signup">Join the list</a>
   </div>
 </header>
@@ -218,7 +218,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 </section>
 
 <footer>
-  <div class="wrap"><span>© 2026 TreeStyle</span><span>The art of styling</span></div>
+  <div class="wrap"><span>© 2026 Tree Style</span><span>The art of styling</span></div>
 </footer>
 
 <script>
@@ -245,7 +245,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     const p = d.photos || {}; if (!p.before || !p.after) return;
     const box = document.getElementById("compare");
     box.querySelectorAll("svg").forEach(s => s.remove());
-    box.insertAdjacentHTML("afterbegin", `<img class="real" src="${p.before}" alt="A tree before styling"><img class="real after" src="${p.after}" alt="The same tree styled by TreeStyle">`);
+    box.insertAdjacentHTML("afterbegin", `<img class="real" src="${p.before}" alt="A tree before styling"><img class="real after" src="${p.after}" alt="The same tree styled by Tree Style">`);
     box.style.background = "var(--paper)";
   }).catch(() => {});
 

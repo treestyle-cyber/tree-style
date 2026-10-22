@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>TreeStyle · The art of styling</title>
+<title>Tree Style · The art of styling</title>
 <meta name="description" content="Snap your Christmas tree. Get a designer's rating, a step-by-step plan, and a preview of the finished tree.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="TreeStyle">
-<meta property="og:title" content="Try TreeStyle">
+<meta property="og:site_name" content="Tree Style">
+<meta property="og:title" content="Try Tree Style">
 <meta property="og:description" content="Snap your Christmas tree. Get a designer's rating, a step-by-step plan, and a preview of the finished tree.">
 <meta property="og:url" content="https://tree-style.vercel.app/try">
 <meta property="og:image" content="https://tree-style.vercel.app/og.png">
@@ -383,7 +383,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   .appbar{border-bottom-color:transparent !important;padding-top:max(8px,env(safe-area-inset-top))}
   .appbar .title{display:grid;place-items:center}
-  .barmono{height:34px;width:auto;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
+  .barmono{height:32px;width:auto;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
   .appbar button{color:var(--gold)}
   main{padding-top:0}
   .screen > h1,.ttl{text-align:center;font-weight:400;font-size:40px;line-height:1.08;letter-spacing:-.005em;margin:6px auto 0;max-width:15em}
@@ -396,7 +396,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     background:radial-gradient(120% 70% at 50% 18%,rgba(184,156,107,.16),transparent 60%),linear-gradient(180deg,rgba(20,28,44,.35),rgba(20,28,44,.9)),var(--photo-hero, var(--photo-velvet, url(/brand/velvet-midnight.jpg))) center/cover;
     border-bottom:1px solid rgba(184,156,107,.3)}
   .hero .lockup{margin:4px 0 0}
-  .hero .lockup img{height:120px;filter:drop-shadow(0 8px 18px rgba(0,0,0,.5))}
+  .hero .lockup img.logos{height:auto;width:min(250px,70%);filter:drop-shadow(0 6px 16px rgba(0,0,0,.55))}
   .hero .lockup b{color:var(--ivory)}
   .hero .lockup small{color:var(--gold)}
   .hero .lockup::after{display:none}
@@ -404,7 +404,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .hero .hl h1::after{display:none}
   .hero .rule{display:block;width:44px;height:1px;background:var(--gold);margin-bottom:16px}
   .ph-hero .hero{background:linear-gradient(180deg,rgba(20,28,44,.82) 0%,rgba(20,28,44,.25) 22%,rgba(20,28,44,0) 40%,rgba(20,28,44,.2) 60%,rgba(20,28,44,.94) 100%),var(--photo-hero) center/cover}
-  .ph-hero .hero .lockup img{display:none}
+  .ph-hero .hero .lockup img.logos{width:min(200px,58%)}
   .ph-hero .hero .lockup b{text-shadow:0 2px 12px rgba(0,0,0,.6)}
   .ph-hero .hero .hl h1{text-shadow:0 2px 18px rgba(0,0,0,.55)}
   .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
@@ -437,14 +437,14 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 
 <header class="appbar" id="appbar">
   <button id="navBack" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-  <div class="title"><img class="barmono" src="/brand/monogram.png" alt="TreeStyle"><span id="appTitle" class="sr"></span></div>
+  <div class="title"><img class="barmono" src="/brand/logo-icon.png" alt="Tree Style"><span id="appTitle" class="sr"></span></div>
   <button id="navHome" aria-label="Start over"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></svg></button>
 </header>
 
 <main>
   <!-- Password -->
   <section class="screen" id="s-pass" data-title="" hidden>
-    <div class="hero"><div class="lockup"><img src="/brand/monogram.png" alt=""><b>TreeStyle</b><small>The art of styling</small></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
+    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="Tree Style · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
     <div class="kicker">Early access</div>
     <h2 class="ttl">Welcome, tester</h2>
     <p class="sub">Enter the test password to begin.</p>
@@ -457,7 +457,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 
   <!-- Home -->
   <section class="screen" id="s-home" data-title="" hidden>
-    <div class="hero"><div class="lockup"><img src="/brand/monogram.png" alt=""><b>TreeStyle</b><small>The art of styling</small></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
+    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="Tree Style · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
     <div class="kicker">Begin</div>
     <h2 class="ttl">What would you like to do?</h2>
     <div class="tiles">
@@ -695,7 +695,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <h1>Shopping list</h1>
     <p class="sub">What to look for, in the order you'll use it.</p>
     <div class="card" id="shop"></div>
-    <p class="small muted" style="font-size:13px">Links open a store search. As an Amazon Associate, TreeStyle may earn from qualifying purchases.</p>
+    <p class="small muted" style="font-size:13px">Links open a store search. As an Amazon Associate, Tree Style may earn from qualifying purchases.</p>
   </section>
 </main>
 
@@ -784,7 +784,7 @@ function paint(isBack) {
     if (on) { s.classList.toggle("back", !!isBack); s.style.animation = "none"; s.offsetHeight; s.style.animation = ""; }
   });
   const el = document.getElementById(id);
-  $("#appTitle").textContent = el.dataset.title ?? "TreeStyle";
+  $("#appTitle").textContent = el.dataset.title ?? "Tree Style";
   const kick = kicker(id);
   let k = el.querySelector(":scope > .kicker.auto");
   if (kick) { if (!k) { k = document.createElement("div"); k.className = "kicker auto"; const h = el.querySelector(":scope > h1"); if (h) el.insertBefore(k, h); else el.prepend(k); } k.textContent = kick; }
