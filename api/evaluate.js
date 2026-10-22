@@ -102,7 +102,7 @@ ${part === "look" ? "" : PLAN_NOTES(mode, true) + "\n"}${part === "plan" ? "" : 
 }
 
 // Under test in /lab (variant "v2"): one design rule at a time, against the live app.
-const LAB_RULE = `REPEAT EVERY COLOR: a color that appears only once looks like a mistake. Any color you add, or pick up from what is already there, appears at least three times, spread across the tree in a loose triangle at different heights (e.g. upper left, middle right, lower left), and where possible in more than one element (an ornament, a ribbon accent, a berry stem or flower). In the mockup, place each color look at least three times. In the render brief, give each accent color its count and its spots (e.g. "6 amber 4-inch glass ornaments: upper left, upper right, middle left, center right, lower left, lower right") so the preview clearly shows the repetition. An accent stays an accent: about a fifth of the pieces or fewer, never taking over the tree.`;
+const LAB_RULE = ``;   // nothing under test right now (the repeat-color rule was tested and not adopted)
 const LOOK_PART = `YOUR PART: you only write the first impression and the scores. The plan, mockup and preview brief are being written separately at the same time, so don't plan anything here. Be quick and specific.`;
 const PLAN_PART = `
 
