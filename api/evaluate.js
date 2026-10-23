@@ -15,7 +15,7 @@ const styleLine = (style, theme) => style === "themed"
 
 const COORDS = `COORDINATES: x,y are fractions of the image width and height (0,0 top-left; 1,1 bottom-right). Locate the foliage of the tree carefully: apex = tip of the top branch; left/right = outermost lowest branch tips. Every moment and ornament must sit inside that triangle.`;
 
-const BRIEF_RULES = (mode) => `RENDER BRIEF: instructions for a photo-editing AI that will edit the ORIGINAL photo to show the tree after this plan. Write direct edit instructions in plain physical terms (what object, how many, size in inches, color, finish, and where on the tree: e.g. "upper left third, pushed deep toward the trunk"). Cover ornament clusters (e.g. "a tight cluster of 5 green 3-inch balls, middle right"), ribbon (width, color, texture, and whether it's short drops or loops tucked into branches; list each ribbon placement as its own separate spot, e.g. "6 separate clusters of 2-3 loops: upper center, upper right, middle left...", and say the ribbon disappears into the branches between spots; never describe it as running, cascading, wrapping or swagging across or down the tree), stems, flowers, ornaments by size, the top of the tree, and lights if added. ${mode === "design" ? "Describe the complete finished tree." : "Describe what to REMOVE or MOVE first (e.g. \"remove the gold plaid ribbon that runs diagonally across the middle of the tree\"), then what to ADD (including re-placing the same ribbon as loops or short drops). Everything not mentioned stays exactly as it is."} Match the mockup. 90-180 words. No scores, no reasons, no designer jargon.`;
+const BRIEF_RULES = (mode, variant) => `RENDER BRIEF: instructions for a photo-editing AI that will edit the ORIGINAL photo to show the tree after this plan. Write direct edit instructions in plain physical terms (what object, how many, size in inches, color, finish, and where on the tree: e.g. "upper left third, pushed deep toward the trunk"). Cover ornament clusters (e.g. "a tight cluster of 5 green 3-inch balls, middle right"), ribbon (width, color, texture, and whether it's short drops or loops tucked into branches; list each ribbon placement as its own separate spot, e.g. "6 separate clusters of 2-3 loops: upper center, upper right, middle left...", and say the ribbon disappears into the branches between spots; ${variant === "v2" && mode === "design" ? 'for cascades, describe each one as its own spot: wide ribbon spilling out of the branches and falling in a soft waterfall over 2-3 branches, about 12-18 inches, then tucking back in, e.g. "5 separate cascades: upper left, upper right, middle center..."; never one long run, wrap or swag down or across the tree' : "never describe it as running, cascading, wrapping or swagging across or down the tree"}), stems, flowers, ornaments by size, the top of the tree, and lights if added. ${mode === "design" ? "Describe the complete finished tree." : "Describe what to REMOVE or MOVE first (e.g. \"remove the gold plaid ribbon that runs diagonally across the middle of the tree\"), then what to ADD (including re-placing the same ribbon as loops or short drops). Everything not mentioned stays exactly as it is."} Match the mockup. 90-180 words. No scores, no reasons, no designer jargon.`;
 
 
 const PLAN_SHAPE = (mode, compact) => `"quick_fixes": [ {"title":"<plain, under 8 words>","how":"<one short sentence>","x":<0-1>,"y":<0-1>} ],
@@ -74,7 +74,7 @@ ${CATS.map(c => `- ${c[0]}: ${c[2]}`).join("\n")}
 
   return `You are an expert Christmas tree designer helping someone who loves Christmas but is not a designer.
 
-${GUIDE}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}
+${GUIDE}${variant === "v2" && LAB_RULE(mode) ? "\n\n" + LAB_RULE(mode) : ""}
 
 ${task}
 
@@ -83,7 +83,7 @@ ${factsLine(facts)}
 Style: ${styleLine(style, theme)}
 ${scoring}
 ${COORDS}
-${part === "look" ? LOOK_PART : BRIEF_RULES(mode)}${part === "plan" ? PLAN_PART : ""}
+${part === "look" ? LOOK_PART : BRIEF_RULES(mode, variant)}${part === "plan" ? PLAN_PART : ""}
 
 Reply with this JSON:
 {
@@ -102,9 +102,8 @@ ${part === "look" ? "" : PLAN_NOTES(mode, true) + "\n"}${part === "plan" ? "" : 
 }
 
 // Under test in /lab (variant "v2"): one design rule at a time, against the live app.
-const LAB_RULE = ``;   // nothing under test in the guide right now (the repeat-color rule was tested and not adopted)
-// Under test in /lab: how to design from an inspiration photo. A principle, not a checklist.
-const LAB_INSPO = n => `Image ${n} is their inspiration (art, a room, fabric, an object), alongside anything they wrote. Study it closely, the way a top designer would, and find the two to four elements that give it its character: its hero subject, its flowers or plants, its objects and patterns, its materials or cultural style. A simple image may have only one or two; a busy one has many, so choose the most telling, not all of them. Build the design around those elements, translated into real decor, with the colors following from them rather than leading. The test: anyone who sees the finished tree beside the picture can tell where it came from. Name those pieces specifically in the plan and the brief so the preview shows them, and follow the guide for placement, ribbon and balance.`;
+// Under test now: cascading ribbon on trees designed from scratch (the person isn't working around ribbon already on the tree).
+const LAB_RULE = mode => mode !== "design" ? "" : `RIBBON WHEN DESIGNING FROM SCRATCH: use the waterfall cascade technique (mockup.ribbon_technique "cascade"), whatever the tree's density. Wide wired ribbon spills out from deep in the branches and falls in a soft, full waterfall over 2-3 branches, 12-18 inches, then tucks back in; the next cascade starts lower and to one side, so the cascades step left and right down the tree and never line up. The narrower ribbon is laid over the widest in the same cascades; the accent ribbon peeks out on its own. This flowing ribbon is the backbone of the design, so make it generous.`;
 const LOOK_PART = `YOUR PART: you only write the first impression and the scores. The plan, mockup and preview brief are being written separately at the same time, so don't plan anything here. Be quick and specific.`;
 const PLAN_PART = `
 
@@ -229,8 +228,7 @@ export default async function handler(req, res) {
       const imgs = [img], notes = ["Image 1 is their tree" + (mode === "design" ? " before decorating (bare, or with just lights)." : ".")];
       const pc = parseDataUrl(pieces), ins = mode === "design" ? parseDataUrl(inspo) : null;
       if (pc) { imgs.push(pc); notes.push(`Image ${imgs.length} shows special pieces they own (ornaments, heirlooms or found objects): design around them, give them the best spots, and let them set the theme and colors if they fit the style.`); }
-      if (ins && variant === "v2") { imgs.push(ins); notes.push(LAB_INSPO(imgs.length)); }
-      else if (ins) { imgs.push(ins); notes.push(`Image ${imgs.length} is an inspiration photo (art, a room, fabric, an object). Design the tree the way a top designer would around it: read more than its colors. Notice what is actually in it (its hero subject, its flowers and plants by kind, its objects and patterns, its materials, its cultural or period style) and translate those into real decor. Echo its hero subject in a figural piece or two; carry its flowers in as matching floral stems in the same kinds and colors; find ornaments shaped like or patterned after its objects (glass flowers, figural or patterned pieces), not only round ornaments; let its pattern or style show in the ribbon choice. Keep it to a considered handful of these motifs woven through the whole tree, and follow the guide for placement, ribbon and balance. Name these pieces specifically in the plan and the brief so the preview shows them.`); }
+      if (ins) { imgs.push(ins); notes.push(`Image ${imgs.length} is an inspiration photo (art, a room, fabric, an object). Design the tree the way a top designer would around it: read more than its colors. Notice what is actually in it (its hero subject, its flowers and plants by kind, its objects and patterns, its materials, its cultural or period style) and translate those into real decor. Echo its hero subject in a figural piece or two; carry its flowers in as matching floral stems in the same kinds and colors; find ornaments shaped like or patterned after its objects (glass flowers, figural or patterned pieces), not only round ornaments; let its pattern or style show in the ribbon choice. Keep it to a considered handful of these motifs woven through the whole tree, and follow the guide for placement, ribbon and balance. Name these pieces specifically in the plan and the brief so the preview shows them.`); }
       ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" "), part, variant }), part === "look" ? 4000 : 16000, part === "look" ? LOOK_SCHEMA : part === "plan" ? PLAN_SCHEMA : EVAL_SCHEMA));
       // Weighted overall score, 0-100
       if (Array.isArray(result.categories) && result.categories.length) {
