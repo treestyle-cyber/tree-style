@@ -61,13 +61,19 @@
     <div class="intro">
       <div class="eyebrow">Lab</div>
       <h1>Current vs. proposed</h1>
-      <p class="eyebrow" style="margin:0 0 10px">Nothing under test right now (both columns are the live app)</p>
+      <p class="eyebrow" style="margin:0 0 10px">Under test: designing from an inspiration photo (find its 2-4 defining elements and build around them)</p>
       <p>Run the same trees through the app as it is today and the proposed change, side by side. Nothing here changes the live app. Your test photos stay in this browser for next time.</p>
     </div>
     <div class="panel">
       <div class="photos" id="photos"></div>
+      <div id="ideaBox" hidden>
+        <div class="photos"><div id="inspoSlot"></div>
+          <label style="flex:1;min-width:240px;display:grid;gap:6px;font-size:12px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase">What they want (optional)
+            <textarea id="ideaText" rows="4" style="font:15px var(--sans);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink)" placeholder="e.g. A tree inspired by this print"></textarea></label>
+        </div>
+      </div>
       <div class="opts">
-        <label>Mode<select id="mode"><option value="check">Check my tree</option><option value="design">Design my tree</option></select></label>
+        <label>Mode<select id="mode"><option value="check">Check my tree</option><option value="design">Design my tree</option><option value="idea">Start from an idea</option></select></label>
         <label>Style<select id="style"><option value="keep">Keep my style</option><option value="classic">Classic</option><option value="rustic">Rustic</option><option value="modern">Modern</option><option value="elegant">Elegant</option><option value="playful">Playful</option></select></label>
         <button class="btn" id="go">Run comparison →</button>
       </div>
@@ -78,6 +84,7 @@
 </div>
 <div id="big" hidden><img alt=""></div>
 <input type="file" id="file" accept="image/*" multiple hidden>
+<input type="file" id="inspoFile" accept="image/*" hidden>
 
 <script src="/try/engine.js"></script>
 <script src="/try/guide.js"></script>
@@ -118,21 +125,35 @@ function drawPhotos() {
   document.querySelectorAll(".ph button").forEach(b => b.onclick = () => { photos.splice(+b.dataset.i, 1); savePhotos(); drawPhotos(); });
   const add = $("#add"); if (add) add.onclick = () => $("#file").click();
 }
+let inspo = ""; try { inspo = localStorage.getItem("ts_lab_inspo") || ""; } catch {}
+try { $("#ideaText").value = localStorage.getItem("ts_lab_idea") || ""; } catch {}
+function drawInspo() {
+  $("#inspoSlot").innerHTML = inspo ? `<div class="ph"><img src="${inspo}" alt=""><button aria-label="Remove">×</button></div>` : `<div class="add">+ Add the inspiration photo</div>`;
+  const b = $("#inspoSlot button"); if (b) b.onclick = () => { inspo = ""; try { localStorage.removeItem("ts_lab_inspo"); } catch {} drawInspo(); };
+  const a = $("#inspoSlot .add"); if (a) a.onclick = () => $("#inspoFile").click();
+}
+$("#inspoFile").onchange = async e => { const f = e.target.files[0]; if (f) { inspo = await prep(f); try { localStorage.setItem("ts_lab_inspo", inspo); } catch {} drawInspo(); } e.target.value = ""; };
+function syncMode() {
+  const idea = $("#mode").value === "idea";
+  $("#photos").hidden = idea; $("#ideaBox").hidden = !idea; $("#style").closest("label").hidden = idea;
+  $("#note").textContent = idea ? "First a bare tree is made to suit the idea (about 20s), then both versions design it at once." : "Each tree takes about a minute (both versions run at once).";
+}
+$("#mode").onchange = syncMode;
 $("#file").onchange = async e => { for (const f of [...e.target.files].slice(0, 4 - photos.length)) photos.push(await prep(f)); savePhotos(); drawPhotos(); e.target.value = ""; };
 
-async function runOne(src, idx, mode, style) {
+async function runOne(src, idx, mode, style, extra = {}, label = "") {
   const row = document.createElement("div");
   row.className = "row";
   const col = (title, id) => `<div class="col"><h3>${title}</h3><div class="pic" id="${id}-pic"><div class="spin"></div></div><div class="meta" id="${id}-meta"></div><details><summary>Instructions sent to the image model</summary><pre id="${id}-brief">…</pre></details><details><summary>Placement map</summary><div id="${id}-map"></div></details></div>`;
-  row.innerHTML = `<div class="col"><h3>Tree ${idx + 1}</h3><div class="pic"><img src="${src}" alt=""></div></div>` + col("Current (live app)", `c${idx}`) + col("Proposed", `p${idx}`);
+  row.innerHTML = `<div class="col"><h3>${label || "Tree " + (idx + 1)}</h3><div class="pic"><img src="${extra.inspo || src}" alt=""></div>${extra.inspo ? `<div class="meta">The bare tree both versions designed:</div><div class="pic"><img src="${src}" alt=""></div>` : ""}</div>` + col("Current (live app)", `c${idx}`) + col("Proposed", `p${idx}`);
   $("#out").appendChild(row);
   const im = await loadImg(src), r = im.width / im.height, aspect = ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0];
   let look = {};
-  try { look = await api("/api/evaluate", { image: src, mode, style, part: "look" }); } catch (e) { if (e.status === 401) return gate(); }
+  try { look = await api("/api/evaluate", { image: src, mode, style, part: "look", ...extra }); } catch (e) { if (e.status === 401) return gate(); }
   const one = async (variant, id) => {
     const t0 = Date.now();
     try {
-      const plan = await api("/api/evaluate", { image: src, mode, style, part: "plan", variant });
+      const plan = await api("/api/evaluate", { image: src, mode, style, part: "plan", variant, ...extra });
       const result = Object.assign({}, look, plan);
       $(`#${id}-brief`).textContent = result.render_brief || "";
       const map = await mapFor(src, result, mode);
@@ -148,18 +169,35 @@ async function runOne(src, idx, mode, style) {
   await Promise.all([one(undefined, `c${idx}`), one("v2", `p${idx}`)]);
 }
 $("#go").onclick = async () => {
+  const mode = $("#mode").value, style = $("#style").value;
+  if (mode === "idea") return runIdea();
   if (!photos.length) { $("#note").textContent = "Add at least one tree photo first."; return; }
   $("#go").disabled = true; $("#out").innerHTML = "";
-  const mode = $("#mode").value, style = $("#style").value;
   for (let i = 0; i < photos.length; i++) await runOne(photos[i], i, mode, style);
   $("#go").disabled = false;
 };
+async function runIdea() {
+  const idea = $("#ideaText").value.trim();
+  if (!inspo) { $("#note").textContent = "Add the inspiration photo first."; return; }
+  try { localStorage.setItem("ts_lab_idea", idea); } catch {}
+  $("#go").disabled = true; $("#out").innerHTML = `<div class="panel" style="display:flex;gap:12px;align-items:center"><div class="spin"></div>Making a bare tree to design on…</div>`;
+  try {
+    const facts = { height: 7.5, kind: "artificial", density: "full" };
+    const base = await api("/api/base", { kind: "idea", idea, inspo, facts });
+    $("#out").innerHTML = "";
+    await runOne(base.image, 0, "design", "themed", { inspo, theme: idea || "inspired by their inspiration photo" }, "Inspiration");
+  } catch (e) {
+    if (e.status === 401) return gate();
+    $("#out").innerHTML = `<div class="panel err">${esc(e.message)}</div>`;
+  }
+  $("#go").disabled = false;
+}
 document.addEventListener("click", e => { if (e.target.matches(".col .pic img")) { $("#big img").src = e.target.src; $("#big").hidden = false; } });
 $("#big").onclick = () => $("#big").hidden = true;
 
 function gate() { $("#lab").hidden = true; $("#gate").hidden = false; }
 $("#gateForm").onsubmit = e => { e.preventDefault(); password = $("#pw").value.trim(); try { sessionStorage.setItem("ts_pw", password); } catch {} start(); };
-function start() { if (!password) return gate(); $("#gate").hidden = true; $("#lab").hidden = false; drawPhotos(); }
+function start() { if (!password) return gate(); $("#gate").hidden = true; $("#lab").hidden = false; drawPhotos(); drawInspo(); syncMode(); }
 start();
 </script>
 </body>
