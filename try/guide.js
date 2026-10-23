@@ -115,13 +115,14 @@
   };
 
   // ---------- What to buy, in real quantities ----------
-  // Ornaments come in boxes, so quantities are planned per box, with a tight palette.
-  const PACK = { xl: 3, l: 6, m: 12, s: 24 };
+  // Pack sizes vary by store, so nothing here mentions packs: quantities are estimated counts,
+  // shown as a range ("6 to 8"), with a tight palette so people never buy single odd ornaments.
+  const MIN_N = { xl: 2, l: 4, m: 6, s: 8 };
   const SIZE_WORD = { xl: "big", l: "large", m: "medium", s: "small" };
   const SHAPE_Q = { ball: "ball", drop: "teardrop", finial: "finial drop", geometric: "geometric", candy: "candy cane" };
   const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-  // Everything is bought in packs: round up to whole packs, never fewer than 2 of anything but a topper.
-  const packs = (want, size) => Math.max(1, Math.ceil(want / size));
+  // An estimate as a range: 6 -> "6 to 8", 10 -> "10 to 14", 20 -> "20 to 26"
+  const range = n => { const lo = Math.max(2, Math.round(n)), hi = lo + Math.max(2, Math.round(lo * .3)); return `${lo} to ${hi}`; };
   // Ribbon yardage per foot of tree (designer guideline: 7.5 ft ≈ 20-30 yd main + supporting, ~10 yd accent)
   const RIBBON_YD_PER_FT = { base: 2.0, overlay: 1.5, accent: 1.3 };
   const ROLL_YD = 10;
@@ -134,13 +135,13 @@
     const inch = ORN_IN(d), tot = ornamentTotals(d.tree.height_ft || 7, mode), out = [];
     sizes.forEach(sz => {
       const list = d.ornaments.filter(o => o.size === sz && o.cl == null);
-      // Clusters: one line per color, by the box
+      // Clusters: one line per color
       const cg = {};
       (d.clusters || []).filter(c => c.size === sz).forEach(c => { const k = colorName(c.color) + "|" + c.finish; (cg[k] = cg[k] || { c, n: 0, k: 0 }).n += c.count; cg[k].k++; });
       const emitClusters = () => Object.entries(cg).forEach(([key, { c, n, k, merged }]) => {
         if (merged) return;
-        const boxes = packs(n, PACK[sz]), ins = Math.round(inch[sz]), cn = colorName(c.color);
-        out.push({ color: c.color, label: `${ins}" ${c.finish} ${cn} ornaments, for ${plural(k, "cluster", "clusters")}`, qty: `About ${boxes * PACK[sz]} (you'll use ${n})`, q: `${ins} inch ${c.finish} ${cn} ball christmas ornaments` });
+        const ins = Math.round(inch[sz]), cn = colorName(c.color);
+        out.push({ color: c.color, label: `${ins}" ${c.finish} ${cn} ornaments, for ${plural(k, "cluster", "clusters")}`, qty: range(n), q: `${ins} inch ${c.finish} ${cn} ball christmas ornaments` });
       });
       if (!list.length) { emitClusters(); return; }
       // Merge look-alikes (same color name, finish, shape) so one-offs become real purchases
@@ -158,13 +159,12 @@
       });
       emitClusters();
       groups.forEach(x => {
-        const want = Math.max(PACK[sz], Math.round(tot[sz] * x.n / sum)) + x.extra;
-        const boxes = packs(want, PACK[sz]), n = boxes * PACK[sz];
+        const want = Math.max(MIN_N[sz], Math.round(tot[sz] * x.n / sum)) + x.extra;
         const ins = Math.round(inch[sz]), o = x.o, cn = colorName(o.color);
         out.push({
           color: o.color,
           label: `${ins}" ${o.finish !== "shiny" ? o.finish + " " : "shiny "}${cn} ${SHAPE_Q[o.shape] === "ball" ? "ornaments" : SHAPE_Q[o.shape] + (o.shape === "candy" ? "s" : " ornaments")}${x.clusters ? `, including ${plural(x.clusters, "cluster", "clusters")}` : ""}`,
-          qty: `About ${n}`,
+          qty: range(want),
           q: `${ins} inch ${o.finish} ${cn} ${SHAPE_Q[o.shape]} christmas ornaments${sz === "xl" || sz === "l" ? " shatterproof" : ""}`
         });
       });
@@ -184,8 +184,8 @@
     if (key === "primary_picks" && d.picks.primary.kind !== "none") {
       // Full designer look: about 2-3 per foot of tree (basic look is 1 per foot)
       const want = mode === "design" ? Math.max(d.moments.length * 2, Math.round(h * 2.5)) : Math.max(6, d.moments.length * 2);
-      const k = packs(want, 6), fin = d.picks.primary.finish !== "natural" ? d.picks.primary.finish + " " : "";
-      add(PICK_HEX[d.picks.primary.kind] || "#3B7550", `${fin}${d.picks.primary.kind} stems`, `About ${k * 6} stems`, `${fin}${d.picks.primary.kind} picks christmas tree 6 pack`);
+      const fin = d.picks.primary.finish !== "natural" ? d.picks.primary.finish + " " : "";
+      add(PICK_HEX[d.picks.primary.kind] || "#3B7550", `${fin}${d.picks.primary.kind} stems`, `${range(want)} stems`, `${fin}${d.picks.primary.kind} picks christmas tree`);
     }
     if (key === "ribbon") {
       const rbs = d.ribbons, loops = d.technique === "loops";
@@ -206,16 +206,16 @@
     }
     if (key === "florals" && d.picks.floral.kind !== "none") {
       const want = Math.max(6, d.moments.filter(m => m.floral).length + d.moments.filter(m => m.floral && m.size >= 3).length + (mode === "design" ? Math.round(h * .6) : 0));
-      const k = packs(want, 6), cn = colorName(d.picks.floral.color);
-      add(d.picks.floral.color, `${cn} ${d.picks.floral.kind} stems`, `About ${k * 6} stems`, `${cn} ${d.picks.floral.kind} picks christmas tree 6 pack`);
+      const cn = colorName(d.picks.floral.color);
+      add(d.picks.floral.color, `${cn} ${d.picks.floral.kind} stems`, `${range(want)} stems`, `${cn} ${d.picks.floral.kind} picks christmas tree`);
     }
     if (key === "statement") out.push(...ornamentGroups(d, mode, ["xl"]));
     if (key === "medium") out.push(...ornamentGroups(d, mode, ["l", "m"]));
     if (key === "small") out.push(...ornamentGroups(d, mode, ["s"]));
     if (key === "small_picks" && d.picks.small.kind !== "none") {
       const cn = colorName(d.picks.small.color), spray = d.picks.small.kind === "spray";
-      const want = Math.max(12, Math.round(h * 3 * (mode === "design" ? 1 : .6))), k = packs(want, 12);
-      add(d.picks.small.color, d.picks.small.label || `${cn} ${spray ? "sprays" : "berry stems"}`, `About ${k * 12}`, `${cn} ${spray ? "glitter spray picks" : "berry picks"} christmas tree 12 pack`);
+      const want = Math.max(12, Math.round(h * 3 * (mode === "design" ? 1 : .6)));
+      add(d.picks.small.color, d.picks.small.label || `${cn} ${spray ? "sprays" : "berry stems"}`, range(want), `${cn} ${spray ? "glitter spray picks" : "berry picks"} christmas tree`);
     }
     if (key === "crown" && d.topper.style !== "none") {
       const cn = colorName(d.topper.color), st = d.topper.style === "floral" ? "floral" : d.topper.style === "finial" ? "finial" : d.topper.style;

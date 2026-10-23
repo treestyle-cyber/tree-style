@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Tree Style · The art of styling</title>
+<title>TreeStyle · The art of styling</title>
 <meta name="description" content="Snap your Christmas tree. Get a designer's rating, a step-by-step plan, and a preview of the finished tree.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Tree Style">
-<meta property="og:title" content="Try Tree Style">
+<meta property="og:site_name" content="TreeStyle">
+<meta property="og:title" content="Try TreeStyle">
 <meta property="og:description" content="Snap your Christmas tree. Get a designer's rating, a step-by-step plan, and a preview of the finished tree.">
 <meta property="og:url" content="https://tree-style.vercel.app/try">
 <meta property="og:image" content="https://tree-style.vercel.app/og.png">
@@ -475,14 +475,14 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 
 <header class="appbar" id="appbar">
   <button id="navBack" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-  <div class="title"><img class="barmono" src="/brand/logo-icon.png" alt="Tree Style"><span id="appTitle" class="sr"></span></div>
+  <div class="title"><img class="barmono" src="/brand/logo-icon.png" alt="TreeStyle"><span id="appTitle" class="sr"></span></div>
   <button id="navHome" aria-label="Start over"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></svg></button>
 </header>
 
 <main>
   <!-- Password -->
   <section class="screen" id="s-pass" data-title="" hidden>
-    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="Tree Style · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
+    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="TreeStyle · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
     <div class="kicker">Early access</div>
     <h2 class="ttl">Welcome, tester</h2>
     <p class="sub">Enter the test password to begin.</p>
@@ -495,7 +495,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 
   <!-- Home -->
   <section class="screen" id="s-home" data-title="" hidden>
-    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="Tree Style · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
+    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="TreeStyle · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
     <div class="card resume" id="resume" hidden>
       <img id="resumeImg" alt="">
       <div>
@@ -777,7 +777,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <h1>Shopping list</h1>
     <p class="sub">What to look for, in the order you'll use it.</p>
     <div class="card" id="shop"></div>
-    <p class="small muted" style="font-size:13px">Links open a store search. As an Amazon Associate, Tree Style may earn from qualifying purchases.</p>
+    <p class="small muted" style="font-size:13px">Links open a store search. As an Amazon Associate, TreeStyle may earn from qualifying purchases.</p>
   </section>
 </main>
 
@@ -885,7 +885,7 @@ function paint(isBack) {
     if (on) { s.classList.toggle("back", !!isBack); s.style.animation = "none"; s.offsetHeight; s.style.animation = ""; }
   });
   const el = document.getElementById(id);
-  $("#appTitle").textContent = el.dataset.title ?? "Tree Style";
+  $("#appTitle").textContent = el.dataset.title ?? "TreeStyle";
   const kick = kicker(id);
   let k = el.querySelector(":scope > .kicker.auto");
   if (kick) { if (!k) { k = document.createElement("div"); k.className = "kicker auto"; const h = el.querySelector(":scope > h1"); if (h) el.insertBefore(k, h); else el.prepend(k); } k.textContent = kick; }
