@@ -572,12 +572,12 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <p class="sub">A starting point, not a box. Your tree, your way.</p>
     <div class="sgrid">
       <label class="scard"><input type="radio" name="style" value="keep" checked><span style="background-image:var(--photo-keep, url(/brand/walnut.jpg))"><b>Keep my style</b><small>Refine what you have</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="classic"><span style="background-image:var(--photo-classic, url(/brand/velvet-berry.jpg))"><b>Classic</b><small>Red, green, gold</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="rustic"><span style="background-image:var(--photo-rustic, url(/brand/pattern-plaid.jpg))"><b>Rustic</b><small>Plaid, wood, berries</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="modern"><span style="background-image:var(--photo-modern, url(/brand/marble.jpg))"><b>Modern</b><small>Clean and simple</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="elegant"><span style="background-image:var(--photo-elegant, url(/brand/velvet-midnight.jpg))"><b>Elegant</b><small>Velvet, sheen, gold</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="playful"><span style="background-image:var(--photo-playful, url(/brand/pattern-stripe.jpg))"><b>Playful</b><small>Bright and whimsical</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="themed"><span style="background-image:var(--photo-themed, url(/brand/pattern-damask.jpg))"><b>Themed</b><small>Your own idea</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="classic"><span style="background-image:var(--photo-classic, url(/brand/velvet-berry.jpg))"><b>Traditional</b><small>Nostalgic and warm</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="rustic"><span style="background-image:var(--photo-rustic, url(/brand/pattern-plaid.jpg))"><b>Rustic</b><small>Cozy and natural</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="modern"><span style="background-image:var(--photo-modern, url(/brand/marble.jpg))"><b>Modern</b><small>Calm and graphic</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="elegant"><span style="background-image:var(--photo-elegant, url(/brand/velvet-midnight.jpg))"><b>Elegant</b><small>Rich and luminous</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="playful"><span style="background-image:var(--photo-playful, url(/brand/pattern-stripe.jpg))"><b>Playful</b><small>Bold and joyful</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="themed"><span style="background-image:var(--photo-themed, url(/brand/pattern-damask.jpg))"><b>Themed</b><small>One story, your idea</small></span></label>
     </div>
     <input type="text" id="theme" placeholder="Your theme (e.g. vintage blue and silver)" hidden>
     <p class="styleNote" id="styleNote"></p>
@@ -980,12 +980,12 @@ $("#file").addEventListener("change", async e => {
 
 const STYLE_NOTES = {
   keep: "We'll figure out the style you already have and help you refine it.",
-  classic: "Red, green, gold and silver. Shiny glass ornaments in many sizes, solid ribbon, pine and berry stems, poinsettias.",
-  rustic: "Natural and textured: buffalo check, burlap, wood, pinecones. Mostly matte with a little shine.",
-  modern: "Less is more. Fewer, cleaner eye-catching spots, simple shapes, solid ribbon.",
-  elegant: "Sparkle and richness: velvet or sheer ribbon, pearls, gold or snowy stems, roses and magnolias.",
-  playful: "Fun and bright, with pieces that stick out further than usual. Candy and bold mixes.",
-  themed: "Built around a subject or a favorite object. Tell us the theme."
+  classic: "The tree everyone remembers, only better. Glass ornaments in every size, velvet or tartan ribbon, pine, berries and poinsettias.",
+  rustic: "Cabin, farmhouse or woods. Wood, felt, pinecones and mercury glass, with burlap, plaid or linen ribbon. Mostly matte.",
+  modern: "Restraint is the point. A few colors, sculptural shapes repeated with space around them, and little or no ribbon.",
+  elegant: "Like a hotel lobby or a designer showhouse. Detailed glass, velvet and sheer ribbon, magnolias and roses, lots of glow.",
+  playful: "Made to make people smile. Bright colors, candy and oversized novelty pieces, stripes and dots.",
+  themed: "One story, told by every piece: a collection, a heritage, a place or something you love. Tell us the theme."
 };
 const val = n => (document.querySelector(`input[name=${n}]:checked`) || {}).value;
 function syncStyle() { const s = val("style"); $("#styleNote").textContent = STYLE_NOTES[s]; $("#theme").hidden = s !== "themed"; }

@@ -11,7 +11,7 @@ const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
 
 const styleLine = (style, theme) => style === "themed"
   ? `Themed: ${theme || "they haven't named the theme yet; suggest one that suits what you see"}.`
-  : STYLES[style] || "Classic";
+  : STYLES[style] || "Traditional";
 
 const COORDS = `COORDINATES: x,y are fractions of the image width and height (0,0 top-left; 1,1 bottom-right). Locate the foliage of the tree carefully: apex = tip of the top branch; left/right = outermost lowest branch tips. Every moment and ornament must sit inside that triangle.`;
 
