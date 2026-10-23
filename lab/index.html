@@ -61,7 +61,7 @@
     <div class="intro">
       <div class="eyebrow">Lab</div>
       <h1>Current vs. proposed</h1>
-      <p class="eyebrow" style="margin:0 0 10px">Nothing under test right now (both columns are the live app)</p>
+      <p class="eyebrow" style="margin:0 0 10px">Comparing: the old style definitions vs. the new ones (live). Choose "Every style" to see them all.</p>
       <p>Run the same trees through the app as it is today and the proposed change, side by side. Nothing here changes the live app. Your test photos stay in this browser for next time.</p>
     </div>
     <div class="panel">
@@ -73,8 +73,8 @@
         </div>
       </div>
       <div class="opts">
-        <label>Mode<select id="mode"><option value="check">Check my tree</option><option value="design">Design my tree</option><option value="idea" selected>Start from an idea</option></select></label>
-        <label>Style<select id="style"><option value="keep">Keep my style</option><option value="classic">Traditional</option><option value="rustic">Rustic</option><option value="modern">Modern</option><option value="elegant">Elegant</option><option value="playful">Playful</option></select></label>
+        <label>Mode<select id="mode"><option value="check">Check my tree</option><option value="design" selected>Design my tree</option><option value="idea">Start from an idea</option></select></label>
+        <label>Style<select id="style"><option value="all" selected>Every style</option><option value="keep">Keep my style</option><option value="classic">Traditional</option><option value="rustic">Rustic</option><option value="modern">Modern</option><option value="elegant">Elegant</option><option value="playful">Playful</option></select></label>
         <label>Kind of tree<select id="fKind"><option value="">Not sure</option><option value="artificial">Artificial</option><option value="natural">Real</option></select></label>
         <label>How tall<select id="fHeight"><option value="">Not sure</option><option value="4">4 ft or less</option><option value="5.5">5–6 ft</option><option value="7.5">7–8 ft</option><option value="9.5">9–10 ft</option><option value="11.5">11–12 ft</option><option value="14">13 ft+</option></select></label>
         <label>Branches<select id="fDensity"><option value="">Not sure</option><option value="dense">Full and dense</option><option value="open">Open, with gaps</option></select></label>
@@ -145,16 +145,19 @@ function syncMode() {
   $("#fStageL").hidden = $("#mode").value !== "check";
   const idea = $("#mode").value === "idea";
   $("#photos").hidden = idea; $("#ideaBox").hidden = !idea; $("#style").closest("label").hidden = idea;
-  $("#note").textContent = idea ? "First a bare tree is made to suit the idea (about 20s), then both versions design it at once." : "Each tree takes about a minute (both versions run at once).";
+  $("#note").textContent = idea ? "First a bare tree is made to suit the idea (about 20s), then both versions design it at once." : ($("#style").value === "all" ? "Every style runs one after another: about a minute per style, six styles per tree." : "Each tree takes about a minute (both versions run at once).");
 }
-$("#mode").onchange = syncMode;
+$("#mode").onchange = syncMode; $("#style").onchange = syncMode;
 $("#file").onchange = async e => { for (const f of [...e.target.files].slice(0, 4 - photos.length)) photos.push(await prep(f)); savePhotos(); drawPhotos(); e.target.value = ""; };
 
+// What the two columns compare. Old vs new style definitions (Oct 23); the right column is always the live app.
+const COLS = [{ title: "Old style definitions", variant: "old" }, { title: "New definitions (live)", variant: undefined }];
+const ALL_STYLES = [["classic", "Traditional"], ["rustic", "Rustic"], ["modern", "Modern"], ["elegant", "Elegant"], ["playful", "Playful"], ["keep", "Keep my style"]];
 async function runOne(src, idx, mode, style, extra = {}, label = "") {
   const row = document.createElement("div");
   row.className = "row";
   const col = (title, id) => `<div class="col"><h3>${title}</h3><div class="pic" id="${id}-pic"><div class="spin"></div></div><div class="meta" id="${id}-meta"></div><details><summary>Instructions sent to the image model</summary><pre id="${id}-brief">…</pre></details><details><summary>Placement map</summary><div id="${id}-map"></div></details></div>`;
-  row.innerHTML = `<div class="col"><h3>${label || "Tree " + (idx + 1)}</h3><div class="pic"><img src="${extra.inspo || src}" alt=""></div>${extra.inspo ? `<div class="meta">The bare tree both versions designed:</div><div class="pic"><img src="${src}" alt=""></div>` : ""}</div>` + col("Current (live app)", `c${idx}`) + col("Proposed", `p${idx}`);
+  row.innerHTML = `<div class="col"><h3>${label || "Tree " + (idx + 1)}</h3><div class="pic"><img src="${extra.inspo || src}" alt=""></div>${extra.inspo ? `<div class="meta">The bare tree both versions designed:</div><div class="pic"><img src="${src}" alt=""></div>` : ""}</div>` + col(COLS[0].title, `c${idx}`) + col(COLS[1].title, `p${idx}`);
   $("#out").appendChild(row);
   const im = await loadImg(src), r = im.width / im.height, aspect = ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0];
   let look = {};
@@ -175,12 +178,18 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
       $(`#${id}-pic`).querySelector("button").onclick = () => { $(`#${id}-pic`).innerHTML = '<div class="spin"></div>'; one(variant, id); };
     }
   };
-  await Promise.all([one(undefined, `c${idx}`), one("v2", `p${idx}`)]);
+  await Promise.all([one(COLS[0].variant, `c${idx}`), one(COLS[1].variant, `p${idx}`)]);
 }
 $("#go").onclick = async () => {
   const mode = $("#mode").value, style = $("#style").value;
   if (mode === "idea") return runIdea();
   const f = facts(mode);
+  if (style === "all") {
+    $("#go").disabled = true; $("#out").innerHTML = "";
+    let k = 0;
+    for (let i = 0; i < photos.length; i++) for (const [st, name] of ALL_STYLES) await runOne(photos[i], k++, mode, st, f ? { facts: f } : {}, name + (photos.length > 1 ? ` · tree ${i + 1}` : ""));
+    $("#go").disabled = false; return;
+  }
   if (!photos.length) { $("#note").textContent = "Add at least one tree photo first."; return; }
   $("#go").disabled = true; $("#out").innerHTML = "";
   for (let i = 0; i < photos.length; i++) await runOne(photos[i], i, mode, style, f ? { facts: f } : {});

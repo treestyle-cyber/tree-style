@@ -3,7 +3,7 @@
 //      and a render_brief (for the realistic preview).
 // POST { image, revise: { current, request, history, style, theme, mode, tree }, extra?: dataURL }
 //   -> the design partner: a revised plan based on the homeowner's request.
-import { GUIDE, CATS, STYLES } from "../lib/guide.js";
+import { GUIDE, GUIDE_OLD_STYLES, CATS, STYLES } from "../lib/guide.js";
 import { checkPassword, parseDataUrl, extractJson } from "../lib/util.js";
 import { EVAL_SCHEMA, LOOK_SCHEMA, PLAN_SCHEMA, REVISE_SCHEMA, DETAILS_SCHEMA } from "../lib/schema.js";
 
@@ -74,13 +74,13 @@ ${CATS.map(c => `- ${c[0]}: ${c[2]}`).join("\n")}
 
   return `You are an expert Christmas tree designer helping someone who loves Christmas but is not a designer.
 
-${GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}
+${variant === "old" ? GUIDE_OLD_STYLES : GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}
 
 ${task}
 
 ${imgNotes}
 ${factsLine(facts)}
-Style: ${styleLine(style, theme)}
+Style: ${variant === "old" && style === "classic" ? "Classic" : styleLine(style, theme)}
 ${scoring}
 ${COORDS}
 ${part === "look" ? LOOK_PART : BRIEF_RULES(mode, variant)}${part === "plan" ? PLAN_PART : ""}
