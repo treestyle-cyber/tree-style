@@ -1,7 +1,7 @@
 // POST  { rating, pay, comment, name, mode, style, theme, overall, version, photo, after }  -> saves one feedback entry
 // GET   (x-test-password)                                                                    -> lists all entries, newest first
 import { put, list, get } from "@vercel/blob";
-import { blobToken, blobConnected } from "../lib/blob.js";
+import { blobToken, blobConnected, envPath } from "../lib/blob.js";
 const tok = () => (blobToken() ? { token: blobToken() } : {});
 import { checkPassword } from "../lib/util.js";
 
@@ -41,7 +41,7 @@ export default async function handler(req, res) {
     console.log("FEEDBACK", JSON.stringify({ ...entry, photo: !!entry.photo, after: !!entry.after }));
     if (!blobConnected()) return res.status(200).json({ ok: true, stored: false });
     try {
-      await save(`feedback/${entry.at.replace(/[:.]/g, "-")}.json`, JSON.stringify(entry));
+      await save(envPath(`feedback/${entry.at.replace(/[:.]/g, "-")}.json`), JSON.stringify(entry));
       return res.status(200).json({ ok: true, stored: true });
     } catch (e) {
       console.error("FEEDBACK STORE FAILED", e);
@@ -54,7 +54,7 @@ export default async function handler(req, res) {
     try {
       const blobs = [];
       let cursor;
-      do { const page = await list({ ...tok(), prefix: "feedback/", cursor, limit: 1000 }); blobs.push(...page.blobs); cursor = page.hasMore ? page.cursor : null; } while (cursor && blobs.length < 500);
+      do { const page = await list({ ...tok(), prefix: envPath("feedback/"), cursor, limit: 1000 }); blobs.push(...page.blobs); cursor = page.hasMore ? page.cursor : null; } while (cursor && blobs.length < 500);
       blobs.sort((a, b) => String(b.pathname).localeCompare(String(a.pathname)));
       const entries = (await Promise.all(blobs.slice(0, 200).map(b => readJson(b).catch(() => null)))).filter(Boolean);
       return res.status(200).json({ entries, setup: true });

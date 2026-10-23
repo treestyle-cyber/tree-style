@@ -4,7 +4,7 @@
 // POST /api/brand { action:"generate", prompt, aspect }   -> { image: dataURL }            (password)
 // POST /api/brand { action:"use", slot, image }           -> { url }                       (password)
 import { put, list, get } from "@vercel/blob";
-import { blobToken, blobVarNames, blobConnected } from "../lib/blob.js";
+import { blobToken, blobVarNames, blobConnected, IS_PREVIEW, envPath } from "../lib/blob.js";
 const tok = () => (blobToken() ? { token: blobToken() } : {});
 import { ribbonRef, RIBBON_REF_NOTE } from "../lib/ribbonref.js";
 import { checkPassword, parseDataUrl } from "../lib/util.js";
@@ -15,18 +15,23 @@ const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"
 
 async function latest() {
   if (!blobConnected()) return null;
-  const out = {};
-  let cursor;
-  do {
-    const page = await list({ ...tok(), prefix: "brand/photos/", cursor, limit: 1000 });
-    for (const b of page.blobs) {
-      const slot = b.pathname.split("/")[2];
-      if (!SLOTS.includes(slot)) continue;
-      if (!out[slot] || String(b.uploadedAt) > String(out[slot].uploadedAt)) out[slot] = b;
-    }
-    cursor = page.hasMore ? page.cursor : null;
-  } while (cursor);
-  return out;
+  const read = async prefix => {
+    const out = {};
+    let cursor;
+    do {
+      const page = await list({ ...tok(), prefix, cursor, limit: 1000 });
+      for (const b of page.blobs) {
+        const slot = b.pathname.slice(prefix.length).split("/")[0];
+        if (!SLOTS.includes(slot)) continue;
+        if (!out[slot] || String(b.uploadedAt) > String(out[slot].uploadedAt)) out[slot] = b;
+      }
+      cursor = page.hasMore ? page.cursor : null;
+    } while (cursor);
+    return out;
+  };
+  const live = await read("brand/photos/");
+  // A preview copy shows the live photos plus any it picked itself
+  return IS_PREVIEW ? { ...live, ...(await read(envPath("brand/photos/"))) } : live;
 }
 
 async function generate(prompt, aspect, base, map) {
@@ -104,7 +109,7 @@ export default async function handler(req, res) {
     const img = parseDataUrl(image);
     if (!img) return res.status(400).json({ error: "Missing image" });
     const buf = Buffer.from(img.data, "base64");
-    const path = `brand/photos/${slot}/${Date.now()}.${img.mediaType.includes("png") ? "png" : "jpg"}`;
+    const path = envPath(`brand/photos/${slot}/${Date.now()}.${img.mediaType.includes("png") ? "png" : "jpg"}`);
     try {
       let b;
       try { b = await put(path, buf, { ...tok(), access: "public", contentType: img.mediaType }); }
