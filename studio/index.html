@@ -107,7 +107,9 @@
 <script src="/try/guide.js"></script>
 <script>
 const $ = s => document.querySelector(s);
-const LOOK = "Editorial interior photograph for a luxury holiday brand. Moody, candlelit, warm low light with soft glowing Christmas lights; deep midnight navy, winter berry red, evergreen and antique gold tones; rich textures like velvet ribbon, brass and walnut. Shot on a full-frame camera, shallow depth of field, magazine quality, photorealistic. No people, no text, no logos, no watermarks. How the tree is styled: wide wired ribbon weaves in and out of the tree: it emerges from deep inside the branches in soft billows and short drops at about seven separate spots, staggered left and right at different heights, then disappears back into the greenery, so green branches show between each appearance. There are no bows anywhere on the tree. Ornaments are scattered and staggered at different heights and depths, the largest set back toward the trunk, with balanced visual weight left and right.";
+const LOOK = "Editorial interior photograph for a luxury holiday brand. Moody, candlelit, warm low light with soft glowing Christmas lights; deep midnight navy, winter berry red, evergreen and antique gold tones; rich textures like velvet ribbon, brass and walnut. Shot on a full-frame camera, shallow depth of field, magazine quality, photorealistic. No people, no text, no logos, no watermarks.";
+const STYLED = "How the tree is styled: wide wired ribbon weaves in and out of the tree: it emerges from deep inside the branches in soft billows and short drops at about seven separate spots, staggered left and right at different heights, then disappears back into the greenery, so green branches show between each appearance. There are no bows anywhere on the tree. Ornaments are scattered and staggered at different heights and depths, the largest set back toward the trunk, with balanced visual weight left and right.";
+const BARE = "The tree itself is completely bare and undecorated: only warm white lights glowing within fully shaped branches. Nothing hangs on it or is tucked into it: no ornaments, no ribbon, no bows, no flowers, no picks, no garland, no topper.";
 const TEXLOOK = "Ultra-detailed close-up photograph of real fabric filling the entire frame edge to edge, as a seamless background texture. Soft directional studio light, rich deep tones, crisp fibre detail and natural sheen, photorealistic, sharp focus throughout. No objects, no people, no text, no logos, no borders.";
 const SLOTS = [
   { id: "velvet", texture: true, name: "Midnight velvet", where: "Background of every app screen, the welcome, the loading screen and the website", aspect: "1:1",
@@ -118,8 +120,8 @@ const SLOTS = [
     prompt: "A breathtaking, professionally styled 8 ft Christmas tree in an elegant living room at dusk: velvet ribbon billowing out of the branches and tucking back in, oversized antique gold and winter berry ornaments, frosted greenery stems and magnolias, a full, lush crown with a refined topper of stems and ornaments. Candles and a fireplace glow softly nearby. The tree is the hero of the frame, slightly off-center." },
   { id: "check", name: "Check my tree", where: "Home screen card (wide photo above the words)", aspect: "3:2",
     prompt: "Wide, intimate view of a beautifully decorated Christmas tree: velvet ribbon billowing out of the branches and tucking back in, glass ornaments in winter berry and antique gold, glowing warm white lights deep in the branches, a small handwritten notecard resting on a branch." },
-  { id: "design", name: "Design my tree", where: "Home screen card (wide photo above the words)", aspect: "3:2",
-    prompt: "Wide view of a lush undecorated artificial Christmas tree with only warm white lights glowing, in a softly lit room. At its base, unopened boxes of glass ornaments, spools of wide velvet and sheer wired ribbon, and bundles of greenery stems wait to be styled. A sense of anticipation." },
+  { id: "design", bare: true, name: "Design my tree", where: "Home screen card (wide photo above the words)", aspect: "3:2",
+    prompt: "Wide view of a lush, bare Christmas tree with only warm white lights glowing, in a softly lit room. On the floor beside it, still waiting to be used: spools of wide velvet and sheer wired ribbon, closed gift-style supply boxes with their lids on, and bundles of greenery stems. A sense of anticipation." },
   { id: "keep", name: "Keep my style", where: "Style card", aspect: "4:5",
     prompt: "A warm, collected Christmas tree full of personal heirloom ornaments, vintage glass and handmade pieces, beautifully edited and pulled together with ribbon and greenery. Cozy, personal, refined." },
   { id: "classic", name: "Classic", where: "Style card", aspect: "4:5",
@@ -184,7 +186,7 @@ function build(current) {
       genB.disabled = true; useB.disabled = true; msg.className = "msg"; msg.textContent = "Creating… about 20 seconds";
       nf.innerHTML = '<span class="lbl">New</span><div class="spin"></div>';
       try {
-        const d = await call({ action: "generate", prompt: el.querySelector("textarea").value.trim() + "\n\n" + (s.texture ? TEXLOOK : LOOK), aspect: s.aspect });
+        const d = await call({ action: "generate", prompt: el.querySelector("textarea").value.trim() + "\n\n" + (s.texture ? TEXLOOK : LOOK + " " + (s.bare ? BARE : STYLED)), aspect: s.aspect });
         img = await shrink(d.image);
         nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; el.dispatchEvent(new Event("ts-img")); msg.textContent = s.texture ? "Like it? Tap Use this." : "Like it? Tap Use this. If the tree breaks a rule, open Fix the tree below."; useB.disabled = false; fixBs.forEach(b => b.disabled = false); genB.textContent = "Generate again";
       } catch (e) {
