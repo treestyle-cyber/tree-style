@@ -60,7 +60,7 @@ Keep the room, camera angle, framing, lighting and everything else exactly the s
     if (kind === "idea") {
       const ins = parseDataUrl(inspo);
       const text = `Photorealistic photograph of ${t.line} standing in a beautiful, lived-in home at dusk. ${BARE}
-The room's decor, colors and mood suit the homeowner's idea for their tree: "${String(idea || "a classic, elegant Christmas").slice(0, 600)}".${ins ? " The attached photo is their inspiration: let the room's colors and mood relate to the thing they love in it (their words say what that is; otherwise its clear subject), not to its background or surroundings, and keep the tree itself undecorated. Do NOT put the inspiration itself in the room (no copy of the chair, fabric, artwork or object from the photo): the room only shares its mood and a few of its colors, quietly, so the tree is the star." : ""}
+The room's decor, colors and mood suit the homeowner's idea for their tree: "${String(idea || "a classic, elegant Christmas").slice(0, 600)}".${ins ? " The attached photo is their inspiration: let the room's colors and mood relate to the thing they love in it (their words say what that is; otherwise its clear subject), not to its background or surroundings, and keep the tree itself undecorated." : ""}
 Shot straight on at eye level, as a homeowner would take it: the whole tree visible from the top to the floor with a little room around it, slightly off center, in sharp focus. Natural warm light, magazine quality, no people, no text.`;
       const parts = [{ text }];
       if (ins) parts.push({ inline_data: { mime_type: ins.mediaType, data: ins.data } });
