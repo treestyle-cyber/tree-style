@@ -8,7 +8,7 @@
   const arr = a => Array.isArray(a) ? a : [];
   const str = (s, n) => String(s == null ? "" : s).slice(0, n || 400);
   const oneOf = (v, list, d) => list.includes(String(v || "").toLowerCase()) ? String(v).toLowerCase() : d;
-  const RIBBON_TEX = ["satin","velvet","metallic","sheer","plaid","stripe","burlap"];
+  const RIBBON_TEX = ["satin","velvet","metallic","sheer","plaid","stripe","print","burlap"];
   const PLAN_EL = ["fluff","lights","primary_picks","ribbon","florals","statement","medium","small","small_picks","crown","base"];
   function planEl(p){
     const e = String(p.element || "").toLowerCase().replace(/[\s-]/g, "_");
@@ -280,6 +280,17 @@
     if (tex === "stripe"){
       g.save(); outline(); g.clip();
       strip(.18, .28, rb.accent || cream, .85); strip(.45, .55, rb.accent || cream, .85); strip(.72, .82, rb.accent || cream, .85);
+      g.restore();
+    }
+    if (tex === "print"){
+      // a printed motif: soft scattered marks in the accent color
+      g.save(); outline(); g.clip();
+      const marks = Math.min(400, Math.round(length/(Wr*.35)));
+      for (let i = 0; i < marks; i++){
+        const j = Math.floor(rand()*m), [x,y] = across(j, .15 + rand()*.7);
+        g.globalAlpha = .7; g.fillStyle = rand() < .6 ? (rb.accent || sshade(col, -.5)) : cream;
+        g.beginPath(); g.ellipse(x, y, Wr*(.08 + rand()*.06), Wr*(.03 + rand()*.03), rand()*Math.PI, 0, Math.PI*2); g.fill();
+      }
       g.restore();
     }
     if (tex === "burlap"){

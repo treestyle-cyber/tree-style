@@ -19,7 +19,8 @@
       ribbons: arr(m.ribbons).slice(0, 3).map((rb, i) => (rb = obj(rb), {
         role: oneOf(rb.role, ["base", "overlay", "accent"], ["base", "overlay", "accent"][i]),
         width_in: clamp(rb.width_in || [6, 4, 2][i], 1, 8), color: hex(rb.color, ["#8E2236", "#C9A048", "#1F4A33"][i]),
-        texture: oneOf(rb.texture, RIBBON_TEX, "satin"), accent: hex(rb.accent, null), owned: !!rb.owned
+        texture: oneOf(rb.texture, RIBBON_TEX, "satin"), accent: hex(rb.accent, null), owned: !!rb.owned,
+        print: rb.texture === "print" && typeof rb.color_name === "string" ? rb.color_name.trim().toLowerCase().slice(0, 40) : ""
       })),
       picks: {
         primary: { kind: oneOf(obj(picks.primary).kind, ["pine", "cedar", "eucalyptus", "magnolia", "none"], "pine"), finish: oneOf(obj(picks.primary).finish, ["natural", "frosted", "gold", "silver"], "natural") },
@@ -98,7 +99,7 @@
   const nameColors = m => {
     NAMES = {};
     const put = o => { if (o && o.color && typeof o.color_name === "string" && o.color_name.trim()) NAMES[String(hex(o.color, o.color)).toUpperCase()] = o.color_name.trim().toLowerCase().slice(0, 30); };
-    arr(m.ribbons).forEach(put); arr(m.ornaments).forEach(put); arr(m.clusters).forEach(put);
+    arr(m.ribbons).filter(r => obj(r).texture !== "print").forEach(put); arr(m.ornaments).forEach(put); arr(m.clusters).forEach(put);
     put(obj(obj(m.picks).floral)); put(obj(obj(m.picks).small)); put(obj(m.topper));
   };
   const colorName = h => {
@@ -193,13 +194,14 @@
         // e.g. 12 yd -> 2 bolts, 15 yd -> 2 bolts, 18 yd -> 2-3 bolts
         // Always enough bolts for the yards; a range only when fuller loops could need one more
         const lo = Math.max(1, Math.ceil(yards / ROLL_YD)), hi = Math.max(lo, Math.ceil(yards * 1.25 / ROLL_YD));
-        const rolls = lo === hi ? plural(lo, "bolt", "bolts") : `${lo}–${hi} bolts`, cn = colorName(rb.color);
+        const rolls = lo === hi ? plural(lo, "bolt", "bolts") : `${lo}–${hi} bolts`, cn = rb.print || colorName(rb.color);
         const role = rb.role === "accent" ? " (thin accent)" : rb.role === "overlay" ? " (laid on top)" : "";
         // Ribbon they already own stays on the list as a top-up: they may not have enough.
         const qty = rb.owned
           ? `About ${yards} yards needed. You have some; add ${rolls} (${ROLL_YD} yd each) if you're short`
           : `About ${yards} yards · ${rolls} (${ROLL_YD} yd each)`;
-        add(rb.color, `${rb.width_in}" ${cn} ${rb.texture} wired ribbon${role}${rb.owned ? " · re-use yours" : ""}`, qty, `${rb.width_in} inch wired ${rb.texture} ribbon ${cn} ${ROLL_YD} yards`);
+        const tx = rb.texture === "print" && /print|chinoiserie|floral|toile|leopard|tiger|damask/i.test(cn) ? "" : rb.texture + " ";
+        add(rb.color, `${rb.width_in}" ${cn} ${tx}wired ribbon${role}${rb.owned ? " · re-use yours" : ""}`, qty, `${rb.width_in} inch wired ${tx}ribbon ${cn} ${ROLL_YD} yards`);
       });
     }
     if (key === "florals" && d.picks.floral.kind !== "none") {
@@ -538,7 +540,7 @@
           out.push({ color: gp.color, text: `${gp.n} × ${Math.round(sizes[gp.size])}" ${gp.finish !== "shiny" ? gp.finish + " " : ""}${colorName(gp.color)} ${shape}${gp.shape === "candy" ? "" : "ornaments"}`.trim() });
         });
       }
-      if (key === "ribbon") [S.rb.base, S.rb.overlay, S.rb.accent].filter(Boolean).forEach(rb => out.push({ color: rb.color, text: `${rb.width_in}" ${colorName(rb.color)} ${rb.texture}${rb.role === "accent" ? " (accent)" : ""}` }));
+      if (key === "ribbon") [S.rb.base, S.rb.overlay, S.rb.accent].filter(Boolean).forEach(rb => out.push({ color: rb.color, text: `${rb.width_in}" ${rb.print || colorName(rb.color)} ${rb.print ? "" : rb.texture}${rb.role === "accent" ? " (accent)" : ""}` }));
       if (key === "lights") { const [lo, hi] = lightCount(); out.push({ color: data.lights.kind === "multicolor" ? "conic-gradient(#FF4A3D,#FFB21F,#3FB653,#3C78FF,#E447C8,#FF4A3D)" : data.lights.color, text: `${lo}–${hi} ${data.lights.kind === "multicolor" ? "multicolor" : data.lights.kind === "solid" ? colorName(data.lights.color) : "warm white"} lights` }); }
       if (key === "primary_picks") out.push({ color: pickColor(data), text: `${S.all.length} ${data.picks.primary.finish !== "natural" ? data.picks.primary.finish + " " : ""}${data.picks.primary.kind} stems` });
       if (key === "florals" && data.picks.floral.kind !== "none") out.push({ color: data.picks.floral.color, text: `${S.all.filter(m => m.floral).length + S.all.filter(m => m.floral && m.size >= 3).length} ${colorName(data.picks.floral.color)} ${data.picks.floral.kind}s` });
