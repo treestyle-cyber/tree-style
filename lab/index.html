@@ -75,6 +75,10 @@
       <div class="opts">
         <label>Mode<select id="mode"><option value="check">Check my tree</option><option value="design">Design my tree</option><option value="idea" selected>Start from an idea</option></select></label>
         <label>Style<select id="style"><option value="keep">Keep my style</option><option value="classic">Classic</option><option value="rustic">Rustic</option><option value="modern">Modern</option><option value="elegant">Elegant</option><option value="playful">Playful</option></select></label>
+        <label>Kind of tree<select id="fKind"><option value="">Not sure</option><option value="artificial">Artificial</option><option value="natural">Real</option></select></label>
+        <label>How tall<select id="fHeight"><option value="">Not sure</option><option value="4">4 ft or less</option><option value="5.5">5–6 ft</option><option value="7.5">7–8 ft</option><option value="9.5">9–10 ft</option><option value="11.5">11–12 ft</option><option value="14">13 ft+</option></select></label>
+        <label>Branches<select id="fDensity"><option value="">Not sure</option><option value="dense">Full and dense</option><option value="open">Open, with gaps</option></select></label>
+        <label id="fStageL">Decorating<select id="fStage"><option value="">Let it decide</option><option value="partial">Partway there</option><option value="finished">Finished</option></select></label>
         <button class="btn" id="go">Run comparison →</button>
       </div>
       <p class="meta" id="note" style="margin:12px 0 0">Each tree takes about a minute (both versions run at once).</p>
@@ -133,7 +137,12 @@ function drawInspo() {
   const a = $("#inspoSlot .add"); if (a) a.onclick = () => $("#inspoFile").click();
 }
 $("#inspoFile").onchange = async e => { const f = e.target.files[0]; if (f) { inspo = await prep(f); try { localStorage.setItem("ts_lab_inspo", inspo); } catch {} drawInspo(); } e.target.value = ""; };
+function facts(mode) {
+  const f = { kind: $("#fKind").value, height: Number($("#fHeight").value) || 0, density: $("#fDensity").value, stage: mode === "check" ? $("#fStage").value : "" };
+  return (f.kind || f.height || f.density || f.stage) ? f : undefined;
+}
 function syncMode() {
+  $("#fStageL").hidden = $("#mode").value !== "check";
   const idea = $("#mode").value === "idea";
   $("#photos").hidden = idea; $("#ideaBox").hidden = !idea; $("#style").closest("label").hidden = idea;
   $("#note").textContent = idea ? "First a bare tree is made to suit the idea (about 20s), then both versions design it at once." : "Each tree takes about a minute (both versions run at once).";
@@ -171,9 +180,10 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
 $("#go").onclick = async () => {
   const mode = $("#mode").value, style = $("#style").value;
   if (mode === "idea") return runIdea();
+  const f = facts(mode);
   if (!photos.length) { $("#note").textContent = "Add at least one tree photo first."; return; }
   $("#go").disabled = true; $("#out").innerHTML = "";
-  for (let i = 0; i < photos.length; i++) await runOne(photos[i], i, mode, style);
+  for (let i = 0; i < photos.length; i++) await runOne(photos[i], i, mode, style, f ? { facts: f } : {});
   $("#go").disabled = false;
 };
 async function runIdea() {
@@ -182,10 +192,10 @@ async function runIdea() {
   try { localStorage.setItem("ts_lab_idea", idea); } catch {}
   $("#go").disabled = true; $("#out").innerHTML = `<div class="panel" style="display:flex;gap:12px;align-items:center"><div class="spin"></div>Making a bare tree to design on…</div>`;
   try {
-    const facts = { height: 7.5, kind: "artificial", density: "full" };
-    const base = await api("/api/base", { kind: "idea", idea, inspo, facts });
+    const f = facts("design");
+    const base = await api("/api/base", { kind: "idea", idea, inspo, facts: f || {} });
     $("#out").innerHTML = "";
-    await runOne(base.image, 0, "design", "themed", { inspo, theme: idea || "inspired by their inspiration photo" }, "Inspiration");
+    await runOne(base.image, 0, "design", "themed", { inspo, theme: idea || "inspired by their inspiration photo", ...(f ? { facts: f } : {}) }, "Inspiration");
   } catch (e) {
     if (e.status === 401) return gate();
     $("#out").innerHTML = `<div class="panel err">${esc(e.message)}</div>`;
