@@ -11,7 +11,7 @@ const MODELS = [
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
 
 function editPrompt(brief, revision) {
-  if (revision) return `This photo shows a decorated Christmas tree. Make ONLY the change described below and keep everything else exactly as it is: same room, camera angle, framing and lighting, and every ornament, ribbon, flower and stem not mentioned stays exactly where it is. Make the change photorealistic, at true real-world scale, tucked into the branches, and clearly visible. The tree itself never changes: its height, outline, top tip and every branch stay exactly as they are. Removing a decoration only takes that decoration off and shows the branches that were behind it; a new topper sits on the tree's existing tip, with the upper branches still full around it.
+  if (revision) return `This photo shows a decorated Christmas tree. Make ONLY the change described below and keep everything else exactly as it is: same room, camera angle, framing and lighting, and every ornament, ribbon, flower and stem not mentioned stays exactly where it is. Make the change photorealistic, at true real-world scale, tucked into the branches, and clearly visible. The tree itself never changes: its height, outline, top tip and every branch stay exactly as they are. Removing a decoration only takes that decoration off and shows the branches that were behind it; a new topper sits on the tree's existing tip, with the upper branches still full around it. If a topper doesn't fit between the tree's tip and the top of the photo, let it run off the top edge of the frame; never shorten, cut, flatten or shrink the tree to make room for it.
 
 Change to make:
 ${brief}
@@ -21,7 +21,7 @@ RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or 
 The result must look like an ordinary real photograph, with no circles, rings, outlines or other markings drawn on it.`;
   return `Edit this photo of a Christmas tree to show it after a professional holiday decorator finished it.
 
-The first image is the photo to edit. Keep exactly the same room, camera angle, framing, lighting, tree shape and tree size. Keep everything already on the tree unless the instructions say otherwise. Make every addition photorealistic, at true real-world scale, lit by the room's light, and physically tucked into the branches (not floating or pasted on).
+The first image is the photo to edit. Keep exactly the same room, camera angle, framing, lighting, tree shape and tree size: the tree keeps its exact height, outline, top tip and every branch. If a topper doesn't fit between the tree's tip and the top of the photo, let it run off the top edge of the frame; never shorten, cut, flatten or shrink the tree to make room for it. Keep everything already on the tree unless the instructions say otherwise. Make every addition photorealistic, at true real-world scale, lit by the room's light, and physically tucked into the branches (not floating or pasted on).
 
 Changes to make:
 ${brief}
