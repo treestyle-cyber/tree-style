@@ -10,10 +10,10 @@ const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"
 function treeWords(f = {}) {
   const h = Number(f.height) || 7.5;
   const kind = f.kind === "natural" ? "real (fresh-cut)" : "artificial";
-  const dens = f.density === "open" ? "an open tree with natural gaps between its tiers of branches" : "a full, lush tree";
+  const dens = f.density === "open" ? "an open tree like a noble fir, with natural gaps between its tiers of branches that come from how the tree grows" : "a full, lush tree";
   return { h, line: `a ${Math.round(h * 2) / 2} ft ${kind} Christmas tree, ${dens}` };
 }
-const BARE = "It is completely undecorated and ready to be styled: only warm white string lights glowing softly within the branches, a simple tree stand at the base, and NO ornaments, ribbon, garland, flowers, picks, topper or tree skirt. Well shaped with natural branch tips.";
+const BARE = "It is completely undecorated and ready to be styled: only warm white string lights glowing softly within the branches, a simple tree stand at the base, and NO ornaments, ribbon, garland, flowers, picks, topper or tree skirt. Fully shaped, the way a decorator sets up a tree: every branch pulled out of its folded shipping position and every tip spread and fanned out, so it looks full and natural with no flat, folded or bunched branches.";
 
 async function gemini(parts, aspect) {
   let lastErr = "";
