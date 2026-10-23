@@ -11,7 +11,7 @@ const MODELS = [
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
 
 function editPrompt(brief, revision) {
-  if (revision) return `This photo shows a decorated Christmas tree. Make ONLY the change described below and keep everything else exactly as it is: same room, camera angle, framing and lighting, and every ornament, ribbon, flower and stem not mentioned stays exactly where it is. Make the change photorealistic, at true real-world scale, tucked into the branches, and clearly visible.
+  if (revision) return `This photo shows a decorated Christmas tree. Make ONLY the change described below and keep everything else exactly as it is: same room, camera angle, framing and lighting, and every ornament, ribbon, flower and stem not mentioned stays exactly where it is. Make the change photorealistic, at true real-world scale, tucked into the branches, and clearly visible. The tree itself never changes: its height, outline, top tip and every branch stay exactly as they are. Removing a decoration only takes that decoration off and shows the branches that were behind it; a new topper sits on the tree's existing tip, with the upper branches still full around it.
 
 Change to make:
 ${brief}
