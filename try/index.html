@@ -407,12 +407,18 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .ph-hero .hero .lockup img.logos{width:min(200px,58%)}
   .ph-hero .hero .lockup b{text-shadow:0 2px 12px rgba(0,0,0,.6)}
   .ph-hero .hero .hl h1{text-shadow:0 2px 18px rgba(0,0,0,.55)}
-  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
-  .choice.tile{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;text-align:center;gap:4px;aspect-ratio:3/4;margin:0;padding:18px 12px;border:0;border-radius:16px;
-    background:linear-gradient(180deg,rgba(20,28,44,.05) 30%,rgba(20,28,44,.88)),var(--img) center/cover;box-shadow:0 18px 30px -18px rgba(0,0,0,.7),inset 0 0 0 1px rgba(184,156,107,.28);transition:transform .18s, box-shadow .18s}
+  /* Home choices: the photo on top, the words on a solid panel below so they're large and easy to read */
+  .tiles{display:grid;grid-template-columns:1fr;gap:16px;margin-top:22px}
+  .choice.tile{display:grid;grid-template-rows:auto auto;margin:0;padding:0;border:0;border-radius:18px;overflow:hidden;text-align:left;background:var(--paper);
+    box-shadow:0 18px 30px -18px rgba(0,0,0,.7),inset 0 0 0 1px rgba(184,156,107,.28);transition:transform .18s, box-shadow .18s}
   .choice.tile:hover{transform:translateY(-2px);box-shadow:0 22px 36px -18px rgba(0,0,0,.8),inset 0 0 0 1px var(--gold)}
-  .choice.tile b{font:400 25px/1.05 var(--serif);color:var(--ivory)}
-  .choice.tile small{font-size:12px;color:#D9CCC0;letter-spacing:.02em}
+  .choice.tile .tpic{aspect-ratio:3/2;background:var(--img) center/cover}
+  .choice.tile .tlbl{display:flex;align-items:center;gap:14px;padding:16px 20px 18px}
+  .choice.tile .tlbl span{flex:1;display:grid;gap:4px}
+  .choice.tile b{font:500 32px/1.05 var(--serif);color:var(--ivory)}
+  .choice.tile small{font-size:16px;line-height:1.35;color:#D9CCC0}
+  .choice.tile i{font-style:normal;font-size:22px;color:var(--gold)}
+  @media (min-width:700px){ .tiles{grid-template-columns:1fr 1fr} }
   .tilenote{text-align:center;color:var(--muted);font-size:14px;max-width:26em;margin:20px auto 0}
   #s-pass form{max-width:420px;margin:0 auto}
   /* style cards: taller, label centered like the board */
@@ -474,8 +480,8 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <div class="kicker">Begin</div>
     <h2 class="ttl">What would you like to do?</h2>
     <div class="tiles">
-      <button class="choice tile" data-mode="check" style="--img:var(--photo-check, url(/brand/velvet-berry.jpg))"><b>Check my tree</b><small>Decorated, or partway there</small></button>
-      <button class="choice tile" data-mode="design" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><b>Design my tree</b><small>Starting fresh</small></button>
+      <button class="choice tile" data-mode="check" style="--img:var(--photo-check, url(/brand/velvet-berry.jpg))"><div class="tpic"></div><div class="tlbl"><span><b>Check my tree</b><small>Decorated, or partway there</small></span><i>→</i></div></button>
+      <button class="choice tile" data-mode="design" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><div class="tpic"></div><div class="tlbl"><span><b>Design my tree</b><small>Starting fresh, even before your tree is up</small></span><i>→</i></div></button>
     </div>
     <p class="tilenote">We rate it the way a designer would, then give you a plan, a shopping list and a picture of the finished tree.</p>
   </section>
