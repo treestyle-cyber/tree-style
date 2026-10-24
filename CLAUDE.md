@@ -65,3 +65,4 @@ Read this first in every session. It holds what the team has decided and why, so
 - 2026-10-23: Style definitions expanded and blended; "Classic" renamed "Traditional"; Modern may use one narrow ribbon.
 - 2026-10-23: Scoring: lights weight 15 → 5; base removed from the score (still suggested in the plan); deliberate asymmetry isn't a flaw; hidden deep ornaments get the benefit of the doubt. No black ornaments unless asked.
 - 2026-10-23: `design` branch and preview-only Studio photos and feedback set up for app design work.
+- 2026-10-24: Keep my style reads the style from the tree's strongest signal piece (elf legs → Playful), not a default of Traditional.
