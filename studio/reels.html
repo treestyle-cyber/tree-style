@@ -114,6 +114,8 @@
   </div>
 </div>
 
+<script src="/try/engine.js"></script>
+<script src="/try/guide.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -163,13 +165,36 @@ function showPlan(p) {
   document.querySelectorAll(".shot").forEach(wire);
 }
 function frameBox(k, title, hint) {
+  const app = k === "end";
   return `<div class="fr" data-k="${k}"><b style="font-size:13px">${title}</b><div class="pic">No photo yet</div>
-    <textarea class="desc" style="min-height:60px" placeholder="Describe the photo">${esc(hint || "")}</textarea>
-    <div class="acts">
-      <button class="mini gen">${k === "end" ? "Make from start photo" : "Make this photo"}</button>
-      <label class="mini" style="cursor:pointer">Upload<input type="file" accept="image/*" hidden></label>
-      ${brandPhotos[k === "end" ? "after" : "before"] ? `<button class="mini wl">Use waitlist ${k === "end" ? "after" : "before"}</button>` : ""}
-    </div></div>`;
+    ${app ? `<div class="hint">Made by the real app from the start photo: Claude plans the tree with your design rules, then the app paints its preview, exactly as a customer would get it.</div>
+      <div class="acts"><select class="amode" style="width:auto;padding:6px 10px;font-size:12.5px"><option value="check">Check my tree</option><option value="design">Design my tree</option></select>
+      <select class="astyle" style="width:auto;padding:6px 10px;font-size:12.5px"><option value="classic">Traditional</option><option value="keep">Keep my style</option><option value="rustic">Rustic</option><option value="modern">Modern</option><option value="elegant">Elegant</option><option value="playful">Playful</option></select></div>
+      <div class="acts"><button class="mini appgen">Make with the app</button><label class="mini" style="cursor:pointer">Upload<input type="file" accept="image/*" hidden></label>
+      ${brandPhotos.after ? `<button class="mini wl">Use waitlist after</button>` : ""}</div>
+      <details><summary class="hint" style="cursor:pointer">Or a quick edit from a description</summary>
+      <textarea class="desc" style="min-height:60px;margin-top:6px" placeholder="Describe the finished tree">${esc(hint || "")}</textarea>
+      <div class="acts" style="margin-top:6px"><button class="mini gen">Quick edit</button></div></details>`
+    : `<textarea class="desc" style="min-height:60px" placeholder="Describe the photo">${esc(hint || "")}</textarea>
+      <div class="acts"><button class="mini gen">Make this photo</button><label class="mini" style="cursor:pointer">Upload<input type="file" accept="image/*" hidden></label>
+      ${brandPhotos.before ? `<button class="mini wl">Use waitlist before</button>` : ""}</div>`}
+    </div>`;
+}
+// The app's own pipeline: plan the tree (look + plan in parallel), draw the placement map, paint the preview.
+const ASPECTS = [["1:1", 1], ["2:3", 2 / 3], ["3:2", 1.5], ["3:4", .75], ["4:3", 4 / 3], ["4:5", .8], ["5:4", 1.25], ["9:16", 9 / 16], ["16:9", 16 / 9]];
+const loadImg = src => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = src; });
+async function appAfter(before, mode, style) {
+  const [look, plan] = await Promise.all([api("/api/evaluate", { image: before, mode, style, part: "look" }), api("/api/evaluate", { image: before, mode, style, part: "plan" })]);
+  const result = Object.assign({}, look, plan), im = await loadImg(before), r = im.width / im.height;
+  const aspect = ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0];
+  let map;
+  try {
+    const cv = document.createElement("canvas"), g = TreeGuide.create(im, cv, result, mode); g.drawMap();
+    const k = Math.min(1, 1024 / Math.max(cv.width, cv.height)), c2 = document.createElement("canvas");
+    c2.width = Math.round(cv.width * k); c2.height = Math.round(cv.height * k); c2.getContext("2d").drawImage(cv, 0, 0, c2.width, c2.height); map = c2.toDataURL("image/jpeg", .8);
+  } catch (e) { console.error(e); }
+  const out = await api("/api/render", { image: before, brief: result.render_brief, aspect, map });
+  return out.image;
 }
 
 function wire(el) {
@@ -180,6 +205,14 @@ function wire(el) {
     const k = fr.dataset.k;
     fr.querySelector("input[type=file]").onchange = async e => { const f = e.target.files[0]; if (f) set(k, await shrink(await fileUrl(f))); };
     const wl = fr.querySelector(".wl"); if (wl) wl.onclick = async () => { try { set(k, await shrink(brandPhotos[k === "end" ? "after" : "before"])); } catch { say("Couldn't load that photo.", "err"); } };
+    const ag = fr.querySelector(".appgen");
+    if (ag) ag.onclick = async () => {
+      if (!imgs.start) return say("Add the start photo first. The app styles that exact tree, so the room stays the same.", "err");
+      ag.disabled = true; fr.querySelector(".pic").innerHTML = '<div class="spin"></div>'; say("The app is planning and painting the tree… about a minute. Keep this page open.");
+      try { set(k, await shrink(await appAfter(imgs.start, fr.querySelector(".amode").value, fr.querySelector(".astyle").value))); say("Not quite right? Make it again; every plan is a little different."); }
+      catch (e) { fr.querySelector(".pic").textContent = "Try again"; say(e.message, "err"); }
+      finally { ag.disabled = false; ag.textContent = "Make another"; }
+    };
     fr.querySelector(".gen").onclick = async () => {
       const desc = fr.querySelector(".desc").value.trim(), btn = fr.querySelector(".gen"); if (!desc) return say("Describe the photo first.", "err");
       if (k === "end" && !imgs.start) return say("Add the start photo first, so the end photo keeps the same room.", "err");
