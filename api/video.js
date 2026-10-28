@@ -4,6 +4,7 @@
 //                                                   -> Gemini Omni Flash makes one clip, saved in Blob -> { url, clip }
 // POST { action:"list" }                           -> { clips[], today, limit }
 // GET  /api/video?file=<pathname>                  -> streams a saved clip (when the store is private)
+// GET  /api/video?src=<public clip url>             -> the same clip from this site, so the page can read its last frame
 // Settings (Vercel env, all optional): VIDEO_MODEL (default gemini-omni-1.1-flash), VIDEO_DAILY_LIMIT (default 15 clips a day).
 import { put, list, get } from "@vercel/blob";
 import { blobToken, blobConnected, envPath } from "../lib/blob.js";
@@ -122,6 +123,13 @@ async function saved() {
 const serve = b => /\.public\.blob\.vercel-storage\.com/.test(b.url) ? b.url : `/api/video?file=${encodeURIComponent(b.pathname)}`;
 
 export default async function handler(req, res) {
+  if (req.method === "GET" && req.query?.src) {
+    let u; try { u = new URL(String(req.query.src)); } catch { return res.status(404).end(); }
+    if (!/\.blob\.vercel-storage\.com$/.test(u.hostname) || !u.pathname.includes("/brand/videos/") || !/\.mp4$/.test(u.pathname)) return res.status(404).end();
+    const r = await fetch(u.href); if (!r.ok) return res.status(404).end();
+    res.setHeader("content-type", "video/mp4"); res.setHeader("cache-control", "private, max-age=3600");
+    return res.status(200).send(Buffer.from(await r.arrayBuffer()));
+  }
   if (req.method === "GET") {
     const p = String(req.query?.file || "");
     if (!p.startsWith(PREFIX()) || !/\.mp4$/.test(p)) return res.status(404).end();

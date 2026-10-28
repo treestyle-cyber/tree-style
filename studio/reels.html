@@ -114,7 +114,7 @@
 
     <div class="panel">
       <h2>Saved clips</h2>
-      <p class="sub">Every clip you make is kept here. Tap a clip's link to download it to your phone.</p>
+      <p class="sub">Every clip you make is kept here. Download it to your phone, or tap <b>Use its last frame</b> to start the next shot exactly where this one ends.</p>
       <div class="lib" id="lib" style="margin-top:12px"></div>
     </div>
   </div>
@@ -136,6 +136,23 @@ function addPool(src, label) {
   pool.unshift({ src, label }); pool = pool.slice(0, 8);
   while (pool.length && !store(KEY + "_pool", pool)) pool.pop();   // drop the oldest if the phone is out of room
   refreshTrays();
+}
+async function lastFrame(url) {
+  let blob;
+  try { const r = await fetch(url); if (!r.ok) throw 0; blob = await r.blob(); }
+  catch { const r = await fetch("/api/video?src=" + encodeURIComponent(url)); if (!r.ok) throw new Error("Couldn't open that clip"); blob = await r.blob(); }
+  const v = document.createElement("video"); v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = URL.createObjectURL(blob);
+  await new Promise((ok, no) => { v.onloadeddata = ok; v.onerror = () => no(new Error("Couldn't read that clip")); });
+  await new Promise(ok => { v.onseeked = ok; v.currentTime = Math.max(0, v.duration - .05); });
+  const c = document.createElement("canvas"), k = Math.min(1, 1280 / Math.max(v.videoWidth, v.videoHeight));
+  c.width = Math.round(v.videoWidth * k); c.height = Math.round(v.videoHeight * k); c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+  URL.revokeObjectURL(v.src); return c.toDataURL("image/jpeg", .9);
+}
+async function useLastFrame(btn, url, label, note) {
+  btn.disabled = true; const t = btn.textContent; btn.textContent = "Getting the last frame…";
+  try { addPool(await lastFrame(url), label + " · last frame"); note("Added to this Reel's photos. Tap it as the start photo of the next shot, so it picks up exactly where this clip ends.", "ok"); }
+  catch (e) { note(e.message, "err"); }
+  finally { btn.disabled = false; btn.textContent = t; }
 }
 function refreshTrays() {
   document.querySelectorAll(".fr .tray").forEach(t => {
@@ -261,7 +278,9 @@ function wire(el) {
     say("Making the clip… usually 1 to 3 minutes. Keep this page open.");
     try {
       const d = await api("/api/video", { action: "make", prompt: el.querySelector(".prompt").value.trim(), first: imgs.start, last: mode === "frames" ? imgs.end : undefined, label: el.querySelector("h3").firstChild.textContent.trim(), resolution: el.querySelector(".res").value });
-      out.innerHTML = `<video src="${d.url}" controls playsinline loop></video><div><a class="mini" href="${d.url}" download target="_blank" style="text-decoration:none;display:inline-block">Download</a></div>`;
+      out.innerHTML = `<video src="${d.url}" controls playsinline loop></video><div style="display:grid;gap:8px;justify-items:start"><a class="mini" href="${d.url}" download target="_blank" style="text-decoration:none;display:inline-block">Download</a><button class="mini lf">Use its last frame</button></div>`;
+      const lbl = el.querySelector("h3").firstChild.textContent.trim();
+      out.querySelector(".lf").onclick = e => useLastFrame(e.target, d.url, lbl, say);
       say(`Saved. ${d.today} of ${d.limit} clips today. Not quite right? Adjust the wording and make it again.`, "ok"); count(d.today, d.limit); library();
     } catch (e) { out.innerHTML = ""; say(e.message, "err"); }
     finally { btn.disabled = false; btn.textContent = "Make it again"; }
@@ -274,7 +293,8 @@ const count = (n, lim) => { $("#count").textContent = `${n} of ${lim} clips made
 async function library() {
   try {
     const d = await api("/api/video", { action: "list" }); count(d.today, d.limit);
-    $("#lib").innerHTML = d.clips.length ? d.clips.map(c => `<figure><video src="${c.url}" controls playsinline preload="metadata"></video><figcaption>${esc(c.label || "Clip")} · ${new Date(c.at).toLocaleDateString()}<br><a href="${c.url}" download target="_blank">Download</a></figcaption></figure>`).join("") : '<p class="sub">No clips yet.</p>';
+    $("#lib").innerHTML = d.clips.length ? d.clips.map(c => `<figure><video src="${c.url}" controls playsinline preload="metadata"></video><figcaption>${esc(c.label || "Clip")} · ${new Date(c.at).toLocaleDateString()}<br><a href="${c.url}" download target="_blank">Download</a><br><button class="mini lf" data-u="${esc(c.url)}" data-l="${esc(c.label || "Clip")}" style="margin-top:6px">Use its last frame</button><span class="msg" style="display:block;font-size:12px"></span></figcaption></figure>`).join("") : '<p class="sub">No clips yet.</p>';
+    $("#lib").querySelectorAll(".lf").forEach(b => b.onclick = () => { const m = b.nextElementSibling; useLastFrame(b, b.dataset.u, b.dataset.l, (t, k) => { m.className = "msg" + (k ? " " + k : ""); m.textContent = t; }); });
   } catch (e) { if (e.status === 401) gate("That password didn't work."); else $("#lib").innerHTML = `<p class="msg err">${esc(e.message)}</p>`; }
 }
 
