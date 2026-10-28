@@ -1,4 +1,4 @@
-# Tree Style
+# TreeStyle
 
 - `/` — public waitlist page. Paste the Mailchimp form action URL into `MAILCHIMP_ACTION` near the bottom of `index.html`.
 - `/try` — private test page (password = `TEST_PASSWORD` in Vercel).

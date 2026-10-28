@@ -1,4 +1,4 @@
-// Tree Style step-guide painter. Draws each step of the plan on the person's own photo.
+// TreeStyle step-guide painter. Draws each step of the plan on the person's own photo.
 // Ported from the prototype. Exposes window.TreeGuide.
 (function(){
   const clamp = (v,a,b) => Math.min(b, Math.max(a, Number(v) || 0));

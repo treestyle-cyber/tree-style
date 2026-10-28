@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Tree Style · The art of styling</title>
+<title>TreeStyle · The art of styling</title>
 <meta name="description" content="Snap your Christmas tree. Get a designer's rating, a step-by-step plan, and a preview of the finished tree.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Tree Style">
-<meta property="og:title" content="Try Tree Style">
+<meta property="og:site_name" content="TreeStyle">
+<meta property="og:title" content="Try TreeStyle">
 <meta property="og:description" content="Snap your Christmas tree. Get a designer's rating, a step-by-step plan, and a preview of the finished tree.">
 <meta property="og:url" content="https://tree-style.vercel.app/try">
 <meta property="og:image" content="https://tree-style.vercel.app/og.png">
@@ -450,20 +450,39 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .rmwrap img{width:100%;display:block}
   .rmwrap i{position:absolute;width:44px;height:16px;margin:-8px 0 0 -22px;border-radius:50%;background:rgba(184,156,107,.75);box-shadow:0 0 0 2px #fff,0 0 18px rgba(184,156,107,.9);pointer-events:none}
   .rmwrap i::before{content:"";position:absolute;left:50%;bottom:8px;width:2px;height:60px;margin-left:-1px;background:linear-gradient(transparent,#fff)}
+  /* top fixes and "Show me how" on the results hub */
+  .hubfix{margin:12px 0}
+  .hubk{font:600 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+  .hubmore{appearance:none;border:0;background:none;padding:10px 0 0;font:600 14px var(--sans);color:var(--green);text-decoration:underline;cursor:pointer}
+  .showhow{width:100%;margin:4px 0 10px}
+  /* reveal: potential first */
+  .potline{margin:0;text-align:center;font:400 22px/1.2 var(--serif);color:var(--green);text-wrap:balance}
+  /* steps that already score well */
+  .goodstep{margin:0 0 12px;padding:12px 14px;border-radius:12px;background:rgba(184,156,107,.12)}
+  .goodstep b{display:block;color:var(--green)}
+  .goodstep span{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+  .goodstep button{appearance:none;border:0;background:none;padding:8px 0 0;font:600 14px var(--sans);color:var(--green);text-decoration:underline;cursor:pointer}
+  /* saved tree on the home screen */
+  .resume{display:flex;gap:14px;align-items:center}
+  .resume img{width:72px;height:92px;object-fit:cover;border-radius:10px;flex:none}
+  .resume b{display:block;font:400 20px/1.15 var(--serif);color:var(--green)}
+  .resume small{display:block;color:var(--muted);font-size:13px;margin:2px 0 10px}
+  .resumebtns{display:flex;flex-wrap:wrap;gap:8px}
+  .resumebtns .btn{padding:10px 14px;font-size:14px}
 </style>
 </head>
 <body>
 
 <header class="appbar" id="appbar">
   <button id="navBack" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-  <div class="title"><img class="barmono" src="/brand/logo-icon.png" alt="Tree Style"><span id="appTitle" class="sr"></span></div>
+  <div class="title"><img class="barmono" src="/brand/logo-icon.png" alt="TreeStyle"><span id="appTitle" class="sr"></span></div>
   <button id="navHome" aria-label="Start over"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></svg></button>
 </header>
 
 <main>
   <!-- Password -->
   <section class="screen" id="s-pass" data-title="" hidden>
-    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="Tree Style · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
+    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="TreeStyle · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
     <div class="kicker">Early access</div>
     <h2 class="ttl">Welcome, tester</h2>
     <p class="sub">Enter the test password to begin.</p>
@@ -476,7 +495,15 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 
   <!-- Home -->
   <section class="screen" id="s-home" data-title="" hidden>
-    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="Tree Style · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
+    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="TreeStyle · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
+    <div class="card resume" id="resume" hidden>
+      <img id="resumeImg" alt="">
+      <div>
+        <b>Your tree is saved</b>
+        <small id="resumeSub">Saved on this device only.</small>
+        <div class="resumebtns"><button class="btn" id="resumeBtn">Pick up where you left off</button><button class="btn ghost" id="resumeNew">Start a new tree</button></div>
+      </div>
+    </div>
     <div class="kicker">Begin</div>
     <h2 class="ttl">What would you like to do?</h2>
     <div class="tiles">
@@ -602,6 +629,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   <!-- Reveal -->
   <section class="screen reveal" id="s-reveal" data-title="Your results" data-foot="seeIt" hidden>
     <div id="revealScore" class="rating">
+      <p class="potline" id="potLine" hidden></p>
       <div class="rrow"><div class="rlbl">Your tree today</div><div class="orns" id="orns"></div><div class="rword"><b id="ornWord"></b><span id="ornNum"></span></div></div>
       <div class="rrow after" id="afterRow"><div class="rlbl">After your plan</div><div class="orns" id="ornsAfter"></div><div class="rword"><b id="afterWord"></b><span id="afterNum"></span></div></div>
       <p class="rnote">We rate trees from 1 to 5 ornaments, the way a designer would.</p>
@@ -629,6 +657,12 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
       <button class="btn ghost" id="again">New version</button>
       <button class="btn ghost" id="save" hidden>Save image</button>
     </div>
+    <div class="card hubfix" id="hubFix" hidden>
+      <div class="hubk" id="hubFixK">Your top fixes</div>
+      <div id="hubFixList"></div>
+      <button class="hubmore" id="hubFixMore" hidden></button>
+    </div>
+    <button class="btn showhow" id="showHow" hidden>Show me how  →</button>
     <form class="quickask" id="quickAsk">
       <label for="qaText">Want something different?</label>
       <div class="qarow">
@@ -743,7 +777,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <h1>Shopping list</h1>
     <p class="sub">What to look for, in the order you'll use it.</p>
     <div class="card" id="shop"></div>
-    <p class="small muted" style="font-size:13px">Links open a store search. As an Amazon Associate, Tree Style may earn from qualifying purchases.</p>
+    <p class="small muted" style="font-size:13px">Links open a store search. As an Amazon Associate, TreeStyle may earn from qualifying purchases.</p>
   </section>
 </main>
 
@@ -780,6 +814,17 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const AMAZON_TAG = ""; // add the Amazon Associates tracking ID here
 const shopUrl = q => "https://www.amazon.com/s?k=" + encodeURIComponent(q) + (AMAZON_TAG ? "&tag=" + encodeURIComponent(AMAZON_TAG) : "");
+// Eric's curated Amazon lists. Add one line per list as you make them. An item links to the first list
+// whose words all appear in its name or search; anything without a matching list keeps its store search.
+const CURATED = [
+  // { words: ["velvet", "ribbon"], url: "https://www.amazon.com/shop/YOUR-STOREFRONT/list/LIST-ID" },
+  // { words: ["pine", "stems"], url: "..." },
+];
+const shopFor = b => {
+  const t = `${b.label || ""} ${b.q || ""}`.toLowerCase();
+  const hit = CURATED.find(c => c.url && (c.words || []).length && c.words.every(w => t.includes(String(w).toLowerCase())));
+  return hit ? hit.url : shopUrl(b.q);
+};
 
 let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
 let factsSet = false, keyPhoto = null, inspoPhoto = null, rerunFromHub = false;
@@ -840,7 +885,7 @@ function paint(isBack) {
     if (on) { s.classList.toggle("back", !!isBack); s.style.animation = "none"; s.offsetHeight; s.style.animation = ""; }
   });
   const el = document.getElementById(id);
-  $("#appTitle").textContent = el.dataset.title ?? "Tree Style";
+  $("#appTitle").textContent = el.dataset.title ?? "TreeStyle";
   const kick = kicker(id);
   let k = el.querySelector(":scope > .kicker.auto");
   if (kick) { if (!k) { k = document.createElement("div"); k.className = "kicker auto"; const h = el.querySelector(":scope > h1"); if (h) el.insertBefore(k, h); else el.prepend(k); } k.textContent = kick; }
@@ -850,6 +895,8 @@ function paint(isBack) {
   setFoot();
   if (id === "s-plan") drawStep();
   if (id === "s-results") sweep();
+  if (id === "s-home") showResume();
+  saveSoon();
   scrollTo(0, 0);
 }
 $("#navBack").onclick = () => history.back();
@@ -862,7 +909,7 @@ $("#passForm").addEventListener("submit", e => {
   password = $("#pw").value;
   try { sessionStorage.setItem("ts_pw", password); } catch {}
   $("#passErr").textContent = "";
-  show("s-home", []);
+  startApp();
 });
 
 /* ---------------- home / photo / style ---------------- */
@@ -1130,6 +1177,7 @@ function getPlan(pending) {
     startVersions(); resetFeedback();
     paintFirst();                  // preview: in the background too
     fillReveal(); setFoot();
+    saveSoon();
   }).catch(e => {
     if (result !== forLook) return;
     planState = "error"; planP = null;
@@ -1156,6 +1204,7 @@ function paintFirst() {
     if (versions[0]) versions[0].after = after;
     fillReveal();
     if (stack[stack.length - 1] === "s-results") sweep();
+    saveSoon();
     if (after && guide) { const ai = new Image(); ai.onload = () => { if (!guide) return; guide.setAfter(ai); if (guide.steps[stepIdx] === "all") drawStep(); }; ai.src = after; }
   });
 }
@@ -1208,7 +1257,7 @@ async function openPlan() {
 const toOrn = v => Math.max(1, Math.floor(v / 20 * 2 + 1e-9) / 2);   // never round up: 58/100 is 2.5 ornaments, not 3
 const ornHtml = (n, delay = 0) => { let h = ""; for (let i = 1; i <= 5; i++) h += `<i class="${n >= i ? "f" : n >= i - .5 ? "h" : ""}" style="animation-delay:${delay + .15 + i * .12}s"></i>`; return h; };
 // Every rating has a word that always means the same thing (half steps take the lower word)
-const LEVELS = ["", "Just getting started", "Nice start", "Well done", "Polished", "Designer-ready"];
+const LEVELS = ["", "Lots of potential", "Nice start", "Well done", "Polished", "Designer-ready"];
 const levelWord = n => LEVELS[Math.max(1, Math.min(5, Math.floor(n)))];
 
 function fillReveal() {
@@ -1223,6 +1272,9 @@ function fillReveal() {
     }
     $("#ornWord").textContent = levelWord(o); $("#ornNum").textContent = `${o} of 5`;
     $("#afterRow").hidden = !a || a <= o;
+    // Lead with what the tree can become, not a grade
+    $("#potLine").hidden = !a || a <= o;
+    if (a && a > o) $("#potLine").textContent = `Your plan can take this tree to ${levelWord(a).toLowerCase()}: ${a} of 5 ornaments.`;
     if (a) { $("#afterWord").textContent = levelWord(a); $("#afterNum").textContent = `${a} of 5`; }
   }
   $("#potential").hidden = true;
@@ -1255,6 +1307,12 @@ function fill() {
   $("#navScoreBtn").hidden = !(r.categories || []).length;
   $("#fixesSub").textContent = mode === "design" ? "The plan at a glance." : "Biggest difference for the least effort, best first.";
   $("#fixes").innerHTML = fixes.map((f, i) => `<div class="fix"><span class="n">${i + 1}</span><div><b>${esc(f.title)}</b>${esc(f.how)}</div></div>`).join("");
+  // The top three fixes sit right under the preview; the full list stays one tap away
+  $("#hubFix").hidden = !fixes.length; $("#showHow").hidden = !plan.length;
+  $("#hubFixK").textContent = mode === "design" ? "Your plan at a glance" : "Your top fixes";
+  $("#hubFixList").innerHTML = fixes.slice(0, 3).map((f, i) => `<div class="fix"><span class="n">${i + 1}</span><div><b>${esc(f.title)}</b>${esc(f.how)}</div></div>`).join("");
+  const moreFix = fixes.length - 3;
+  $("#hubFixMore").hidden = moreFix <= 0; $("#hubFixMore").textContent = moreFix === 1 ? "See 1 more fix" : `See ${moreFix} more fixes`;
   $("#scoreSub").textContent = r.overall != null ? `Your tree today: ${toOrn(r.overall)} of 5 ornaments, ${levelWord(toOrn(r.overall)).toLowerCase()}. Here's how each part scored, out of 10.` : "";
   $("#cats").innerHTML = (r.categories || []).map(c => `<div class="cat"><div class="top"><span>${esc(c.name)}</span><span>${c.score}/10</span></div><div class="b"><i style="width:${c.score * 10}%"></i></div><p>${esc(c.note)}</p></div>`).join("");
   $("#shop").innerHTML = (nItems && !factsSet ? estNote(r) : "") + (nItems ? shopping.map(g => `<div class="buy"><div class="buyh">${esc(g.title)}</div>${g.items.map(buyRow).join("")}</div>`).join("") : `<p class="muted">You already have what you need. It's all in how you place it.</p>`);
@@ -1332,6 +1390,7 @@ $("#again").onclick = async () => {
   $("#seg").hidden = $("#hint").hidden = true;
   await makePreview(); sweep();
   $("#again").disabled = false;
+  saveSoon();
 };
 $("#save").onclick = () => { const a = document.createElement("a"); a.href = after; a.download = "tree-style-preview.png"; a.click(); };
 $("#restart").onclick = () => { photo = null; guide = null; photoImg = null; factsSet = false;
@@ -1340,8 +1399,10 @@ $("#restart").onclick = () => { photo = null; guide = null; photoImg = null; fac
   roomPhoto = null; baseKey = ""; $("#roomMark").hidden = true;
   if (mode === "design") show("s-start", ["s-home"]); else show("s-photo", ["s-home"]); };
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => b.dataset.go === "s-plan" ? openPlan() : show(b.dataset.go));
+$("#showHow").onclick = () => openPlan();
+$("#hubFixMore").onclick = () => show("s-fixes");
 
-const buyRow = b => `<a class="buyrow" href="${shopUrl(b.q)}" target="_blank" rel="noopener sponsored"><b style="background:${b.color || "#ECE4D8"}"></b><span><strong>${esc(b.label)}</strong>${b.qty ? `<small>${esc(b.qty)}</small>` : ""}</span><em>Find it ›</em></a>`;
+const buyRow = b => `<a class="buyrow" href="${shopFor(b)}" target="_blank" rel="noopener sponsored"><b style="background:${b.color || "#ECE4D8"}"></b><span><strong>${esc(b.label)}</strong>${b.qty ? `<small>${esc(b.qty)}</small>` : ""}</span><em>Find it ›</em></a>`;
 
 /* ---------------- full-screen zoom (pinch, pan, double-tap) ---------------- */
 let zImgs = [], zIdx = 0, zS = 1, zX = 0, zY = 0;
@@ -1399,7 +1460,10 @@ $("#zClose").onclick = () => history.back();
 })();
 
 /* ---------------- step-by-step diagrams ---------------- */
-let guide = null, photoImg = null;
+let guide = null, photoImg = null, goodSteps = new Set(), openGood = new Set(), pendingStep = null;
+// In Check my tree, shaping and lights that already score 7 of 10 or better get a checkmark instead of a full step
+const GOOD_CAT = { fluff: "Fullness", lights: "Lights" };
+const catScore = k => { const c = (result?.categories || []).find(c => c.name === GOOD_CAT[k]); return c ? Number(c.score) : null; };
 function getPhotoImg() {
   if (photoImg && photoImg.src === photo) return Promise.resolve(photoImg);
   return new Promise((ok, bad) => { const im = new Image(); im.onload = () => { photoImg = im; ok(im); }; im.onerror = bad; im.src = photo; });
@@ -1410,39 +1474,45 @@ async function drawStep() {
     try { guide = TreeGuide.create(await getPhotoImg(), $("#guideCv"), result, mode); }
     catch (e) { console.error(e); return; }
     if (after) { const ai = new Image(); ai.onload = () => { if (!guide) return; guide.setAfter(ai); if (guide.steps[stepIdx] === "all") drawStep(); }; ai.src = after; }
-    stepIdx = 0;
+    goodSteps = new Set(mode === "check" ? guide.steps.filter(k => GOOD_CAT[k] && catScore(k) >= 7) : []); openGood = new Set();
+    stepIdx = pendingStep != null ? pendingStep : Math.max(0, guide.steps.findIndex(k => !goodSteps.has(k))); pendingStep = null;
   }
   const steps = guide.steps;
   stepIdx = Math.max(0, Math.min(stepIdx, steps.length - 1));
   const key = steps[stepIdx], total = steps.length - 1;
-  $("#stepTabs").innerHTML = steps.map((k, i) => `<button role="tab" data-i="${i}" class="${i === stepIdx ? "on" : ""} ${doneSteps.has(k) ? "done" : ""}"><i>${k === "all" ? "★" : doneSteps.has(k) ? "✓" : i + 1}</i>${esc(guide.title(k))}</button>`).join("");
+  $("#stepTabs").innerHTML = steps.map((k, i) => `<button role="tab" data-i="${i}" class="${i === stepIdx ? "on" : ""} ${doneSteps.has(k) || goodSteps.has(k) ? "done" : ""}"><i>${k === "all" ? "★" : doneSteps.has(k) || goodSteps.has(k) ? "✓" : i + 1}</i>${esc(guide.title(k))}</button>`).join("");
   $("#stepTabs").querySelectorAll("button").forEach(b => b.onclick = () => { stepIdx = +b.dataset.i; drawStep(); });
   const on = $("#stepTabs .on"); if (on) on.scrollIntoView({ block: "nearest", inline: "center" });
   guide.draw(key, false);
-  const nd = steps.filter(k => doneSteps.has(k)).length;
+  const nd = steps.filter(k => doneSteps.has(k) || goodSteps.has(k)).length;
+  const collapsed = goodSteps.has(key) && !openGood.has(key);
   $("#stepK").textContent = key === "all" ? `Final look · ${nd} of ${total} steps done` : `Step ${stepIdx + 1} of ${total}${nd ? ` · ${nd} done` : ""}`;
   $("#stepTitle").textContent = guide.title(key);
   const its = guide.itemsFor(key), written = its.some(p => p.how);
   const leadTxt = written ? guide.note(key) : guide.lead(key);   // one set of instructions, never two
-  $("#stepLead").textContent = leadTxt; $("#stepLead").hidden = !leadTxt;
+  $("#stepLead").textContent = leadTxt; $("#stepLead").hidden = !leadTxt || collapsed;
   const buy = guide.buy(key), lg = buy.length ? [] : guide.legend(key);
-  $("#stepLegend").hidden = !lg.length;
+  $("#stepLegend").hidden = !lg.length || collapsed;
   $("#stepLegend").innerHTML = lg.map(l => `<li><b style="background:${l.color}"></b>${esc(l.text)}</li>`).join("");
   let items = "";
+  if (goodSteps.has(key)) items += `<div class="goodstep"><b>Already looking great</b><span>Your ${key === "lights" ? "lights" : "branches"} scored ${catScore(key)} out of 10, so you can skip this step.</span>${collapsed ? `<button data-opengood>Show the step anyway</button>` : ""}</div>`;
+  if (collapsed) { $("#stepItems").innerHTML = items; $("#stepItems").querySelector("[data-opengood]").onclick = () => { openGood.add(key); drawStep(); }; }
+  else {
   if (key === "primary_picks" || (key === "florals" && !steps.includes("primary_picks")))
     items += `<div class="newto"><b>New to stems?</b> They're short branches of greenery, flowers or berries on a bendable wire. You tuck them into the tree and wrap the wire around a branch. Stores call them "picks," so search for that when you shop.</div>`;
   if (buy.length) items += (factsSet ? "" : estNote(result)) + `<div class="buy"><div class="buyh">What to buy</div>${buy.map(buyRow).join("")}</div>`;
   items += its.map(p => `<div class="planitem"><h4>${esc(p.title)}</h4>${p.how ? `<p>${esc(p.how)}</p>` : ""}</div>`).join("");
   $("#stepItems").innerHTML = items;
+  }
   $("#prevStep").disabled = stepIdx === 0;
-  $("#nextStep").textContent = key === "all" ? "Back to my tree" : doneSteps.has(key) ? (stepIdx === total - 1 ? "See it all together" : "Next step") : (stepIdx === total - 1 ? "Done, see it all together" : "Done, next step");
+  $("#nextStep").textContent = key === "all" ? "Back to my tree" : (doneSteps.has(key) || goodSteps.has(key)) ? (stepIdx === total - 1 ? "See it all together" : "Next step") : (stepIdx === total - 1 ? "Done, see it all together" : "Done, next step");
 }
 $("#prevStep").onclick = () => { stepIdx--; drawStep(); scrollTo(0, 0); };
 $("#nextStep").onclick = () => {
   if (!guide) return;
   const key = guide.steps[stepIdx];
   if (key === "all") { history.back(); return; }
-  doneSteps.add(key); stepIdx++; drawStep(); scrollTo(0, 0);
+  doneSteps.add(key); stepIdx++; drawStep(); scrollTo(0, 0); saveSoon();
 };
 const peekOn = () => guide && guide.draw(guide.steps[stepIdx], true), peekOff = () => guide && guide.draw(guide.steps[stepIdx], false);
 $("#peek").addEventListener("pointerdown", peekOn);
@@ -1494,7 +1564,7 @@ function useVersion(i) {
   fill(); if (after) drawViewer(); else $("#viewer").innerHTML = "";
   $("#vNote").hidden = versions.length < 2;
   $("#vNote").textContent = i === 0 ? "Showing the original plan." : `Version ${i + 1}: ${v.label}`;
-  renderVersions();
+  renderVersions(); saveSoon();
 }
 function renderVersions() {
   const el = $("#versions");
@@ -1572,7 +1642,7 @@ async function partnerSend(req, label) {
     const reply = res.reply || "Here's the updated tree.";
     addMsg("ai", reply, { tag: `Version ${current + 1}`, list: (res.changes || []).slice(0, 5) });
     chat.push({ role: "user", text: req }, { role: "assistant", text: reply });
-    renderVersions(); resetFeedback();
+    renderVersions(); resetFeedback(); saveSoon();
     $("#vNote").hidden = false; $("#vNote").textContent = `Version ${current + 1}: ${versions[current].label}. Older versions are under Change something.`;
     L.done();
     show("s-results", ["s-home"]);
@@ -1587,8 +1657,84 @@ async function partnerSend(req, label) {
   }
 }
 
+/* ---------------- saving progress on this device ---------------- */
+// The tree, plan, preview, versions and finished steps are kept in this browser (IndexedDB), so a phone
+// putting the page to sleep doesn't send people back to the start. Nothing here leaves the device.
+const SAVE_KEY = "tree-v1";
+const idb = {
+  open() { return new Promise((ok, no) => { const r = indexedDB.open("treestyle", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); }); },
+  async run(how, fn) { const db = await this.open(); return new Promise((ok, no) => { const t = db.transaction("kv", how), q = fn(t.objectStore("kv")); t.oncomplete = () => ok(q && q.result); t.onerror = () => no(t.error); }); },
+  get(k) { return this.run("readonly", st => st.get(k)).catch(() => null); },
+  set(k, v) { return this.run("readwrite", st => st.put(v, k)).catch(() => null); }
+};
+let saveTimer = 0, restoring = false;
+const SAVE_SCREENS = ["s-reveal", "s-results", "s-fixes", "s-plan", "s-partner", "s-score", "s-shop"];
+function saveSoon() {
+  if (restoring || !result || planState !== "ready" || !(result.plan || []).length || !photo) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const scr = stack[stack.length - 1];
+    idb.set(SAVE_KEY, {
+      at: Date.now(), mode, src, factsSet, photo, photoAspect, keyPhoto, result, after,
+      form: { kind: val("kind") || "", height: val("height") || "", density: val("density") || "", stage: val("stage") || "", style: val("style") || "keep", theme: $("#theme").value },
+      versions, current, chat, stepIdx, doneSteps: [...doneSteps], screen: SAVE_SCREENS.includes(scr) ? scr : "s-results"
+    });
+  }, 400);
+}
+const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 2 ? "just now" : m < 60 ? `${m} minutes ago` : m < 120 ? "an hour ago" : m < 1440 ? `${Math.round(m / 60)} hours ago` : m < 2880 ? "yesterday" : `${Math.round(m / 1440)} days ago`; };
+async function showResume() {
+  const st = result ? null : await idb.get(SAVE_KEY);
+  if (stack[stack.length - 1] !== "s-home") return;
+  const has = result || st;
+  $("#resume").hidden = !has; if (!has) return;
+  $("#resumeImg").src = (result ? photo : st.photo) || "";
+  const m = result ? mode : st.mode;
+  $("#resumeSub").textContent = `${m === "design" ? "Your tree design" : "Your checked tree"}${st ? ", saved " + ago(st.at) : ""}. Saved on this device only.`;
+}
+function setRadio(n, v) { const el = document.querySelector(`input[name=${n}][value="${v}"]`); if (el) el.checked = true; }
+async function restoreSaved(st) {
+  restoring = true;
+  try {
+    mode = st.mode; src = st.src || "tree"; factsSet = !!st.factsSet;
+    const f = st.form || {}; ["kind", "height", "density", "stage", "style"].forEach(n => setRadio(n, f[n] ?? "")); $("#theme").value = f.theme || ""; syncStyle();
+    $("#stageQ").hidden = mode === "design"; $("#inspoRow").hidden = mode !== "design"; setPhotoCopy(mode === "design" ? (src === "room" ? "room" : "design") : "check");
+    photo = st.photo; photoAspect = st.photoAspect || "3:4"; photoImg = null; keyPhoto = st.keyPhoto || null; baseKey = "";
+    $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="muted" style="font-size:13px;margin-top:8px">Tap to change photo</div>`;
+    result = lookResult = st.result; after = st.after || null; planState = "ready"; planP = null;
+    evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined };
+    versions = (st.versions || []).length ? st.versions : [{ label: "Original", result: JSON.parse(JSON.stringify(result)), after }];
+    current = Math.min(st.current || 0, versions.length - 1); chat = st.chat || [];
+    $("#log").innerHTML = ""; chat.forEach(t => addMsg(t.role === "user" ? "me" : "ai", t.text));
+    guide = null; doneSteps = new Set(st.doneSteps || []); pendingStep = st.stepIdx || 0; stepIdx = pendingStep;
+    fill(); renderVersions(); resetFeedback();
+    $("#vNote").hidden = current === 0; if (current) $("#vNote").textContent = `Version ${current + 1}: ${versions[current].label}`;
+    loadDetails();
+    if (after) { previewState = "done"; drawViewer(); swept = true; }
+    else { previewState = "idle"; paintFirst(); }
+    fillReveal();
+    const scr = st.screen || "s-results";
+    stack = ["s-home"].concat(scr === "s-results" || scr === "s-reveal" ? [] : ["s-results"], [scr]);
+    history.pushState({ d: stack.length }, "");
+    restoring = false; paint(false);
+    return true;
+  } catch (e) { console.error(e); restoring = false; result = null; return false; }
+}
+$("#resumeBtn").onclick = async () => {
+  if (result) { show("s-results", ["s-home"]); return; }
+  const st = await idb.get(SAVE_KEY);
+  if (!st || !(await restoreSaved(st))) $("#resume").hidden = true;
+};
+$("#resumeNew").onclick = () => { $("#resume").hidden = true; document.querySelector(".tiles").scrollIntoView({ block: "center", behavior: "smooth" }); };
+// Coming back within a few hours lands right back on the tree; after that, the home screen offers it.
+async function startApp() {
+  if (!password) { show("s-pass", []); return; }
+  const st = await idb.get(SAVE_KEY);
+  if (st && st.result && Date.now() - st.at < 6 * 3600 * 1000 && await restoreSaved(st)) return;
+  show("s-home", []);
+}
+
 /* ---------------- start ---------------- */
-show(password ? "s-home" : "s-pass", []);
+startApp();
 </script>
 </body>
 </html>
