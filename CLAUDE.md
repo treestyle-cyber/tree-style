@@ -26,6 +26,8 @@ Read this first in every session. It holds what the team has decided and why, so
 | `lib/schema.js` | The JSON shapes Claude must return |
 | `studio/` | Generates and picks brand photography for every photo spot in the app and site |
 | `lab/` | Side-by-side testing of a proposed rule against the live app |
+| `studio/reels.html`, `api/video.js` | Reels: Claude writes on-brand shot lists, Gemini Omni Flash makes the clips (saved in Blob, daily limit `VIDEO_DAILY_LIMIT`, default 15) |
+| `lib/videobrand.js` | **How TreeStyle looks and sounds on video**: look, words, honesty rules, shot craft |
 
 ## How we work
 - **Design rules: principles, not checklists.** Explain what good design is and why, with an example, and let the model use judgment. Exact counts and positions made trees look sporadic and less creative. Avoid "never" unless something keeps going wrong.
@@ -66,3 +68,4 @@ Read this first in every session. It holds what the team has decided and why, so
 - 2026-10-23: Scoring: lights weight 15 → 5; base removed from the score (still suggested in the plan); deliberate asymmetry isn't a flaw; hidden deep ornaments get the benefit of the doubt. No black ornaments unless asked.
 - 2026-10-23: `design` branch and preview-only Studio photos and feedback set up for app design work.
 - 2026-10-24: Keep my style reads the style from the tree's strongest signal piece (elf legs → Playful), not a default of Traditional.
+- 2026-10-28: Reels added to the Studio (`/studio/reels`): Claude writes shots from `lib/videobrand.js` plus the designer's rules; clips come from Gemini Omni Flash, because Google retired the Veo preview models in the developer API on Oct 22, 2026. Every clip is labeled an AI preview; daily clip limit as a spending guard.
