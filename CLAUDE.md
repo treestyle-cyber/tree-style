@@ -66,3 +66,4 @@ Read this first in every session. It holds what the team has decided and why, so
 - 2026-10-23: Scoring: lights weight 15 → 5; base removed from the score (still suggested in the plan); deliberate asymmetry isn't a flaw; hidden deep ornaments get the benefit of the doubt. No black ornaments unless asked.
 - 2026-10-23: `design` branch and preview-only Studio photos and feedback set up for app design work.
 - 2026-10-24: Keep my style reads the style from the tree's strongest signal piece (elf legs → Playful), not a default of Traditional.
+- 2026-10-28: UX review applied on the `ux-review` branch (includes the earlier `ux-checklist-oct23` work): compact home with before/after, path-only step counts, clear disabled buttons, full-screen reveal, results reordered, Save and share with a mark, Show me where on fixes, score sorted with How to raise it, shopping list ticks and Share list, one voice ("we"). Name spelled TreeStyle in text.
