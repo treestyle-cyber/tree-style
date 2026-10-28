@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TreeStyle · Studio · Reels</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" type="image/png" href="/brand/favicon.png">
+<style>
+  .wrap{max-width:1000px}
+  header{padding:22px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  nav a{margin-left:16px;text-decoration:none}
+  .intro{text-align:center;margin:6px auto 26px;max-width:40em}
+  .intro h1{font-weight:400;font-size:44px;margin:8px 0 12px}
+  .intro p{color:var(--muted);margin:0}
+  .panel{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:22px}
+  .panel h2{font-weight:400;font-size:28px;margin-bottom:6px}
+  .sub{font-size:13px;color:var(--muted)}
+  textarea,select{width:100%;font:14px/1.45 var(--sans);padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper-2);color:var(--ink)}
+  textarea{min-height:90px;resize:vertical}
+  label.f{display:block;font-size:12.5px;color:var(--muted);margin:12px 0 6px;letter-spacing:.04em}
+  .fmts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+  .fmt{appearance:none;text-align:left;background:var(--paper-2);border:1.5px solid var(--line);border-radius:12px;color:var(--ink);padding:10px 12px;font:500 14px var(--sans);cursor:pointer}
+  .fmt small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:2px}
+  .fmt.on{border-color:var(--gold);background:rgba(184,156,107,.12)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .row .btn{padding:12px 18px}
+  .mini{appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:99px;padding:6px 12px;font:500 12.5px var(--sans);cursor:pointer}
+  .mini:disabled{opacity:.5;cursor:default}
+  .shot{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
+  .shot h3{font-weight:400;font-size:24px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .tag{font:600 10px var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gold);border:1px solid var(--line);padding:3px 8px;border-radius:99px}
+  .ost{font-size:13px;color:var(--muted);margin:4px 0 8px}
+  .ost b{color:var(--ink);font-weight:500}
+  .frames{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+  .fr{border:1px dashed var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}
+  .fr .pic{aspect-ratio:9/16;max-height:300px;border-radius:8px;background:rgba(184,156,107,.08);display:grid;place-items:center;color:var(--muted);font-size:12px;text-align:center;overflow:hidden;position:relative}
+  .fr .pic img{width:100%;height:100%;object-fit:cover}
+  .fr .hint{font-size:12px;color:var(--muted)}
+  .fr .acts{display:flex;gap:6px;flex-wrap:wrap}
+  .out{margin-top:12px;display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
+  video{width:220px;aspect-ratio:9/16;border-radius:12px;background:#000}
+  .msg{font-size:13px;color:var(--muted);min-height:1.2em;margin-top:8px}
+  .msg.err{color:var(--berry)} .msg.ok{color:var(--gold)}
+  .spin{width:26px;height:26px;border-radius:50%;border:3px solid rgba(184,156,107,.3);border-top-color:var(--gold);animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+  .lib figure{margin:0}
+  .lib video{width:100%}
+  .lib figcaption{font-size:12px;color:var(--muted);margin-top:6px}
+  .lib a{color:var(--gold);font-size:12px}
+  .caption{white-space:pre-wrap;background:var(--paper-2);border-radius:10px;padding:12px;font-size:14px}
+  #gate{max-width:420px;margin:60px auto;text-align:center}
+  #gate form{display:flex;gap:8px;margin-top:18px}
+  #gate input{flex:1}
+  @media (max-width:560px){.frames{grid-template-columns:1fr}.fr .pic{max-height:260px}video{width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="/"><img class="logoh" src="/brand/logo-horizontal.png" alt="TreeStyle · The art of styling"></a>
+    <nav><a class="eyebrow" href="/studio/">Photos</a><a class="eyebrow" href="/studio/reels" style="color:var(--ink)">Reels</a></nav>
+  </header>
+
+  <div id="gate" hidden>
+    <div class="eyebrow">Studio</div>
+    <h1 style="font-weight:400;font-size:40px;margin-top:8px">Enter the test password</h1>
+    <form id="gateForm"><input type="password" id="pw" placeholder="Password" autocomplete="current-password"><button class="btn">Enter</button></form>
+    <p class="msg err" id="gateErr"></p>
+  </div>
+
+  <div id="app" hidden>
+    <div class="intro">
+      <div class="eyebrow">Studio</div>
+      <h1>Reels</h1>
+      <p>Describe a video. Claude writes the shots using the TreeStyle brand and your design rules, then each shot becomes a real AI clip saved here. Add the on-screen text and sound in CapCut or Instagram.</p>
+    </div>
+
+    <div class="panel">
+      <h2>1 · The idea</h2>
+      <div class="fmts" id="fmts">
+        <button class="fmt on" data-f="glowup">The glow-up<small>Ordinary tree → designer tree</small></button>
+        <button class="fmt" data-f="order">Build it in order<small>Hands doing each step</small></button>
+        <button class="fmt" data-f="inspo">From inspiration<small>A fabric becomes a tree</small></button>
+        <button class="fmt" data-f="tip">One designer tip<small>A mistake and the fix</small></button>
+        <button class="fmt" data-f="custom">Your own<small>Anything you describe</small></button>
+      </div>
+      <label class="f" for="idea">Your idea (optional, but the more you say the better)</label>
+      <textarea id="idea" placeholder="e.g. A rustic farmhouse tree with buffalo check ribbon. The 'before' is a pre-lit tree with a few red ornaments."></textarea>
+      <div class="row"><button class="btn" id="planBtn">Write the shots</button><span class="sub" id="count"></span></div>
+      <p class="msg" id="planMsg"></p>
+    </div>
+
+    <div id="plan" hidden>
+      <div class="panel"><h2 id="pTitle"></h2><p class="sub" id="pConcept"></p></div>
+      <div id="shots"></div>
+      <div class="panel">
+        <h2>Caption</h2>
+        <div class="caption" id="cap"></div>
+        <div class="row"><button class="mini" id="copyCap">Copy caption</button><span class="msg" id="capMsg" style="margin:0"></span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Saved clips</h2>
+      <p class="sub">Every clip you make is kept here. Tap a clip's link to download it to your phone.</p>
+      <div class="lib" id="lib" style="margin-top:12px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const LOOK = "Editorial interior photograph for a luxury holiday brand, vertical 9:16. A real, lived-in home at dusk: moody, warm low lamp and candle light, glowing warm white tree lights; Midnight navy, Winter Berry, Evergreen, Walnut and Antique Gold tones; velvet, brass and walnut textures. Photorealistic, shallow depth of field. No people, no text, no logos.";
+let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
+let format = "glowup", brandPhotos = {};
+
+const api = async (path, body) => {
+  const r = await fetch(path, { method: "POST", headers: { "content-type": "application/json", "x-test-password": password }, body: JSON.stringify(body) });
+  let d = {}; try { d = await r.json(); } catch { d = { error: r.status === 504 ? "That took too long and timed out. Try again, or try 360p." : "Server error " + r.status }; }
+  if (!r.ok) { const e = new Error(d.error || "Error " + r.status); e.status = r.status; throw e; }
+  return d;
+};
+const shrink = (src, max = 1280) => new Promise((ok, no) => {
+  const im = new Image(); im.crossOrigin = "anonymous";
+  im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL("image/jpeg", .88)); };
+  im.onerror = no; im.src = src;
+});
+const fileUrl = f => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); });
+
+document.querySelectorAll(".fmt").forEach(b => b.onclick = () => { document.querySelectorAll(".fmt").forEach(x => x.classList.toggle("on", x === b)); format = b.dataset.f; });
+
+$("#planBtn").onclick = async () => {
+  const b = $("#planBtn"); b.disabled = true; $("#planMsg").className = "msg"; $("#planMsg").textContent = "Writing the shots… about 30 seconds";
+  try {
+    const p = await api("/api/video", { action: "plan", idea: $("#idea").value.trim(), format });
+    showPlan(p); $("#planMsg").textContent = "";
+  } catch (e) { if (e.status === 401) return gate("That password didn't work."); $("#planMsg").className = "msg err"; $("#planMsg").textContent = e.message; }
+  finally { b.disabled = false; b.textContent = "Write new shots"; }
+};
+
+function showPlan(p) {
+  $("#plan").hidden = false; $("#pTitle").textContent = p.title || "Your Reel"; $("#pConcept").textContent = p.concept || "";
+  $("#cap").textContent = (p.caption || "") + (p.hashtags?.length ? "\n\n" + p.hashtags.map(h => h.startsWith("#") ? h : "#" + h).join(" ") : "");
+  $("#shots").innerHTML = (p.shots || []).map((s, i) => `
+    <div class="shot" data-i="${i}" data-mode="${esc(s.mode)}">
+      <h3>${i + 1} · ${esc(s.name)} <span class="tag">${s.mode === "frames" ? "Start → end photo" : s.mode === "start" ? "From a photo" : "From words"}</span></h3>
+      ${s.on_screen ? `<div class="ost">On-screen text: <b>${esc(s.on_screen)}</b></div>` : ""}
+      <textarea class="prompt">${esc(s.prompt)}</textarea>
+      ${s.mode !== "text" ? `<div class="frames">
+        ${frameBox("start", "Start photo", s.start_image)}
+        ${s.mode === "frames" ? frameBox("end", "End photo", s.end_image) : ""}
+      </div>` : ""}
+      <div class="row"><select class="res" style="width:auto"><option value="720p">720p (about $1)</option><option value="360p">360p draft (cheapest)</option><option value="1080p">1080p (final)</option></select><button class="btn make">Make this clip</button></div>
+      <div class="msg"></div><div class="out"></div>
+    </div>`).join("");
+  document.querySelectorAll(".shot").forEach(wire);
+}
+function frameBox(k, title, hint) {
+  return `<div class="fr" data-k="${k}"><b style="font-size:13px">${title}</b><div class="pic">No photo yet</div>
+    <textarea class="desc" style="min-height:60px" placeholder="Describe the photo">${esc(hint || "")}</textarea>
+    <div class="acts">
+      <button class="mini gen">${k === "end" ? "Make from start photo" : "Make this photo"}</button>
+      <label class="mini" style="cursor:pointer">Upload<input type="file" accept="image/*" hidden></label>
+      ${brandPhotos[k === "end" ? "after" : "before"] ? `<button class="mini wl">Use waitlist ${k === "end" ? "after" : "before"}</button>` : ""}
+    </div></div>`;
+}
+
+function wire(el) {
+  const msg = el.querySelector(".msg"), imgs = {};
+  const say = (t, k) => { msg.className = "msg" + (k ? " " + k : ""); msg.textContent = t; };
+  const set = (k, src) => { imgs[k] = src; el.querySelector(`.fr[data-k="${k}"] .pic`).innerHTML = `<img src="${src}" alt="">`; };
+  el.querySelectorAll(".fr").forEach(fr => {
+    const k = fr.dataset.k;
+    fr.querySelector("input[type=file]").onchange = async e => { const f = e.target.files[0]; if (f) set(k, await shrink(await fileUrl(f))); };
+    const wl = fr.querySelector(".wl"); if (wl) wl.onclick = async () => { try { set(k, await shrink(brandPhotos[k === "end" ? "after" : "before"])); } catch { say("Couldn't load that photo.", "err"); } };
+    fr.querySelector(".gen").onclick = async () => {
+      const desc = fr.querySelector(".desc").value.trim(), btn = fr.querySelector(".gen"); if (!desc) return say("Describe the photo first.", "err");
+      if (k === "end" && !imgs.start) return say("Add the start photo first, so the end photo keeps the same room.", "err");
+      btn.disabled = true; fr.querySelector(".pic").innerHTML = '<div class="spin"></div>'; say(k === "end" ? "Styling the same room… about 20 seconds" : "Making the photo… about 20 seconds");
+      try {
+        const d = k === "end"
+          ? await api("/api/brand", { action: "edit", image: imgs.start, prompt: desc + " The big ornaments are set back toward the trunk; ribbon billows out of the branches and tucks back in, with no bows, swags or wraps.", aspect: "9:16" })
+          : await api("/api/brand", { action: "generate", prompt: desc + "\n\n" + LOOK, aspect: "9:16" });
+        set(k, await shrink(d.image)); say("");
+      } catch (e) { fr.querySelector(".pic").textContent = "Try again"; say(e.message, "err"); }
+      finally { btn.disabled = false; }
+    };
+  });
+  el.querySelector(".make").onclick = async () => {
+    const mode = el.dataset.mode, btn = el.querySelector(".make");
+    if (mode !== "text" && !imgs.start) return say("Add the start photo first.", "err");
+    if (mode === "frames" && !imgs.end) return say("Add the end photo too.", "err");
+    btn.disabled = true; const out = el.querySelector(".out"); out.innerHTML = '<div class="spin"></div>';
+    say("Making the clip… usually 1 to 3 minutes. Keep this page open.");
+    try {
+      const d = await api("/api/video", { action: "make", prompt: el.querySelector(".prompt").value.trim(), first: imgs.start, last: mode === "frames" ? imgs.end : undefined, label: el.querySelector("h3").firstChild.textContent.trim(), resolution: el.querySelector(".res").value });
+      out.innerHTML = `<video src="${d.url}" controls playsinline loop></video><div><a class="mini" href="${d.url}" download target="_blank" style="text-decoration:none;display:inline-block">Download</a></div>`;
+      say(`Saved. ${d.today} of ${d.limit} clips today. Not quite right? Adjust the wording and make it again.`, "ok"); count(d.today, d.limit); library();
+    } catch (e) { out.innerHTML = ""; say(e.message, "err"); }
+    finally { btn.disabled = false; btn.textContent = "Make it again"; }
+  };
+}
+
+$("#copyCap").onclick = async () => { try { await navigator.clipboard.writeText($("#cap").textContent); $("#capMsg").textContent = "Copied"; } catch { $("#capMsg").textContent = "Select the text and copy it"; } };
+const count = (n, lim) => { $("#count").textContent = `${n} of ${lim} clips made today`; };
+
+async function library() {
+  try {
+    const d = await api("/api/video", { action: "list" }); count(d.today, d.limit);
+    $("#lib").innerHTML = d.clips.length ? d.clips.map(c => `<figure><video src="${c.url}" controls playsinline preload="metadata"></video><figcaption>${esc(c.label || "Clip")} · ${new Date(c.at).toLocaleDateString()}<br><a href="${c.url}" download target="_blank">Download</a></figcaption></figure>`).join("") : '<p class="sub">No clips yet.</p>';
+  } catch (e) { if (e.status === 401) gate("That password didn't work."); else $("#lib").innerHTML = `<p class="msg err">${esc(e.message)}</p>`; }
+}
+
+function gate(err) { $("#app").hidden = true; $("#gate").hidden = false; $("#gateErr").textContent = err || ""; }
+$("#gateForm").onsubmit = e => { e.preventDefault(); password = $("#pw").value.trim(); try { sessionStorage.setItem("ts_pw", password); } catch {} start(); };
+async function start() {
+  if (!password) return gate();
+  $("#gate").hidden = true; $("#app").hidden = false;
+  try { brandPhotos = (await (await fetch("/api/brand")).json()).photos || {}; } catch {}
+  library();
+}
+start();
+</script>
+</body>
+</html>

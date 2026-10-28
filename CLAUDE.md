@@ -26,6 +26,8 @@ Read this first in every session. It holds what the team has decided and why, so
 | `lib/schema.js` | The JSON shapes Claude must return |
 | `studio/` | Generates and picks brand photography for every photo spot in the app and site |
 | `lab/` | Side-by-side testing of a proposed rule against the live app |
+| `studio/reels.html`, `api/video.js` | Reels: Claude writes on-brand shot lists, Gemini Omni Flash makes the clips (saved in Blob, daily limit `VIDEO_DAILY_LIMIT`, default 15) |
+| `lib/videobrand.js` | **How TreeStyle looks and sounds on video**: look, words, honesty rules, shot craft |
 
 ## How we work
 - **Design rules: principles, not checklists.** Explain what good design is and why, with an example, and let the model use judgment. Exact counts and positions made trees look sporadic and less creative. Avoid "never" unless something keeps going wrong.
@@ -93,3 +95,4 @@ Read this first in every session. It holds what the team has decided and why, so
 - 2026-11-01: Filler variety: the plan mixes several filler kinds suited to the style (e.g. cedar and eucalyptus with berries and pinecone picks; magnolia with glitter and crystal sprays) and gives each extra kind its own plan item with a shop name, so all of them appear under Filler on the shopping list.
 - 2026-11-01: Shopping list picks: a leaf product never stands in for a flower (or the reverse), and within one list a pick goes to one item only, so two different items never share a product. Ornament searches no longer add "shatterproof", which narrowed Amazon results.
 - 2026-11-01: Amazon searches read the way a shopper types: ribbon is "6 inch brick red embroidered wired ribbon" (width, color, texture; no yard count), stems and flowers are "red poinsettia picks" (no "christmas tree"). Ribbon texture can now be jeweled, embroidered or brocade, so the statement ribbon is searched as one.
+- 2026-10-28: Reels added to the Studio (`/studio/reels`): Claude writes shots from `lib/videobrand.js` plus the designer's rules; clips come from Gemini Omni Flash, because Google retired the Veo preview models in the developer API on Oct 22, 2026. Every clip is labeled an AI preview; daily clip limit as a spending guard.
