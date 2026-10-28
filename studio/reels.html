@@ -42,6 +42,12 @@
   .fr .pic img{width:100%;height:100%;object-fit:cover}
   .fr .hint{font-size:12px;color:var(--muted)}
   .fr .acts{display:flex;gap:6px;flex-wrap:wrap}
+  .tray{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .tray:empty{display:none}
+  .tray span{font-size:11.5px;color:var(--muted);width:100%}
+  .tray button{appearance:none;padding:0;border:1.5px solid var(--line);border-radius:6px;overflow:hidden;width:44px;height:78px;background:none;cursor:pointer}
+  .tray button:hover{border-color:var(--gold)}
+  .tray img{width:100%;height:100%;object-fit:cover}
   .out{margin-top:12px;display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
   video{width:220px;aspect-ratio:9/16;border-radius:12px;background:#000}
   .msg{font-size:13px;color:var(--muted);min-height:1.2em;margin-top:8px}
@@ -78,7 +84,7 @@
     <div class="intro">
       <div class="eyebrow">Studio</div>
       <h1>Reels</h1>
-      <p>Describe a video. Claude writes the shots using the TreeStyle brand and your design rules, then each shot becomes a real AI clip saved here. Add the on-screen text and sound in CapCut or Instagram.</p>
+      <p>Describe a video. Claude writes the shots using the TreeStyle brand and your design rules, then each shot becomes a real AI clip saved here. Every photo you make or upload appears in later shots, so the same tree carries through the whole Reel. Add the on-screen text and sound in CapCut or Instagram.</p>
     </div>
 
     <div class="panel">
@@ -121,7 +127,22 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const LOOK = "Editorial interior photograph for a luxury holiday brand, vertical 9:16. A real, lived-in home at dusk: moody, warm low lamp and candle light, glowing warm white tree lights; Midnight navy, Winter Berry, Evergreen, Walnut and Antique Gold tones; velvet, brass and walnut textures. Photorealistic, shallow depth of field. No people, no text, no logos.";
 let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
-let format = "glowup", brandPhotos = {};
+let format = "glowup", brandPhotos = {}, pool = [];
+const KEY = "ts_reel";
+const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
+const load = k => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch { return null; } };
+function addPool(src, label) {
+  if (!src || pool.some(x => x.src === src)) return;
+  pool.unshift({ src, label }); pool = pool.slice(0, 8);
+  while (pool.length && !store(KEY + "_pool", pool)) pool.pop();   // drop the oldest if the phone is out of room
+  refreshTrays();
+}
+function refreshTrays() {
+  document.querySelectorAll(".fr .tray").forEach(t => {
+    t.innerHTML = pool.length ? `<span>This Reel's photos (tap to use)</span>` + pool.map((x, i) => `<button data-p="${i}" title="${esc(x.label)}"><img src="${x.src}" alt=""></button>`).join("") : "";
+    t.querySelectorAll("button").forEach(b => b.onclick = () => { const fr = t.closest(".fr"); fr.closest(".shot")._set(fr.dataset.k, pool[+b.dataset.p].src); });
+  });
+}
 
 const api = async (path, body) => {
   const r = await fetch(path, { method: "POST", headers: { "content-type": "application/json", "x-test-password": password }, body: JSON.stringify(body) });
@@ -155,18 +176,21 @@ function showPlan(p) {
       <h3>${i + 1} · ${esc(s.name)} <span class="tag">${s.mode === "frames" ? "Start → end photo" : s.mode === "start" ? "From a photo" : "From words"}</span></h3>
       ${s.on_screen ? `<div class="ost">On-screen text: <b>${esc(s.on_screen)}</b></div>` : ""}
       <textarea class="prompt">${esc(s.prompt)}</textarea>
-      ${s.mode !== "text" ? `<div class="frames">
+      ${s.mode === "text" ? `<button class="mini usetree" style="margin-top:8px">Show our tree in this shot</button>` : ""}
+      <div class="frames"${s.mode === "text" ? " hidden" : ""}>
         ${frameBox("start", "Start photo", s.start_image)}
         ${s.mode === "frames" ? frameBox("end", "End photo", s.end_image) : ""}
-      </div>` : ""}
+      </div>
       <div class="row"><select class="res" style="width:auto"><option value="720p">720p (about $1)</option><option value="360p">360p draft (cheapest)</option><option value="1080p">1080p (final)</option></select><button class="btn make">Make this clip</button></div>
       <div class="msg"></div><div class="out"></div>
     </div>`).join("");
   document.querySelectorAll(".shot").forEach(wire);
+  refreshTrays();
+  store(KEY, p);
 }
 function frameBox(k, title, hint) {
   const app = k === "end";
-  return `<div class="fr" data-k="${k}"><b style="font-size:13px">${title}</b><div class="pic">No photo yet</div>
+  return `<div class="fr" data-k="${k}"><b style="font-size:13px">${title}</b><div class="pic">No photo yet</div><div class="tray"></div>
     ${app ? `<div class="hint">Made by the real app from the start photo: Claude plans the tree with your design rules, then the app paints its preview, exactly as a customer would get it.</div>
       <div class="acts"><select class="amode" style="width:auto;padding:6px 10px;font-size:12.5px"><option value="check">Check my tree</option><option value="design">Design my tree</option></select>
       <select class="astyle" style="width:auto;padding:6px 10px;font-size:12.5px"><option value="classic">Traditional</option><option value="keep">Keep my style</option><option value="rustic">Rustic</option><option value="modern">Modern</option><option value="elegant">Elegant</option><option value="playful">Playful</option></select></div>
@@ -200,7 +224,10 @@ async function appAfter(before, mode, style) {
 function wire(el) {
   const msg = el.querySelector(".msg"), imgs = {};
   const say = (t, k) => { msg.className = "msg" + (k ? " " + k : ""); msg.textContent = t; };
-  const set = (k, src) => { imgs[k] = src; el.querySelector(`.fr[data-k="${k}"] .pic`).innerHTML = `<img src="${src}" alt="">`; };
+  const set = (k, src) => { imgs[k] = src; el.querySelector(`.fr[data-k="${k}"] .pic`).innerHTML = `<img src="${src}" alt="">`; addPool(src, el.querySelector("h3").firstChild.textContent.trim() + " · " + k); };
+  el._set = set;
+  const ut = el.querySelector(".usetree");
+  if (ut) ut.onclick = () => { el.querySelector(".frames").hidden = false; el.dataset.mode = "start"; el.querySelector(".tag").textContent = "From a photo"; ut.remove(); say("Pick a photo from this Reel above. The clip will start from that exact tree."); };
   el.querySelectorAll(".fr").forEach(fr => {
     const k = fr.dataset.k;
     fr.querySelector("input[type=file]").onchange = async e => { const f = e.target.files[0]; if (f) set(k, await shrink(await fileUrl(f))); };
@@ -257,6 +284,8 @@ async function start() {
   if (!password) return gate();
   $("#gate").hidden = true; $("#app").hidden = false;
   try { brandPhotos = (await (await fetch("/api/brand")).json()).photos || {}; } catch {}
+  pool = load(KEY + "_pool") || [];
+  const last = load(KEY); if (last && last.shots) { showPlan(last); $("#planBtn").textContent = "Write new shots"; }
   library();
 }
 start();
