@@ -519,6 +519,22 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .sgrid .scard:first-child input:checked + span::after{right:auto;left:10px}
   /* Big serif titles a step heavier (semibold) so they hold up on a phone */
   .choice.tile b,.act b,.fix b,.src b,.scard b,.navlist b{font-weight:600 !important}
+  /* Analyzing screen: centered, calm, one tip card at the bottom */
+  #loading .box{text-align:center;max-width:360px}
+  #loading .scan{width:150px;margin:0 auto 22px}
+  #loading .scan:not([hidden]) ~ .big{display:none}
+  #loading .big{margin:0 auto 18px}
+  #loading h2{font:500 32px/1.1 var(--serif);margin:0 0 16px}
+  #loading .bar{max-width:260px;margin:0 auto;height:4px}
+  #loading #loadNote{margin:10px 0 18px;font-size:14px}
+  #loading ol{display:inline-block;text-align:left;margin:0 auto 24px}
+  #loading li{font-size:15px;padding:5px 0 5px 28px}
+  #loading li::before{top:8px;width:15px;height:15px}
+  #loading li.done::after{left:5px;top:11px;width:4px;height:7px}
+  #loading .tipcard{min-height:0;margin:0;padding:16px 20px 14px;text-align:center;border-radius:16px;background:rgba(243,238,231,.05);border:0;box-shadow:inset 0 0 0 1px rgba(184,156,107,.35)}
+  #loading .tipk{display:flex;align-items:center;gap:10px;justify-content:center;font-size:11px;letter-spacing:.2em}
+  #loading .tipk::before,#loading .tipk::after{content:"";width:22px;height:1px;background:var(--gold);opacity:.7}
+  #loading .tipcard p{font:italic 500 21px/1.3 var(--serif);margin:10px 0 12px;min-height:2.6em;display:grid;place-items:center}
   /* Rating: what the plan can bring the tree to comes first */
 
   body.home .barmono{visibility:hidden}
@@ -555,10 +571,10 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   /* Secondary buttons: sentence case reads faster */
   .btn.ghost{text-transform:none;letter-spacing:.01em;font-size:15px;font-weight:600}
   .stepnav #prevStep{flex:0 0 auto;padding-left:22px;padding-right:22px}
-  .done{text-align:center;padding:4px 0 10px}
-  .done h3{font-size:30px;margin:4px 0 6px}
-  .done p{color:var(--muted);margin:0 0 14px}
-  .done .btn{width:100%;margin-top:8px}
+  .finish{text-align:center;padding:4px 0 10px}
+  .finish h3{font-size:30px;margin:4px 0 6px}
+  .finish p{color:var(--muted);margin:0 0 14px}
+  .finish .btn{width:100%;margin-top:8px}
   /* Results: the two main actions, big and right under the preview */
   .acts{display:grid;gap:10px;margin:14px 0 6px}
   .act{display:flex;align-items:center;gap:14px;width:100%;text-align:left;appearance:none;cursor:pointer;border:0;border-radius:16px;padding:16px 18px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink);font:inherit}
@@ -945,16 +961,16 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 <div id="loading" hidden>
   <div class="box">
     <div class="scan" id="scan" hidden><img id="scanImg" alt=""><i></i></div>
+    <div class="big"></div>
+    <h2 id="loadTitle"></h2>
+    <div class="bar"><i id="loadFill"></i></div>
+    <p class="muted" id="loadNote">About a minute. Hang tight.</p>
+    <ol id="loadSteps"></ol>
     <div class="tipcard" aria-live="polite">
-      <div class="tipk" id="tipK">Try this</div>
+      <div class="tipk"><span id="tipK">While you wait</span></div>
       <p id="tipText"></p>
       <div class="tipdots" id="tipDots"></div>
     </div>
-    <div class="big"></div>
-    <h2 style="font-size:30px" id="loadTitle"></h2>
-    <ol id="loadSteps"></ol>
-    <div class="bar"><i id="loadFill"></i></div>
-    <p class="muted" id="loadNote" style="margin-top:10px;font-size:14px">About a minute. Hang tight.</p>
   </div>
 </div>
 
@@ -1231,7 +1247,7 @@ function startTips() {
   let k = 0;
   $("#tipDots").innerHTML = order.map(() => "<i></i>").join("");
   const showTip = () => {
-    const text = TIPS[order[k % order.length]], kind = "Try this";
+    const text = TIPS[order[k % order.length]], kind = "While you wait";
     $("#tipText").classList.add("fade");
     setTimeout(() => { $("#tipK").textContent = kind; $("#tipText").textContent = text; $("#tipText").classList.remove("fade"); }, k ? 350 : 0);
     [...$("#tipDots").children].forEach((d, i) => d.classList.toggle("on", i === k % order.length));
@@ -1738,7 +1754,7 @@ async function drawStep() {
   if (key === "all") {
     const total2 = steps.length - 1, nd2 = steps.filter(k => k !== "all" && (doneSteps.has(k) || goodSteps.has(k))).length;
     if (nd2 >= total2) {
-      $("#stepItems").insertAdjacentHTML("afterbegin", `<div class="done"><h3>Your tree is done</h3><p>Every step, finished. Enjoy it, and show it off.</p>${after ? `<button class="btn" data-share>Save and share</button>` : ""}<button class="btn ghost" data-another>Style another tree</button></div>`);
+      $("#stepItems").insertAdjacentHTML("afterbegin", `<div class="finish"><h3>Your tree is done</h3><p>Every step, finished. Enjoy it, and show it off.</p>${after ? `<button class="btn" data-share>Save and share</button>` : ""}<button class="btn ghost" data-another>Style another tree</button></div>`);
       const sh = $("#stepItems [data-share]"); if (sh) sh.onclick = () => $("#save").click();
       $("#stepItems [data-another]").onclick = () => $("#restart").click();
     }
