@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TreeStyle · The art of styling</title>
+<script>
+// On a preview copy, say so in the tab title and with a small badge, so it's never mistaken for the live site
+(function () { if (!/-git-|\.vercel\.app$/.test(location.hostname) || location.hostname === "tree-style.vercel.app") return;
+  document.title = "PREVIEW · " + document.title;
+  addEventListener("DOMContentLoaded", () => { const b = document.createElement("div"); b.textContent = "Preview copy";
+    b.style.cssText = "position:fixed;left:4px;bottom:4px;z-index:99;font:600 11px Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;background:#D0857C;color:#141C2C;padding:4px 10px;border-radius:99px;pointer-events:none;opacity:.92";
+    document.body.append(b); }); })();
+</script>
+
 <meta name="description" content="Snap a photo of your Christmas tree. Get a designer's step-by-step plan and see the finished tree before you hang a single ornament.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="TreeStyle">
