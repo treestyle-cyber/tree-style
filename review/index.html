@@ -5,18 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
 <title>TreeStyle · Feedback</title>
-<script>
-// On a preview copy, say so in the tab title and with a small badge, so it's never mistaken for the live site
-(function () { if (!/-git-|\.vercel\.app$/.test(location.hostname) || location.hostname === "tree-style.vercel.app") return;
-  document.title = "PREVIEW · " + document.title;
-  // a plum background instead of midnight, so a preview never looks like the live site
-  const st = document.createElement("style");
-  st.textContent = ":root{--bg:#2A1730 !important;--paper:#3A2442 !important;--paper-2:#45304D !important}body{background:radial-gradient(120% 80% at 50% 0%,#4A2A50,#2A1730 70%) fixed !important}";
-  document.head.append(st);
-  addEventListener("DOMContentLoaded", () => { const b = document.createElement("div"); b.textContent = "Preview copy";
-    b.style.cssText = "position:fixed;left:4px;bottom:4px;z-index:99;font:600 11px Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;background:#D0857C;color:#141C2C;padding:4px 10px;border-radius:99px;pointer-events:none;opacity:.92";
-    document.body.append(b); }); })();
-</script>
+<script src="/env.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
