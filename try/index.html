@@ -488,9 +488,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   #s-home .ttl{font-size:28px;margin-top:4px}
   #s-home .ttl::after{display:none}
   /* Rating: what the plan can bring the tree to comes first */
-  .rating #afterRow{order:-1;border-top:0;padding-top:0}
-  .rating #afterRow + .rrow{border-top:1px solid var(--line);padding-top:14px}
-  .rating .rnote{order:9}
+
   body.home .barmono{visibility:hidden}
   /* Disabled main button: clearly inactive, and it says what's missing */
   .foot .btn:disabled{background:rgba(28,37,56,.92);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line);opacity:1;letter-spacing:.04em;text-transform:none;font-size:15px}
@@ -529,6 +527,43 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .done h3{font-size:30px;margin:4px 0 6px}
   .done p{color:var(--muted);margin:0 0 14px}
   .done .btn{width:100%;margin-top:8px}
+  /* Results: the two main actions, big and right under the preview */
+  .acts{display:grid;gap:10px;margin:14px 0 6px}
+  .act{display:flex;align-items:center;gap:14px;width:100%;text-align:left;appearance:none;cursor:pointer;border:0;border-radius:16px;padding:16px 18px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink);font:inherit}
+  .act.main{background:var(--gold);color:var(--midnight);box-shadow:none}
+  .act .ic{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 1px rgba(184,156,107,.5);color:var(--gold)}
+  .act.main .ic{box-shadow:inset 0 0 0 1.5px rgba(20,28,44,.45);color:var(--midnight)}
+  .act .ic svg{width:21px;height:21px}
+  .act span{flex:1;display:grid;gap:2px}
+  .act b{font:500 24px/1.1 var(--serif)}
+  .act small{font-size:15px;opacity:.85}
+  .act i{font-style:normal;font-size:22px}
+  /* Top fixes: each its own item, title and line apart */
+  .hubfix{margin:18px 0 8px}
+  .hubk{font:600 12px var(--sans);letter-spacing:.16em;margin:0 2px 10px}
+  .fix{gap:14px;padding:14px 16px;margin:0 0 10px;border:0 !important;border-radius:14px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line);align-items:flex-start}
+  .fix b{font:500 22px/1.15 var(--serif);color:var(--ivory);margin:0 0 4px}
+  .fix p{margin:0;font-size:16px;line-height:1.5;color:var(--muted)}
+  .fix .n{width:28px;height:28px;font-size:14px;margin-top:2px}
+  #fixes{background:none;border:0;padding:0}
+  /* Photo tips as their own titled section */
+  .tipsbox{max-width:30em;margin:18px auto 0;padding:14px 18px 10px;border-radius:14px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
+  .tipsbox .hubk{margin:0 0 6px}
+  .tipsbox .tips{margin:0;padding-left:18px;font-size:16px;color:var(--ink)}
+  .tipsbox .tips li{margin:6px 0}
+  /* Style cards: easier to read on a phone */
+  .scard b{font-size:26px}
+  .scard small{font-size:15px;opacity:1;margin-top:4px}
+  .scard span::before{background:linear-gradient(180deg,rgba(20,28,44,0) 15%,rgba(20,28,44,.9))}
+  /* Back: a clear button with a word, not just an arrow */
+  #navBack{width:auto;border-radius:999px;padding:0 14px 0 8px;gap:2px;display:flex;align-items:center;box-shadow:inset 0 0 0 1.5px rgba(184,156,107,.55);height:38px;font:600 14px var(--sans);color:var(--gold)}
+  #navBack::after{content:"Back"}
+  .appbar{grid-template-columns:88px 1fr 88px}
+  .appbar #navHome{justify-self:end}
+  /* Welcome: the logo sits on a calm, dark patch so a busy photo can't swallow it */
+  #s-home .hero .lockup,#s-pass .hero .lockup{position:relative;padding:14px 0 6px}
+  #s-home .hero .lockup::before,#s-pass .hero .lockup::before{content:"";position:absolute;inset:-26px -40px -18px;background:radial-gradient(closest-side,rgba(14,20,32,.88),rgba(14,20,32,.6) 55%,transparent);z-index:-1}
+  #s-home .hero,#s-pass .hero{isolation:isolate}
   /* Score */
   .scoretop{display:grid;justify-items:center;gap:6px;margin:0 0 16px}
   .cat .raise{appearance:none;border:0;background:none;padding:8px 0 0;font:600 14px var(--sans);color:var(--green);text-decoration:underline;cursor:pointer}
@@ -636,7 +671,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
       <div class="rmhint">Tap where the tree will stand</div>
       <div class="rmwrap" id="rmWrap"><img id="rmImg" alt="Your room"><i id="rmDot"></i></div>
     </div>
-    <ul class="tips" id="photoTips"></ul>
+    <div class="tipsbox" id="tipsBox"><div class="hubk">Photo tips</div><ul class="tips" id="photoTips"></ul></div>
     <p class="photook" id="photoOk" hidden></p>
     <div class="err" id="photoErr"></div>
   </section>
@@ -743,12 +778,15 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
       <button class="btn ghost" id="again">Try another look</button>
       <button class="btn ghost" id="save" hidden>Save and share</button>
     </div>
-    <div class="card hubfix" id="hubFix" hidden>
+    <div class="acts" id="acts">
+      <button class="act main" id="actPlan"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></span><span><b>Step-by-step plan</b><small id="actPlanSub">Every step drawn on your tree</small></span><i>→</i></button>
+      <button class="act" id="actShop"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 7h12l-1 13H7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></span><span><b>Shopping list</b><small id="actShopSub">What to buy, with links</small></span><i>→</i></button>
+    </div>
+    <div class="hubfix" id="hubFix" hidden>
       <div class="hubk" id="hubFixK">Your top fixes</div>
       <div id="hubFixList"></div>
       <button class="hubmore" id="hubFixMore" hidden></button>
     </div>
-    <button class="btn showhow" id="showHow" hidden>Show me how  →</button>
     <form class="quickask" id="quickAsk">
       <label for="qaText">Want something different?</label>
       <div class="qarow">
@@ -759,8 +797,6 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     </form>
     <div class="ideas" id="ideas"></div>
     <div class="navlist">
-      <button data-go="s-plan"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></span><span><b>Step-by-step plan</b><small id="navPlan"></small></span><span class="chev">›</span></button>
-      <button data-go="s-shop"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 7h12l-1 13H7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></span><span><b>Shopping list</b><small id="navShop"></small></span><span class="chev">›</span></button>
       <button data-go="s-score" id="navScoreBtn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span><b>How it scored</b><small>Balance, lights, the top and more</small></span><span class="chev">›</span></button>
       <button data-go="s-fixes"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><span><b>Quick fixes</b><small id="navFixes"></small></span><span class="chev">›</span></button>
       <button data-go="s-partner"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span><span><b>More ways to change it</b><small>Your own colors and pieces, and earlier versions</small></span><span class="chev">›</span></button>
@@ -1003,7 +1039,7 @@ $("#passForm").addEventListener("submit", e => {
 const PHOTO_COPY = {
   design: { h: "Add a photo of your bare tree", sub: "Before you decorate: just the tree, or the tree with lights on.", tips: ["Stand back so the whole tree, including the top, is in the shot.", "Set it up where it will stay, so the room is in the picture too.", "If it's artificial, it's fine if it isn't fluffed yet."] },
   room: { h: "Add a photo of the room", sub: "The spot where your tree will go. Then tap where it will stand.", tips: ["Stand back so the whole wall or corner is in the shot, floor to ceiling.", "Take it in the light you usually see the room in."] },
-  check: { h: "Add a photo of your decorated tree", sub: "Finished, or partway there. Either works.", tips: ["Stand back so the whole tree, including the top, is in the shot.", "Turn the tree lights on. Daytime or evening both work."] }
+  check: { h: "Add a photo of your tree as it is now", sub: "Fully decorated or only partway there: both work. We'll take it from where you are.", tips: ["Stand back so the whole tree, including the top, is in the shot.", "Turn the tree lights on. Daytime or evening both work."] }
 };
 document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   mode = b.dataset.mode; rerunFromHub = false; factsSet = false;
@@ -1021,12 +1057,12 @@ function setPhotoCopy(key) {
   const c = PHOTO_COPY[key];
   $("#photoH").textContent = c.h; $("#photoSub").textContent = c.sub;
   $("#photoTips").innerHTML = c.tips.map(t => `<li>${t}</li>`).join("");
-  $("#photoTips").hidden = false; $("#photoOk").hidden = true;
+  $("#tipsBox").hidden = false; $("#photoOk").hidden = true;
 }
 // Once there's a photo, one short check replaces the tips
 function photoChecked() {
   const room = mode === "design" && src === "room";
-  $("#photoTips").hidden = !room ? true : false;
+  $("#tipsBox").hidden = !room;
   $("#photoOk").hidden = room;
   $("#photoOk").textContent = "Got it. Just check the whole tree, top included, is in the photo. Tap it to change.";
 }
@@ -1396,23 +1432,23 @@ function fillReveal() {
 }
 $("#teaser").onclick = () => { if (planState === "ready") show("s-results", ["s-home"]); };
 
-const where = f => mode === "check" && typeof f.x === "number" && typeof f.y === "number";
+const fixHtml = (f, i) => `<div class="fix"><span class="n">${i + 1}</span><div><b>${esc(f.title)}</b><p>${esc(f.how)}</p></div></div>`;
 function fill() {
   const r = result;
   const fixes = r.quick_fixes || [], plan = r.plan || [];
   $("#navFixes").textContent = `${fixes.length} changes with the biggest payoff`;
-  $("#navPlan").textContent = `${plan.length} steps, in the order a designer works`;
   syncTell(r);
   const shopping = TreeGuide.shoppingList(r, mode), nItems = shopping.reduce((a, g) => a + g.items.length, 0);
-  $("#navShop").textContent = nItems ? `${nItems} things to look for, with quantities` : "Nothing new needed";
   $("#navScoreBtn").hidden = !(r.categories || []).length;
   $("#fixesSub").textContent = mode === "design" ? "The plan at a glance." : "Biggest difference for the least effort, best first.";
-  $("#fixes").innerHTML = fixes.map((f, i) => `<div class="fix"><span class="n">${i + 1}</span><div><b>${esc(f.title)}</b>${esc(f.how)}${where(f) ? `<button class="where" data-fx="${i}">Show me where</button>` : ""}</div>${where(f) ? `<span class="crop" data-crop="${i}"></span>` : ""}</div>`).join("");
-  fixCrops(fixes);
+  $("#fixes").innerHTML = fixes.map((f, i) => fixHtml(f, i)).join("");
   // The top three fixes sit right under the preview; the full list stays one tap away
-  $("#hubFix").hidden = !fixes.length; $("#showHow").hidden = !plan.length;
+  $("#hubFix").hidden = !fixes.length; $("#acts").hidden = !plan.length;
   $("#hubFixK").textContent = mode === "design" ? "Your plan at a glance" : "Your top fixes";
-  $("#hubFixList").innerHTML = fixes.slice(0, 3).map((f, i) => `<div class="fix"><span class="n">${i + 1}</span><div><b>${esc(f.title)}</b>${esc(f.how)}${where(f) ? `<button class="where" data-fx="${i}">Show me where</button>` : ""}</div></div>`).join("");
+  $("#hubFixList").innerHTML = fixes.slice(0, 3).map((f, i) => fixHtml(f, i)).join("");
+  const nItems2 = TreeGuide.shoppingList(r, mode).reduce((a, g) => a + g.items.length, 0);
+  $("#actPlanSub").textContent = `${plan.length} steps, each drawn on your tree`;
+  $("#actShopSub").textContent = nItems2 ? `${nItems2} things to buy, with links` : "You already have what you need";
   const moreFix = fixes.length - 3;
   $("#hubFixMore").hidden = moreFix <= 0; $("#hubFixMore").textContent = moreFix === 1 ? "See 1 more fix" : `See ${moreFix} more fixes`;
   $("#scoreSub").textContent = r.overall != null ? `Your tree today: ${toOrn(r.overall)} of 5 ornaments, ${levelWord(toOrn(r.overall)).toLowerCase()}. Here's how each part scored, out of 10.` : "";
@@ -1519,10 +1555,12 @@ async function markedImage() {
   const im = await load(after), c = document.createElement("canvas"), g = c.getContext("2d");
   c.width = im.naturalWidth; c.height = im.naturalHeight; g.drawImage(im, 0, 0);
   try {
-    const logo = await load("/brand/logo-horizontal.png"), w = c.width * .34, h = w * logo.naturalHeight / logo.naturalWidth, pad = c.width * .03;
-    g.fillStyle = "rgba(20,28,44,.55)"; const bw = w + pad * 1.4, bh = h + pad * .9;
-    g.beginPath(); g.roundRect ? g.roundRect(c.width - bw - pad * .6, c.height - bh - pad * .6, bw, bh, bh / 2) : g.rect(c.width - bw - pad * .6, c.height - bh - pad * .6, bw, bh); g.fill();
-    g.drawImage(logo, c.width - bw - pad * .6 + pad * .7, c.height - bh - pad * .6 + pad * .45, w, h);
+    // A calm midnight band across the bottom with the gold logo large enough to read on a phone
+    const logo = await load("/brand/logo-horizontal.png"), w = c.width * .5, h = w * logo.naturalHeight / logo.naturalWidth, bh = h + c.width * .07;
+    const gr = g.createLinearGradient(0, c.height - bh * 1.5, 0, c.height);
+    gr.addColorStop(0, "rgba(20,28,44,0)"); gr.addColorStop(.35, "rgba(20,28,44,.82)"); gr.addColorStop(1, "rgba(20,28,44,.94)");
+    g.fillStyle = gr; g.fillRect(0, c.height - bh * 1.5, c.width, bh * 1.5);
+    g.drawImage(logo, (c.width - w) / 2, c.height - bh + (bh - h) / 2, w, h);
   } catch {}
   return new Promise(ok => c.toBlob(ok, "image/jpeg", .92));
 }
@@ -1537,35 +1575,14 @@ $("#save").onclick = async () => {
 $("#restart").onclick = () => { photo = null; guide = null; photoImg = null; factsSet = false;
   clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d); $("#file").value = ""; $("#dropInner").innerHTML = "<strong>Tap to take or choose a photo</strong>";
-  roomPhoto = null; baseKey = ""; $("#roomMark").hidden = true; $("#photoTips").hidden = false; $("#photoOk").hidden = true;
+  roomPhoto = null; baseKey = ""; $("#roomMark").hidden = true; $("#tipsBox").hidden = false; $("#photoOk").hidden = true;
   if (mode === "design") show("s-start", ["s-home"]); else show("s-photo", ["s-home"]); };
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => b.dataset.go === "s-plan" ? openPlan() : show(b.dataset.go));
-$("#showHow").onclick = () => openPlan();
+$("#actPlan").onclick = () => openPlan();
+$("#actShop").onclick = () => show("s-shop");
 document.querySelectorAll("[data-go=s-plan]").forEach(b => b.onclick = () => openPlan());
 $("#hubFixMore").onclick = () => show("s-fixes");
-// Quick fixes: a small crop of the spot on their own photo, and the whole photo with the spot circled
-function spotImage(f, crop) {
-  return getPhotoImg().then(im => {
-    const W = im.naturalWidth, H = im.naturalHeight, c = document.createElement("canvas"), g = c.getContext("2d");
-    if (crop) {
-      const sz = Math.min(W, H) * .28, x = Math.min(W - sz, Math.max(0, f.x * W - sz / 2)), y = Math.min(H - sz, Math.max(0, f.y * H - sz / 2));
-      c.width = c.height = 160; g.drawImage(im, x, y, sz, sz, 0, 0, 160, 160);
-    } else {
-      const k = Math.min(1, 1400 / Math.max(W, H)); c.width = Math.round(W * k); c.height = Math.round(H * k); g.drawImage(im, 0, 0, c.width, c.height);
-      const r = Math.min(c.width, c.height) * .1; g.lineWidth = Math.max(4, r * .09); g.strokeStyle = "#E6D3A8"; g.shadowColor = "rgba(0,0,0,.6)"; g.shadowBlur = 12;
-      g.beginPath(); g.arc(f.x * c.width, f.y * c.height, r, 0, Math.PI * 2); g.stroke();
-    }
-    return c.toDataURL("image/jpeg", .85);
-  });
-}
-function fixCrops(fixes) {
-  document.querySelectorAll("[data-crop]").forEach(el => { const f = fixes[+el.dataset.crop]; spotImage(f, true).then(u => el.style.backgroundImage = `url(${u})`).catch(() => el.remove()); });
-}
-["#fixes", "#hubFixList"].forEach(id => $(id).addEventListener("click", async e => {
-  const b = e.target.closest("[data-fx]"); if (!b) return;
-  const f = (result.quick_fixes || [])[+b.dataset.fx]; if (!f) return;
-  openZoom([{ label: f.title, src: await spotImage(f, false) }], 0);
-}));
+
 
 // Shopping list: tick off what you have or bought (kept on this device), and share the list as text
 let gotItems = new Set(), shopNow = [];
