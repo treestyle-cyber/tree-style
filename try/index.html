@@ -498,12 +498,25 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .choice.tile small{font-size:15.5px;line-height:1.4;color:#D9CCC0;max-width:22em}
   .choice.tile i{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 1.5px rgba(184,156,107,.6);font-size:18px;transition:background .18s,color .18s}
   .choice.tile:hover i{background:var(--gold);color:var(--midnight)}
-  /* Style cards: the name, a short gold rule, then the feel in italic serif, like the home cards */
-  .scard span{justify-content:flex-end;padding:16px 12px 18px}
-  .scard b{font-size:27px;line-height:1;letter-spacing:.005em}
-  .scard b::after{content:"";display:block;width:28px;height:1px;background:var(--gold);margin:9px auto 8px}
-  .scard small{font:italic 500 18px/1.2 var(--serif);color:#EADFCB;opacity:1;margin:0}
-  .scard span::before{background:linear-gradient(180deg,rgba(20,28,44,0) 10%,rgba(20,28,44,.55) 45%,rgba(20,28,44,.94))}
+  /* Style cards: the photo on top, the words on a solid panel below (easy to read, like the home cards) */
+  .sgrid{gap:12px}
+  .scard span{aspect-ratio:auto !important;min-height:0;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;text-align:left;padding:0 !important;border-radius:16px;overflow:hidden;background:var(--paper) !important;box-shadow:inset 0 0 0 1px var(--line)}
+  .scard span::before{display:none}
+  .scard .sp{display:block;aspect-ratio:4/3;background-size:cover;background-position:center}
+  .sgrid .scard:first-child .sp{aspect-ratio:auto;height:118px}
+  .scard b{display:block;font-size:24px;line-height:1.05;margin:12px 14px 0;color:var(--ivory)}
+  .scard b::after{display:none}
+  .scard small{display:block;font:italic 500 17px/1.25 var(--serif);color:var(--muted);margin:3px 14px 14px;opacity:1}
+  .sgrid .scard:first-child span{display:grid;grid-template-columns:42% 1fr;align-items:center}
+  .sgrid .scard:first-child .sp{height:100%;min-height:112px}
+  .sgrid .scard:first-child b{font-size:28px;margin:0 16px}
+  .sgrid .scard:first-child small{margin:4px 16px 0;font-size:18px}
+  .sgrid .scard:first-child span > b,.sgrid .scard:first-child span > small{grid-column:2}
+  .sgrid .scard:first-child .sp{grid-row:1 / span 2}
+  .sgrid .scard:first-child b{align-self:end}
+  .sgrid .scard:first-child small{align-self:start}
+  .scard input:checked + span{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--gold)}
+  .sgrid .scard:first-child input:checked + span::after{right:auto;left:10px}
   /* Big serif titles a step heavier (semibold) so they hold up on a phone */
   .choice.tile b,.act b,.fix b,.src b,.scard b,.navlist b{font-weight:600 !important}
   /* Rating: what the plan can bring the tree to comes first */
@@ -737,13 +750,13 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <h1>Pick a style</h1>
     <p class="sub">A starting point, not a box. Your tree, your way.</p>
     <div class="sgrid">
-      <label class="scard"><input type="radio" name="style" value="keep" checked><span style="background-image:var(--photo-keep, url(/brand/walnut.jpg))"><b>Keep my style</b><small>Refine what you have</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="classic"><span style="background-image:var(--photo-classic, url(/brand/velvet-berry.jpg))"><b>Traditional</b><small>Nostalgic and warm</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="rustic"><span style="background-image:var(--photo-rustic, url(/brand/pattern-plaid.jpg))"><b>Rustic</b><small>Cozy and natural</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="modern"><span style="background-image:var(--photo-modern, url(/brand/marble.jpg))"><b>Modern</b><small>Calm and graphic</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="elegant"><span style="background-image:var(--photo-elegant, url(/brand/velvet-midnight.jpg))"><b>Elegant</b><small>Rich and luminous</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="playful"><span style="background-image:var(--photo-playful, url(/brand/pattern-stripe.jpg))"><b>Playful</b><small>Bold and joyful</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="themed"><span style="background-image:var(--photo-themed, url(/brand/pattern-damask.jpg))"><b>Themed</b><small>One story, your idea</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="keep" checked><span><i class="sp" style="background-image:var(--photo-keep, url(/brand/walnut.jpg))"></i><b>Keep my style</b><small>Refine what you have</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="classic"><span><i class="sp" style="background-image:var(--photo-classic, url(/brand/velvet-berry.jpg))"></i><b>Traditional</b><small>Nostalgic and warm</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="rustic"><span><i class="sp" style="background-image:var(--photo-rustic, url(/brand/pattern-plaid.jpg))"></i><b>Rustic</b><small>Cozy and natural</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="modern"><span><i class="sp" style="background-image:var(--photo-modern, url(/brand/marble.jpg))"></i><b>Modern</b><small>Calm and graphic</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="elegant"><span><i class="sp" style="background-image:var(--photo-elegant, url(/brand/velvet-midnight.jpg))"></i><b>Elegant</b><small>Rich and luminous</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="playful"><span><i class="sp" style="background-image:var(--photo-playful, url(/brand/pattern-stripe.jpg))"></i><b>Playful</b><small>Bold and joyful</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="themed"><span><i class="sp" style="background-image:var(--photo-themed, url(/brand/pattern-damask.jpg))"></i><b>Themed</b><small>One story, your idea</small></span></label>
     </div>
     <input type="text" id="theme" placeholder="Your theme (e.g. vintage blue and silver)" hidden>
     <p class="styleNote" id="styleNote"></p>
