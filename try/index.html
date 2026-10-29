@@ -364,6 +364,9 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .ptips b{font:500 17px/1.15 var(--serif);color:var(--ivory)}
   .ptips small{font-size:12.5px;line-height:1.3;color:var(--muted)}
   #tipsSheet .ptips li{background:rgba(184,156,107,.06)}
+  .brandrow{display:flex;gap:14px;align-items:flex-start;margin:14px 0 0}
+  .brandrow p{margin:0;font-size:16px;line-height:1.5;color:var(--ink)}
+  .brandrow .pti{flex:none;margin:0}
   /* score in one line: the ornaments themselves */
   .scorestrip{display:flex;align-items:center;gap:14px;width:100%;appearance:none;border:1px solid var(--line);border-radius:16px;background:rgba(184,156,107,.05);padding:14px 16px;margin:16px 0;color:inherit;font:inherit;text-align:left;cursor:pointer;flex-wrap:wrap}
   .scorestrip .orns{display:flex;gap:4px}
@@ -1071,6 +1074,18 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   </div>
 </div>
 
+<div id="brandSheet" class="sheet" hidden>
+  <div class="sheetbg" data-close></div>
+  <div class="sheetbox" role="dialog" aria-modal="true" aria-labelledby="brandH">
+    <button class="sheetx" data-close aria-label="Close">✕</button>
+    <div class="sheetk">A note on themed trees</div>
+    <h3 id="brandH">About your preview</h3>
+    <div class="brandrow"><span class="pti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg></span><p id="brandP"></p></div>
+    <div class="brandrow"><span class="pti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M6 7h12l-1 13H7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></span><p id="brandP2"></p></div>
+    <button class="btn" data-close style="width:100%;margin-top:18px">Got it</button>
+  </div>
+</div>
+
 <div id="styleSheet" class="sheet" hidden>
   <div class="sheetbg" data-close></div>
   <div class="sheetbox" role="dialog" aria-modal="true" aria-labelledby="styleH">
@@ -1711,14 +1726,16 @@ async function makePreview(extraPieces, change) {
     // A design-partner change edits the preview they're looking at, so nothing else shifts.
     const body = change && change.base
       ? { image: await thumb(change.base, 1536, .92), brief: change.brief, aspect: photoAspect, pieces: extraPieces || undefined, revision: true }
-      : { image: photo, brief: result.render_brief, aspect: photoAspect, pieces: extraPieces || keyPhoto || undefined, map: lastMap = await placementMap(), shape: needsShaping(result) || undefined };
+      : { image: photo, brief: result.render_brief, aspect: photoAspect, pieces: extraPieces || keyPhoto || undefined, map: lastMap = await placementMap(), shape: needsShaping(result) || undefined, generic: !!result.branded_theme || undefined };
     if (lastMap) $("#mapImg").src = lastMap;
     const out = await api("/api/render", body);
     after = out.image;
+    brandNote = (result.branded_theme || (out._meta?.generic ? "your theme" : "")).trim();
     $("#timing").textContent = `${evalTiming(result)} · Preview: ${out._meta?.model} · ${out._meta?.seconds}s${out._meta?.shaped ? " · branches shaped" : ""}${out._meta?.edited ? " · edited the preview you were looking at" : change ? "" : " · painted from your photo"}`;
     // Behind the scenes shows the instructions the picture was actually made from
     $("#brief").textContent = change && change.base ? "Change made to the current preview:\n" + change.brief : (result.render_brief || "");
     drawViewer();
+    setTimeout(showBrandNote, 1200);   // shows only once the results are on screen and any reveal has closed
   } catch (e) {
     after = null;
     $("#viewer").innerHTML = `<div class="renderwait"><img src="${photo}" alt="" style="max-height:220px;margin:0 auto 12px;border-radius:8px;opacity:.6">The preview didn't come through this time.<div class="err" style="font-size:13px">${esc(e.message).slice(0, 220)}</div></div>`;
@@ -1739,6 +1756,17 @@ function drawViewer() {
   box.addEventListener("pointercancel", () => drag = false);
 }
 let revealedSrc = "";
+// Branded themes: image tools can't draw trademarked designs, so the preview uses look-alike pieces. Say so, once per picture.
+let brandNote = "", brandNoted = "";
+function showBrandNote() {
+  if (!brandNote || !after || brandNoted === after || $("#s-results").hidden || document.getElementById("bigReveal")) return;
+  brandNoted = after;
+  const name = brandNote === "your theme" ? "your theme" : `your ${brandNote} theme`, lic = brandNote === "your theme" ? "licensed" : `licensed ${brandNote}`;
+  $("#brandH").textContent = "About your preview";
+  $("#brandP").innerHTML = `Image tools can't draw trademarked characters, logos or emblems, so this preview shows ${esc(name)} with look-alike pieces in its colors and spirit.`;
+  $("#brandP2").innerHTML = `Your plan and shopping list can still include the ${esc(lic)} ornaments and topper you'd buy.`;
+  openSheet("#brandSheet");
+}
 function bigReveal(done) {
   if (!after || revealedSrc === after) return done();
   revealedSrc = after;
@@ -1750,7 +1778,7 @@ function bigReveal(done) {
 function sweep() {
   const box = $("#cmp"); if (!box || swept) return;
   // After the full-screen reveal the slider just waits underneath; a second sweep right after it read as a stutter
-  if (after && revealedSrc !== after) { swept = true; bigReveal(() => {}); return; }
+  if (after && revealedSrc !== after) { swept = true; bigReveal(() => setTimeout(showBrandNote, 900)); return; }
   swept = true;
   let t0; const sw = t => { t0 ??= t; const k = (t - t0) / 1700; if (k > 1) { box.style.setProperty("--cut", "50%"); return; } box.style.setProperty("--cut", (50 + Math.sin(k * Math.PI * 2) * 32) + "%"); requestAnimationFrame(sw); };
   setTimeout(() => requestAnimationFrame(sw), 300);
@@ -1776,6 +1804,7 @@ $("#again").onclick = () => {
   }).join("");
   openSheet("#styleSheet");
 };
+$("#brandSheet").addEventListener("click", e => { if (e.target.closest("[data-close]")) closeSheet("#brandSheet"); });
 $("#styleSheet").addEventListener("click", e => {
   if (e.target.closest("[data-close]")) { closeSheet("#styleSheet"); return; }
   const b = e.target.closest("[data-style]"); if (!b || busy) return;
@@ -2149,6 +2178,7 @@ async function partnerSend(req, label, opts = {}) {
       ideas: (res.ideas || []).length ? res.ideas : result.ideas,
       mockup: Object.assign({}, result.mockup, res.mockup || {}),
       render_brief: res.render_brief || result.render_brief,
+      branded_theme: res.branded_theme ?? result.branded_theme ?? "",
       _meta: Object.assign({}, res._meta, { change: true })
     });
     result = next; guide = null; doneSteps = new Set();

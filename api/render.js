@@ -76,7 +76,7 @@ export default async function handler(req, res) {
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
 
-  const { image, brief, aspect, pieces, map, revision, shape, variant } = req.body || {};
+  const { image, brief, aspect, pieces, map, revision, shape, variant, generic } = req.body || {};
   const pc = parseDataUrl(pieces), mp = parseDataUrl(map);
   const img = parseDataUrl(image);
   if (!img || !brief) return res.status(400).json({ error: "Missing photo or brief" });
@@ -87,7 +87,9 @@ export default async function handler(req, res) {
   let lastErr = "";
   // Lab test (variant "v2"): Google's higher-quality image model first, plus a closing checklist
   const models = variant === "v2" ? [...new Set([LAB_MODEL, ...MODELS])] : MODELS;
-  const prompt = editPrompt(brief, revision, !!shape && !revision) + (variant === "v2" ? LAB_CHECK : "");
+  // A branded theme (a film, show, team) is painted with generic pieces from the start, since the model refuses trademarked designs
+  const prompt = editPrompt(brief, revision, !!shape && !revision) + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "");
+  if (generic) retried = true;
   for (const model of models) {
     let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp);
     // Some models reject imageConfig; retry once without it.
@@ -116,7 +118,7 @@ export default async function handler(req, res) {
     const d = pic.inlineData || pic.inline_data;
     return res.status(200).json({
       image: `data:${d.mimeType || d.mime_type || "image/png"};base64,${d.data}`,
-      _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision }
+      _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !!generic }
     });
   }
   return res.status(502).json({ error: lastErr || "No image model available" });
