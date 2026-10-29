@@ -51,6 +51,7 @@ Read this first in every session. It holds what the team has decided and why, so
 - Hidden vine: picks, florals and ribbon moments wind back and forth, fuller low, never in a diagonal line.
 - Variety: everywhere the eye lands there's something to discover: mixed shapes, several kinds of flowers and picks, ribbons that differ in texture. Variety, not clutter.
 - Balance means equal visual weight, not symmetry; deliberate asymmetry is good design.
+- Textured statement ribbon: at least one jeweled, embroidered or brocade wired ribbon, as the widest (5-6" wide), on Traditional, Elegant, Playful and Themed; Rustic only an embroidered one that fits the motif; never Modern.
 - No black ornaments unless the person asks for black.
 - Styles: Traditional, Rustic, Modern, Elegant, Playful, Themed, Keep my style. Style comes from the kinds of pieces, not color; palettes are "typical" starting points.
 - Inspiration photos: find what they love (their words first), ignore the background, pick the 2-4 defining elements, keep color proportions, keep everything shoppable.
@@ -66,3 +67,4 @@ Read this first in every session. It holds what the team has decided and why, so
 - 2026-10-23: Scoring: lights weight 15 → 5; base removed from the score (still suggested in the plan); deliberate asymmetry isn't a flaw; hidden deep ornaments get the benefit of the doubt. No black ornaments unless asked.
 - 2026-10-23: `design` branch and preview-only Studio photos and feedback set up for app design work.
 - 2026-10-24: Keep my style reads the style from the tree's strongest signal piece (elf legs → Playful), not a default of Traditional.
+- 2026-10-28: Jeweled or embroidered statement ribbon by default (won in the Lab): the widest ribbon is jeweled, embroidered or brocade on Traditional, Elegant, Playful, Themed (and Keep my style leaning those ways); Rustic only embroidered with a fitting motif; never Modern. Ribbon sizes are written as widths ("6 inches wide"), designed trees get real 12-18" cascades, and design briefs remove an existing swag first.
