@@ -307,6 +307,8 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .buyrow small{display:block;color:var(--muted);font-size:13.5px;margin-top:2px}
   .buyrow em{font:600 11.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--on-accent);background:var(--gold);padding:8px 13px;border-radius:99px;white-space:nowrap}
   .buyrow strong::first-letter{text-transform:uppercase}
+  .buyrow b.pic{width:56px;height:56px;border-radius:14px;background:radial-gradient(circle at 50% 40%,rgba(243,238,231,.16),rgba(243,238,231,.04) 70%);box-shadow:inset 0 0 0 1px rgba(184,156,107,.28);display:grid;place-items:center;padding:6px}
+  .buyrow b.pic svg{width:100%;height:100%;display:block;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
   .buyrow.reuse{background:none;border-style:dashed}
   .buyrow.reuse b{background:none;box-shadow:inset 0 0 0 1.5px rgba(184,156,107,.6);display:grid;place-items:center}
   .buyrow.reuse b::before{content:"↺";color:var(--gold);font:600 20px var(--sans)}
@@ -693,6 +695,11 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   details.buy{border:1px solid var(--line);border-radius:16px;margin:0 0 12px;padding:0 14px;background:rgba(184,156,107,.04)}
   details.buy > summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0}
   details.buy > summary::-webkit-details-marker{display:none}
+  details.buy > summary{justify-content:flex-start}
+  details.buy .bt{flex:1;min-width:0}
+  .bic{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:var(--gold);background:radial-gradient(circle at 35% 30%,rgba(230,211,168,.22),rgba(184,156,107,.06) 70%);box-shadow:inset 0 0 0 1px rgba(184,156,107,.55),0 6px 14px -8px rgba(0,0,0,.7)}
+  .bic svg{width:28px;height:28px}
+  details.buy[open] .bic{background:radial-gradient(circle at 35% 30%,#E6D3A8,#B89C6B 70%);color:var(--midnight)}
   details.buy .bt b{display:block;font:500 24px/1.15 var(--serif);color:var(--ivory)}
   details.buy .bt small{display:block;font:600 11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-top:4px}
   .chevc{flex:none;width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(184,156,107,.55);display:grid;place-items:center;transition:transform .25s,background .25s}
@@ -704,7 +711,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   details.buy[open] > summary + .buyline{border-top:0}
   .buyline:last-child{margin-bottom:6px}
   .buyline .buyrow{flex:1;min-width:0;background:none;border:0;border-radius:0;padding:12px 0;margin:0;gap:12px}
-  .buyline .buyrow b{width:36px;height:36px;border-radius:10px}
+  .buyline .buyrow b.pic{width:58px;height:58px}
   .buyline .buyrow strong{font-size:18px}
   .buyline.have .buyrow{opacity:.55}
   .got{flex:none;appearance:none;width:26px;height:26px;border-radius:7px;border:1.5px solid var(--gold);background:transparent;cursor:pointer;display:grid;place-items:center;color:var(--midnight);font:700 14px var(--sans)}
@@ -1594,7 +1601,7 @@ function fill() {
   $("#cats").querySelectorAll("[data-raise]").forEach(b => b.onclick = () => openPlan(b.dataset.raise));
   shopNow = shopping;
   $("#shop").innerHTML = (nItems ? `<div class="shophead"><div><b id="gotCount"></b><span class="gotbar"><i id="gotBar"></i></span></div><button class="btn ghost" id="shareList">Share list</button></div>` : "") + (nItems && !factsSet ? estNote(r) : "")
-    + (nItems ? shopping.map((g, gi) => `<details class="buy"${gi === 0 ? " open" : ""}><summary><span class="bt"><b>${esc(g.title)}</b><small>${g.items.length} ${g.items.length === 1 ? "item" : "items"}</small></span><span class="chevc" aria-hidden="true"></span></summary>${g.items.map(b => `<div class="buyline${gotItems.has(b.label) ? " have" : ""}"><button class="got${gotItems.has(b.label) ? " on" : ""}" data-got="${esc(b.label)}" aria-label="Got it: ${esc(b.label)}"></button>${buyRow(b)}</div>`).join("")}</details>`).join("") : `<p class="muted">You already have what you need. It's all in how you place it.</p>`);
+    + (nItems ? shopping.map((g, gi) => `<details class="buy"${gi === 0 ? " open" : ""}><summary><span class="bic" aria-hidden="true">${SHOP_ICON[g.key] || SHOP_ICON.base}</span><span class="bt"><b>${esc(g.title)}</b><small>${g.items.length} ${g.items.length === 1 ? "item" : "items"}</small></span><span class="chevc" aria-hidden="true"></span></summary>${g.items.map(b => `<div class="buyline${gotItems.has(b.label) ? " have" : ""}"><button class="got${gotItems.has(b.label) ? " on" : ""}" data-got="${esc(b.label)}" aria-label="Got it: ${esc(b.label)}"></button>${buyRow(b, g.key)}</div>`).join("")}</details>`).join("") : `<p class="muted">You already have what you need. It's all in how you place it.</p>`);
   syncGot();
   $("#brief").textContent = r.render_brief || "";
   $("#ideas").innerHTML = (r.ideas || []).slice(0, 3).map((x, i) => `<button data-i="${i}">Try: ${esc(x.label)}</button>`).join("") + (r.ideas?.length ? `<button data-more>Something else…</button>` : "");
@@ -1754,8 +1761,38 @@ $("#shop").addEventListener("click", async e => {
     try { await navigator.clipboard.writeText(text); e.target.textContent = "Copied ✓"; setTimeout(() => e.target.textContent = "Share list", 1800); } catch { e.target.textContent = "Couldn't copy"; }
   }
 });
-const buyRow = b => b.q
-  ? `<a class="buyrow" href="${shopFor(b)}" target="_blank" rel="noopener sponsored"><b style="background:${b.color || "#ECE4D8"}"></b><span><strong>${esc(b.label)}</strong>${b.qty ? `<small>${esc(b.qty)}</small>` : ""}</span><em>Shop</em></a>`
+// Section icons (gold line drawings) and a small picture of each piece, drawn in its own color
+const _i = d => `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const SHOP_ICON = {
+  lights: _i(`<path d="M3 9c6 5 20 5 26 0"/><path d="M9 12.5v2M16 13.8v2M23 12.5v2"/><path d="M9 14.5c-1.6 1.8-1.6 4.4 0 5.6 1.6-1.2 1.6-3.8 0-5.6zM16 15.8c-1.6 1.8-1.6 4.4 0 5.6 1.6-1.2 1.6-3.8 0-5.6zM23 14.5c-1.6 1.8-1.6 4.4 0 5.6 1.6-1.2 1.6-3.8 0-5.6z"/>`),
+  primary_picks: _i(`<path d="M16 29V5"/><path d="M16 9l-5-3M16 9l5-3M16 14l-6-3.5M16 14l6-3.5M16 19l-7-4M16 19l7-4M16 24l-7.5-4M16 24l7.5-4"/>`),
+  ribbon: _i(`<path d="M16 15c-3-5-10-7-11-3s6 5 11 3zM16 15c3-5 10-7 11-3s-6 5-11 3z"/><circle cx="16" cy="15" r="1.8"/><path d="M15 16.5 11 28l3-1.5 1 2.5 1-12.5M17 16.5 21 28l-3-1.5"/>`),
+  florals: _i(`<circle cx="16" cy="14" r="2.4"/><path d="M16 11.6c-1-4 1-7 0-8 -1 1 1 4 0 8M18.3 13.2c3.5-2 6.8-1.2 7.5-2 -1.2-.6-4 1.5-7.5 2M17.6 16.2c2.6 3 2.4 6.4 3.4 7 .1-1.4-1.6-4.2-3.4-7M14.4 16.2c-2.6 3-2.4 6.4-3.4 7 -.1-1.4 1.6-4.2 3.4-7M13.7 13.2c-3.5-2-6.8-1.2-7.5-2 1.2-.6 4 1.5 7.5 2"/><path d="M16 16.4V29"/>`),
+  statement: _i(`<circle cx="16" cy="19" r="9"/><path d="M13.5 9.6h5V7.5h-5z"/><path d="M16 7.5V4"/><path d="M11 16a5.5 5.5 0 0 1 4-3.5"/>`),
+  medium: _i(`<circle cx="11" cy="20" r="6"/><path d="M9.5 13.8h3v-1.6h-3zM11 12.2V10"/><circle cx="23" cy="22" r="4"/><path d="M22 17.8h2v-1.2h-2zM23 16.6V15"/>`),
+  small_picks: _i(`<path d="M10 29c2-7 4-11 8-15"/><circle cx="19" cy="11" r="2.3"/><circle cx="23.5" cy="13" r="2.3"/><circle cx="21" cy="7" r="2.3"/><circle cx="25" cy="8.6" r="2"/><path d="M14 20c-4-1-6 1-7 3 3 0 5-1 7-3z"/>`),
+  crown: _i(`<path d="M16 3.5l2.9 6.4 7 .7-5.3 4.7 1.6 6.9L16 18.6l-6.2 3.6 1.6-6.9-5.3-4.7 7-.7z"/><path d="M16 22v7M12.5 29h7"/>`),
+  base: _i(`<rect x="5" y="13" width="22" height="15" rx="1.5"/><path d="M3.5 9.5h25V13h-25zM16 9.5V28"/><path d="M16 9.5c-3-5-8-5-7-1.5 1 2 7 1.5 7 1.5zM16 9.5c3-5 8-5 7-1.5-1 2-7 1.5-7 1.5z"/>`),
+};
+function itemPic(b, key) {
+  const c = b.color || "#C9B48A", l = (b.label || "").toLowerCase(), id = "g" + Math.random().toString(36).slice(2, 7);
+  const shade = `<defs><radialGradient id="${id}" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient></defs>`;
+  const sv = d => `<svg viewBox="0 0 48 48" aria-hidden="true">${shade}${d}</svg>`;
+  const cap = `<rect x="20" y="6" width="8" height="5" rx="1.2" fill="#C9A86A"/><path d="M24 6V3" stroke="#C9A86A" stroke-width="1.6" fill="none"/>`;
+  if (key === "statement" || key === "medium") {
+    if (/teardrop|drop|finial/.test(l)) return sv(`${cap}<path d="M24 11c7 8 12 16 12 23a12 12 0 0 1-24 0c0-7 5-15 12-23z" fill="${c}"/><path d="M24 11c7 8 12 16 12 23a12 12 0 0 1-24 0c0-7 5-15 12-23z" fill="url(#${id})"/>`);
+    return sv(`${cap}<circle cx="24" cy="28" r="16" fill="${c}"/><circle cx="24" cy="28" r="16" fill="url(#${id})"/>`);
+  }
+  if (key === "ribbon") return sv(`<ellipse cx="17" cy="24" rx="9" ry="15" fill="${c}"/><ellipse cx="17" cy="24" rx="9" ry="15" fill="url(#${id})"/><ellipse cx="17" cy="24" rx="3.2" ry="5.5" fill="#141C2C" opacity=".55"/><path d="M17 9h18l4 4-4 4h-18" fill="${c}"/><path d="M17 9h18l4 4-4 4h-18" fill="#000" opacity=".15"/>`);
+  if (key === "florals") return sv([0, 72, 144, 216, 288].map(a => `<ellipse cx="24" cy="13" rx="6.5" ry="10" fill="${c}" transform="rotate(${a} 24 24)"/>`).join("") + `<circle cx="24" cy="24" r="16" fill="url(#${id})" opacity=".6"/><circle cx="24" cy="24" r="3.5" fill="#E8C66A"/>`);
+  if (key === "primary_picks") return sv(`<path d="M24 44V6" stroke="#5B4632" stroke-width="2"/>` + [10, 17, 24, 31].map((y, i) => `<path d="M24 ${y}l-${9 + i * 2} -6M24 ${y}l${9 + i * 2} -6" stroke="${c}" stroke-width="4.5" stroke-linecap="round"/>`).join(""));
+  if (key === "small_picks") return sv(`<path d="M12 44c3-10 6-16 12-22" stroke="#5B4632" stroke-width="2" fill="none"/>` + [[25, 18], [31, 21], [28, 12], [34, 14], [22, 11]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="4.6" fill="${c}"/><circle cx="${x}" cy="${y}" r="4.6" fill="url(#${id})"/>`).join(""));
+  if (key === "lights") return sv(`<path d="M2 12c14 9 30 9 44 0" stroke="#3E5A44" stroke-width="2" fill="none"/>` + [[12, 17], [24, 20], [36, 17]].map(([x, y]) => `<rect x="${x - 2.5}" y="${y - 1}" width="5" height="4" fill="#3E5A44"/><path d="M${x} ${y + 3}c-5 5-5 12 0 15 5-3 5-10 0-15z" fill="${c}"/><circle cx="${x}" cy="${y + 11}" r="10" fill="${c}" opacity=".25"/>`).join(""));
+  if (key === "crown") return sv(`<path d="M24 5l5.3 11.6 12.7 1.3-9.6 8.6 2.8 12.5L24 32.6 12.8 39l2.8-12.5-9.6-8.6 12.7-1.3z" fill="${c}"/><path d="M24 5l5.3 11.6 12.7 1.3-9.6 8.6 2.8 12.5L24 32.6 12.8 39l2.8-12.5-9.6-8.6 12.7-1.3z" fill="url(#${id})"/>`);
+  return sv(`<rect x="8" y="18" width="32" height="24" rx="2" fill="${c}"/><rect x="5" y="12" width="38" height="7" rx="1.5" fill="${c}"/><rect x="21" y="12" width="6" height="30" fill="#fff" opacity=".45"/><rect x="5" y="12" width="38" height="30" fill="url(#${id})" opacity=".5"/>`);
+}
+const buyRow = (b, key) => b.q
+  ? `<a class="buyrow" href="${shopFor(b)}" target="_blank" rel="noopener sponsored"><b class="pic">${itemPic(b, key)}</b><span><strong>${esc(b.label)}</strong>${b.qty ? `<small>${esc(b.qty)}</small>` : ""}</span><em>Shop</em></a>`
   : `<div class="buyrow reuse"><b></b><span><strong>${esc(b.label)}</strong>${b.qty ? `<small>${esc(b.qty)}</small>` : ""}</span></div>`;
 
 /* ---------------- full-screen zoom (pinch, pan, double-tap) ---------------- */
@@ -1858,7 +1895,7 @@ async function drawStep() {
   else {
   if (key === "primary_picks" || (key === "florals" && !steps.includes("primary_picks")))
     items += `<div class="newto"><b>New to stems?</b> They're short branches of greenery, flowers or berries on a bendable wire. You tuck them into the tree and wrap the wire around a branch. Stores call them "picks," so search for that when you shop.</div>`;
-  if (buy.length) items += (factsSet ? "" : estNote(result)) + `<div class="buy"><div class="buyh">What to buy</div>${buy.map(buyRow).join("")}</div>`;
+  if (buy.length) items += (factsSet ? "" : estNote(result)) + `<div class="buy"><div class="buyh">What to buy</div>${buy.map(b => buyRow(b, key)).join("")}</div>`;
   items += its.map(p => `<div class="planitem"><h4>${esc(p.title)}</h4>${p.how ? `<p>${esc(p.how)}</p>` : ""}</div>`).join("");
   $("#stepItems").innerHTML = items;
   }
