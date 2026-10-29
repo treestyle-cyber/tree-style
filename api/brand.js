@@ -13,6 +13,8 @@ const SLOTS = ["before", "after", "ribbonref", "velvet", "velvetberry", "hero", 
 const MODELS = [process.env.GEMINI_IMAGE_MODEL, "gemini-3.1-flash-image-preview", "gemini-2.5-flash-image"].filter(Boolean);
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
 
+// Upload time as a number (comparing the date text sorted by weekday name: "Thu Oct 29" < "Wed Oct 21")
+const t = b => new Date(b.uploadedAt).getTime() || 0;
 // Newest photo per slot under a prefix
 async function readSlots(prefix) {
   {
@@ -23,7 +25,7 @@ async function readSlots(prefix) {
       for (const b of page.blobs) {
         const slot = b.pathname.slice(prefix.length).split("/")[0];
         if (!SLOTS.includes(slot)) continue;
-        if (!out[slot] || String(b.uploadedAt) > String(out[slot].uploadedAt)) out[slot] = b;
+        if (!out[slot] || t(b) > t(out[slot])) out[slot] = b;
       }
       cursor = page.hasMore ? page.cursor : null;
     } while (cursor);
@@ -39,7 +41,7 @@ async function latest() {
 // Photos picked in the preview Studio that are newer than the live ones (they don't go live on their own)
 async function previewPicks() {
   const live = await readSlots("brand/photos/"), prev = await readSlots("preview/brand/photos/");
-  return Object.values(prev).filter(b => { const slot = b.pathname.split("/")[3]; return !live[slot] || String(b.uploadedAt) > String(live[slot].uploadedAt); });
+  return Object.values(prev).filter(b => { const slot = b.pathname.split("/")[3]; return !live[slot] || t(b) > t(live[slot]); });
 }
 
 async function generate(prompt, aspect, base, map) {
