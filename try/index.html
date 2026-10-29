@@ -937,9 +937,11 @@ function show(id, reset) {
   if (reset) stack = reset.slice();
   const prev = stack[stack.length - 1];
   if (prev !== id) stack.push(id);
-  history.pushState({ d: stack.length }, "");
+  history.pushState({ d: stack.length }, "", screenUrl(id));
   paint(false);
 }
+// Each screen has its own address (/try/results, /try/plan…), so comments and links point at the right screen
+const screenUrl = id => "/try/" + (id === "s-home" || id === "s-pass" ? "" : id.slice(2));
 function back() {
   if (stack.length <= 1) return;
   stack.pop();
@@ -1902,7 +1904,7 @@ async function restoreSaved(st) {
     fillReveal();
     const scr = st.screen || "s-results";
     stack = ["s-home"].concat(scr === "s-results" || scr === "s-reveal" ? [] : ["s-results"], [scr]);
-    history.pushState({ d: stack.length }, "");
+    history.pushState({ d: stack.length }, "", screenUrl(stack[stack.length - 1]));
     restoring = false; paint(false);
     return true;
   } catch (e) { console.error(e); restoring = false; result = null; return false; }
