@@ -21,6 +21,8 @@ function editPrompt(brief, revision, shape) {
 Change to make:
 ${brief}
 
+RIBBON SIZE (important): ribbon sizes are WIDTHS across the ribbon's face, not lengths. A 6-inch-wide ribbon is about as wide as a spread hand or a large ornament, far wider than gift ribbon, and reads bold from across the room; 4 inches wide is a little narrower; 1.5-2 inches is the thin accent. Paint each ribbon at its stated width, in true scale to the tree. A cascade is a long piece of that wide ribbon, 12-18 inches long, spilling out of the branches and falling in a soft waterfall over 2-3 branches before tucking back in.
+
 RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or spiral across or down the tree. It appears as separate loops or short drops tucked into the branches, with green showing between them, winding back and forth across the tree, never lined up in a diagonal row.
 
 The result must look like an ordinary real photograph, with no circles, rings, outlines or other markings drawn on it.`;
@@ -31,7 +33,10 @@ The first image is the photo to edit. Keep exactly the same room, camera angle, 
 Changes to make:
 ${brief}
 ${shape ? "\nRemember: the tree itself must look clearly fuller than the original, with no see-through gaps.\n" : ""}
-RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or spiral across or down the tree. It appears as SEPARATE short pieces: loops or short drops that start and stop, each tucked deep into the branches at one spot, with plenty of green branches showing between them. Picture a vine hidden inside the tree that peeks out here and there, winding back and forth across the full width. The ribbon spots must NOT line up: no diagonal row of bows or loops from top to bottom, which reads as a swag. Never wrap ribbon around the tree or drape it from the top to the bottom.
+
+RIBBON SIZE (important): ribbon sizes are WIDTHS across the ribbon's face, not lengths. A 6-inch-wide ribbon is about as wide as a spread hand or a large ornament, far wider than gift ribbon, and reads bold from across the room; 4 inches wide is a little narrower; 1.5-2 inches is the thin accent. Paint each ribbon at its stated width, in true scale to the tree. A cascade is a long piece of that wide ribbon, 12-18 inches long, spilling out of the branches and falling in a soft waterfall over 2-3 branches before tucking back in.
+
+RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or spiral across or down the tree. It appears as SEPARATE pieces that start and stop (cascades, loops or drops, as the instructions say), each tucked deep into the branches at one spot, with plenty of green branches showing between them. Picture a vine hidden inside the tree that peeks out here and there, winding back and forth across the full width. The ribbon spots must NOT line up: no diagonal row of bows or loops from top to bottom, which reads as a swag. Never wrap ribbon around the tree or drape it from the top to the bottom.
 
 The result must look like an ordinary real photograph of the same tree in the same room, not an illustration, with no circles, rings, outlines or other markings drawn on it.`;
 }
