@@ -489,6 +489,15 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .choice.tile .tlbl{padding:14px 20px 16px}
   #s-home .ttl{font-size:28px;margin-top:4px}
   #s-home .ttl::after{display:none}
+  /* Home cards: an eyebrow, the title, a gold rule, then one line, like the brand board's cards */
+  .choice.tile .tlbl{padding:18px 20px 20px;align-items:flex-end}
+  .choice.tile .tlbl span{gap:0}
+  .choice.tile em{font:600 11px var(--sans);font-style:normal;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+  .choice.tile b{font:500 34px/1 var(--serif);letter-spacing:.005em}
+  .choice.tile b::after{content:"";display:block;width:36px;height:1px;background:var(--gold);margin:12px 0 10px}
+  .choice.tile small{font-size:15.5px;line-height:1.4;color:#D9CCC0;max-width:22em}
+  .choice.tile i{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 1.5px rgba(184,156,107,.6);font-size:18px;transition:background .18s,color .18s}
+  .choice.tile:hover i{background:var(--gold);color:var(--midnight)}
   /* Rating: what the plan can bring the tree to comes first */
 
   body.home .barmono{visibility:hidden}
@@ -629,8 +638,8 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <h2 class="ttl">What would you like to do?</h2>
     <p class="promise">A designer's rating, a step-by-step plan, a shopping list and a picture of your finished tree.</p>
     <div class="tiles">
-      <button class="choice tile" data-mode="check" style="--img:var(--photo-check, url(/brand/velvet-berry.jpg))"><div class="tpic"></div><div class="tlbl"><span><b>Check my tree</b><small>Decorated, or partway there</small></span><i>→</i></div></button>
-      <button class="choice tile" data-mode="design" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><div class="tpic"></div><div class="tlbl"><span><b>Design my tree</b><small>Starting fresh, even before your tree is up</small></span><i>→</i></div></button>
+      <button class="choice tile" data-mode="check" style="--img:var(--photo-check, url(/brand/velvet-berry.jpg))"><div class="tpic"></div><div class="tlbl"><span><em>Already decorating?</em><b>Check my tree</b><small>A designer's rating and the fixes that matter most</small></span><i>→</i></div></button>
+      <button class="choice tile" data-mode="design" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><div class="tpic"></div><div class="tlbl"><span><em>Starting fresh?</em><b>Design my tree</b><small>A complete design, even before your tree is up</small></span><i>→</i></div></button>
     </div>
   </section>
 
