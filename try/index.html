@@ -1657,7 +1657,9 @@ async function makePreview(extraPieces, change) {
     if (lastMap) $("#mapImg").src = lastMap;
     const out = await api("/api/render", body);
     after = out.image;
-    $("#timing").textContent = `${evalTiming(result)} · Preview: ${out._meta?.model} · ${out._meta?.seconds}s${out._meta?.shaped ? " · branches shaped" : ""}`;
+    $("#timing").textContent = `${evalTiming(result)} · Preview: ${out._meta?.model} · ${out._meta?.seconds}s${out._meta?.shaped ? " · branches shaped" : ""}${out._meta?.edited ? " · edited the preview you were looking at" : change ? "" : " · painted from your photo"}`;
+    // Behind the scenes shows the instructions the picture was actually made from
+    $("#brief").textContent = change && change.base ? "Change made to the current preview:\n" + change.brief : (result.render_brief || "");
     drawViewer();
   } catch (e) {
     after = null;

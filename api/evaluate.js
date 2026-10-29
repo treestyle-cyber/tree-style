@@ -139,7 +139,7 @@ Reply with this JSON:
  "reply": "<1-2 friendly sentences>",
  "changes": ["<1-5 short items>"],
  "version_label": "<3-5 words>",
- "change_brief": "<edit instructions for the CURRENT preview photo, which already shows the previous version: describe ONLY what to add, remove or swap for this request, with sizes, colors, how many and where (e.g. 'Add red and black buffalo check wired ribbon, 2.5 inches wide, as 2-3 loops tucked into the branches at each of the 7 existing ribbon spots: upper left, upper right, ...'). Everything else stays exactly as it is. 40-120 words.>",
+ "change_brief": "<edit instructions for the CURRENT preview photo, which already shows the previous version: describe ONLY what to add, remove or swap for this request, with sizes, colors, how many and where (e.g. 'Add red and black buffalo check wired ribbon, 2.5 inches wide, as 2-3 loops tucked into the branches at each of the 7 existing ribbon spots: upper left, upper right, ...'). Everything else stays exactly as it is. Even for a broad request ("more jeweled", "I don't love it", "make it fancier"), build on the current preview: name the specific pieces to add, swap or take off and where, and leave the rest as it is; never re-describe the whole tree. 40-120 words.>",
  ${PLAN_SHAPE(mode, true)}
 }
 ${PLAN_NOTES(mode, true)}
