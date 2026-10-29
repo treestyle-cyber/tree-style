@@ -1,4 +1,4 @@
-// Tree Style step-guide painter. Draws each step of the plan on the person's own photo.
+// TreeStyle step-guide painter. Draws each step of the plan on the person's own photo.
 // Ported from the prototype. Exposes window.TreeGuide.
 (function(){
   const clamp = (v,a,b) => Math.min(b, Math.max(a, Number(v) || 0));
@@ -753,8 +753,8 @@
       return true;
     };
     if (name === "statement") return ornGroup(["xl", "l"]);
-    if (name === "medium") return ornGroup(["m"]);
-    if (name === "small") return ornGroup(["s"]);
+    if (name === "medium") return ornGroup(["m", "s"]);   // ornaments come in two steps: extra-large & large, then medium & small
+    if (name === "small") return false;
     if (name === "primary_picks"){
       if (d.picks.primary.kind === "none" || !S.all.length) return false;
       const rand = rng(51); S.all.slice().sort((a, b) => a.y - b.y).forEach(o => sprays(g, G, S, d, o, rand));

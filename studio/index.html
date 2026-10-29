@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tree Style · Studio</title>
+<title>TreeStyle · Studio</title>
 <script src="/env.js"></script>
+
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,6 +24,9 @@
   .slot h2{font-weight:400;font-size:26px}
   .slot .where{font-size:12.5px;color:var(--muted);margin-top:-6px}
   .frames{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .slot.wide .frames{grid-template-columns:1fr}
+  .slot.wide .frame.new{order:-1}
+  .slot.wide{max-width:420px}
   .frame{border-radius:12px;overflow:hidden;background:rgba(184,156,107,.08);border:1px dashed var(--line);display:grid;place-items:center;position:relative;color:var(--muted);font-size:12px;text-align:center}
   .frame img{width:100%;height:100%;object-fit:cover;display:block}
   .frame .lbl{position:absolute;left:8px;top:8px;font:600 10px var(--sans);letter-spacing:.16em;text-transform:uppercase;background:rgba(20,28,44,.75);color:var(--gold);padding:4px 7px;border-radius:99px}
@@ -56,12 +60,15 @@
   #gate{max-width:420px;margin:60px auto;text-align:center}
   #gate form{display:flex;gap:8px;margin-top:18px}
   #gate input{flex:1}
+  .adopt{display:grid;gap:6px;border:1px solid var(--gold);border-radius:14px;padding:14px 16px;margin:0 0 18px;background:rgba(184,156,107,.08)}
+  .adopt span{color:var(--muted,#bbb);font-size:14px}
+  .adopt .btn{justify-self:start;margin-top:4px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <a class="brand" href="/"><img class="logoh" src="/brand/logo-horizontal.png" alt="Tree Style · The art of styling"></a>
+    <a class="brand" href="/"><img class="logoh" src="/brand/logo-horizontal.png" alt="TreeStyle · The art of styling"></a>
     <a class="eyebrow" href="/try/" style="text-decoration:none">Open the app →</a>
   </header>
 
@@ -119,10 +126,10 @@ const SLOTS = [
     prompt: "Deep winter berry red silk velvet (#6B2E2E), softly draped in a few broad diagonal folds, with warm highlights along the crests of the folds and rich dark shadows. Luxurious, quiet, elegant." },
   { id: "hero", name: "Welcome", where: "Top of the app's welcome screen and the website hero", aspect: "3:4",
     prompt: "A breathtaking, professionally styled 8 ft Christmas tree in an elegant living room at dusk: velvet ribbon billowing out of the branches and tucking back in, oversized antique gold and winter berry ornaments, frosted greenery stems and magnolias, a full, lush crown with a refined topper of stems and ornaments. Candles and a fireplace glow softly nearby. The tree is the hero of the frame, slightly off-center." },
-  { id: "check", name: "Check my tree", where: "Home screen card (wide photo above the words)", aspect: "3:2",
-    prompt: "Wide, intimate view of a beautifully decorated Christmas tree: velvet ribbon billowing out of the branches and tucking back in, glass ornaments in winter berry and antique gold, glowing warm white lights deep in the branches, a small handwritten notecard resting on a branch." },
-  { id: "design", bare: true, name: "Design my tree", where: "Home screen card (wide photo above the words)", aspect: "3:2",
-    prompt: "Wide view of a lush, bare Christmas tree with only warm white lights glowing, in a softly lit room. On the floor beside it, still waiting to be used: spools of wide velvet and sheer wired ribbon, closed gift-style supply boxes with their lids on, and bundles of greenery stems. A sense of anticipation." },
+  { id: "check", name: "Check my tree", where: "Home screen card (wide photo above the words)", aspect: "16:9",
+    prompt: "Wide banner photo, framed so it reads at a glance on a phone: a close, intimate view of a beautifully decorated Christmas tree: velvet ribbon billowing out of the branches and tucking back in, glass ornaments in winter berry and antique gold, glowing warm white lights deep in the branches. No cards, tags, signs or writing anywhere in the picture." },
+  { id: "design", bare: true, name: "Design my tree", where: "Home screen card (wide photo above the words)", aspect: "16:9",
+    prompt: "Wide banner photo, framed so it reads at a glance on a phone. In the foreground, filling the lower half of the frame and clearly recognizable: open boxes of glass Christmas ornaments in winter berry and antique gold, spools of wide velvet and sheer wired ribbon, and bundles of greenery stems, all waiting to be used. Behind them, slightly soft, the lower branches of a lush bare Christmas tree glowing with warm white lights. A sense of anticipation." },
   { id: "keep", name: "Keep my style", where: "Style card", aspect: "4:5",
     prompt: "A warm, collected Christmas tree full of personal heirloom ornaments, vintage glass and handmade pieces, beautifully edited and pulled together with ribbon and greenery. Cozy, personal, refined." },
   { id: "classic", name: "Traditional", where: "Style card", aspect: "4:5",
@@ -155,10 +162,12 @@ const shrink = (src, max = 1600) => new Promise(res => {
   }; im.src = src;
 });
 
+// Wide photos (home cards, banners) show New above In use, each at about the size it appears in the app
+const wide = a => { const [w, h] = String(a).split(":").map(Number); return w > h; };
 function build(current) {
   const ar = a => a.replace(":", " / ");
   $("#grid").innerHTML = SLOTS.map(s => `
-    <div class="slot${s.texture ? " tex" : ""}" data-id="${s.id}">
+    <div class="slot${s.texture ? " tex" : ""}${wide(s.aspect) ? " wide" : ""}" data-id="${s.id}">
       <h2>${s.name}</h2><div class="where">${s.where}</div>
       <div class="frames">
         <div class="frame cur" style="aspect-ratio:${ar(s.aspect)}"><span class="lbl">In use</span>${current[s.id] ? `<img src="${current[s.id]}" alt="">` : "Fabric texture for now"}</div>
@@ -330,6 +339,22 @@ async function start() {
     } catch (err) { $("#refMsg").className = "msg err"; $("#refMsg").textContent = err.message; }
   };
   build(info.photos || {});
+  offerPreviewPicks();
+}
+// On the live Studio: photos picked in the preview Studio, ready to bring over in one tap
+async function offerPreviewPicks() {
+  if (!/^tree-style\.vercel\.app$/.test(location.host)) return;
+  let d; try { d = await call({ action: "adopt-preview", dry: true }); } catch { return; }
+  if (!d.slots || !d.slots.length) return;
+  const names = d.slots.map(id => (SLOTS.find(x => x.id === id) || { name: id }).name);
+  const box = document.createElement("div"); box.className = "adopt";
+  box.innerHTML = `<b>${d.slots.length} photo${d.slots.length === 1 ? "" : "s"} picked in the preview Studio</b><span>${names.join(", ")}</span><button class="btn">Use them on the live site</button><p class="msg"></p>`;
+  $("#studio").prepend(box);
+  box.querySelector("button").onclick = async () => {
+    const b = box.querySelector("button"), m = box.querySelector(".msg"); b.disabled = true; m.textContent = "Copying…";
+    try { await call({ action: "adopt-preview" }); m.className = "msg ok"; m.textContent = "Done. They're live now (allow up to a minute for the app and site)."; setTimeout(() => location.reload(), 1500); }
+    catch (e) { m.className = "msg err"; m.textContent = e.message; b.disabled = false; }
+  };
 }
 start();
 </script>

@@ -4,11 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Tree Style · The art of styling</title>
+<title>TreeStyle · The art of styling</title>
+<script src="/env.js"></script>
+
 <meta name="description" content="Snap your Christmas tree. Get a designer's rating, a step-by-step plan, and a preview of the finished tree.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Tree Style">
-<meta property="og:title" content="Try Tree Style">
+<meta property="og:site_name" content="TreeStyle">
+<meta property="og:title" content="Try TreeStyle">
 <meta property="og:description" content="Snap your Christmas tree. Get a designer's rating, a step-by-step plan, and a preview of the finished tree.">
 <meta property="og:url" content="https://tree-style.vercel.app/try">
 <meta property="og:image" content="https://tree-style.vercel.app/og.png">
@@ -295,14 +297,21 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 
   /* what to buy */
   .buy{margin:6px 0 14px}
-  .buyh{font:600 12px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--brass);margin:10px 0 4px}
-  .buyrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line);text-decoration:none;color:inherit}
-  .buyrow:first-of-type{border-top:0}
-  .buyrow b{width:22px;height:22px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+  .buyh{display:flex;align-items:center;gap:10px;font:600 12px var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:14px 0 10px}
+  .buyh::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(184,156,107,.6),transparent)}
+  .buyrow{display:flex;align-items:center;gap:14px;padding:12px 14px;margin:0 0 8px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(184,156,107,.09),rgba(28,37,56,.5));text-decoration:none;color:inherit;transition:border-color .2s}
+  .buyrow:hover{border-color:var(--gold)}
+  .buyrow b{width:44px;height:44px;border-radius:12px;flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 4px 10px -4px rgba(0,0,0,.5)}
   .buyrow span{flex:1;min-width:0}
-  .buyrow strong{display:block;font-weight:600;font-size:15px}
-  .buyrow small{display:block;color:var(--muted);font-size:13px}
-  .buyrow em{font-style:normal;font-weight:600;font-size:14px;color:var(--green);white-space:nowrap}
+  .buyrow strong{display:block;font:600 19px/1.2 var(--serif);color:var(--ivory)}
+  .buyrow small{display:block;color:var(--muted);font-size:13.5px;margin-top:2px}
+  .buyrow em{font:600 11.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--on-accent);background:var(--gold);padding:8px 13px;border-radius:99px;white-space:nowrap}
+  .buyrow strong::first-letter{text-transform:uppercase}
+  .buyrow b.pic{width:56px;height:56px;border-radius:14px;background:radial-gradient(circle at 50% 40%,rgba(243,238,231,.16),rgba(243,238,231,.04) 70%);box-shadow:inset 0 0 0 1px rgba(184,156,107,.28);display:grid;place-items:center;padding:6px}
+  .buyrow b.pic svg{width:100%;height:100%;display:block;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
+  .buyrow.reuse{background:none;border-style:dashed}
+  .buyrow.reuse b{background:none;box-shadow:inset 0 0 0 1.5px rgba(184,156,107,.6);display:grid;place-items:center}
+  .buyrow.reuse b::before{content:"↺";color:var(--gold);font:600 20px var(--sans)}
 
   /* feedback */
   .fb h3{font-size:26px;margin:0 0 4px}
@@ -318,23 +327,64 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .fb .q2{font-weight:600;margin:4px 0 8px}
   .fb .thanks{text-align:center;padding:10px 0;font-family:var(--serif);font-size:24px;color:var(--green)}
 
+  /* change something: a pill on the preview and a sheet */
+  .vwrap{position:relative}
+  .restyle{position:absolute;left:12px;bottom:12px;z-index:3;appearance:none;border:1px solid var(--gold);background:rgba(20,28,44,.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:var(--ivory);font:600 14px var(--sans);padding:11px 16px;border-radius:99px;cursor:pointer;box-shadow:0 6px 18px -6px rgba(0,0,0,.6)}
+  .restyle{display:flex;align-items:center;gap:8px}
+  .restyle svg{width:18px;height:18px;color:var(--gold)}
+  .stylegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 6px}
+  .stylegrid button{appearance:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:rgba(184,156,107,.05);padding:0;cursor:pointer;text-align:left;color:inherit;font:inherit}
+  .stylegrid i{display:block;aspect-ratio:16/10;background-size:cover;background-position:center}
+  .stylegrid b{display:block;font:500 21px/1.1 var(--serif);color:var(--ivory);padding:10px 12px 2px}
+  .stylegrid small{display:block;font-size:13.5px;color:var(--muted);padding:0 12px 11px}
+  .stylegrid button:hover{border-color:var(--gold)}
+  .sheet{position:fixed;inset:0;z-index:18}
+  .sheetbg{position:absolute;inset:0;background:rgba(8,12,20,.6);opacity:0;transition:opacity .28s}
+  .sheetbox{position:absolute;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;background:var(--midnight);border:1px solid rgba(184,156,107,.45);border-bottom:0;border-radius:22px 22px 0 0;padding:22px 18px max(22px,env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1);max-height:88vh;overflow:auto}
+  .sheet.on .sheetbg{opacity:1}
+  .sheet.on .sheetbox{transform:none}
+  .sheetx{position:absolute;right:12px;top:12px;appearance:none;border:0;background:rgba(255,255,255,.08);color:var(--ivory);width:36px;height:36px;border-radius:50%;cursor:pointer}
+  .sheetk{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+  .sheetbox h3{font:500 30px/1.1 var(--serif);margin:6px 0 6px;color:var(--ivory)}
+  .sheetsub{font-size:15px;color:var(--muted);margin:0 0 14px}
+  .sheetbox .quickask{background:none;border:0;padding:0;margin:0 0 4px}
+  .sheetbox .ideas button{border-style:solid;border-color:rgba(184,156,107,.6);color:var(--ivory);padding:10px 14px;font-size:14.5px}
+  .sheetmore{display:grid;gap:0;margin-top:16px;border-top:1px solid var(--line)}
+  .sheetmore button{appearance:none;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ivory);font:400 20px var(--serif);text-align:left;padding:14px 2px;cursor:pointer;display:flex;justify-content:space-between}
+  .sheetmore button::after{content:"›";color:var(--gold);font-family:var(--sans)}
+  /* score in one line: the ornaments themselves */
+  .scorestrip{display:flex;align-items:center;gap:14px;width:100%;appearance:none;border:1px solid var(--line);border-radius:16px;background:rgba(184,156,107,.05);padding:14px 16px;margin:16px 0;color:inherit;font:inherit;text-align:left;cursor:pointer;flex-wrap:wrap}
+  .scorestrip .orns{display:flex;gap:4px}
+  .scorestrip .orns i{width:18px;height:18px}
+  .scorestrip .sw{flex:1;min-width:150px}
+  .scorestrip b{display:block;font:italic 600 20px/1.15 var(--serif);color:var(--ivory)}
+  .scorestrip small{display:block;color:var(--muted);font-size:13.5px}
+  .scorestrip .chev{font:600 12px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--gold);white-space:nowrap}
+
   /* step guide */
   .steptabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;margin:0 -18px;padding-left:18px;padding-right:18px;scrollbar-width:none}
   .steptabs::-webkit-scrollbar{display:none}
-  .steptabs button{flex:none;appearance:none;border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:7px 12px 7px 7px;font:500 13px var(--sans);color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
-  .steptabs button i{font-style:normal;width:22px;height:22px;border-radius:50%;background:rgba(184,156,107,.14);display:grid;place-items:center;font-size:11px;font-weight:700}
+  .steptabs button{flex:none;appearance:none;border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:9px 16px 9px 9px;font:500 15px var(--sans);color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:9px;white-space:nowrap;min-height:46px}
+  .steptabs button i{font-style:normal;width:28px;height:28px;border-radius:50%;background:rgba(184,156,107,.14);display:grid;place-items:center;font-size:13px;font-weight:700}
   .steptabs button.on{background:var(--green);border-color:var(--green);color:var(--on-accent)}
   .steptabs button.on i{background:rgba(20,28,44,.18);color:var(--on-accent)}
   .steptabs button.done i{background:var(--brass);color:var(--on-accent)}
   .guidebox{position:relative;border-radius:var(--radius);overflow:hidden;background:#222}
-  .guidebox canvas{display:block;width:100%;height:auto}
-  .peek{position:absolute;right:10px;bottom:10px;appearance:none;border:0;background:rgba(243,238,231,.94);color:var(--midnight);font:600 12px var(--sans);padding:7px 11px;border-radius:99px;cursor:pointer}
+  .guidebox canvas{display:block;width:100%;height:auto;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;cursor:pointer}
+  .peek{position:absolute;right:10px;bottom:10px;background:rgba(20,28,44,.82);border:1px solid rgba(184,156,107,.6);color:var(--ivory);font:500 12.5px var(--sans);padding:7px 12px;border-radius:99px;pointer-events:none;transition:opacity .2s}
+  .guidebox.peeking .peek{opacity:0}
+  .guidebox.anim canvas,.guidebox.anim .peek,.guidebox.anim .zoombtn{display:none}
+  .branchanim svg{display:block;width:100%;height:auto}
+  .stephead{text-align:center;margin:6px 0 14px}
+  .stephead .k{font:600 12px var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+  .stephead h2{font:500 34px/1.1 var(--serif);margin:6px 0 0;color:var(--ivory)}
+  .stepcard #stepLead{font:17px/1.55 var(--sans);color:var(--ink)}
   .legend{list-style:none;padding:0;margin:0 0 14px;display:flex;flex-direction:column;gap:6px}
   .legend li{display:flex;align-items:center;gap:10px;font-size:15px}
   .legend b{width:18px;height:18px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
-  .planitem{border-top:1px solid var(--line);padding:12px 0 2px}
-  .planitem h4{margin:0 0 4px;font-size:16px}
-  .planitem p{font-size:15px;margin:0 0 8px}
+  .planitem{background:rgba(184,156,107,.06);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:12px;padding:14px 16px;margin:12px 0 0}
+  .planitem h4{margin:0 0 6px;font:600 21px/1.2 var(--serif);color:var(--ivory)}
+  .planitem p{font-size:15.5px;line-height:1.55;margin:0;color:var(--muted)}
   .newto{background:rgba(184,156,107,.1);border-radius:10px;padding:12px 14px;font-size:14px;margin:6px 0 10px}
 
   /* ideas + partner */
@@ -355,7 +405,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .pbtn.on{border-color:var(--green);color:var(--green);font-weight:600}
   .pbtn input[type=color]{width:22px;height:22px;border:0;padding:0;background:none;border-radius:50%;cursor:pointer}
   .pbtn .x{margin-left:2px;font-weight:700;color:var(--muted)}
-  .ask{display:flex;gap:8px;align-items:flex-end}
+  .ask{display:flex;flex-direction:column;gap:10px;align-items:stretch}
   .ask textarea{flex:1;font:16px/1.4 var(--sans);padding:12px 14px;border:1.5px solid var(--line);border-radius:14px;background:var(--paper);resize:none;color:var(--ink)}
   .ask textarea:focus{outline:none;border-color:var(--brass)}
   .versions{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:14px;font-size:14px}
@@ -450,20 +500,249 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .rmwrap img{width:100%;display:block}
   .rmwrap i{position:absolute;width:44px;height:16px;margin:-8px 0 0 -22px;border-radius:50%;background:rgba(184,156,107,.75);box-shadow:0 0 0 2px #fff,0 0 18px rgba(184,156,107,.9);pointer-events:none}
   .rmwrap i::before{content:"";position:absolute;left:50%;bottom:8px;width:2px;height:60px;margin-left:-1px;background:linear-gradient(transparent,#fff)}
+  /* top fixes and "Show me how" on the results hub */
+  .hubfix{margin:12px 0}
+  .hubk{font:600 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+  .hubmore{appearance:none;border:0;background:none;padding:10px 0 0;font:600 14px var(--sans);color:var(--green);text-decoration:underline;cursor:pointer}
+  .showhow{width:100%;margin:4px 0 10px}
+  /* reveal: potential first */
+  .potline{margin:0;text-align:center;font:400 22px/1.2 var(--serif);color:var(--green);text-wrap:balance}
+  /* steps that already score well */
+  .goodstep{margin:0 0 12px;padding:12px 14px;border-radius:12px;background:rgba(184,156,107,.12)}
+  .goodstep b{display:block;color:var(--green)}
+  .goodstep span{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+  .goodstep button{appearance:none;border:0;background:none;padding:8px 0 0;font:600 14px var(--sans);color:var(--green);text-decoration:underline;cursor:pointer}
+  /* saved tree on the home screen */
+  .resume{display:flex;gap:14px;align-items:center}
+  .resume img{width:72px;height:92px;object-fit:cover;border-radius:10px;flex:none}
+  .resume b{display:block;font:400 20px/1.15 var(--serif);color:var(--green)}
+  .resume small{display:block;color:var(--muted);font-size:13px;margin:2px 0 10px}
+  .resumebtns{display:flex;flex-wrap:wrap;gap:8px}
+  .resumebtns .btn{padding:10px 14px;font-size:14px}
+
+  /* ===== UX review, Oct 28 ===== */
+  /* Home: a shorter welcome so both choices show on the first screen, with proof up front */
+  #s-home .hero{min-height:0;padding:18px 22px 22px;gap:14px;margin-bottom:18px}
+  #s-home .hero .lockup img.logos{width:min(220px,62%)}
+  #s-home .hero .hl h1{font-size:34px;max-width:none}
+  .ba{display:none;grid-template-columns:1fr 1fr;gap:6px;border-radius:12px;overflow:hidden;margin-top:4px}
+  .ph-before.ph-after .ba{display:grid}
+  .ba div{aspect-ratio:3/4;background:center/cover;position:relative}
+  .ba div span{position:absolute;left:8px;bottom:8px;font:600 10px var(--sans);letter-spacing:.12em;text-transform:uppercase;background:rgba(243,238,231,.92);color:var(--midnight);padding:4px 8px;border-radius:99px}
+  .promise{text-align:center;color:var(--muted);font-size:15px;max-width:26em;margin:8px auto 0}
+  #s-home .tiles{margin-top:16px;gap:12px}
+  .ba div{aspect-ratio:4/3}
+  /* On phones the two choices sit side by side with their photo, so both show on the first screen */
+  .choice.tile .tpic{aspect-ratio:16/9}
+  .choice.tile .tlbl{padding:14px 20px 16px}
+  #s-home .ttl{font-size:28px;margin-top:4px}
+  #s-home .ttl::after{display:none}
+  /* Home cards: an eyebrow, the title, a gold rule, then one line, like the brand board's cards */
+  .choice.tile .tlbl{padding:18px 20px 20px;align-items:flex-end}
+  .choice.tile .tlbl span{gap:0}
+  .choice.tile em{font:600 11px var(--sans);font-style:normal;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+  .choice.tile b{font:500 34px/1 var(--serif);letter-spacing:.005em}
+  .choice.tile b::after{content:"";display:block;width:36px;height:1px;background:var(--gold);margin:12px 0 10px}
+  .choice.tile small{font-size:15.5px;line-height:1.4;color:#D9CCC0;max-width:22em}
+  .choice.tile i{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 1.5px rgba(184,156,107,.6);font-size:18px;transition:background .18s,color .18s}
+  .choice.tile:hover i{background:var(--gold);color:var(--midnight)}
+  /* Style cards: the photo on top, the words on a solid panel below (easy to read, like the home cards) */
+  .sgrid{gap:12px}
+  .scard span{aspect-ratio:auto !important;min-height:0;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;text-align:left;padding:0 !important;border-radius:16px;overflow:hidden;background:var(--paper) !important;box-shadow:inset 0 0 0 1px var(--line)}
+  .scard span::before{display:none}
+  .scard .sp{display:block;aspect-ratio:4/3;background-size:cover;background-position:center}
+  .sgrid .scard:first-child .sp{aspect-ratio:auto;height:118px}
+  .scard b{display:block;font-size:24px;line-height:1.05;margin:12px 14px 0;color:var(--ivory)}
+  .scard b::after{display:none}
+  .scard small{display:block;font:400 16.5px/1.35 var(--sans);color:#D9CCC0;margin:5px 14px 15px;opacity:1}
+  .sgrid .scard:first-child span{display:grid;grid-template-columns:42% 1fr;align-items:center}
+  .sgrid .scard:first-child .sp{height:100%;min-height:112px}
+  .sgrid .scard:first-child b{font-size:28px;margin:0 16px}
+  .sgrid .scard:first-child small{margin:6px 16px 0;font-size:17px}
+  .sgrid .scard:first-child span > b,.sgrid .scard:first-child span > small{grid-column:2}
+  .sgrid .scard:first-child .sp{grid-row:1 / span 2}
+  .sgrid .scard:first-child b{align-self:end}
+  .sgrid .scard:first-child small{align-self:start}
+  .scard input:checked + span{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--gold)}
+  .sgrid .scard:first-child input:checked + span::after{right:auto;left:10px}
+  /* Big serif titles a step heavier (semibold) so they hold up on a phone */
+  .choice.tile b,.act b,.fix b,.src b,.scard b,.navlist b{font-weight:600 !important}
+  /* Analyzing screen: centered, calm, one tip card at the bottom */
+  #loading .box{text-align:center;max-width:360px}
+  #loading .scan{width:150px;margin:0 auto 22px}
+  #loading .scan:not([hidden]) ~ .big{display:none}
+  #loading .big{margin:0 auto 18px}
+  #loading h2{font:500 32px/1.1 var(--serif);margin:0 0 16px}
+  #loading .bar{max-width:260px;margin:0 auto;height:4px}
+  #loading #loadNote{margin:10px 0 18px;font-size:14px}
+  #loading ol{display:inline-block;text-align:left;margin:0 auto 24px}
+  #loading li{font-size:15px;padding:5px 0 5px 28px}
+  #loading li::before{top:8px;width:15px;height:15px}
+  #loading li.done::after{left:5px;top:11px;width:4px;height:7px}
+  #loading .tipcard{min-height:0;margin:0;padding:16px 20px 14px;text-align:center;border-radius:16px;background:rgba(243,238,231,.05);border:0;box-shadow:inset 0 0 0 1px rgba(184,156,107,.35)}
+  #loading .tipk{display:flex;align-items:center;gap:10px;justify-content:center;font-size:11px;letter-spacing:.2em}
+  #loading .tipk::before,#loading .tipk::after{content:"";width:22px;height:1px;background:var(--gold);opacity:.7}
+  #loading .tipcard p{font:italic 500 21px/1.3 var(--serif);margin:10px 0 12px;min-height:2.6em;display:grid;place-items:center}
+  /* Rating screen: today and after side by side, the summary as a quote, progress in one quiet card */
+  #s-reveal{padding-top:10px}
+  #s-reveal::before{content:"Your rating";display:block;text-align:center;font:500 38px/1.1 var(--serif);letter-spacing:.01em;color:var(--ivory);margin:8px 0 18px}
+  #s-reveal:has(#revealScore[hidden])::before{content:"Your design"}
+  .rating{max-width:400px;display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:0 6px;padding:22px 14px 16px;border-radius:18px;background:linear-gradient(180deg,rgba(184,156,107,.08),rgba(28,37,56,.6));border:1px solid rgba(184,156,107,.4)}
+  .rating .rrow{gap:8px;padding:0 !important;border:0 !important}
+  .rating .rrow + .rrow{border:0}
+  .rating .rlbl{font-size:10.5px;letter-spacing:.18em;color:var(--muted)}
+  .rating .orns{gap:4px}
+  .rating .orns i{width:22px;height:22px}
+  .rating .orns i::after{top:-5px;width:7px;height:5px;margin-left:-3.5px}
+  .rating .rword{flex-direction:column;align-items:center;gap:2px}
+  .rating .rword b{font:italic 600 24px/1.05 var(--serif);text-align:center}
+  .rating .rword span{font-size:13.5px}
+  .rarrow{align-self:center;color:var(--gold);font-size:20px;padding-top:6px}
+  #afterRow[hidden] + .rnote,.rating:has(#afterRow[hidden]) .rarrow{display:none}
+  .rating:has(#afterRow[hidden]){grid-template-columns:1fr}
+  .rating .rnote{grid-column:1/-1;margin:16px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:13px}
+  #s-reveal #summary{max-width:24em;margin:22px auto 6px;font:italic 500 23px/1.3 var(--serif);color:var(--ivory);text-wrap:balance}
+  #s-reveal #summary::before,#s-reveal #summary::after{color:var(--gold)}
+  #s-reveal #summary::before{content:"“"}
+  #s-reveal #summary::after{content:"”"}
+  #s-reveal #summary:empty{display:none}
+  .progress{max-width:400px;gap:0;margin:22px auto 4px;background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .progress li{background:none;border:0;border-radius:0;padding:14px 16px;align-items:center}
+  .progress li + li{border-top:1px solid var(--line)}
+  .progress b{font:600 22px/1.1 var(--serif);color:var(--ivory)}
+  .progress small{font-size:14px;margin-top:2px}
+  /* Rating: what the plan can bring the tree to comes first */
+
+  body.home .barmono{visibility:hidden}
+  /* Disabled main button: clearly inactive, and it says what's missing */
+  .foot .btn:disabled{background:rgba(28,37,56,.92);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line);opacity:1;letter-spacing:.04em;text-transform:none;font-size:15px}
+  main{padding-bottom:150px}
+  .photook{max-width:30em;margin:14px auto 0;padding:12px 14px;border-radius:12px;background:rgba(184,156,107,.1);font-size:15px;text-align:center}
+  /* Details: skipping is an equal choice */
+  .skip{appearance:none;display:block;width:100%;max-width:524px;margin:22px auto 0;padding:14px;border-radius:999px;border:0;box-shadow:inset 0 0 0 1.5px var(--line);background:transparent;color:var(--ink);font:500 15px var(--sans);text-decoration:none}
+  /* Style: Keep my style full width on top, then pairs */
+  .sgrid .scard:first-child{grid-column:1/-1}
+  .sgrid .scard:first-child span{aspect-ratio:16/7}
+  .sgrid .scard span{aspect-ratio:1/1}
+  .styleNote{text-align:center;font-size:15px;margin-top:14px}
+  /* Wait: their own photo, being studied */
+  .scan{position:relative;width:132px;margin:0 auto 18px;border-radius:12px;overflow:hidden;box-shadow:0 0 0 1px rgba(184,156,107,.45)}
+  .scan img{width:100%;display:block;filter:saturate(.9)}
+  .scan i{position:absolute;left:0;right:0;height:38%;background:linear-gradient(transparent,rgba(184,156,107,.38),transparent);animation:scan 2.4s ease-in-out infinite alternate}
+  @keyframes scan{from{top:-38%}to{top:100%}}
+  /* The reveal: the finished tree, full screen, for a moment */
+  #bigReveal{position:fixed;inset:0;z-index:15;background:rgba(10,14,22,.96);display:grid;place-items:center;padding:24px;cursor:pointer;animation:fadein .35s ease both;transition:opacity .6s ease}
+  #bigReveal.out{opacity:0;pointer-events:none}
+  #bigReveal img{max-width:100%;max-height:78vh;border-radius:16px;box-shadow:0 30px 60px -20px rgba(0,0,0,.8);animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+  #bigReveal p{margin:18px 0 0;text-align:center;font:italic 500 26px var(--serif);color:var(--ivory)}
+  #bigReveal small{display:block;text-align:center;color:var(--muted);font-size:14px;margin-top:6px}
+  @keyframes fadein{from{opacity:0}}
+  @keyframes rise{from{opacity:0;transform:scale(.94)}}
+  /* Results */
+  .resline{text-align:center;font:italic 500 21px/1.25 var(--serif);color:var(--green);margin:0 0 12px;text-wrap:balance}
+  .tellline{font-size:14px;color:var(--muted);text-align:center;margin:8px 0 0}
+  .tellline button{appearance:none;border:0;background:none;color:var(--green);font:600 14px var(--sans);text-decoration:underline;cursor:pointer;padding:0}
+  .ideas button{border-style:solid;border-color:var(--line);background:var(--paper)}
+  .fix .where{display:block;appearance:none;border:0;background:none;padding:6px 0 0;font:600 14px var(--sans);color:var(--green);text-decoration:underline;cursor:pointer}
+  .fix .crop{width:64px;height:64px;border-radius:10px;flex:none;background:center/cover no-repeat;box-shadow:0 0 0 1px var(--line);margin-left:auto}
+  /* Secondary buttons: sentence case reads faster */
+  .btn.ghost{text-transform:none;letter-spacing:.01em;font-size:15px;font-weight:600}
+  .stepnav #prevStep{flex:0 0 auto;padding-left:22px;padding-right:22px}
+  .finish{text-align:center;padding:4px 0 10px}
+  .finish h3{font-size:30px;margin:4px 0 6px}
+  .finish p{color:var(--muted);margin:0 0 14px}
+  .finish .btn{width:100%;margin-top:8px}
+  /* Results: the two main actions, big and right under the preview */
+  .acts{display:grid;gap:10px;margin:14px 0 6px}
+  .act{display:flex;align-items:center;gap:14px;width:100%;text-align:left;appearance:none;cursor:pointer;border:0;border-radius:16px;padding:16px 18px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink);font:inherit}
+  .act.main{background:var(--gold);color:var(--midnight);box-shadow:none}
+  .act .ic{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 1px rgba(184,156,107,.5);color:var(--gold)}
+  .act.main .ic{box-shadow:inset 0 0 0 1.5px rgba(20,28,44,.45);color:var(--midnight)}
+  .act .ic svg{width:21px;height:21px}
+  .act span{flex:1;display:grid;gap:2px}
+  .act b{font:500 24px/1.1 var(--serif)}
+  .act small{font-size:15px;opacity:.85}
+  .act i{font-style:normal;font-size:22px}
+  /* Top fixes: each its own item, title and line apart */
+  .hubfix{margin:18px 0 8px}
+  .hubk{font:600 12px var(--sans);letter-spacing:.16em;margin:0 2px 10px}
+  .fix{gap:14px;padding:14px 16px;margin:0 0 10px;border:0 !important;border-radius:14px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line);align-items:flex-start}
+  .fix b{font:500 22px/1.15 var(--serif);color:var(--ivory);margin:0 0 4px}
+  .fix p{margin:0;font-size:16px;line-height:1.5;color:var(--muted)}
+  .fix .n{width:28px;height:28px;font-size:14px;margin-top:2px}
+  #fixes{background:none;border:0;padding:0}
+  /* Photo tips as their own titled section */
+  .tipsbox{max-width:30em;margin:18px auto 0;padding:14px 18px 10px;border-radius:14px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
+  .tipsbox .hubk{margin:0 0 6px}
+  .tipsbox .tips{margin:0;padding-left:18px;font-size:16px;color:var(--ink)}
+  .tipsbox .tips li{margin:6px 0}
+  /* Style cards: easier to read on a phone */
+  .scard b{font-size:26px}
+  .scard small{font-size:15px;opacity:1;margin-top:4px}
+  .scard span::before{background:linear-gradient(180deg,rgba(20,28,44,0) 15%,rgba(20,28,44,.9))}
+  /* Back: a clear button with a word, not just an arrow */
+  #navBack{width:auto;border-radius:999px;padding:0 14px 0 8px;gap:2px;display:flex;align-items:center;box-shadow:inset 0 0 0 1.5px rgba(184,156,107,.55);height:38px;font:600 14px var(--sans);color:var(--gold)}
+  #navBack::after{content:"Back"}
+  .appbar{grid-template-columns:88px 1fr 88px}
+  .appbar #navHome{justify-self:end}
+  /* Welcome: the logo sits on a calm, dark patch so a busy photo can't swallow it */
+  #s-home .hero .lockup,#s-pass .hero .lockup{position:relative;padding:14px 0 6px}
+  #s-home .hero .lockup::before,#s-pass .hero .lockup::before{content:"";position:absolute;inset:-26px -40px -18px;background:radial-gradient(closest-side,rgba(14,20,32,.88),rgba(14,20,32,.6) 55%,transparent);z-index:-1}
+  #s-home .hero,#s-pass .hero{isolation:isolate}
+  /* Score */
+  .scoretop{display:grid;justify-items:center;gap:6px;margin:0 0 16px}
+  .cat .raise{appearance:none;border:0;background:none;padding:8px 0 0;font:600 14px var(--sans);color:var(--green);text-decoration:underline;cursor:pointer}
+  /* Shopping list */
+  .shophead{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 14px}
+  .shophead > div{flex:1;min-width:0}
+  .shophead b{display:block;font:500 22px/1.2 var(--serif);color:var(--ivory)}
+  .gotbar{display:block;height:4px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden}
+  .gotbar i{display:block;height:100%;width:0;background:var(--gold);transition:width .4s}
+  .shophead .btn{padding:10px 16px}
+  details.buy{border:1px solid var(--line);border-radius:16px;margin:0 0 12px;padding:0 14px;background:rgba(184,156,107,.04)}
+  details.buy > summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0}
+  details.buy > summary::-webkit-details-marker{display:none}
+  details.buy > summary{justify-content:flex-start}
+  details.buy .bt{flex:1;min-width:0}
+  .bic{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:var(--gold);background:radial-gradient(circle at 35% 30%,rgba(230,211,168,.22),rgba(184,156,107,.06) 70%);box-shadow:inset 0 0 0 1px rgba(184,156,107,.55),0 6px 14px -8px rgba(0,0,0,.7)}
+  .bic svg{width:28px;height:28px}
+  details.buy[open] .bic{background:radial-gradient(circle at 35% 30%,#E6D3A8,#B89C6B 70%);color:var(--midnight)}
+  details.buy .bt b{display:block;font:500 24px/1.15 var(--serif);color:var(--ivory)}
+  details.buy .bt small{display:block;font:600 11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-top:4px}
+  .chevc{flex:none;width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(184,156,107,.55);display:grid;place-items:center;transition:transform .25s,background .25s}
+  .chevc::before{content:"";width:8px;height:8px;border-right:2px solid var(--gold);border-bottom:2px solid var(--gold);transform:translateY(-2px) rotate(45deg)}
+  details.buy[open] .chevc{transform:rotate(180deg);background:rgba(184,156,107,.14)}
+  details.buy[open] > summary{border-bottom:1px solid var(--line);margin-bottom:12px}
+  #shop.card{background:none;border:0;box-shadow:none;padding:0}
+  .buyline{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line)}
+  details.buy[open] > summary + .buyline{border-top:0}
+  .buyline:last-child{margin-bottom:6px}
+  .buyline .buyrow{flex:1;min-width:0;background:none;border:0;border-radius:0;padding:12px 0;margin:0;gap:12px}
+  .buyline .buyrow b.pic{width:58px;height:58px}
+  .buyline .buyrow strong{font-size:18px}
+  .buyline.have .buyrow{opacity:.55}
+  .got{flex:none;appearance:none;width:26px;height:26px;border-radius:7px;border:1.5px solid var(--gold);background:transparent;cursor:pointer;display:grid;place-items:center;color:var(--midnight);font:700 14px var(--sans)}
+  .got.on{background:var(--gold)}
+  .got.on::after{content:"✓"}
+  .buyline.have strong{text-decoration:line-through;color:var(--muted)}
+  /* Type: a little larger and lighter where it's small and grey */
+  :root{--muted:#BDB5A8}
+  .navlist small,.hint,.tips,.qahint,.extra small,.cat p{font-size:14.5px}
+  .buyrow small{font-size:14px}
 </style>
 </head>
 <body>
 
 <header class="appbar" id="appbar">
   <button id="navBack" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-  <div class="title"><img class="barmono" src="/brand/logo-icon.png" alt="Tree Style"><span id="appTitle" class="sr"></span></div>
+  <div class="title"><img class="barmono" src="/brand/logo-icon.png" alt="TreeStyle"><span id="appTitle" class="sr"></span></div>
   <button id="navHome" aria-label="Start over"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></svg></button>
 </header>
 
 <main>
   <!-- Password -->
   <section class="screen" id="s-pass" data-title="" hidden>
-    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="Tree Style · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
+    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="TreeStyle · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
     <div class="kicker">Early access</div>
     <h2 class="ttl">Welcome, tester</h2>
     <p class="sub">Enter the test password to begin.</p>
@@ -476,23 +755,30 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 
   <!-- Home -->
   <section class="screen" id="s-home" data-title="" hidden>
-    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="Tree Style · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
-    <div class="kicker">Begin</div>
-    <h2 class="ttl">What would you like to do?</h2>
-    <div class="tiles">
-      <button class="choice tile" data-mode="check" style="--img:var(--photo-check, url(/brand/velvet-berry.jpg))"><div class="tpic"></div><div class="tlbl"><span><b>Check my tree</b><small>Decorated, or partway there</small></span><i>→</i></div></button>
-      <button class="choice tile" data-mode="design" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><div class="tpic"></div><div class="tlbl"><span><b>Design my tree</b><small>Starting fresh, even before your tree is up</small></span><i>→</i></div></button>
+    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="TreeStyle · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
+    <div class="card resume" id="resume" hidden>
+      <img id="resumeImg" alt="">
+      <div>
+        <b>Your tree is saved</b>
+        <small id="resumeSub">Saved on this device only.</small>
+        <div class="resumebtns"><button class="btn" id="resumeBtn">Pick up where you left off</button><button class="btn ghost" id="resumeNew">Start a new tree</button></div>
+      </div>
     </div>
-    <p class="tilenote">We rate it the way a designer would, then give you a plan, a shopping list and a picture of the finished tree.</p>
+    <h2 class="ttl">What would you like to do?</h2>
+    <p class="promise">A designer's rating, a step-by-step plan, a shopping list and a picture of your finished tree.</p>
+    <div class="tiles">
+      <button class="choice tile" data-mode="check" style="--img:var(--photo-check, url(/brand/velvet-berry.jpg))"><div class="tpic"></div><div class="tlbl"><span><em>Already decorating?</em><b>Check my tree</b><small>A designer's rating and the fixes that matter most</small></span><i>→</i></div></button>
+      <button class="choice tile" data-mode="design" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><div class="tpic"></div><div class="tlbl"><span><em>Starting fresh?</em><b>Design my tree</b><small>A complete design, even before your tree is up</small></span><i>→</i></div></button>
+    </div>
   </section>
 
   <!-- Design: how to start -->
   <section class="screen" id="s-start" data-title="Design my tree" hidden>
     <h1>How would you like to start?</h1>
     <p class="sub">No tree up yet? No problem. Start from your room, or just an idea.</p>
-    <button class="src" data-src="tree" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><b>My bare tree</b><small>It's up, with or without lights</small></button>
-    <button class="src" data-src="room" style="--img:var(--photo-velvet, url(/brand/velvet-midnight.jpg))"><b>The room it'll go in</b><small>Photograph the space, then tap where the tree will stand</small></button>
     <button class="src" data-src="idea" style="--img:url(/brand/pattern-damask.jpg)"><b>Start from an idea</b><small>Describe the look, and add a photo of anything that inspires you</small></button>
+    <button class="src" data-src="room" style="--img:var(--photo-velvet, url(/brand/velvet-midnight.jpg))"><b>The room it'll go in</b><small>Photograph the space, then tap where the tree will stand</small></button>
+    <button class="src" data-src="tree" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><b>My bare tree</b><small>It's up, with or without lights</small></button>
   </section>
 
   <!-- Design: from an idea -->
@@ -525,7 +811,8 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
       <div class="rmhint">Tap where the tree will stand</div>
       <div class="rmwrap" id="rmWrap"><img id="rmImg" alt="Your room"><i id="rmDot"></i></div>
     </div>
-    <ul class="tips" id="photoTips"></ul>
+    <div class="tipsbox" id="tipsBox"><div class="hubk">Photo tips</div><ul class="tips" id="photoTips"></ul></div>
+    <p class="photook" id="photoOk" hidden></p>
     <div class="err" id="photoErr"></div>
   </section>
 
@@ -563,7 +850,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
         <label class="chip"><input type="radio" name="stage" value="" checked><span>Let you decide</span></label>
       </div></div>
     <div class="err" id="detailsErr"></div>
-    <button class="skip" id="detailsSkip">Skip this</button>
+    <button class="skip" id="detailsSkip">Skip for now</button>
   </section>
 
   <!-- Style -->
@@ -571,18 +858,18 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <h1>Pick a style</h1>
     <p class="sub">A starting point, not a box. Your tree, your way.</p>
     <div class="sgrid">
-      <label class="scard"><input type="radio" name="style" value="keep" checked><span style="background-image:var(--photo-keep, url(/brand/walnut.jpg))"><b>Keep my style</b><small>Refine what you have</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="classic"><span style="background-image:var(--photo-classic, url(/brand/velvet-berry.jpg))"><b>Traditional</b><small>Nostalgic and warm</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="rustic"><span style="background-image:var(--photo-rustic, url(/brand/pattern-plaid.jpg))"><b>Rustic</b><small>Cozy and natural</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="modern"><span style="background-image:var(--photo-modern, url(/brand/marble.jpg))"><b>Modern</b><small>Calm and graphic</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="elegant"><span style="background-image:var(--photo-elegant, url(/brand/velvet-midnight.jpg))"><b>Elegant</b><small>Rich and luminous</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="playful"><span style="background-image:var(--photo-playful, url(/brand/pattern-stripe.jpg))"><b>Playful</b><small>Bold and joyful</small></span></label>
-      <label class="scard"><input type="radio" name="style" value="themed"><span style="background-image:var(--photo-themed, url(/brand/pattern-damask.jpg))"><b>Themed</b><small>One story, your idea</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="keep" checked><span><i class="sp" style="background-image:var(--photo-keep, url(/brand/walnut.jpg))"></i><b>Keep my style</b><small>Refine what you have</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="classic"><span><i class="sp" style="background-image:var(--photo-classic, url(/brand/velvet-berry.jpg))"></i><b>Traditional</b><small>Nostalgic and warm</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="rustic"><span><i class="sp" style="background-image:var(--photo-rustic, url(/brand/pattern-plaid.jpg))"></i><b>Rustic</b><small>Cozy and natural</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="modern"><span><i class="sp" style="background-image:var(--photo-modern, url(/brand/marble.jpg))"></i><b>Modern</b><small>Calm and graphic</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="elegant"><span><i class="sp" style="background-image:var(--photo-elegant, url(/brand/velvet-midnight.jpg))"></i><b>Elegant</b><small>Rich and luminous</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="playful"><span><i class="sp" style="background-image:var(--photo-playful, url(/brand/pattern-stripe.jpg))"></i><b>Playful</b><small>Bold and joyful</small></span></label>
+      <label class="scard"><input type="radio" name="style" value="themed"><span><i class="sp" style="background-image:var(--photo-themed, url(/brand/pattern-damask.jpg))"></i><b>Themed</b><small>One story, your idea</small></span></label>
     </div>
     <input type="text" id="theme" placeholder="Your theme (e.g. vintage blue and silver)" hidden>
     <p class="styleNote" id="styleNote"></p>
     <div class="card extrasCard">
-      <h3>Optional extras</h3>
+      <h3>Have pieces to build around?</h3>
       <div class="extra">
         <span class="thumb" id="keyThumb">★</span>
         <div><b>Special pieces</b><small>Heirlooms, favorite ornaments or a found object. We'll build the design around them.</small></div>
@@ -602,9 +889,10 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   <!-- Reveal -->
   <section class="screen reveal" id="s-reveal" data-title="Your results" data-foot="seeIt" hidden>
     <div id="revealScore" class="rating">
+      <p class="potline" id="potLine" hidden></p>
       <div class="rrow"><div class="rlbl">Your tree today</div><div class="orns" id="orns"></div><div class="rword"><b id="ornWord"></b><span id="ornNum"></span></div></div>
+      <div class="rarrow" aria-hidden="true">→</div>
       <div class="rrow after" id="afterRow"><div class="rlbl">After your plan</div><div class="orns" id="ornsAfter"></div><div class="rword"><b id="afterWord"></b><span id="afterNum"></span></div></div>
-      <p class="rnote">We rate trees from 1 to 5 ornaments, the way a designer would.</p>
     </div>
     <h1 id="headline"></h1>
     <p id="summary"></p>
@@ -619,43 +907,34 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 
   <!-- Results hub -->
   <section class="screen" id="s-results" data-title="Your tree" hidden>
-    <div class="viewer" id="viewer"></div>
+    <p class="resline" id="resLine" hidden></p>
+    <div class="vwrap"><div class="viewer" id="viewer"></div><button class="restyle" id="openRestyle" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 11-11"/><path d="m13.5 7.5 3 3"/><path d="M18 2.5v3M16.5 4h3M20.5 9v2.4M19.3 10.2h2.4M9.5 3v2M8.5 4h2"/></svg>Change something</button></div>
     <div class="seg" id="seg" hidden>
       <button data-m="before">Before</button><button data-m="compare" class="on">Compare</button><button data-m="after">After</button>
     </div>
     <div class="hint" id="hint" hidden>Drag across the photo to compare</div>
     <p class="vnote" id="vNote" hidden></p>
     <div class="tools">
-      <button class="btn ghost" id="again">New version</button>
-      <button class="btn ghost" id="save" hidden>Save image</button>
+      <button class="btn ghost" id="again">Try another style</button>
+      <button class="btn ghost" id="save" hidden>Save and share</button>
     </div>
-    <form class="quickask" id="quickAsk">
-      <label for="qaText">Want something different?</label>
-      <div class="qarow">
-        <input type="text" id="qaText" placeholder="e.g. More flowers, or go purple" autocomplete="off" enterkeyhint="send">
-        <button class="btn" id="qaSend" aria-label="Update my tree">Update</button>
-      </div>
-      <div class="qahint">Tell us in your own words. We'll redo the plan and the preview, and keep this version too.</div>
-    </form>
-    <div class="tellcard" id="tellCard">
-      <div class="tellic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21V9M4 5V3M12 21v-6M12 11V3M20 21v-4M20 13V3"/><circle cx="4" cy="7" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="20" cy="15" r="2"/></svg></div>
-      <div class="telltx"><b>For more accurate recommendations, tell us a bit more about your tree.</b><span id="tellSub">Its height, real or artificial, and how full it is. Quantities are based on our best guess from the photo.</span></div>
-      <button class="btn" id="navDetails">Add tree details</button>
+    <div class="acts" id="acts">
+      <button class="act main" id="actPlan"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></span><span><b>Step-by-step plan</b><small id="actPlanSub">Every step drawn on your tree</small></span><i>→</i></button>
+      <button class="act" id="actShop"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 7h12l-1 13H7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></span><span><b>Shopping list</b><small id="actShopSub">What to buy, with links</small></span><i>→</i></button>
     </div>
+    <div class="hubfix" id="hubFix" hidden>
+      <div class="hubk" id="hubFixK">Your top fixes</div>
+      <div id="hubFixList"></div>
+      <button class="hubmore" id="hubFixMore" hidden></button>
+    </div>
+    <button class="scorestrip" id="navScoreBtn" data-go="s-score"><span class="orns" id="stripOrns"></span><span class="sw"><b id="stripWord">How it scored</b><small id="stripSub">Balance, lights, the top and more</small></span><span class="chev">See how it scored ›</span></button>
+    <div class="tellline" id="tellCard">Amounts are our best estimate from the photo. <button id="navDetails">Add your tree's details</button> for a better one.</div>
     <div class="telldone" id="tellDone" hidden></div>
-    <div class="ideas" id="ideas"></div>
-    <div class="navlist">
-      <button data-go="s-fixes"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><span><b>Quick fixes</b><small id="navFixes"></small></span><span class="chev">›</span></button>
-      <button data-go="s-plan"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></span><span><b>Step-by-step plan</b><small id="navPlan"></small></span><span class="chev">›</span></button>
-      <button data-go="s-partner"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span><span><b>Change something</b><small>Ask for a color, a style, or your own pieces</small></span><span class="chev">›</span></button>
-      <button data-go="s-score" id="navScoreBtn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span><b>How it scored</b><small>Balance, lights, the top and more</small></span><span class="chev">›</span></button>
-      <button data-go="s-shop"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 7h12l-1 13H7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></span><span><b>Shopping list</b><small id="navShop"></small></span><span class="chev">›</span></button>
-    </div>
     <div class="card fb" id="fbCard">
       <div id="fbForm">
         <h3>How did we do?</h3>
         <p class="sub muted">You're one of our first testers. Your honest take shapes what we build.</p>
-        <div class="q2">Rate the results</div>
+        <div class="q2">Rate the results <span class="muted" style="font-weight:400;font-size:14px">· tap an ornament</span></div>
         <div class="rate" id="fbRate" role="radiogroup" aria-label="Rating out of 5">
           <button data-v="1" aria-label="1"><i></i></button><button data-v="2" aria-label="2"><i></i></button><button data-v="3" aria-label="3"><i></i></button><button data-v="4" aria-label="4"><i></i></button><button data-v="5" aria-label="5"><i></i></button>
         </div>
@@ -693,10 +972,9 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   <!-- Plan -->
   <section class="screen" id="s-plan" data-title="Step by step" hidden>
     <div class="steptabs" id="stepTabs" role="tablist"></div>
-    <div class="guidebox"><canvas id="guideCv" aria-label="Diagram of this step on your tree"></canvas><button class="peek" id="peek">Hold to see my photo</button><button class="zoombtn" id="zoomGuide" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6M10.5 7.5v6M7.5 10.5h6"/></svg></button></div>
+    <div class="stephead"><div class="k" id="stepK"></div><h2 id="stepTitle"></h2></div>
+    <div class="guidebox"><canvas id="guideCv" aria-label="Diagram of this step on your tree"></canvas><div class="branchanim" id="branchAnim" hidden></div><span class="peek" id="peek" aria-hidden="true">Press and hold to see your photo</span><button class="zoombtn" id="zoomGuide" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6M10.5 7.5v6M7.5 10.5h6"/></svg></button></div>
     <div class="card stepcard">
-      <div class="k" id="stepK"></div>
-      <h2 id="stepTitle"></h2>
       <p id="stepLead"></p>
       <ul class="legend" id="stepLegend"></ul>
       <div id="stepItems"></div>
@@ -710,7 +988,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   <!-- Design partner -->
   <section class="screen" id="s-partner" data-title="Design partner" hidden>
     <h1>Change something</h1>
-    <p class="sub">Tell me what you'd like and I'll adjust the plan and the preview without starting over. Every change is saved as a version you can go back to.</p>
+    <p class="sub">Tell us what you'd like and we'll adjust the plan and the preview without starting over. Every change is saved as a version you can go back to.</p>
     <div class="starters" id="starters">
       <button data-p="I want to work this color into the tree: ">Work in a color</button>
       <button data-p="Design the tree around these pieces I already own: ">Design around my pieces</button>
@@ -721,11 +999,11 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <div class="log" id="log" aria-live="polite"></div>
     <div class="extras">
       <label class="pbtn" id="colorBtn"><input type="color" id="pColor" value="#2E6E8E" aria-label="Pick a color"><span id="colorLbl">Include a color</span><span class="x" id="colorClear" hidden>×</span></label>
-      <label class="pbtn" id="ornBtn"><span id="ornLbl">📷 Photo of your pieces</span><input type="file" id="pPhoto" accept="image/*" hidden></label>
+      <label class="pbtn" id="ornBtn"><span id="ornLbl">Add a photo of your pieces</span><input type="file" id="pPhoto" accept="image/*" hidden></label>
     </div>
     <div class="ask">
-      <textarea id="pText" rows="2" placeholder="e.g. Use my grandmother's blue glass ornaments, and make the ribbon softer"></textarea>
-      <button class="btn" id="pSend">Update</button>
+      <textarea id="pText" rows="4" placeholder="e.g. Use my grandmother's blue glass ornaments, and make the ribbon softer"></textarea>
+      <button class="btn" id="pSend">Update my tree</button>
     </div>
     <div class="err" id="pStatus"></div>
     <div class="versions" id="versions"></div>
@@ -743,9 +1021,42 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <h1>Shopping list</h1>
     <p class="sub">What to look for, in the order you'll use it.</p>
     <div class="card" id="shop"></div>
-    <p class="small muted" style="font-size:13px">Links open a store search. As an Amazon Associate, Tree Style may earn from qualifying purchases.</p>
+    <p class="small muted" style="font-size:13px">Links open a store search. As an Amazon Associate, TreeStyle may earn from qualifying purchases.</p>
   </section>
 </main>
+
+<div id="restyleSheet" class="sheet" hidden>
+  <div class="sheetbg" data-close></div>
+  <div class="sheetbox" role="dialog" aria-modal="true" aria-labelledby="sheetH">
+    <button class="sheetx" data-close aria-label="Close">✕</button>
+    <div class="sheetk">Your design partner</div>
+    <h3 id="sheetH">What would you change?</h3>
+    <p class="sheetsub">Tell us in your own words. We'll redo the plan and the preview, and keep this version too.</p>
+    <form class="quickask" id="quickAsk">
+      <div class="qarow">
+        <input type="text" id="qaText" placeholder="e.g. More flowers, or go purple" autocomplete="off" enterkeyhint="send" aria-label="What would you change?">
+        <button class="btn" id="qaSend" aria-label="Update my tree">Update</button>
+      </div>
+    </form>
+    <div class="ideas" id="ideas"></div>
+    <div class="sheetmore">
+      <button data-start="I want to work this color into the tree: ">Work in a color</button>
+      <button data-start="Design the tree around these pieces I already own: ">Design around my pieces</button>
+      <button data-start="" id="sheetVersions">Earlier versions</button>
+    </div>
+  </div>
+</div>
+
+<div id="styleSheet" class="sheet" hidden>
+  <div class="sheetbg" data-close></div>
+  <div class="sheetbox" role="dialog" aria-modal="true" aria-labelledby="styleH">
+    <button class="sheetx" data-close aria-label="Close">✕</button>
+    <div class="sheetk">Try another style</div>
+    <h3 id="styleH">Same tree, a new look</h3>
+    <p class="sheetsub">We'll redesign the ribbon, stems, ornaments and topper in the style you pick, with a new plan, shopping list and preview. This version stays saved.</p>
+    <div class="stylegrid" id="styleGrid"></div>
+  </div>
+</div>
 
 <div class="foot" id="foot" hidden><button class="btn" id="footBtn"></button></div>
 
@@ -760,16 +1071,17 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 
 <div id="loading" hidden>
   <div class="box">
+    <div class="scan" id="scan" hidden><img id="scanImg" alt=""><i></i></div>
+    <div class="big"></div>
+    <h2 id="loadTitle"></h2>
+    <div class="bar"><i id="loadFill"></i></div>
+    <p class="muted" id="loadNote">About a minute. Hang tight.</p>
+    <ol id="loadSteps"></ol>
     <div class="tipcard" aria-live="polite">
-      <div class="tipk" id="tipK">Try this</div>
+      <div class="tipk"><span id="tipK">While you wait</span></div>
       <p id="tipText"></p>
       <div class="tipdots" id="tipDots"></div>
     </div>
-    <div class="big"></div>
-    <h2 style="font-size:30px" id="loadTitle"></h2>
-    <ol id="loadSteps"></ol>
-    <div class="bar"><i id="loadFill"></i></div>
-    <p class="muted" id="loadNote" style="margin-top:10px;font-size:14px">About a minute. Hang tight.</p>
   </div>
 </div>
 
@@ -780,6 +1092,17 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const AMAZON_TAG = ""; // add the Amazon Associates tracking ID here
 const shopUrl = q => "https://www.amazon.com/s?k=" + encodeURIComponent(q) + (AMAZON_TAG ? "&tag=" + encodeURIComponent(AMAZON_TAG) : "");
+// Eric's curated Amazon lists. Add one line per list as you make them. An item links to the first list
+// whose words all appear in its name or search; anything without a matching list keeps its store search.
+const CURATED = [
+  // { words: ["velvet", "ribbon"], url: "https://www.amazon.com/shop/YOUR-STOREFRONT/list/LIST-ID" },
+  // { words: ["pine", "stems"], url: "..." },
+];
+const shopFor = b => {
+  const t = `${b.label || ""} ${b.q || ""}`.toLowerCase();
+  const hit = CURATED.find(c => c.url && (c.words || []).length && c.words.every(w => t.includes(String(w).toLowerCase())));
+  return hit ? hit.url : shopUrl(b.q);
+};
 
 let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
 let factsSet = false, keyPhoto = null, inspoPhoto = null, rerunFromHub = false;
@@ -789,8 +1112,8 @@ let mode = "check", photo = null, photoAspect = "3:4", result = null, after = nu
 /* ---------------- navigation ---------------- */
 let stack = [];
 const FOOT = {
-  photoNext: () => ({ label: "Next", disabled: !photo, act: () => show(mode === "design" ? "s-details" : "s-style") }),
-  ideaNext: () => ({ label: "Next", disabled: !($("#ideaText").value.trim() || ideaPhoto), act: () => {
+  photoNext: () => ({ label: photo ? "Next" : "Add a photo to continue", disabled: !photo, act: () => show(mode === "design" ? "s-details" : "s-style") }),
+  ideaNext: () => ({ label: ($("#ideaText").value.trim() || ideaPhoto) ? "Next" : "Describe your tree or add a photo", disabled: !($("#ideaText").value.trim() || ideaPhoto), act: () => {
     // the idea becomes the theme (they can still change the style on the next screens)
     useIdeaAsStyle();
     show("s-details");
@@ -800,7 +1123,7 @@ const FOOT = {
     : mode === "design" && src === "idea"
     ? ({ label: "Design my tree", act: () => { factsSet = true; useIdeaAsStyle(); run(); } })
     : ({ label: "Next", act: () => { factsSet = true; show("s-style"); } }),
-  go: () => ({ label: mode === "design" ? "Design my tree" : "Evaluate my tree", act: run }),
+  go: () => ({ label: mode === "design" ? "Design my tree" : "See my tree's potential", act: run }),
   seeIt: () => planState === "wait" ? ({ label: "Finishing your plan…", disabled: true, act: () => {} })
     : planState === "error" ? ({ label: "Try again", act: getPlan })
     : ({ label: previewState === "done" ? (mode === "design" ? "See your finished tree" : "See your improved tree") : "See your plan", act: () => show("s-results", ["s-home"]) })
@@ -809,9 +1132,11 @@ function show(id, reset) {
   if (reset) stack = reset.slice();
   const prev = stack[stack.length - 1];
   if (prev !== id) stack.push(id);
-  history.pushState({ d: stack.length }, "");
+  history.pushState({ d: stack.length }, "", screenUrl(id));
   paint(false);
 }
+// Each screen has its own address (/try/results, /try/plan…), so comments and links point at the right screen
+const screenUrl = id => "/try/" + (id === "s-home" || id === "s-pass" ? "" : id.slice(2));
 function back() {
   if (stack.length <= 1) return;
   stack.pop();
@@ -827,8 +1152,9 @@ function setFoot() {
 }
 // The small gold line above each page title, like "STEP 2 OF 3" on the brand board
 function kicker(id) {
-  const flow = mode === "design" ? (src === "idea" ? ["s-start", "s-idea", "s-details"] : ["s-start", "s-photo", "s-details", "s-style"]) : ["s-photo", "s-style"];
+  const flow = mode === "design" ? (src === "idea" ? ["s-idea", "s-details"] : ["s-photo", "s-details", "s-style"]) : ["s-photo", "s-style"];
   if (id === "s-details" && rerunFromHub) return "Your tree · optional";
+  if (id === "s-start") return "Design my tree";
   if (flow.includes(id)) return `Step ${flow.indexOf(id) + 1} of ${flow.length}`;
   return { "s-fixes": "Your plan", "s-partner": "Your design partner", "s-score": "Your rating", "s-shop": "Your plan" }[id] || "";
 }
@@ -840,16 +1166,19 @@ function paint(isBack) {
     if (on) { s.classList.toggle("back", !!isBack); s.style.animation = "none"; s.offsetHeight; s.style.animation = ""; }
   });
   const el = document.getElementById(id);
-  $("#appTitle").textContent = el.dataset.title ?? "Tree Style";
+  $("#appTitle").textContent = el.dataset.title ?? "TreeStyle";
   const kick = kicker(id);
   let k = el.querySelector(":scope > .kicker.auto");
   if (kick) { if (!k) { k = document.createElement("div"); k.className = "kicker auto"; const h = el.querySelector(":scope > h1"); if (h) el.insertBefore(k, h); else el.prepend(k); } k.textContent = kick; }
   else if (k) k.remove();
+  document.body.classList.toggle("home", id === "s-home" || id === "s-pass");
   $("#navBack").disabled = stack.length <= 1 || id === "s-pass";
   $("#navHome").disabled = id === "s-home" || id === "s-pass";
   setFoot();
   if (id === "s-plan") drawStep();
   if (id === "s-results") sweep();
+  if (id === "s-home") showResume();
+  saveSoon();
   scrollTo(0, 0);
 }
 $("#navBack").onclick = () => history.back();
@@ -862,14 +1191,14 @@ $("#passForm").addEventListener("submit", e => {
   password = $("#pw").value;
   try { sessionStorage.setItem("ts_pw", password); } catch {}
   $("#passErr").textContent = "";
-  show("s-home", []);
+  startApp();
 });
 
 /* ---------------- home / photo / style ---------------- */
 const PHOTO_COPY = {
   design: { h: "Add a photo of your bare tree", sub: "Before you decorate: just the tree, or the tree with lights on.", tips: ["Stand back so the whole tree, including the top, is in the shot.", "Set it up where it will stay, so the room is in the picture too.", "If it's artificial, it's fine if it isn't fluffed yet."] },
   room: { h: "Add a photo of the room", sub: "The spot where your tree will go. Then tap where it will stand.", tips: ["Stand back so the whole wall or corner is in the shot, floor to ceiling.", "Take it in the light you usually see the room in."] },
-  check: { h: "Add a photo of your decorated tree", sub: "Finished, or partway there. Either works.", tips: ["Stand back so the whole tree, including the top, is in the shot.", "Turn the tree lights on. Daytime or evening both work."] }
+  check: { h: "Add a photo of your tree as it is now", sub: "Fully decorated or only partway there: both work. We'll take it from where you are.", tips: ["Stand back so the whole tree, including the top, is in the shot.", "Turn the tree lights on. Daytime or evening both work."] }
 };
 document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   mode = b.dataset.mode; rerunFromHub = false; factsSet = false;
@@ -887,6 +1216,14 @@ function setPhotoCopy(key) {
   const c = PHOTO_COPY[key];
   $("#photoH").textContent = c.h; $("#photoSub").textContent = c.sub;
   $("#photoTips").innerHTML = c.tips.map(t => `<li>${t}</li>`).join("");
+  $("#tipsBox").hidden = false; $("#photoOk").hidden = true;
+}
+// Once there's a photo, one short check replaces the tips
+function photoChecked() {
+  const room = mode === "design" && src === "room";
+  $("#tipsBox").hidden = !room;
+  $("#photoOk").hidden = room;
+  $("#photoOk").textContent = "Got it. Just check the whole tree, top included, is in the photo. Tap it to change.";
 }
 // Design: pick a starting point
 document.querySelectorAll(".src").forEach(b => b.onclick = () => {
@@ -914,7 +1251,7 @@ function useIdeaAsStyle() {
 // Height choices are bands; quantities use the middle of the band, and we show the band itself
 const HEIGHT_BANDS = { 4: "4 ft or less", 5.5: "5–6 ft", 7.5: "7–8 ft", 9.5: "9–10 ft", 11.5: "11–12 ft", 14: "13 ft+" };
 const ftTxt = h => { const n = Number(h) || 7; return (factsSet && HEIGHT_BANDS[n]) || (Math.round(n * 2) / 2).toString().replace(".5", "½") + " ft"; };
-function estNote(r) { return `<div class="estnote">Quantities are based on a tree we estimated at about <b>${ftTxt(r?.tree?.height_ft)}</b> from your photo. <button data-tell>Tell us your tree's height</button> for exact amounts.</div>`; }
+function estNote(r) { return `<div class="estnote">These amounts are our best estimate for a tree about <b>${ftTxt(r?.tree?.height_ft)}</b> tall, judged from your photo. The more you tell us, the better the estimate. <button data-tell>Add your tree's details</button></div>`; }
 function syncTell(r) {
   $("#tellCard").hidden = factsSet; $("#tellDone").hidden = !factsSet;
   if (factsSet) {
@@ -975,6 +1312,7 @@ $("#file").addEventListener("change", async e => {
     } else
     $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="muted" style="font-size:13px;margin-top:8px">Tap to change photo</div>`;
     paint(false);
+    photoChecked();
   } catch { $("#photoErr").textContent = "Couldn't read that photo. Try a JPG or PNG."; }
 });
 
@@ -1020,7 +1358,7 @@ function startTips() {
   let k = 0;
   $("#tipDots").innerHTML = order.map(() => "<i></i>").join("");
   const showTip = () => {
-    const text = TIPS[order[k % order.length]], kind = "Try this";
+    const text = TIPS[order[k % order.length]], kind = "While you wait";
     $("#tipText").classList.add("fade");
     setTimeout(() => { $("#tipK").textContent = kind; $("#tipText").textContent = text; $("#tipText").classList.remove("fade"); }, k ? 350 : 0);
     [...$("#tipDots").children].forEach((d, i) => d.classList.toggle("on", i === k % order.length));
@@ -1030,8 +1368,9 @@ function startTips() {
 }
 function stopTips() { clearInterval(tipTimer); tipTimer = null; }
 
-function startLoading(title, steps, evalSeconds) {
+function startLoading(title, steps, evalSeconds, pic) {
   $("#loadTitle").textContent = title;
+  $("#scan").hidden = !pic; if (pic) $("#scanImg").src = pic;
   $("#loadSteps").innerHTML = steps.map(s => `<li>${s}</li>`).join("");
   $("#loading").hidden = false;
   $("#loadNote").textContent = evalSeconds < 20 ? "Just a few more seconds." : "About a minute. Hang tight.";
@@ -1092,7 +1431,7 @@ async function run() {
   if (mode === "design" && src !== "tree") { if (!(await makeBase())) return; }
   if (!photo) return;
   $("#startErr").textContent = $("#detailsErr").textContent = "";
-  const L = startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree", mode === "design" ? DESIGN_STEPS : CHECK_STEPS, 12);
+  const L = startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree", mode === "design" ? DESIGN_STEPS : CHECK_STEPS, 12, photo);
   evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined, inspo: mode === "design" ? (inspoPhoto || ideaPhoto || undefined) : undefined };
   const myPlan = api("/api/evaluate", { ...evalBody, part: "plan" });
   myPlan.catch(() => {});
@@ -1108,7 +1447,7 @@ async function run() {
     return;
   }
   result = lookResult = Object.assign(look, { quick_fixes: [], plan: [], ideas: [], mockup: null, render_brief: "", _lookMeta: look._meta });
-  after = null; previewP = null; previewState = "idle"; stepIdx = 0; doneSteps = new Set(); guide = null; swept = false;
+  after = null; previewP = null; previewState = "idle"; stepIdx = 0; doneSteps = new Set(); guide = null; swept = false; gotItems = new Set();
   L.done();
   getPlan(myPlan);
   fillReveal();
@@ -1130,6 +1469,7 @@ function getPlan(pending) {
     startVersions(); resetFeedback();
     paintFirst();                  // preview: in the background too
     fillReveal(); setFoot();
+    saveSoon();
   }).catch(e => {
     if (result !== forLook) return;
     planState = "error"; planP = null;
@@ -1156,6 +1496,7 @@ function paintFirst() {
     if (versions[0]) versions[0].after = after;
     fillReveal();
     if (stack[stack.length - 1] === "s-results") sweep();
+    saveSoon();
     if (after && guide) { const ai = new Image(); ai.onload = () => { if (!guide) return; guide.setAfter(ai); if (guide.steps[stepIdx] === "all") drawStep(); }; ai.src = after; }
   });
 }
@@ -1195,7 +1536,9 @@ function loadDetails() {
     if (stack[stack.length - 1] === "s-plan") drawStep();
   }).catch(e => { detailsReady = true; console.error("details", e); });
 }
-async function openPlan() {
+let pendingKey = null;
+async function openPlan(key) {
+  if (typeof key === "string") { pendingKey = key; if (guide) { const i = guide.steps.indexOf(key); if (i >= 0) stepIdx = i; pendingKey = null; } }
   if (!detailsReady && detailsP) {
     const L = startLoading("Writing your step-by-step plan", ["Reading your plan", "Writing each step", "Adding sizes and quantities"], 15);
     await detailsP;
@@ -1208,7 +1551,7 @@ async function openPlan() {
 const toOrn = v => Math.max(1, Math.floor(v / 20 * 2 + 1e-9) / 2);   // never round up: 58/100 is 2.5 ornaments, not 3
 const ornHtml = (n, delay = 0) => { let h = ""; for (let i = 1; i <= 5; i++) h += `<i class="${n >= i ? "f" : n >= i - .5 ? "h" : ""}" style="animation-delay:${delay + .15 + i * .12}s"></i>`; return h; };
 // Every rating has a word that always means the same thing (half steps take the lower word)
-const LEVELS = ["", "Just getting started", "Nice start", "Well done", "Polished", "Designer-ready"];
+const LEVELS = ["", "Lots of potential", "Nice start", "Well done", "Polished", "Designer-ready"];
 const levelWord = n => LEVELS[Math.max(1, Math.min(5, Math.floor(n)))];
 
 function fillReveal() {
@@ -1223,10 +1566,14 @@ function fillReveal() {
     }
     $("#ornWord").textContent = levelWord(o); $("#ornNum").textContent = `${o} of 5`;
     $("#afterRow").hidden = !a || a <= o;
+    // Lead with what the tree can become, not a grade
+    $("#potLine").hidden = true;
+    if (a && a > o) $("#potLine").textContent = `Your plan can take this tree to ${levelWord(a).toLowerCase()}: ${a} of 5 ornaments.`;
     if (a) { $("#afterWord").textContent = levelWord(a); $("#afterNum").textContent = `${a} of 5`; }
   }
   $("#potential").hidden = true;
   $("#headline").textContent = r.headline || "";
+  $("#headline").hidden = check;   // in Check, the rating word already says it
   $("#summary").textContent = r.summary || "";
   $("#eye").textContent = "";   // the summary already says where the eye lands; no second line for it
   // Two things happen after the scores: the plan, then the preview. Show them as two steps.
@@ -1244,27 +1591,45 @@ function fillReveal() {
 }
 $("#teaser").onclick = () => { if (planState === "ready") show("s-results", ["s-home"]); };
 
+const fixHtml = (f, i) => `<div class="fix"><span class="n">${i + 1}</span><div><b>${esc(f.title)}</b><p>${esc(f.how)}</p></div></div>`;
 function fill() {
   const r = result;
   const fixes = r.quick_fixes || [], plan = r.plan || [];
-  $("#navFixes").textContent = `${fixes.length} changes with the biggest payoff`;
-  $("#navPlan").textContent = `${plan.length} steps, in the order a designer works`;
   syncTell(r);
   const shopping = TreeGuide.shoppingList(r, mode), nItems = shopping.reduce((a, g) => a + g.items.length, 0);
-  $("#navShop").textContent = nItems ? `${nItems} things to look for, with quantities` : "Nothing new needed";
   $("#navScoreBtn").hidden = !(r.categories || []).length;
+  { const so = r.overall != null ? toOrn(r.overall) : null; $("#stripOrns").innerHTML = so ? ornHtml(so) : ""; $("#stripOrns").hidden = !so;
+    $("#stripWord").textContent = so ? `${levelWord(so)} · ${so} of 5` : "How it scored"; $("#stripSub").textContent = so ? "Your tree today, part by part" : "Balance, lights, the top and more"; }
   $("#fixesSub").textContent = mode === "design" ? "The plan at a glance." : "Biggest difference for the least effort, best first.";
-  $("#fixes").innerHTML = fixes.map((f, i) => `<div class="fix"><span class="n">${i + 1}</span><div><b>${esc(f.title)}</b>${esc(f.how)}</div></div>`).join("");
+  $("#fixes").innerHTML = fixes.map((f, i) => fixHtml(f, i)).join("");
+  // The top three fixes sit right under the preview; the full list stays one tap away
+  $("#hubFix").hidden = !fixes.length; $("#acts").hidden = !plan.length;
+  $("#hubFixK").textContent = mode === "design" ? "Your plan at a glance" : "Your top fixes";
+  $("#hubFixList").innerHTML = fixes.slice(0, 3).map((f, i) => fixHtml(f, i)).join("");
+  const nItems2 = TreeGuide.shoppingList(r, mode).reduce((a, g) => a + g.items.length, 0);
+  $("#actPlanSub").textContent = `${plan.length} steps, each drawn on your tree`;
+  $("#actShopSub").textContent = nItems2 ? `${nItems2} things to buy, with links` : "You already have what you need";
+  const moreFix = fixes.length - 3;
+  $("#hubFixMore").hidden = moreFix <= 0; $("#hubFixMore").textContent = moreFix === 1 ? "See 1 more fix" : `See ${moreFix} more fixes`;
   $("#scoreSub").textContent = r.overall != null ? `Your tree today: ${toOrn(r.overall)} of 5 ornaments, ${levelWord(toOrn(r.overall)).toLowerCase()}. Here's how each part scored, out of 10.` : "";
-  $("#cats").innerHTML = (r.categories || []).map(c => `<div class="cat"><div class="top"><span>${esc(c.name)}</span><span>${c.score}/10</span></div><div class="b"><i style="width:${c.score * 10}%"></i></div><p>${esc(c.note)}</p></div>`).join("");
-  $("#shop").innerHTML = (nItems && !factsSet ? estNote(r) : "") + (nItems ? shopping.map(g => `<div class="buy"><div class="buyh">${esc(g.title)}</div>${g.items.map(buyRow).join("")}</div>`).join("") : `<p class="muted">You already have what you need. It's all in how you place it.</p>`);
+  const CAT_STEP = { "Top of the tree": "crown", "Lights": "lights", "Big and small": "statement", "Fullness": "fluff", "Depth": "statement", "Pulled together": "ribbon" };
+  const o = r.overall != null ? toOrn(r.overall) : null;
+  $("#cats").innerHTML = (o ? `<div class="scoretop"><div class="orns">${ornHtml(o)}</div><div class="rword"><b>${levelWord(o)}</b><span>${o} of 5</span></div></div>` : "")
+    + [...(r.categories || [])].sort((a, b) => a.score - b.score).map(c => `<div class="cat"><div class="top"><span>${esc(c.name)}</span><span>${c.score}/10</span></div><div class="b"><i style="width:${c.score * 10}%"></i></div><p>${esc(c.note)}</p>${c.score <= 7 && CAT_STEP[c.name] && (r.plan || []).some(p => p.element === CAT_STEP[c.name]) ? `<button class="raise" data-raise="${CAT_STEP[c.name]}">How to raise it</button>` : ""}</div>`).join("");
+  $("#cats").querySelectorAll("[data-raise]").forEach(b => b.onclick = () => openPlan(b.dataset.raise));
+  shopNow = shopping;
+  $("#shop").innerHTML = (nItems ? `<div class="shophead"><div><b id="gotCount"></b><span class="gotbar"><i id="gotBar"></i></span></div><button class="btn ghost" id="shareList">Share list</button></div>` : "") + (nItems && !factsSet ? estNote(r) : "")
+    + (nItems ? shopping.map((g, gi) => `<details class="buy"${gi === 0 ? " open" : ""}><summary><span class="bic" aria-hidden="true">${SHOP_ICON[g.key] || SHOP_ICON.base}</span><span class="bt"><b>${esc(g.title)}</b><small>${g.items.length} ${g.items.length === 1 ? "item" : "items"}</small></span><span class="chevc" aria-hidden="true"></span></summary>${g.items.map(b => `<div class="buyline${gotItems.has(b.label) ? " have" : ""}"><button class="got${gotItems.has(b.label) ? " on" : ""}" data-got="${esc(b.label)}" aria-label="Got it: ${esc(b.label)}"></button>${buyRow(b, g.key)}</div>`).join("")}</details>`).join("") : `<p class="muted">You already have what you need. It's all in how you place it.</p>`);
+  syncGot();
   $("#brief").textContent = r.render_brief || "";
   $("#ideas").innerHTML = (r.ideas || []).slice(0, 3).map((x, i) => `<button data-i="${i}">Try: ${esc(x.label)}</button>`).join("") + (r.ideas?.length ? `<button data-more>Something else…</button>` : "");
   $("#ideas").querySelectorAll("button").forEach(b => b.onclick = () => {
+    closeRestyle();
     if (b.dataset.more != null) { show("s-partner"); $("#pText").focus({ preventScroll: true }); return; }
     const idea = r.ideas[+b.dataset.i]; partnerSend(idea.request, idea.label);
   });
   $("#timing").textContent = evalTiming(r);
+  $("#resLine").hidden = !r.headline; $("#resLine").textContent = r.headline || "";
 }
 
 const tok = u => u && u.output_tokens ? `, ${u.output_tokens.toLocaleString()} tokens` : "";
@@ -1280,17 +1645,21 @@ async function placementMap() {
     return c2.toDataURL("image/jpeg", .8);
   } catch (e) { console.error(e); return undefined; }
 }
+// Fuller branches in the preview when the plan shapes them or the tree scored low on fullness
+const needsShaping = r => (r.plan || []).some(p => p.element === "fluff") || (r.categories || []).some(c => c.name === "Fullness" && Number(c.score) <= 7);
 let lastMap = null;
 async function makePreview(extraPieces, change) {
   try {
     // A design-partner change edits the preview they're looking at, so nothing else shifts.
     const body = change && change.base
       ? { image: await thumb(change.base, 1536, .92), brief: change.brief, aspect: photoAspect, pieces: extraPieces || undefined, revision: true }
-      : { image: photo, brief: result.render_brief, aspect: photoAspect, pieces: extraPieces || keyPhoto || undefined, map: lastMap = await placementMap() };
+      : { image: photo, brief: result.render_brief, aspect: photoAspect, pieces: extraPieces || keyPhoto || undefined, map: lastMap = await placementMap(), shape: needsShaping(result) || undefined };
     if (lastMap) $("#mapImg").src = lastMap;
     const out = await api("/api/render", body);
     after = out.image;
-    $("#timing").textContent = `${evalTiming(result)} · Preview: ${out._meta?.model} · ${out._meta?.seconds}s`;
+    $("#timing").textContent = `${evalTiming(result)} · Preview: ${out._meta?.model} · ${out._meta?.seconds}s${out._meta?.shaped ? " · branches shaped" : ""}${out._meta?.edited ? " · edited the preview you were looking at" : change ? "" : " · painted from your photo"}`;
+    // Behind the scenes shows the instructions the picture was actually made from
+    $("#brief").textContent = change && change.base ? "Change made to the current preview:\n" + change.brief : (result.render_brief || "");
     drawViewer();
   } catch (e) {
     after = null;
@@ -1311,8 +1680,20 @@ function drawViewer() {
   box.addEventListener("pointerup", () => drag = false);
   box.addEventListener("pointercancel", () => drag = false);
 }
+let revealedSrc = "";
+function bigReveal(done) {
+  if (!after || revealedSrc === after) return done();
+  revealedSrc = after;
+  const o = document.createElement("div"); o.id = "bigReveal";
+  o.innerHTML = `<div><img src="${after}" alt="Your ${mode === "design" ? "finished" : "improved"} tree"><p>Your tree, styled</p><small>Tap to compare with your photo</small></div>`;
+  let gone = false; const close = () => { if (gone) return; gone = true; o.classList.add("out"); done(); setTimeout(() => o.remove(), 650); };
+  o.onclick = close; document.body.append(o); setTimeout(close, 3200);
+}
 function sweep() {
-  const box = $("#cmp"); if (!box || swept) return; swept = true;
+  const box = $("#cmp"); if (!box || swept) return;
+  // After the full-screen reveal the slider just waits underneath; a second sweep right after it read as a stutter
+  if (after && revealedSrc !== after) { swept = true; bigReveal(() => {}); return; }
+  swept = true;
   let t0; const sw = t => { t0 ??= t; const k = (t - t0) / 1700; if (k > 1) { box.style.setProperty("--cut", "50%"); return; } box.style.setProperty("--cut", (50 + Math.sin(k * Math.PI * 2) * 32) + "%"); requestAnimationFrame(sw); };
   setTimeout(() => requestAnimationFrame(sw), 300);
 }
@@ -1325,23 +1706,127 @@ function setSeg(m) {
   $("#hint").style.visibility = m === "compare" ? "visible" : "hidden";
 }
 document.querySelectorAll("#seg button").forEach(b => b.onclick = () => setSeg(b.dataset.m));
-$("#again").onclick = async () => {
-  if (previewP) return;
-  $("#again").disabled = true;
-  $("#viewer").innerHTML = `<div class="renderwait"><div class="spin"></div>Creating another version…<div style="font-size:13px">About 20 seconds</div></div>`;
-  $("#seg").hidden = $("#hint").hidden = true;
-  await makePreview(); sweep();
-  $("#again").disabled = false;
+// Try another style: pick a different style and we redesign the whole tree in it (a new version; the current one stays)
+const STYLE_PICK = [["classic", "Traditional", "Nostalgic and warm"], ["rustic", "Rustic", "Cozy and natural"], ["modern", "Modern", "Calm and graphic"], ["elegant", "Elegant", "Rich and luminous"], ["playful", "Playful", "Bold and joyful"]];
+function openSheet(id) { const sh = $(id); sh.hidden = false; requestAnimationFrame(() => sh.classList.add("on")); }
+function closeSheet(id) { const sh = $(id); if (sh.hidden) return; sh.classList.remove("on"); setTimeout(() => sh.hidden = true, 280); }
+$("#again").onclick = () => {
+  const cur = val("style");
+  $("#styleGrid").innerHTML = STYLE_PICK.filter(([v]) => v !== cur).map(([v, name, sub]) => {
+    const card = document.querySelector(`input[name=style][value=${v}] + span .sp`);
+    return `<button data-style="${v}" data-name="${name}"><i style="${card ? card.getAttribute("style") : ""}"></i><b>${name}</b><small>${sub}</small></button>`;
+  }).join("");
+  openSheet("#styleSheet");
 };
-$("#save").onclick = () => { const a = document.createElement("a"); a.href = after; a.download = "tree-style-preview.png"; a.click(); };
+$("#styleSheet").addEventListener("click", e => {
+  if (e.target.closest("[data-close]")) { closeSheet("#styleSheet"); return; }
+  const b = e.target.closest("[data-style]"); if (!b || busy) return;
+  closeSheet("#styleSheet");
+  const r = document.querySelector(`input[name=style][value=${b.dataset.style}]`); if (r) { r.checked = true; syncStyle(); }
+  const req = `Restyle the whole tree in the ${b.dataset.name} style. Rework the ribbon, stems, flowers, ornaments and topper so the ${b.dataset.name} style comes through clearly, keeping the same tree.`;
+  partnerSend(req, `${b.dataset.name} style`, { fresh: true });
+});
+// Save and share: the preview with a small TreeStyle mark, through the phone's share sheet when it has one
+async function markedImage() {
+  const load = u => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = u; });
+  const im = await load(after), c = document.createElement("canvas"), g = c.getContext("2d");
+  // Work at least 1800px wide: at the preview's own size the logo's small tagline shrank to a blur
+  const k = Math.max(1, 1800 / im.naturalWidth);
+  c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high"; g.drawImage(im, 0, 0, c.width, c.height);
+  try {
+    // A calm midnight band across the bottom with the gold logo large enough to read on a phone
+    const logo = await load("/brand/logo-horizontal.png"), w = Math.min(c.width * .56, logo.naturalWidth), h = w * logo.naturalHeight / logo.naturalWidth, bh = h + c.width * .07;
+    const gr = g.createLinearGradient(0, c.height - bh * 1.5, 0, c.height);
+    gr.addColorStop(0, "rgba(20,28,44,0)"); gr.addColorStop(.35, "rgba(20,28,44,.82)"); gr.addColorStop(1, "rgba(20,28,44,.94)");
+    g.fillStyle = gr; g.fillRect(0, c.height - bh * 1.5, c.width, bh * 1.5);
+    g.drawImage(logo, (c.width - w) / 2, c.height - bh + (bh - h) / 2, w, h);
+  } catch {}
+  return new Promise(ok => c.toBlob(ok, "image/jpeg", .92));
+}
+$("#save").onclick = async () => {
+  const blob = await markedImage().catch(() => null);
+  const file = blob && new File([blob], "my-tree-treestyle.jpg", { type: "image/jpeg" });
+  if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: "My tree, styled with TreeStyle" }); return; } catch (e) { if (e.name === "AbortError") return; }
+  }
+  const a = document.createElement("a"); a.href = blob ? URL.createObjectURL(blob) : after; a.download = "my-tree-treestyle.jpg"; a.click();
+};
 $("#restart").onclick = () => { photo = null; guide = null; photoImg = null; factsSet = false;
   clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d); $("#file").value = ""; $("#dropInner").innerHTML = "<strong>Tap to take or choose a photo</strong>";
-  roomPhoto = null; baseKey = ""; $("#roomMark").hidden = true;
+  roomPhoto = null; baseKey = ""; $("#roomMark").hidden = true; $("#tipsBox").hidden = false; $("#photoOk").hidden = true;
   if (mode === "design") show("s-start", ["s-home"]); else show("s-photo", ["s-home"]); };
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => b.dataset.go === "s-plan" ? openPlan() : show(b.dataset.go));
+$("#actPlan").onclick = () => openPlan();
+$("#actShop").onclick = () => show("s-shop");
+document.querySelectorAll("[data-go=s-plan]").forEach(b => b.onclick = () => openPlan());
+$("#hubFixMore").onclick = () => show("s-fixes");
+// Change something: lives on the preview itself, where the eye already is, and opens as a sheet over it
+function openRestyle() { const sh = $("#restyleSheet"); sh.hidden = false; requestAnimationFrame(() => sh.classList.add("on")); $("#sheetVersions").hidden = versions.length < 2; }
+function closeRestyle() { const sh = $("#restyleSheet"); if (sh.hidden) return; sh.classList.remove("on"); setTimeout(() => sh.hidden = true, 280); }
+$("#openRestyle").onclick = openRestyle;
+$("#restyleSheet").addEventListener("click", e => {
+  if (e.target.closest("[data-close]")) { closeRestyle(); return; }
+  const st = e.target.closest("[data-start]"); if (!st) return;
+  closeRestyle(); show("s-partner");
+  if (st.dataset.start) { $("#pText").value = st.dataset.start; $("#pText").focus({ preventScroll: true }); }
+  else $("#versions").scrollIntoView({ block: "start" });
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closeRestyle(); closeSheet("#styleSheet"); } });
 
-const buyRow = b => `<a class="buyrow" href="${shopUrl(b.q)}" target="_blank" rel="noopener sponsored"><b style="background:${b.color || "#ECE4D8"}"></b><span><strong>${esc(b.label)}</strong>${b.qty ? `<small>${esc(b.qty)}</small>` : ""}</span><em>Find it ›</em></a>`;
+
+// Shopping list: tick off what you have or bought (kept on this device), and share the list as text
+let gotItems = new Set(), shopNow = [];
+function syncGot() {
+  const all = shopNow.flatMap(g => g.items), n = all.filter(b => gotItems.has(b.label)).length, el = $("#gotCount");
+  if (el) el.textContent = n ? `${n} of ${all.length} ticked off` : `${all.length} things to look for`;
+  const bar = $("#gotBar"); if (bar) bar.style.width = (all.length ? n / all.length * 100 : 0) + "%";
+}
+$("#shop").addEventListener("click", async e => {
+  const g = e.target.closest("[data-got]");
+  if (g) { const k = g.dataset.got; gotItems.has(k) ? gotItems.delete(k) : gotItems.add(k); g.classList.toggle("on"); g.parentElement.classList.toggle("have"); syncGot(); saveSoon(); return; }
+  if (e.target.closest("#shareList")) {
+    // Easy to read in a text message: an emoji per section, a box or a check per item, the amount on its own line
+    const EMO = { lights: "💡", primary_picks: "🌿", ribbon: "🎀", florals: "🌺", statement: "🔴", medium: "🟡", small_picks: "🍒", crown: "⭐", base: "🎁" };
+    const text = "🎄 My TreeStyle shopping list\n\n" + shopNow.map(gr => `${EMO[gr.key] || "✨"} ${gr.title.toUpperCase()}\n` + gr.items.map(b => !b.q ? `↪️ ${b.label}` : `${gotItems.has(b.label) ? "✅" : "⬜️"} ${b.label.replace(/^./, c => c.toUpperCase())}${b.qty && /\d/.test(b.qty) ? " — " + b.qty : ""}`).join("\n")).join("\n\n") + "\n\n✅ = already have it";
+    try { if (navigator.share) { await navigator.share({ title: "My tree shopping list", text }); return; } } catch (err) { if (err.name === "AbortError") return; }
+    try { await navigator.clipboard.writeText(text); e.target.textContent = "Copied ✓"; setTimeout(() => e.target.textContent = "Share list", 1800); } catch { e.target.textContent = "Couldn't copy"; }
+  }
+});
+// Section icons (gold line drawings) and a small picture of each piece, drawn in its own color
+const _i = d => `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const SHOP_ICON = {
+  lights: _i(`<path d="M3 9c6 5 20 5 26 0"/><path d="M9 12.5v2M16 13.8v2M23 12.5v2"/><path d="M9 14.5c-1.6 1.8-1.6 4.4 0 5.6 1.6-1.2 1.6-3.8 0-5.6zM16 15.8c-1.6 1.8-1.6 4.4 0 5.6 1.6-1.2 1.6-3.8 0-5.6zM23 14.5c-1.6 1.8-1.6 4.4 0 5.6 1.6-1.2 1.6-3.8 0-5.6z"/>`),
+  primary_picks: _i(`<path d="M16 29V5"/><path d="M16 9l-5-3M16 9l5-3M16 14l-6-3.5M16 14l6-3.5M16 19l-7-4M16 19l7-4M16 24l-7.5-4M16 24l7.5-4"/>`),
+  ribbon: _i(`<path d="M16 15c-3-5-10-7-11-3s6 5 11 3zM16 15c3-5 10-7 11-3s-6 5-11 3z"/><circle cx="16" cy="15" r="1.8"/><path d="M15 16.5 11 28l3-1.5 1 2.5 1-12.5M17 16.5 21 28l-3-1.5"/>`),
+  florals: _i(`<circle cx="16" cy="14" r="2.4"/><path d="M16 11.6c-1-4 1-7 0-8 -1 1 1 4 0 8M18.3 13.2c3.5-2 6.8-1.2 7.5-2 -1.2-.6-4 1.5-7.5 2M17.6 16.2c2.6 3 2.4 6.4 3.4 7 .1-1.4-1.6-4.2-3.4-7M14.4 16.2c-2.6 3-2.4 6.4-3.4 7 -.1-1.4 1.6-4.2 3.4-7M13.7 13.2c-3.5-2-6.8-1.2-7.5-2 1.2-.6 4 1.5 7.5 2"/><path d="M16 16.4V29"/>`),
+  statement: _i(`<circle cx="16" cy="19" r="9"/><path d="M13.5 9.6h5V7.5h-5z"/><path d="M16 7.5V4"/><path d="M11 16a5.5 5.5 0 0 1 4-3.5"/>`),
+  medium: _i(`<circle cx="11" cy="20" r="6"/><path d="M9.5 13.8h3v-1.6h-3zM11 12.2V10"/><circle cx="23" cy="22" r="4"/><path d="M22 17.8h2v-1.2h-2zM23 16.6V15"/>`),
+  small_picks: _i(`<path d="M10 29c2-7 4-11 8-15"/><circle cx="19" cy="11" r="2.3"/><circle cx="23.5" cy="13" r="2.3"/><circle cx="21" cy="7" r="2.3"/><circle cx="25" cy="8.6" r="2"/><path d="M14 20c-4-1-6 1-7 3 3 0 5-1 7-3z"/>`),
+  crown: _i(`<path d="M16 3.5l2.9 6.4 7 .7-5.3 4.7 1.6 6.9L16 18.6l-6.2 3.6 1.6-6.9-5.3-4.7 7-.7z"/><path d="M16 22v7M12.5 29h7"/>`),
+  base: _i(`<rect x="5" y="13" width="22" height="15" rx="1.5"/><path d="M3.5 9.5h25V13h-25zM16 9.5V28"/><path d="M16 9.5c-3-5-8-5-7-1.5 1 2 7 1.5 7 1.5zM16 9.5c3-5 8-5 7-1.5-1 2-7 1.5-7 1.5z"/>`),
+};
+function itemPic(b, key) {
+  const c = b.color || "#C9B48A", l = (b.label || "").toLowerCase(), id = "g" + Math.random().toString(36).slice(2, 7);
+  const shade = `<defs><radialGradient id="${id}" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient></defs>`;
+  const sv = d => `<svg viewBox="0 0 48 48" aria-hidden="true">${shade}${d}</svg>`;
+  const cap = `<rect x="20" y="6" width="8" height="5" rx="1.2" fill="#C9A86A"/><path d="M24 6V3" stroke="#C9A86A" stroke-width="1.6" fill="none"/>`;
+  if (key === "statement" || key === "medium") {
+    if (/teardrop|drop|finial/.test(l)) return sv(`${cap}<path d="M24 11c7 8 12 16 12 23a12 12 0 0 1-24 0c0-7 5-15 12-23z" fill="${c}"/><path d="M24 11c7 8 12 16 12 23a12 12 0 0 1-24 0c0-7 5-15 12-23z" fill="url(#${id})"/>`);
+    return sv(`${cap}<circle cx="24" cy="28" r="16" fill="${c}"/><circle cx="24" cy="28" r="16" fill="url(#${id})"/>`);
+  }
+  if (key === "ribbon") return sv(`<ellipse cx="17" cy="24" rx="9" ry="15" fill="${c}"/><ellipse cx="17" cy="24" rx="9" ry="15" fill="url(#${id})"/><ellipse cx="17" cy="24" rx="3.2" ry="5.5" fill="#141C2C" opacity=".55"/><path d="M17 9h18l4 4-4 4h-18" fill="${c}"/><path d="M17 9h18l4 4-4 4h-18" fill="#000" opacity=".15"/>`);
+  if (key === "florals") return sv([0, 72, 144, 216, 288].map(a => `<ellipse cx="24" cy="13" rx="6.5" ry="10" fill="${c}" transform="rotate(${a} 24 24)"/>`).join("") + `<circle cx="24" cy="24" r="16" fill="url(#${id})" opacity=".6"/><circle cx="24" cy="24" r="3.5" fill="#E8C66A"/>`);
+  if (key === "primary_picks") return sv(`<path d="M24 44V6" stroke="#5B4632" stroke-width="2"/>` + [10, 17, 24, 31].map((y, i) => `<path d="M24 ${y}l-${9 + i * 2} -6M24 ${y}l${9 + i * 2} -6" stroke="${c}" stroke-width="4.5" stroke-linecap="round"/>`).join(""));
+  if (key === "small_picks") return sv(`<path d="M12 44c3-10 6-16 12-22" stroke="#5B4632" stroke-width="2" fill="none"/>` + [[25, 18], [31, 21], [28, 12], [34, 14], [22, 11]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="4.6" fill="${c}"/><circle cx="${x}" cy="${y}" r="4.6" fill="url(#${id})"/>`).join(""));
+  if (key === "lights") return sv(`<path d="M2 12c14 9 30 9 44 0" stroke="#3E5A44" stroke-width="2" fill="none"/>` + [[12, 17], [24, 20], [36, 17]].map(([x, y]) => `<rect x="${x - 2.5}" y="${y - 1}" width="5" height="4" fill="#3E5A44"/><path d="M${x} ${y + 3}c-5 5-5 12 0 15 5-3 5-10 0-15z" fill="${c}"/><circle cx="${x}" cy="${y + 11}" r="10" fill="${c}" opacity=".25"/>`).join(""));
+  if (key === "crown") return sv(`<path d="M24 5l5.3 11.6 12.7 1.3-9.6 8.6 2.8 12.5L24 32.6 12.8 39l2.8-12.5-9.6-8.6 12.7-1.3z" fill="${c}"/><path d="M24 5l5.3 11.6 12.7 1.3-9.6 8.6 2.8 12.5L24 32.6 12.8 39l2.8-12.5-9.6-8.6 12.7-1.3z" fill="url(#${id})"/>`);
+  return sv(`<rect x="8" y="18" width="32" height="24" rx="2" fill="${c}"/><rect x="5" y="12" width="38" height="7" rx="1.5" fill="${c}"/><rect x="21" y="12" width="6" height="30" fill="#fff" opacity=".45"/><rect x="5" y="12" width="38" height="30" fill="url(#${id})" opacity=".5"/>`);
+}
+const buyRow = (b, key) => b.q
+  ? `<a class="buyrow" href="${shopFor(b)}" target="_blank" rel="noopener sponsored"><b class="pic">${itemPic(b, key)}</b><span><strong>${esc(b.label)}</strong>${b.qty ? `<small>${esc(b.qty)}</small>` : ""}</span><em>Shop</em></a>`
+  : `<div class="buyrow reuse"><b></b><span><strong>${esc(b.label)}</strong>${b.qty ? `<small>${esc(b.qty)}</small>` : ""}</span></div>`;
 
 /* ---------------- full-screen zoom (pinch, pan, double-tap) ---------------- */
 let zImgs = [], zIdx = 0, zS = 1, zX = 0, zY = 0;
@@ -1399,7 +1884,10 @@ $("#zClose").onclick = () => history.back();
 })();
 
 /* ---------------- step-by-step diagrams ---------------- */
-let guide = null, photoImg = null;
+let guide = null, photoImg = null, goodSteps = new Set(), openGood = new Set(), pendingStep = null;
+// In Check my tree, shaping and lights that already score 7 of 10 or better get a checkmark instead of a full step
+const GOOD_CAT = { fluff: "Fullness", lights: "Lights" };
+const catScore = k => { const c = (result?.categories || []).find(c => c.name === GOOD_CAT[k]); return c ? Number(c.score) : null; };
 function getPhotoImg() {
   if (photoImg && photoImg.src === photo) return Promise.resolve(photoImg);
   return new Promise((ok, bad) => { const im = new Image(); im.onload = () => { photoImg = im; ok(im); }; im.onerror = bad; im.src = photo; });
@@ -1410,45 +1898,83 @@ async function drawStep() {
     try { guide = TreeGuide.create(await getPhotoImg(), $("#guideCv"), result, mode); }
     catch (e) { console.error(e); return; }
     if (after) { const ai = new Image(); ai.onload = () => { if (!guide) return; guide.setAfter(ai); if (guide.steps[stepIdx] === "all") drawStep(); }; ai.src = after; }
-    stepIdx = 0;
+    goodSteps = new Set(mode === "check" ? guide.steps.filter(k => GOOD_CAT[k] && catScore(k) >= 7) : []); openGood = new Set();
+    stepIdx = pendingStep != null ? pendingStep : Math.max(0, guide.steps.findIndex(k => !goodSteps.has(k))); pendingStep = null;
+    if (pendingKey && guide.steps.includes(pendingKey)) stepIdx = guide.steps.indexOf(pendingKey); pendingKey = null;
   }
   const steps = guide.steps;
   stepIdx = Math.max(0, Math.min(stepIdx, steps.length - 1));
   const key = steps[stepIdx], total = steps.length - 1;
-  $("#stepTabs").innerHTML = steps.map((k, i) => `<button role="tab" data-i="${i}" class="${i === stepIdx ? "on" : ""} ${doneSteps.has(k) ? "done" : ""}"><i>${k === "all" ? "★" : doneSteps.has(k) ? "✓" : i + 1}</i>${esc(guide.title(k))}</button>`).join("");
+  $("#stepTabs").innerHTML = steps.map((k, i) => `<button role="tab" data-i="${i}" class="${i === stepIdx ? "on" : ""} ${doneSteps.has(k) || goodSteps.has(k) ? "done" : ""}"><i>${k === "all" ? "★" : doneSteps.has(k) || goodSteps.has(k) ? "✓" : i + 1}</i>${esc(guide.title(k))}</button>`).join("");
   $("#stepTabs").querySelectorAll("button").forEach(b => b.onclick = () => { stepIdx = +b.dataset.i; drawStep(); });
   const on = $("#stepTabs .on"); if (on) on.scrollIntoView({ block: "nearest", inline: "center" });
   guide.draw(key, false);
-  const nd = steps.filter(k => doneSteps.has(k)).length;
-  $("#stepK").textContent = key === "all" ? `Final look · ${nd} of ${total} steps done` : `Step ${stepIdx + 1} of ${total}${nd ? ` · ${nd} done` : ""}`;
+  const anim = key === "fluff";   // shaping the branches is shown, not pointed at: a branch unfolding, then its tips
+  $(".guidebox").classList.toggle("anim", anim); $("#branchAnim").hidden = !anim;
+  if (anim && !$("#branchAnim").firstChild) $("#branchAnim").innerHTML = branchSvg(result?.tree?.kind === "natural");
+  const nd = steps.filter(k => doneSteps.has(k) || goodSteps.has(k)).length;
+  const collapsed = goodSteps.has(key) && !openGood.has(key);
+  $("#stepK").textContent = key === "all" ? `${nd} of ${total} steps done` : `Step ${stepIdx + 1} of ${total}`;
   $("#stepTitle").textContent = guide.title(key);
   const its = guide.itemsFor(key), written = its.some(p => p.how);
   const leadTxt = written ? guide.note(key) : guide.lead(key);   // one set of instructions, never two
-  $("#stepLead").textContent = leadTxt; $("#stepLead").hidden = !leadTxt;
+  $("#stepLead").textContent = leadTxt; $("#stepLead").hidden = !leadTxt || collapsed;
   const buy = guide.buy(key), lg = buy.length ? [] : guide.legend(key);
-  $("#stepLegend").hidden = !lg.length;
+  $("#stepLegend").hidden = !lg.length || collapsed;
   $("#stepLegend").innerHTML = lg.map(l => `<li><b style="background:${l.color}"></b>${esc(l.text)}</li>`).join("");
   let items = "";
+  if (goodSteps.has(key)) items += `<div class="goodstep"><b>Already looking great</b><span>Your ${key === "lights" ? "lights" : "branches"} scored ${catScore(key)} out of 10, so you can skip this step.</span>${collapsed ? `<button data-opengood>Show the step anyway</button>` : ""}</div>`;
+  if (collapsed) { $("#stepItems").innerHTML = items; $("#stepItems").querySelector("[data-opengood]").onclick = () => { openGood.add(key); drawStep(); }; }
+  else {
   if (key === "primary_picks" || (key === "florals" && !steps.includes("primary_picks")))
     items += `<div class="newto"><b>New to stems?</b> They're short branches of greenery, flowers or berries on a bendable wire. You tuck them into the tree and wrap the wire around a branch. Stores call them "picks," so search for that when you shop.</div>`;
-  if (buy.length) items += (factsSet ? "" : estNote(result)) + `<div class="buy"><div class="buyh">What to buy</div>${buy.map(buyRow).join("")}</div>`;
+  if (buy.length) items += (factsSet ? "" : estNote(result)) + `<div class="buy"><div class="buyh">What to buy</div>${buy.map(b => buyRow(b, key)).join("")}</div>`;
   items += its.map(p => `<div class="planitem"><h4>${esc(p.title)}</h4>${p.how ? `<p>${esc(p.how)}</p>` : ""}</div>`).join("");
   $("#stepItems").innerHTML = items;
-  $("#prevStep").disabled = stepIdx === 0;
-  $("#nextStep").textContent = key === "all" ? "Back to my tree" : doneSteps.has(key) ? (stepIdx === total - 1 ? "See it all together" : "Next step") : (stepIdx === total - 1 ? "Done, see it all together" : "Done, next step");
+  }
+  $("#prevStep").hidden = stepIdx === 0;
+  if (key === "all") {
+    const total2 = steps.length - 1, nd2 = steps.filter(k => k !== "all" && (doneSteps.has(k) || goodSteps.has(k))).length;
+    if (nd2 >= total2) {
+      $("#stepItems").insertAdjacentHTML("afterbegin", `<div class="finish"><h3>Your tree is done</h3><p>Every step, finished. Enjoy it, and show it off.</p>${after ? `<button class="btn" data-share>Save and share</button>` : ""}<button class="btn ghost" data-another>Style another tree</button></div>`);
+      const sh = $("#stepItems [data-share]"); if (sh) sh.onclick = () => $("#save").click();
+      $("#stepItems [data-another]").onclick = () => $("#restart").click();
+    }
+  }
+  $("#nextStep").textContent = key === "all" ? "Back to my tree" : (doneSteps.has(key) || goodSteps.has(key)) ? (stepIdx === total - 1 ? "See the finished tree" : "Next step") : (stepIdx === total - 1 ? "Done, see the finished tree" : "Done, next");
 }
 $("#prevStep").onclick = () => { stepIdx--; drawStep(); scrollTo(0, 0); };
 $("#nextStep").onclick = () => {
   if (!guide) return;
   const key = guide.steps[stepIdx];
   if (key === "all") { history.back(); return; }
-  doneSteps.add(key); stepIdx++; drawStep(); scrollTo(0, 0);
+  doneSteps.add(key); stepIdx++; drawStep(); scrollTo(0, 0); saveSoon();
 };
-const peekOn = () => guide && guide.draw(guide.steps[stepIdx], true), peekOff = () => guide && guide.draw(guide.steps[stepIdx], false);
-$("#peek").addEventListener("pointerdown", peekOn);
+// Press and hold the picture to see your own photo; a short wait so a scroll or a tap doesn't flash it
+let peekT = 0, peeking = false;
+const peekOn = () => { peekT = setTimeout(() => { if (!guide) return; peeking = true; $(".guidebox").classList.add("peeking"); guide.draw(guide.steps[stepIdx], true); }, 160); };
+const peekOff = () => { clearTimeout(peekT); if (!peeking) return; peeking = false; $(".guidebox").classList.remove("peeking"); guide && guide.draw(guide.steps[stepIdx], false); };
+$("#guideCv").addEventListener("pointerdown", peekOn);
+["pointerup", "pointerleave", "pointercancel"].forEach(ev => $("#guideCv").addEventListener(ev, peekOff));
+$("#guideCv").addEventListener("contextmenu", e => e.preventDefault());
 $("#zoomGuide").onclick = () => { if (!guide) return; openZoom([{ label: "Step", src: $("#guideCv").toDataURL("image/jpeg", .92) }, { label: "My photo", src: photo }], 0); };
-["pointerup", "pointerleave", "pointercancel"].forEach(ev => $("#peek").addEventListener(ev, peekOff));
-$("#peek").addEventListener("contextmenu", e => e.preventDefault());
+// Shaping the branches: a drawn branch whose side branches swing out from the stem, then whose tips fan open
+function branchSvg(real) {
+  const D = 9, G = "#5E8C62", G2 = "#86B07E", needles = (L, n0 = 6) => { let d = ""; for (let t = n0; t < L - 2; t += 4.2) d += `M${t} 0l5 -6M${t} 0l5 6`; return `<path d="M0 0H${L}" stroke="#4C3A28" stroke-width="2.2"/><path d="${d}" stroke="${G}" stroke-width="1.6" stroke-linecap="round"/>`; };
+  const anim = (vals, times, extra = "") => `<animateTransform attributeName="transform" type="rotate" values="${vals}" keyTimes="${times}" dur="${D}s" repeatCount="indefinite" calcMode="spline" keySplines="${times.split(";").slice(1).map(() => ".4 0 .2 1").join(";")}"${extra}/>`;
+  const tips = (L, s) => [-38, 0, 38].map(a => `<g transform="translate(${L} 0)"><g>${anim(`0;0;${a};${a}`, `0;${s};${(s + .1).toFixed(3)};1`)}<path d="M0 0H28" stroke="#4C3A28" stroke-width="1.6"/><path d="M4 0l5 -6M4 0l5 6M10 0l5 -6M10 0l5 6M16 0l5 -5M16 0l5 5M22 0l4 -4M22 0l4 4" stroke="${G2}" stroke-width="1.6" stroke-linecap="round"/></g></g>`).join("");
+  const sides = [70, 125, 180, 235, 290].map((x, i) => {
+    const up = i % 2 ? 1 : -1, L = 92 - i * 9, s = .1 + i * .045, open = up * 52, fold = up * 6;
+    return `<g transform="translate(${x} 160)"><g>${anim(`${fold};${fold};${open};${open}`, `0;${s.toFixed(3)};${(s + .13).toFixed(3)};1`)}${needles(L)}${tips(L, .5 + i * .03)}</g></g>`;
+  }).join("");
+  const cap = (t, a, b) => `<text x="200" y="300" text-anchor="middle" font-family="Cormorant Garamond, serif" font-style="italic" font-size="22" fill="#F3EEE7" opacity="0">${t}<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;${a};${(a + .04).toFixed(2)};${(b - .04).toFixed(2)};${b};1" dur="${D}s" repeatCount="indefinite"/></text>`;
+  return `<svg viewBox="0 0 400 320" role="img" aria-label="A branch unfolding from the stem, then its tips fanning out"><defs><radialGradient id="bgv" cx="50%" cy="45%" r="70%"><stop offset="0" stop-color="#22304A"/><stop offset="1" stop-color="#141C2C"/></radialGradient></defs><rect width="400" height="320" fill="url(#bgv)"/>
+    <text x="200" y="34" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" letter-spacing="3" fill="#B89C6B">ONE BRANCH, UP CLOSE</text>
+    <rect x="22" y="40" width="12" height="240" rx="4" fill="#3A2C1F"/><circle cx="34" cy="160" r="5" fill="#B89C6B"/>
+    <g><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.04;.94;1" dur="${D}s" repeatCount="indefinite"/>
+      <g transform="translate(34 160)">${needles(322, 40)}${tips(322, .5)}</g>${sides}</g>
+    ${cap(real ? "1. Shake out each branch" : "1. Unfold each branch from the stem", .04, .48)}${cap(real ? "2. Fan the tips so no gaps show" : "2. Fan out every tip, up, out and down", .5, .95)}</svg>`;
+}
 
 /* ---------------- feedback ---------------- */
 let fbRating = 0;
@@ -1494,7 +2020,7 @@ function useVersion(i) {
   fill(); if (after) drawViewer(); else $("#viewer").innerHTML = "";
   $("#vNote").hidden = versions.length < 2;
   $("#vNote").textContent = i === 0 ? "Showing the original plan." : `Version ${i + 1}: ${v.label}`;
-  renderVersions();
+  renderVersions(); saveSoon();
 }
 function renderVersions() {
   const el = $("#versions");
@@ -1508,16 +2034,16 @@ $("#colorClear").addEventListener("click", e => { e.preventDefault(); e.stopProp
 function clearColor() { pickedColor = null; $("#colorLbl").textContent = "Include a color"; $("#colorBtn").classList.remove("on"); $("#colorClear").hidden = true; }
 $("#pPhoto").addEventListener("change", async e => {
   const f = e.target.files[0]; if (!f) return;
-  try { ornPhoto = await shrink(f, 1024); $("#ornLbl").textContent = "📷 Photo added ✓"; $("#ornBtn").classList.add("on"); }
+  try { ornPhoto = await shrink(f, 1024); $("#ornLbl").textContent = "Photo added ✓"; $("#ornBtn").classList.add("on"); }
   catch { $("#pStatus").textContent = "Couldn't read that photo."; }
 });
-function clearOrn() { ornPhoto = null; $("#pPhoto").value = ""; $("#ornLbl").textContent = "📷 Photo of your pieces"; $("#ornBtn").classList.remove("on"); }
+function clearOrn() { ornPhoto = null; $("#pPhoto").value = ""; $("#ornLbl").textContent = "Add a photo of your pieces"; $("#ornBtn").classList.remove("on"); }
 $("#pText").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("#pSend").click(); } });
 $("#pSend").onclick = () => {
   let req = $("#pText").value.trim();
   if (pickedColor) req = (req ? req + " " : "") + `Include the color ${pickedColor}.`;
   if (!req && ornPhoto) req = "Design the tree around the pieces in my photo.";
-  if (!req) { $("#pText").focus(); $("#pStatus").textContent = "Tell me what you'd like to change."; return; }
+  if (!req) { $("#pText").focus(); $("#pStatus").textContent = "Tell us what you'd like to change."; return; }
   partnerSend(req, null);
 };
 function addMsg(who, text, opts = {}) {
@@ -1532,12 +2058,12 @@ $("#quickAsk").addEventListener("submit", e => {
   e.preventDefault();
   const req = $("#qaText").value.trim();
   if (!req) { $("#qaText").focus(); return; }
-  $("#qaText").value = "";
+  $("#qaText").value = ""; closeRestyle();
   $("#pText").value = req;   // shows in the design partner's history as their own words
   partnerSend(req, null);
 });
 
-async function partnerSend(req, label) {
+async function partnerSend(req, label, opts = {}) {
   if (!result || busy) return;
   if (previewP) { $("#pStatus").textContent = "One moment: your first preview is still painting."; await previewP; $("#pStatus").textContent = ""; }
   busy = true; $("#pSend").disabled = true; document.querySelectorAll("#ideas button").forEach(b => b.disabled = true);
@@ -1545,7 +2071,7 @@ async function partnerSend(req, label) {
   const sentColor = pickedColor, sentOrn = ornPhoto;
   addMsg("me", label ? `Try: ${label}` : ($("#pText").value.trim() || "Design around these pieces."), { swatch: label ? null : sentColor, img: label ? null : sentOrn });
   if (!label) { $("#pText").value = ""; clearColor(); clearOrn(); }
-  const L = startLoading("Updating your tree", ["Reading your request", "Reworking the plan", "Adjusting ribbon, stems and ornaments", "Creating a preview of the new version"], 35);
+  const L = startLoading("Updating your tree", ["Reading your request", "Reworking the plan", "Adjusting ribbon, stems and ornaments", "Creating a preview of the new version"], 35, after || photo);
   try {
     const cur = { quick_fixes: result.quick_fixes, plan: result.plan, ideas: result.ideas, mockup: result.mockup };
     const res = await api("/api/evaluate", {
@@ -1565,21 +2091,22 @@ async function partnerSend(req, label) {
     fill();
     loadDetails();
     const prevAfter = after;
-    await makePreview(sentOrn, prevAfter && res.change_brief ? { base: prevAfter, brief: res.change_brief } : null);
+    // A small change edits the preview they're looking at; a whole new style is painted fresh from their photo
+    await makePreview(sentOrn, !opts.fresh && prevAfter && res.change_brief ? { base: prevAfter, brief: res.change_brief } : null);
     versions = versions.slice(0, current + 1);
     versions.push({ label: String(res.version_label || label || req).slice(0, 60), result: JSON.parse(JSON.stringify(result)), after });
     current = versions.length - 1;
     const reply = res.reply || "Here's the updated tree.";
     addMsg("ai", reply, { tag: `Version ${current + 1}`, list: (res.changes || []).slice(0, 5) });
     chat.push({ role: "user", text: req }, { role: "assistant", text: reply });
-    renderVersions(); resetFeedback();
+    renderVersions(); resetFeedback(); saveSoon();
     $("#vNote").hidden = false; $("#vNote").textContent = `Version ${current + 1}: ${versions[current].label}. Older versions are under Change something.`;
     L.done();
     show("s-results", ["s-home"]);
   } catch (e) {
     L.done();
     if (sentColor) { $("#pColor").value = sentColor; $("#pColor").dispatchEvent(new Event("input")); }
-    if (sentOrn) { ornPhoto = sentOrn; $("#ornLbl").textContent = "📷 Photo added ✓"; $("#ornBtn").classList.add("on"); }
+    if (sentOrn) { ornPhoto = sentOrn; $("#ornLbl").textContent = "Photo added ✓"; $("#ornBtn").classList.add("on"); }
     $("#pStatus").textContent = "That didn't go through: " + e.message;
     if (!stack.includes("s-partner")) show("s-partner");
   } finally {
@@ -1587,8 +2114,88 @@ async function partnerSend(req, label) {
   }
 }
 
+/* ---------------- saving progress on this device ---------------- */
+// The tree, plan, preview, versions and finished steps are kept in this browser (IndexedDB), so a phone
+// putting the page to sleep doesn't send people back to the start. Nothing here leaves the device.
+const SAVE_KEY = "tree-v1";
+const idb = {
+  open() { return new Promise((ok, no) => { const r = indexedDB.open("treestyle", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); }); },
+  async run(how, fn) { const db = await this.open(); return new Promise((ok, no) => { const t = db.transaction("kv", how), q = fn(t.objectStore("kv")); t.oncomplete = () => ok(q && q.result); t.onerror = () => no(t.error); }); },
+  get(k) { return this.run("readonly", st => st.get(k)).catch(() => null); },
+  set(k, v) { return this.run("readwrite", st => st.put(v, k)).catch(() => null); }
+};
+let saveTimer = 0, restoring = false;
+const SAVE_SCREENS = ["s-reveal", "s-results", "s-fixes", "s-plan", "s-partner", "s-score", "s-shop"];
+function saveSoon() {
+  if (restoring || !result || planState !== "ready" || !(result.plan || []).length || !photo) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const scr = stack[stack.length - 1];
+    idb.set(SAVE_KEY, {
+      at: Date.now(), mode, src, factsSet, photo, photoAspect, keyPhoto, result, after,
+      form: { kind: val("kind") || "", height: val("height") || "", density: val("density") || "", stage: val("stage") || "", style: val("style") || "keep", theme: $("#theme").value },
+      versions, current, chat, stepIdx, doneSteps: [...doneSteps], got: [...gotItems], screen: SAVE_SCREENS.includes(scr) ? scr : "s-results"
+    });
+  }, 400);
+}
+const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 2 ? "just now" : m < 60 ? `${m} minutes ago` : m < 120 ? "an hour ago" : m < 1440 ? `${Math.round(m / 60)} hours ago` : m < 2880 ? "yesterday" : `${Math.round(m / 1440)} days ago`; };
+async function showResume() {
+  const st = result ? null : await idb.get(SAVE_KEY);
+  if (stack[stack.length - 1] !== "s-home") return;
+  const has = result || st;
+  $("#resume").hidden = !has; if (!has) return;
+  $("#resumeImg").src = (result ? photo : st.photo) || "";
+  const m = result ? mode : st.mode;
+  $("#resumeSub").textContent = `${m === "design" ? "Your tree design" : "Your checked tree"}${st ? ", saved " + ago(st.at) : ""}. Saved on this device only.`;
+}
+function setRadio(n, v) { const el = document.querySelector(`input[name=${n}][value="${v}"]`); if (el) el.checked = true; }
+async function restoreSaved(st) {
+  restoring = true;
+  try {
+    mode = st.mode; src = st.src || "tree"; factsSet = !!st.factsSet;
+    const f = st.form || {}; ["kind", "height", "density", "stage", "style"].forEach(n => setRadio(n, f[n] ?? "")); $("#theme").value = f.theme || ""; syncStyle();
+    $("#stageQ").hidden = mode === "design"; $("#inspoRow").hidden = mode !== "design"; setPhotoCopy(mode === "design" ? (src === "room" ? "room" : "design") : "check");
+    photo = st.photo; photoAspect = st.photoAspect || "3:4"; photoImg = null; keyPhoto = st.keyPhoto || null; baseKey = "";
+    $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="muted" style="font-size:13px;margin-top:8px">Tap to change photo</div>`;
+    result = lookResult = st.result; after = st.after || null; planState = "ready"; planP = null;
+    evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined };
+    versions = (st.versions || []).length ? st.versions : [{ label: "Original", result: JSON.parse(JSON.stringify(result)), after }];
+    current = Math.min(st.current || 0, versions.length - 1); chat = st.chat || [];
+    $("#log").innerHTML = ""; chat.forEach(t => addMsg(t.role === "user" ? "me" : "ai", t.text));
+    gotItems = new Set(st.got || []);
+    guide = null; doneSteps = new Set(st.doneSteps || []); pendingStep = st.stepIdx || 0; stepIdx = pendingStep;
+    fill(); renderVersions(); resetFeedback();
+    $("#vNote").hidden = current === 0; if (current) $("#vNote").textContent = `Version ${current + 1}: ${versions[current].label}`;
+    loadDetails();
+    if (after) { previewState = "done"; drawViewer(); swept = true; }
+    else { previewState = "idle"; paintFirst(); }
+    fillReveal();
+    const scr = st.screen || "s-results";
+    stack = ["s-home"].concat(scr === "s-results" || scr === "s-reveal" ? [] : ["s-results"], [scr]);
+    history.pushState({ d: stack.length }, "", screenUrl(stack[stack.length - 1]));
+    restoring = false; paint(false);
+    return true;
+  } catch (e) { console.error(e); restoring = false; result = null; return false; }
+}
+$("#resumeBtn").onclick = async () => {
+  if (result) { show("s-results", ["s-home"]); return; }
+  const st = await idb.get(SAVE_KEY);
+  if (!st || !(await restoreSaved(st))) $("#resume").hidden = true;
+};
+$("#resumeNew").onclick = () => { $("#resume").hidden = true; document.querySelector(".tiles").scrollIntoView({ block: "center", behavior: "smooth" }); };
+// Coming back within a few hours lands right back on the tree; after that, the home screen offers it.
+async function startApp() {
+  if (!password) { show("s-pass", []); return; }
+  // Refreshing a tree screen (/try/plan, /try/shop…) reopens your saved tree right there;
+  // opening /try/ always starts at Home, which offers "Pick up where you left off".
+  const want = "s-" + (location.pathname.replace(/^\/try\/?/, "").split("/")[0] || "home");
+  const st = SAVE_SCREENS.includes(want) ? await idb.get(SAVE_KEY) : null;
+  if (st && st.result && await restoreSaved(Object.assign({}, st, { screen: want }))) return;
+  show("s-home", []);
+}
+
 /* ---------------- start ---------------- */
-show(password ? "s-home" : "s-pass", []);
+startApp();
 </script>
 </body>
 </html>

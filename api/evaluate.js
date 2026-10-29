@@ -41,7 +41,7 @@ RIBBON NAMES: all ribbon is wired; always say so (e.g. "6-inch burgundy velvet w
 ORNAMENTS: use a tight palette: 2-3 colors, and at most 2 finishes per size. Give sizes in whole inches. Call the biggest "extra-large ornaments".
 COLOR NAMES: every color_name is the name you use in your words (e.g. "champagne", "olive", "burgundy"), and your words never use a different name for the same thing.
 ideas: exactly 3 genuinely different directions worth seeing for this tree.
-mockup.ribbon_technique: cascade for OPEN trees, loops for DENSE. ribbons: 2-3, widest first, following the layering rule; [] if no ribbon should be added.
+mockup.ribbon_technique: cascade for OPEN trees, loops for DENSE. ribbons: 2-3, widest first, following the layering rule; on a tree 5 ft or taller use about 6" for the widest, 4" for the one laid on top and 1.5-2" for the accent; [] if no ribbon should be added.
 mockup.moments: 5-12 hidden-vine moments: larger and fuller low, smaller and sparser high, never in rows. Going down the tree they zigzag left and right across the full width; three in a row must never line up into a diagonal.
 mockup.ornaments: 12-26 NEW ornaments: a few xl in gaps, then l, mostly m and s. Place xl and l where they balance the visual weight already on the tree, spread across different heights; keep them off the lowest tenth of the tree and off its outer edge, and never two big ones side by side at the bottom, where they stand out instead of sinking in; shapes and finishes true to the style. These are sample placements: repeat each color/size/finish combination several times (it stands for a box) rather than many one-off combinations.
 mockup.clusters: optional ornament clusters (see ORNAMENT CLUSTERS). They are one design tool among many, not a signature: many trees should have none, so people who try several trees see real variety. Include them (1-3) only when this particular design calls for them; otherwise []. Each is 3-5 medium or small balls of one color and finish grouped at one spot (x,y = the center of the group). Don't repeat cluster balls in mockup.ornaments. Anything you put here is drawn in the step-by-step guide and the preview, so only include what you want called out.
@@ -139,7 +139,7 @@ Reply with this JSON:
  "reply": "<1-2 friendly sentences>",
  "changes": ["<1-5 short items>"],
  "version_label": "<3-5 words>",
- "change_brief": "<edit instructions for the CURRENT preview photo, which already shows the previous version: describe ONLY what to add, remove or swap for this request, with sizes, colors, how many and where (e.g. 'Add red and black buffalo check wired ribbon, 2.5 inches wide, as 2-3 loops tucked into the branches at each of the 7 existing ribbon spots: upper left, upper right, ...'). Everything else stays exactly as it is. 40-120 words.>",
+ "change_brief": "<edit instructions for the CURRENT preview photo, which already shows the previous version: describe ONLY what to add, remove or swap for this request, with sizes, colors, how many and where (e.g. 'Add red and black buffalo check wired ribbon, 2.5 inches wide, as 2-3 loops tucked into the branches at each of the 7 existing ribbon spots: upper left, upper right, ...'). Everything else stays exactly as it is. Even for a broad request ("more jeweled", "I don't love it", "make it fancier"), build on the current preview: name the specific pieces to add, swap or take off and where, and leave the rest as it is; never re-describe the whole tree. 40-120 words.>",
  ${PLAN_SHAPE(mode, true)}
 }
 ${PLAN_NOTES(mode, true)}

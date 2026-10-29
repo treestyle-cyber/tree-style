@@ -13,9 +13,9 @@ const SLOTS = ["before", "after", "ribbonref", "velvet", "velvetberry", "hero", 
 const MODELS = [process.env.GEMINI_IMAGE_MODEL, "gemini-3.1-flash-image-preview", "gemini-2.5-flash-image"].filter(Boolean);
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
 
-async function latest() {
-  if (!blobConnected()) return null;
-  const read = async prefix => {
+// Newest photo per slot under a prefix
+async function readSlots(prefix) {
+  {
     const out = {};
     let cursor;
     do {
@@ -28,10 +28,18 @@ async function latest() {
       cursor = page.hasMore ? page.cursor : null;
     } while (cursor);
     return out;
-  };
-  const live = await read("brand/photos/");
+  }
+}
+async function latest() {
+  if (!blobConnected()) return null;
+  const live = await readSlots("brand/photos/");
   // A preview copy shows the live photos plus any it picked itself
-  return IS_PREVIEW ? { ...live, ...(await read(envPath("brand/photos/"))) } : live;
+  return IS_PREVIEW ? { ...live, ...(await readSlots(envPath("brand/photos/"))) } : live;
+}
+// Photos picked in the preview Studio that are newer than the live ones (they don't go live on their own)
+async function previewPicks() {
+  const live = await readSlots("brand/photos/"), prev = await readSlots("preview/brand/photos/");
+  return Object.values(prev).filter(b => { const slot = b.pathname.split("/")[3]; return !live[slot] || String(b.uploadedAt) > String(live[slot].uploadedAt); });
 }
 
 async function generate(prompt, aspect, base, map) {
@@ -101,6 +109,27 @@ export default async function handler(req, res) {
     const text = `Edit this photograph. Keep the room, camera angle, lighting, colors, style and everything else exactly the same, photorealistic, magazine quality. Make only these changes to the Christmas tree:\n${String(prompt).slice(0, 2000)}\nThe result must be an ordinary photograph with no text, markings or outlines.`;
     try { return res.status(200).json({ image: await generate(text, aspect, base, parseDataUrl(map)) }); }
     catch (e) { return res.status(502).json({ error: String(e.message || e) }); }
+  }
+
+  if (action === "adopt-preview") {
+    // Live Studio only: copy the photos picked in the preview Studio onto the live site
+    if (IS_PREVIEW) return res.status(400).json({ error: "Open the live Studio to do this." });
+    if (!blobConnected()) return res.status(400).json({ error: "Storage isn't connected." });
+    try {
+      const picks = await previewPicks(), slots = picks.map(b => b.pathname.split("/")[3]);
+      if (req.body.dry) return res.status(200).json({ slots });
+      for (const b of picks) {
+        const slot = b.pathname.split("/")[3];
+        let buf;
+        const r = await get(b.pathname, { ...tok(), access: "private" }).catch(() => null);
+        if (r && r.stream) buf = Buffer.from(await new Response(r.stream).arrayBuffer());
+        else buf = Buffer.from(await (await fetch(b.url)).arrayBuffer());
+        const path = `brand/photos/${slot}/${Date.now()}.${/png/.test(b.contentType || "") ? "png" : "jpg"}`;
+        try { await put(path, buf, { ...tok(), access: "public", contentType: b.contentType || "image/jpeg" }); }
+        catch (e) { await put(path, buf, { ...tok(), access: "private", contentType: b.contentType || "image/jpeg" }); }
+      }
+      return res.status(200).json({ ok: true, slots });
+    } catch (e) { return res.status(500).json({ error: String(e.message || e) }); }
   }
 
   if (action === "use") {
