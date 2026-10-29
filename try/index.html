@@ -473,7 +473,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   /* ===== UX review, Oct 28 ===== */
   /* Home: a shorter welcome so both choices show on the first screen, with proof up front */
   #s-home .hero{min-height:0;padding:18px 22px 22px;gap:14px;margin-bottom:18px}
-  #s-home .hero .lockup img.logos{width:min(150px,44%)}
+  #s-home .hero .lockup img.logos{width:min(220px,62%)}
   #s-home .hero .hl h1{font-size:34px;max-width:none}
   .ba{display:none;grid-template-columns:1fr 1fr;gap:6px;border-radius:12px;overflow:hidden;margin-top:4px}
   .ph-before.ph-after .ba{display:grid}
@@ -483,13 +483,8 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   #s-home .tiles{margin-top:16px;gap:12px}
   .ba div{aspect-ratio:4/3}
   /* On phones the two choices sit side by side with their photo, so both show on the first screen */
-  @media (max-width:699px){
-    .choice.tile{grid-template-rows:none;grid-template-columns:104px 1fr}
-    .choice.tile .tpic{aspect-ratio:auto;height:100%;min-height:112px}
-    .choice.tile .tlbl{padding:14px 14px 14px 16px}
-    .choice.tile b{font-size:28px}
-    .choice.tile small{font-size:15px}
-  }
+  .choice.tile .tpic{aspect-ratio:16/9}
+  .choice.tile .tlbl{padding:14px 20px 16px}
   #s-home .ttl{font-size:28px;margin-top:4px}
   #s-home .ttl::after{display:none}
   /* Rating: what the plan can bring the tree to comes first */
@@ -585,8 +580,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 
   <!-- Home -->
   <section class="screen" id="s-home" data-title="" hidden>
-    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="TreeStyle · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1>
-      <div class="ba" aria-label="A tree before and after"><div style="background-image:var(--photo-before)"><span>Before</span></div><div style="background-image:var(--photo-after)"><span>After</span></div></div></div></div>
+    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="TreeStyle · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
     <div class="card resume" id="resume" hidden>
       <img id="resumeImg" alt="">
       <div>
