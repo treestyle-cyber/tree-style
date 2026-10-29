@@ -64,7 +64,7 @@
   "rewrites": [
     {
       "source": "/try/:screen(home|start|idea|photo|details|style|reveal|results|fixes|plan|partner|score|shop|pass)",
-      "destination": "/try/index.html"
+      "destination": "/try/"
     }
   ]
 }
