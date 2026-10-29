@@ -94,7 +94,7 @@
 
   const STEP_ORDER = ["fluff", "lights", "primary_picks", "ribbon", "florals", "statement", "medium", "small", "small_picks", "crown", "base"];
   const STEP_TITLE = { fluff: "Shape the branches", lights: "Lights", primary_picks: "Greenery stems", ribbon: "Ribbon", florals: "Flowers", statement: "Extra-large & large ornaments",
-    medium: "Medium & small ornaments", small: "Medium & small ornaments", small_picks: "Small accents", crown: "The crown", base: "Base", all: "Your finished tree" };
+    medium: "Medium & small ornaments", small: "Medium & small ornaments", small_picks: "Small accents", crown: "The crown & base", base: "The crown & base", all: "Your finished tree" };
 
   // Claude names its colors (champagne, olive, burgundy...); use those names everywhere, and only
   // guess from the hex when it didn't give one.
@@ -391,6 +391,7 @@
     STEP_ORDER.forEach(k => { has[k] = !!planL[k]; });
     data.plan.forEach(p => { has[p.element] = true; });
     if (has.small) { has.medium = true; has.small = false; }   // small ornaments are part of the medium & small step
+    if (has.base) { has.crown = true; has.base = false; }      // the base is finished in the same step as the crown (fewer steps)
     if (mode === "design" && data.tree.kind === "artificial") has.fluff = true;
     const steps = STEP_ORDER.filter(k => has[k]); steps.push("all");
 
@@ -498,7 +499,7 @@
         (S.crown || []).forEach(m => ring(o, m.x, m.y, u * 2, "#FFE7A3"));
         pill(o, G.A[0], G.A[1] + G.treeH * .12, data.topper.delicate ? "Add extra up here, topper goes on last" : "Wire the topper on, then add around it", { gap: 0 });
       }
-      if (key === "base") pill(o, (G.L[0] + G.R[0]) / 2, Math.min(H - 20 * vs, G.L[1] + G.treeH * .06), "Keep the base in proportion");
+      if (key === "crown" || key === "base") pill(o, (G.L[0] + G.R[0]) / 2, G.L[1] - G.treeH * .1, "Then the skirt, collar or basket");
 
     }
     function badge(o, x, y, r, n, col) {
@@ -537,7 +538,7 @@
         statement: `Begin with the extra-large ornaments, about ${Math.round(xl)}" across, set back toward the trunk to create a rich background, then the large ones around them. Give your most treasured pieces the best spots, with a little breathing room.`,
         medium: "Layer the medium ornaments around the larger ones, then finish with the small ones tucked close to the branches to fill in. Spread them all the way around the tree, sides included, mixing shiny and matte." + clusterTip("m") + clusterTip("s"),
         small_picks: "Small accents are short picks: berries, little flowers or crystal sprays on a wire stem. They're an inexpensive luxury, so be generous. Tuck the picks in throughout to add texture and soften any quiet patches.",
-        crown: data.topper.delicate ? "The crown, the top of the tree, is where every eye goes first. Build it up with extra greenery, ribbon and flowers, then set the topper last so nothing disturbs it." : "The crown, the top of the tree, is where every eye goes first. Secure the topper first, then build extra greenery, ribbon and flowers around it.",
+        crown: (data.topper.delicate ? "The crown, the top of the tree, is where every eye goes first. Build it up with extra greenery, ribbon and flowers, then set the topper last so nothing disturbs it." : "The crown, the top of the tree, is where every eye goes first. Secure the topper first, then build extra greenery, ribbon and flowers around it.") + (data.plan.some(p => p.element === "base") ? " Then finish the bottom: a skirt, collar or basket in proportion to the tree hides the stand and grounds the whole design." : ""),
         base: "Choose a skirt or collar in proportion to the tree. A generous base, or one that echoes a color on the tree, grounds the whole design.",
         all: afterImg ? "Every step together: this is the tree your plan creates. Tap any step above to look at it again." : "Every step together. Tap any step above to look at it again."
       }[key];
@@ -584,8 +585,8 @@
       data.ornaments.forEach(b => { const r = Math.max(4, sizes[b.size] * S.pxIn / 2 * 1.15); blob(b.x * W, b.y * H, r, r, b.color, .95); });
     }
 
-    const itemsFor = key => key === "all" ? [] : data.plan.filter(p => p.element === key || (key === "medium" && p.element === "small"));
-    const buy = key => key === "all" ? [] : buyList(data, mode, key);
+    const itemsFor = key => key === "all" ? [] : data.plan.filter(p => p.element === key || (key === "medium" && p.element === "small") || (key === "crown" && p.element === "base"));
+    const buy = key => key === "all" ? [] : key === "crown" ? [...buyList(data, mode, "crown"), ...buyList(data, mode, "base").map(b => ({ ...b, kind: "base" }))] : buyList(data, mode, key);
     // When the written instructions are in, the step shows only them, plus a short note on how to read
     // the picture where the picture has its own marks (numbered ribbon spots, cluster circles).
     function note(key) {
