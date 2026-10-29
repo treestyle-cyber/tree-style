@@ -1651,7 +1651,7 @@ async function makePreview(extraPieces, change) {
     // A design-partner change edits the preview they're looking at, so nothing else shifts.
     const body = change && change.base
       ? { image: await thumb(change.base, 1536, .92), brief: change.brief, aspect: photoAspect, pieces: extraPieces || undefined, revision: true }
-      : { image: photo, brief: result.render_brief, aspect: photoAspect, pieces: extraPieces || keyPhoto || undefined, map: lastMap = await placementMap() };
+      : { image: photo, brief: result.render_brief, aspect: photoAspect, pieces: extraPieces || keyPhoto || undefined, map: lastMap = await placementMap(), shape: (result.plan || []).some(p => p.element === "fluff") || undefined };
     if (lastMap) $("#mapImg").src = lastMap;
     const out = await api("/api/render", body);
     after = out.image;
@@ -1720,7 +1720,7 @@ $("#styleSheet").addEventListener("click", e => {
   closeSheet("#styleSheet");
   const r = document.querySelector(`input[name=style][value=${b.dataset.style}]`); if (r) { r.checked = true; syncStyle(); }
   const req = `Restyle the whole tree in the ${b.dataset.name} style. Rework the ribbon, stems, flowers, ornaments and topper so the ${b.dataset.name} style comes through clearly, keeping the same tree.`;
-  partnerSend(req, `${b.dataset.name} style`);
+  partnerSend(req, `${b.dataset.name} style`, { fresh: true });
 });
 // Save and share: the preview with a small TreeStyle mark, through the phone's share sheet when it has one
 async function markedImage() {
@@ -2059,7 +2059,7 @@ $("#quickAsk").addEventListener("submit", e => {
   partnerSend(req, null);
 });
 
-async function partnerSend(req, label) {
+async function partnerSend(req, label, opts = {}) {
   if (!result || busy) return;
   if (previewP) { $("#pStatus").textContent = "One moment: your first preview is still painting."; await previewP; $("#pStatus").textContent = ""; }
   busy = true; $("#pSend").disabled = true; document.querySelectorAll("#ideas button").forEach(b => b.disabled = true);
@@ -2087,7 +2087,8 @@ async function partnerSend(req, label) {
     fill();
     loadDetails();
     const prevAfter = after;
-    await makePreview(sentOrn, prevAfter && res.change_brief ? { base: prevAfter, brief: res.change_brief } : null);
+    // A small change edits the preview they're looking at; a whole new style is painted fresh from their photo
+    await makePreview(sentOrn, !opts.fresh && prevAfter && res.change_brief ? { base: prevAfter, brief: res.change_brief } : null);
     versions = versions.slice(0, current + 1);
     versions.push({ label: String(res.version_label || label || req).slice(0, 60), result: JSON.parse(JSON.stringify(result)), after });
     current = versions.length - 1;

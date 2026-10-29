@@ -10,7 +10,12 @@ const MODELS = [
 
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
 
-function editPrompt(brief, revision) {
+// When the plan includes shaping the branches, the preview shows them shaped: the same tree, fuller,
+// with the see-through gaps filled in by its own branches. Otherwise the plan says "shape the branches"
+// and the preview shows the same sparse tree.
+const SHAPE = `SHAPE THE BRANCHES (part of this plan): show the tree after every branch has been shaped. Each branch is spread away from the trunk and its tips fanned up, out and down, so see-through patches, bare gaps and flat spots fill in with the tree's own branches and needles, most of all in the lower third and near the bottom, where trees are usually thinnest. Use only this tree's own branches (same needles, same green, and the same snow or flocking if it has any), so it reads as the same tree, simply fuller and lusher. Its height, top tip and overall silhouette stay the same; the sides may widen only slightly, as shaped branches naturally do. Nothing below or around the tree changes.`;
+
+function editPrompt(brief, revision, shape) {
   if (revision) return `This photo shows a decorated Christmas tree. Make ONLY the change described below and keep everything else exactly as it is: same room, camera angle, framing and lighting, and every ornament, ribbon, flower and stem not mentioned stays exactly where it is. Make the change photorealistic, at true real-world scale, tucked into the branches, and clearly visible. The tree itself never changes: its height, outline, top tip and every branch stay exactly as they are. Removing a decoration only takes that decoration off and shows the branches that were behind it; a new topper sits on the tree's existing tip, with the upper branches still full around it. If a topper doesn't fit between the tree's tip and the top of the photo, let it run off the top edge of the frame; never shorten, cut, flatten or shrink the tree to make room for it.
 
 Change to make:
@@ -21,11 +26,11 @@ RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or 
 The result must look like an ordinary real photograph, with no circles, rings, outlines or other markings drawn on it.`;
   return `Edit this photo of a Christmas tree to show it after a professional holiday decorator finished it.
 
-The first image is the photo to edit. Keep exactly the same room, camera angle, framing, lighting, tree shape and tree size: the tree keeps its exact height, outline, top tip and every branch. If a topper doesn't fit between the tree's tip and the top of the photo, let it run off the top edge of the frame; never shorten, cut, flatten or shrink the tree to make room for it. Keep everything already on the tree unless the instructions say otherwise. Make every addition photorealistic, at true real-world scale, lit by the room's light, and physically tucked into the branches (not floating or pasted on).
+The first image is the photo to edit. Keep exactly the same room, camera angle, framing, lighting, tree shape and tree size: the tree keeps its exact height, outline, top tip${shape ? "" : " and every branch"}. If a topper doesn't fit between the tree's tip and the top of the photo, let it run off the top edge of the frame; never shorten, cut, flatten or shrink the tree to make room for it. Keep everything already on the tree unless the instructions say otherwise. Make every addition photorealistic, at true real-world scale, lit by the room's light, and physically tucked into the branches (not floating or pasted on).
 
 Changes to make:
 ${brief}
-
+${shape ? "\n" + SHAPE + "\n" : ""}
 RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or spiral across or down the tree. It appears as SEPARATE short pieces: loops or short drops that start and stop, each tucked deep into the branches at one spot, with plenty of green branches showing between them. Picture a vine hidden inside the tree that peeks out here and there, winding back and forth across the full width. The ribbon spots must NOT line up: no diagonal row of bows or loops from top to bottom, which reads as a swag. Never wrap ribbon around the tree or drape it from the top to the bottom.
 
 The result must look like an ordinary real photograph of the same tree in the same room, not an illustration, with no circles, rings, outlines or other markings drawn on it.`;
@@ -57,7 +62,7 @@ export default async function handler(req, res) {
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
 
-  const { image, brief, aspect, pieces, map, revision } = req.body || {};
+  const { image, brief, aspect, pieces, map, revision, shape } = req.body || {};
   const pc = parseDataUrl(pieces), mp = parseDataUrl(map);
   const img = parseDataUrl(image);
   if (!img || !brief) return res.status(400).json({ error: "Missing photo or brief" });
@@ -66,9 +71,9 @@ export default async function handler(req, res) {
   const started = Date.now();
   let lastErr = "";
   for (const model of MODELS) {
-    let out = await callGemini(model, img, editPrompt(brief, revision), ar, pc, revision ? null : mp);
+    let out = await callGemini(model, img, editPrompt(brief, revision, !!shape && !revision), ar, pc, revision ? null : mp);
     // Some models reject imageConfig; retry once without it.
-    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, editPrompt(brief, revision), null, pc, revision ? null : mp);
+    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, editPrompt(brief, revision, !!shape && !revision), null, pc, revision ? null : mp);
     if (!out.ok) {
       lastErr = out.body?.error?.message || `Gemini error ${out.status}`;
       // Model not available, or no quota for it on this account: try the next one
