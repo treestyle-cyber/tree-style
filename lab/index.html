@@ -62,7 +62,7 @@
     <div class="intro">
       <div class="eyebrow">Lab</div>
       <h1>Current vs. proposed</h1>
-      <p class="eyebrow" style="margin:0 0 10px">Comparing: the old style definitions vs. the new ones (live). Choose "Every style" to see them all.</p>
+      <p class="eyebrow" style="margin:0 0 10px">Testing: at least one 4-6" jeweled or embroidered ribbon (left) vs. the live app (right). Choose "Every style" to see them all.</p>
       <p>Run the same trees through the app as it is today and the proposed change, side by side. Nothing here changes the live app. Your test photos stay in this browser for next time.</p>
     </div>
     <div class="panel">
@@ -151,8 +151,8 @@ function syncMode() {
 $("#mode").onchange = syncMode; $("#style").onchange = syncMode;
 $("#file").onchange = async e => { for (const f of [...e.target.files].slice(0, 4 - photos.length)) photos.push(await prep(f)); savePhotos(); drawPhotos(); e.target.value = ""; };
 
-// What the two columns compare. Old vs new style definitions (Oct 23); the right column is always the live app.
-const COLS = [{ title: "Old style definitions", variant: "old" }, { title: "New definitions (live)", variant: undefined }];
+// What the two columns compare: the rule under test (LAB_RULE in api/evaluate.js, sent as variant "v2") vs the live app.
+const COLS = [{ title: "Test: jeweled or embroidered ribbon", variant: "v2" }, { title: "Live app", variant: undefined }];
 const ALL_STYLES = [["classic", "Traditional"], ["rustic", "Rustic"], ["modern", "Modern"], ["elegant", "Elegant"], ["playful", "Playful"], ["keep", "Keep my style"]];
 async function runOne(src, idx, mode, style, extra = {}, label = "") {
   const row = document.createElement("div");
