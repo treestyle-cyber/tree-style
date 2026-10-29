@@ -63,7 +63,7 @@
     <div class="intro">
       <div class="eyebrow">Lab</div>
       <h1>Current vs. proposed</h1>
-      <p class="eyebrow" style="margin:0 0 10px">Nothing under test right now: both columns run the live rules. Choose "Every style" to see them all.</p>
+      <p class="eyebrow" style="margin:0 0 10px">Testing the picture step: both columns get the same plan; the left is painted by Google's higher-quality image model with a "check every piece" list, the right by the live app's model. Choose a style to compare.</p>
       <p>Run the same trees through the app as it is today and the proposed change, side by side. Nothing here changes the live app. Your test photos stay in this browser for next time.</p>
     </div>
     <div class="panel">
@@ -153,7 +153,8 @@ $("#mode").onchange = syncMode; $("#style").onchange = syncMode;
 $("#file").onchange = async e => { for (const f of [...e.target.files].slice(0, 4 - photos.length)) photos.push(await prep(f)); savePhotos(); drawPhotos(); e.target.value = ""; };
 
 // What the two columns compare: the rule under test (LAB_RULE in api/evaluate.js, sent as variant "v2") vs the live app.
-const COLS = [{ title: "Test column (nothing under test)", variant: "v2" }, { title: "Live app", variant: undefined }];
+// samePlan: both columns paint the SAME plan, so only the picture step is compared
+const COLS = [{ title: "Test: higher-quality image model + checklist", variant: "v2", samePlan: true }, { title: "Live app", variant: undefined }];
 const ALL_STYLES = [["classic", "Traditional"], ["rustic", "Rustic"], ["modern", "Modern"], ["elegant", "Elegant"], ["playful", "Playful"], ["keep", "Keep my style"]];
 async function runOne(src, idx, mode, style, extra = {}, label = "") {
   const row = document.createElement("div");
@@ -164,15 +165,18 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
   const im = await loadImg(src), r = im.width / im.height, aspect = ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0];
   let look = {};
   try { look = await api("/api/evaluate", { image: src, mode, style, part: "look", ...extra }); } catch (e) { if (e.status === 401) return gate(); }
+  let shared = null;
   const one = async (variant, id) => {
     const t0 = Date.now();
     try {
-      const plan = await api("/api/evaluate", { image: src, mode, style, part: "plan", variant, ...extra });
+      const plan = COLS[0].samePlan ? await (shared ||= api("/api/evaluate", { image: src, mode, style, part: "plan", ...extra })) : await api("/api/evaluate", { image: src, mode, style, part: "plan", variant, ...extra });
       const result = Object.assign({}, look, plan);
       $(`#${id}-brief`).textContent = result.render_brief || "";
       const map = await mapFor(src, result, mode);
       if (map) $(`#${id}-map`).innerHTML = `<img src="${map}" style="width:100%;border-radius:8px;margin-top:6px" alt="">`;
-      const out = await api("/api/render", { image: src, brief: result.render_brief, aspect, map, variant });
+      // same branch-shaping rule as the app
+      const shape = (result.plan || []).some(p => p.element === "fluff") || (result.categories || []).some(c => c.name === "Fullness" && Number(c.score) <= 7);
+      const out = await api("/api/render", { image: src, brief: result.render_brief, aspect, map, variant, shape: shape || undefined });
       $(`#${id}-pic`).innerHTML = `<img src="${out.image}" alt="">`;
       $(`#${id}-meta`).textContent = `${Math.round((Date.now() - t0) / 1000)}s · ${(result.render_brief || "").split(/\s+/).length} words of instructions · ${out._meta?.model || ""}`;
     } catch (e) {

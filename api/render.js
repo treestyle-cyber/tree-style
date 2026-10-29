@@ -8,6 +8,11 @@ const MODELS = [
   "gemini-2.5-flash-image"
 ].filter(Boolean);
 
+// Under test in the Lab: does the higher-quality model, with a checklist, paint every piece the plan names?
+const LAB_MODEL = "gemini-3-pro-image-preview";
+const LAB_CHECK = `
+
+BEFORE YOU FINISH, CHECK EVERY PIECE: go through the changes above one by one (each ribbon, each kind of flower and stem, each ornament size and color, the topper and the base) and make sure every one is in the picture, clearly visible from across the room, at its stated size, color and count. A piece that is missing or too faint to notice counts as a mistake. Pale pieces on a pale or snowy tree need enough shine, shadow and depth to read.`;
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
 
 // When the plan includes shaping the branches, the preview shows them shaped: the same tree, fuller,
@@ -67,7 +72,7 @@ export default async function handler(req, res) {
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
 
-  const { image, brief, aspect, pieces, map, revision, shape } = req.body || {};
+  const { image, brief, aspect, pieces, map, revision, shape, variant } = req.body || {};
   const pc = parseDataUrl(pieces), mp = parseDataUrl(map);
   const img = parseDataUrl(image);
   if (!img || !brief) return res.status(400).json({ error: "Missing photo or brief" });
@@ -75,10 +80,13 @@ export default async function handler(req, res) {
 
   const started = Date.now();
   let lastErr = "";
-  for (const model of MODELS) {
-    let out = await callGemini(model, img, editPrompt(brief, revision, !!shape && !revision), ar, pc, revision ? null : mp);
+  // Lab test (variant "v2"): Google's higher-quality image model first, plus a closing checklist
+  const models = variant === "v2" ? [...new Set([LAB_MODEL, ...MODELS])] : MODELS;
+  const prompt = editPrompt(brief, revision, !!shape && !revision) + (variant === "v2" ? LAB_CHECK : "");
+  for (const model of models) {
+    let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp);
     // Some models reject imageConfig; retry once without it.
-    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, editPrompt(brief, revision, !!shape && !revision), null, pc, revision ? null : mp);
+    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, prompt, null, pc, revision ? null : mp);
     if (!out.ok) {
       lastErr = out.body?.error?.message || `Gemini error ${out.status}`;
       // Model not available, or no quota for it on this account: try the next one
