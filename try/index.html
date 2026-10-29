@@ -352,6 +352,18 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .sheetmore{display:grid;gap:0;margin-top:16px;border-top:1px solid var(--line)}
   .sheetmore button{appearance:none;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ivory);font:400 20px var(--serif);text-align:left;padding:14px 2px;cursor:pointer;display:flex;justify-content:space-between}
   .sheetmore button::after{content:"›";color:var(--gold);font-family:var(--sans)}
+  /* photo tips: a 2x2 grid of icon cards, in the empty photo box and in the first-time pop-up */
+  .dropcam{display:block;width:44px;height:44px;margin:0 auto 10px;color:var(--gold)}
+  .dropcam svg{width:100%;height:100%}
+  .ptipk{display:flex;align-items:center;gap:10px;justify-content:center;font:600 11px var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin:22px 0 12px}
+  .ptipk::before,.ptipk::after{content:"";width:28px;height:1px;background:rgba(184,156,107,.6)}
+  .ptips{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:left}
+  .ptips li{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:14px 14px 13px;border-radius:14px;background:rgba(20,28,44,.55);box-shadow:inset 0 0 0 1px rgba(184,156,107,.28)}
+  .pti{margin-bottom:7px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--gold);box-shadow:inset 0 0 0 1px rgba(184,156,107,.55);background:radial-gradient(circle at 35% 30%,rgba(230,211,168,.18),transparent 70%)}
+  .pti svg{width:20px;height:20px}
+  .ptips b{font:500 17px/1.15 var(--serif);color:var(--ivory)}
+  .ptips small{font-size:12.5px;line-height:1.3;color:var(--muted)}
+  #tipsSheet .ptips li{background:rgba(184,156,107,.06)}
   /* score in one line: the ornaments themselves */
   .scorestrip{display:flex;align-items:center;gap:14px;width:100%;appearance:none;border:1px solid var(--line);border-radius:16px;background:rgba(184,156,107,.05);padding:14px 16px;margin:16px 0;color:inherit;font:inherit;text-align:left;cursor:pointer;flex-wrap:wrap}
   .scorestrip .orns{display:flex;gap:4px}
@@ -1047,6 +1059,18 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   </div>
 </div>
 
+<div id="tipsSheet" class="sheet" hidden>
+  <div class="sheetbg" data-close></div>
+  <div class="sheetbox" role="dialog" aria-modal="true" aria-labelledby="tipsH">
+    <button class="sheetx" data-close aria-label="Close">✕</button>
+    <div class="sheetk">Photo tips</div>
+    <h3 id="tipsH">Before you take the photo</h3>
+    <p class="sheetsub">A good photo makes a better plan and a truer preview.</p>
+    <div id="tipsList"></div>
+    <button class="btn" id="tipsGo" style="width:100%;margin-top:18px">Take or choose a photo</button>
+  </div>
+</div>
+
 <div id="styleSheet" class="sheet" hidden>
   <div class="sheetbg" data-close></div>
   <div class="sheetbox" role="dialog" aria-modal="true" aria-labelledby="styleH">
@@ -1205,30 +1229,64 @@ document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d);
   src = "tree"; roomPhoto = null; ideaPhoto = null; baseKey = ""; photo = null; photoImg = null; $("#roomMark").hidden = true;
-  $("#dropInner").innerHTML = "<strong>Tap to take or choose a photo</strong>";
+  emptyDrop();
   setPhotoCopy(mode);
   $("#stageQ").hidden = mode === "design";
   $("#inspoRow").hidden = mode !== "design";
   $("#detailsSub").textContent = "Optional, but it makes the plan and the preview more accurate.";
   show(mode === "design" ? "s-start" : "s-photo");
 });
+// Photo tips: short, with an icon each. Shown once as a pop-up before the first photo, then inside the empty photo box.
+const _ti = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const TIP_ICON = {
+  frame: _ti(`<path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/><path d="M12 6l-4.5 10h9z"/><path d="M12 16v2.5"/>`),
+  eye: _ti(`<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>`),
+  camera: _ti(`<rect x="3" y="6.5" width="18" height="13" rx="2.5"/><circle cx="12" cy="13" r="3.6"/><path d="M8.5 6.5 10 4h4l1.5 2.5"/>`),
+  bulb: _ti(`<path d="M9 17h6M10 20h4"/><path d="M12 3.5a5.5 5.5 0 0 0-3.2 10c.7.5 1.2 1.3 1.2 2.1V17h4v-1.4c0-.8.5-1.6 1.2-2.1A5.5 5.5 0 0 0 12 3.5z"/>`),
+  room: _ti(`<path d="M3 20V8l9-4 9 4v12"/><path d="M3 20h18M9 20v-6h6v6"/>`),
+  spot: _ti(`<path d="M12 21s-6-5.6-6-10.5a6 6 0 0 1 12 0C18 15.4 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.2"/>`)
+};
+const PHOTO_TIPS = {
+  tree: [["frame", "The whole tree", "Top to floor, in frame"], ["eye", "Straight on", "Chest height, steps back"], ["camera", "A real photo", "No screenshots or video stills"], ["bulb", "Lights on", "Room and tree lights on"]],
+  room: [["room", "The whole corner", "Floor to ceiling"], ["spot", "The tree's spot", "You'll tap it next"], ["camera", "A real photo", "No screenshots or video stills"], ["bulb", "Everyday light", "How you usually see it"]]
+};
+let tipsKey = "tree";
+const tipGrid = () => `<ul class="ptips">${PHOTO_TIPS[tipsKey].map(([i, t, d]) => `<li><span class="pti">${TIP_ICON[i]}</span><b>${t}</b><small>${d}</small></li>`).join("")}</ul>`;
+function emptyDrop() {
+  $("#dropInner").innerHTML = `<span class="dropcam">${TIP_ICON.camera}</span><strong>Tap to take or choose a photo</strong><div class="ptipk">For the best result</div>${tipGrid()}`;
+}
+const tipsSeen = () => { try { return localStorage.getItem("ts_photo_tips") === "1"; } catch { return true; } };
+// First photo ever: the tips as a pop-up, then straight to the camera or library
+document.querySelector("label.drop").addEventListener("click", e => {
+  if (photo || tipsSeen()) return;
+  e.preventDefault();
+  $("#tipsH").textContent = tipsKey === "room" ? "Before you take the room photo" : "Before you take the photo";
+  $("#tipsList").innerHTML = tipGrid();
+  const sh = $("#tipsSheet"); sh.hidden = false; requestAnimationFrame(() => sh.classList.add("on"));
+});
+function closeTips() { const sh = $("#tipsSheet"); sh.classList.remove("on"); setTimeout(() => sh.hidden = true, 280); }
+$("#tipsSheet").addEventListener("click", e => {
+  if (e.target.closest("#tipsGo")) { try { localStorage.setItem("ts_photo_tips", "1"); } catch {} closeTips(); $("#file").click(); return; }
+  if (e.target.closest("[data-close]")) closeTips();
+});
 function setPhotoCopy(key) {
   const c = PHOTO_COPY[key];
+  tipsKey = key === "room" ? "room" : "tree"; if (!photo) emptyDrop();
   $("#photoH").textContent = c.h; $("#photoSub").textContent = c.sub;
   $("#photoTips").innerHTML = c.tips.map(t => `<li>${t}</li>`).join("");
-  $("#tipsBox").hidden = false; $("#photoOk").hidden = true;
+  $("#tipsBox").hidden = true; $("#photoOk").hidden = true;   // the tips now live inside the photo box
 }
 // Once there's a photo, one short check replaces the tips
 function photoChecked() {
   const room = mode === "design" && src === "room";
-  $("#tipsBox").hidden = !room;
+  $("#tipsBox").hidden = true;
   $("#photoOk").hidden = room;
   $("#photoOk").textContent = "Got it. Just check the whole tree, top included, is in the photo. Tap it to change.";
 }
 // Design: pick a starting point
 document.querySelectorAll(".src").forEach(b => b.onclick = () => {
   src = b.dataset.src; baseKey = ""; photo = null; photoImg = null; roomPhoto = null; $("#roomMark").hidden = true;
-  $("#dropInner").innerHTML = "<strong>Tap to take or choose a photo</strong>";
+  emptyDrop();
   $("#inspoRow").hidden = src === "idea";   // the idea screen has its own inspiration photo
   if (src === "idea") { show("s-idea"); return; }
   setPhotoCopy(src === "room" ? "room" : "design");
@@ -1754,8 +1812,8 @@ $("#save").onclick = async () => {
 };
 $("#restart").onclick = () => { photo = null; guide = null; photoImg = null; factsSet = false;
   clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
-  clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d); $("#file").value = ""; $("#dropInner").innerHTML = "<strong>Tap to take or choose a photo</strong>";
-  roomPhoto = null; baseKey = ""; $("#roomMark").hidden = true; $("#tipsBox").hidden = false; $("#photoOk").hidden = true;
+  clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d); $("#file").value = ""; emptyDrop();
+  roomPhoto = null; baseKey = ""; $("#roomMark").hidden = true; $("#tipsBox").hidden = true; $("#photoOk").hidden = true;
   if (mode === "design") show("s-start", ["s-home"]); else show("s-photo", ["s-home"]); };
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => b.dataset.go === "s-plan" ? openPlan() : show(b.dataset.go));
 $("#actPlan").onclick = () => openPlan();

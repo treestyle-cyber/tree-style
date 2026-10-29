@@ -77,3 +77,4 @@ Read this first in every session. It holds what the team has decided and why, so
 - 2026-10-28: The UX review (`ux-review` branch) went live. The live Studio offers a one-tap "Use them on the live site" for photos picked in the preview Studio, since preview picks never go live on their own.
 - 2026-10-29: The base is back in every design: plans end with a tree skirt, collar or basket (named the way stores sell it) unless the tree already has a good one, and preview instructions always include it. Still not scored.
 - 2026-10-29: The base is finished in the same step as the crown ("The crown & base") so the plan has one step fewer; the shopping list still lists the base on its own. Base items show a skirt (or collar/basket) drawing.
+- 2026-10-29: Photo tips: four short tips with icons (whole tree, straight on, a real photo, lights on; room photos get their own four). Shown as a pop-up the first time someone adds a photo, then inside the empty photo box.
