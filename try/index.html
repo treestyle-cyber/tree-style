@@ -498,6 +498,8 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .choice.tile small{font-size:15.5px;line-height:1.4;color:#D9CCC0;max-width:22em}
   .choice.tile i{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 1.5px rgba(184,156,107,.6);font-size:18px;transition:background .18s,color .18s}
   .choice.tile:hover i{background:var(--gold);color:var(--midnight)}
+  /* Big serif titles a step heavier (semibold) so they hold up on a phone */
+  .choice.tile b,.act b,.fix b,.src b,.scard b,.navlist b{font-weight:600 !important}
   /* Rating: what the plan can bring the tree to comes first */
 
   body.home .barmono{visibility:hidden}
