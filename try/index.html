@@ -306,6 +306,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .buyrow strong{display:block;font:600 19px/1.2 var(--serif);color:var(--ivory)}
   .buyrow small{display:block;color:var(--muted);font-size:13.5px;margin-top:2px}
   .buyrow em{font:600 11.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--on-accent);background:var(--gold);padding:8px 13px;border-radius:99px;white-space:nowrap}
+  .buyrow strong::first-letter{text-transform:uppercase}
   .buyrow.reuse{background:none;border-style:dashed}
   .buyrow.reuse b{background:none;box-shadow:inset 0 0 0 1.5px rgba(184,156,107,.6);display:grid;place-items:center}
   .buyrow.reuse b::before{content:"↺";color:var(--gold);font:600 20px var(--sans)}
@@ -323,6 +324,33 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .fb input[type=text]{width:100%;border-radius:12px;margin-bottom:12px}
   .fb .q2{font-weight:600;margin:4px 0 8px}
   .fb .thanks{text-align:center;padding:10px 0;font-family:var(--serif);font-size:24px;color:var(--green)}
+
+  /* change something: a pill on the preview and a sheet */
+  .vwrap{position:relative}
+  .restyle{position:absolute;left:12px;bottom:12px;z-index:3;appearance:none;border:1px solid var(--gold);background:rgba(20,28,44,.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:var(--ivory);font:600 14px var(--sans);padding:11px 16px;border-radius:99px;cursor:pointer;box-shadow:0 6px 18px -6px rgba(0,0,0,.6)}
+  .restyle span{color:var(--gold)}
+  .sheet{position:fixed;inset:0;z-index:18}
+  .sheetbg{position:absolute;inset:0;background:rgba(8,12,20,.6);opacity:0;transition:opacity .28s}
+  .sheetbox{position:absolute;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;background:var(--midnight);border:1px solid rgba(184,156,107,.45);border-bottom:0;border-radius:22px 22px 0 0;padding:22px 18px max(22px,env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1);max-height:88vh;overflow:auto}
+  .sheet.on .sheetbg{opacity:1}
+  .sheet.on .sheetbox{transform:none}
+  .sheetx{position:absolute;right:12px;top:12px;appearance:none;border:0;background:rgba(255,255,255,.08);color:var(--ivory);width:36px;height:36px;border-radius:50%;cursor:pointer}
+  .sheetk{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+  .sheetbox h3{font:500 30px/1.1 var(--serif);margin:6px 0 6px;color:var(--ivory)}
+  .sheetsub{font-size:15px;color:var(--muted);margin:0 0 14px}
+  .sheetbox .quickask{background:none;border:0;padding:0;margin:0 0 4px}
+  .sheetbox .ideas button{border-style:solid;border-color:rgba(184,156,107,.6);color:var(--ivory);padding:10px 14px;font-size:14.5px}
+  .sheetmore{display:grid;gap:0;margin-top:16px;border-top:1px solid var(--line)}
+  .sheetmore button{appearance:none;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ivory);font:400 20px var(--serif);text-align:left;padding:14px 2px;cursor:pointer;display:flex;justify-content:space-between}
+  .sheetmore button::after{content:"›";color:var(--gold);font-family:var(--sans)}
+  /* score in one line: the ornaments themselves */
+  .scorestrip{display:flex;align-items:center;gap:14px;width:100%;appearance:none;border:1px solid var(--line);border-radius:16px;background:rgba(184,156,107,.05);padding:14px 16px;margin:16px 0;color:inherit;font:inherit;text-align:left;cursor:pointer;flex-wrap:wrap}
+  .scorestrip .orns{display:flex;gap:4px}
+  .scorestrip .orns i{width:18px;height:18px}
+  .scorestrip .sw{flex:1;min-width:150px}
+  .scorestrip b{display:block;font:italic 600 20px/1.15 var(--serif);color:var(--ivory)}
+  .scorestrip small{display:block;color:var(--muted);font-size:13.5px}
+  .scorestrip .chev{font:600 12px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--gold);white-space:nowrap}
 
   /* step guide */
   .steptabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;margin:0 -18px;padding-left:18px;padding-right:18px;scrollbar-width:none}
@@ -656,19 +684,29 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .scoretop{display:grid;justify-items:center;gap:6px;margin:0 0 16px}
   .cat .raise{appearance:none;border:0;background:none;padding:8px 0 0;font:600 14px var(--sans);color:var(--green);text-decoration:underline;cursor:pointer}
   /* Shopping list */
-  .shophead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px}
-  .shophead b{font:500 15px var(--sans)}
+  .shophead{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 14px}
+  .shophead > div{flex:1;min-width:0}
+  .shophead b{display:block;font:500 22px/1.2 var(--serif);color:var(--ivory)}
+  .gotbar{display:block;height:4px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden}
+  .gotbar i{display:block;height:100%;width:0;background:var(--gold);transition:width .4s}
   .shophead .btn{padding:10px 16px}
-  details.buy{border-top:1px solid var(--line);margin:0;padding:4px 0}
-  details.buy:first-of-type{border-top:0}
-  details.buy > summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+  details.buy{border:1px solid var(--line);border-radius:16px;margin:0 0 12px;padding:0 14px;background:rgba(184,156,107,.04)}
+  details.buy > summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0}
   details.buy > summary::-webkit-details-marker{display:none}
-  details.buy > summary .buyh{margin:0}
-  details.buy > summary small{color:var(--muted);font-size:14px}
-  details.buy > summary small::after{content:" ▾";color:var(--gold)}
-  details.buy[open] > summary small::after{content:" ▴"}
+  details.buy .bt b{display:block;font:500 24px/1.15 var(--serif);color:var(--ivory)}
+  details.buy .bt small{display:block;font:600 11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-top:4px}
+  .chevc{flex:none;width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(184,156,107,.55);display:grid;place-items:center;transition:transform .25s,background .25s}
+  .chevc::before{content:"";width:8px;height:8px;border-right:2px solid var(--gold);border-bottom:2px solid var(--gold);transform:translateY(-2px) rotate(45deg)}
+  details.buy[open] .chevc{transform:rotate(180deg);background:rgba(184,156,107,.14)}
+  details.buy[open] > summary{border-bottom:1px solid var(--line);margin-bottom:12px}
+  #shop.card{background:none;border:0;box-shadow:none;padding:0}
   .buyline{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line)}
-  .buyline .buyrow{flex:1;border-top:0}
+  details.buy[open] > summary + .buyline{border-top:0}
+  .buyline:last-child{margin-bottom:6px}
+  .buyline .buyrow{flex:1;min-width:0;background:none;border:0;border-radius:0;padding:12px 0;margin:0;gap:12px}
+  .buyline .buyrow b{width:36px;height:36px;border-radius:10px}
+  .buyline .buyrow strong{font-size:18px}
+  .buyline.have .buyrow{opacity:.55}
   .got{flex:none;appearance:none;width:26px;height:26px;border-radius:7px;border:1.5px solid var(--gold);background:transparent;cursor:pointer;display:grid;place-items:center;color:var(--midnight);font:700 14px var(--sans)}
   .got.on{background:var(--gold)}
   .got.on::after{content:"✓"}
@@ -856,7 +894,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   <!-- Results hub -->
   <section class="screen" id="s-results" data-title="Your tree" hidden>
     <p class="resline" id="resLine" hidden></p>
-    <div class="viewer" id="viewer"></div>
+    <div class="vwrap"><div class="viewer" id="viewer"></div><button class="restyle" id="openRestyle" type="button"><span aria-hidden="true">✦</span> Change something</button></div>
     <div class="seg" id="seg" hidden>
       <button data-m="before">Before</button><button data-m="compare" class="on">Compare</button><button data-m="after">After</button>
     </div>
@@ -875,21 +913,8 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
       <div id="hubFixList"></div>
       <button class="hubmore" id="hubFixMore" hidden></button>
     </div>
-    <form class="quickask" id="quickAsk">
-      <label for="qaText">Want something different?</label>
-      <div class="qarow">
-        <input type="text" id="qaText" placeholder="e.g. More flowers, or go purple" autocomplete="off" enterkeyhint="send">
-        <button class="btn" id="qaSend" aria-label="Update my tree">Update</button>
-      </div>
-      <div class="qahint">Tell us in your own words. We'll redo the plan and the preview, and keep this version too.</div>
-    </form>
-    <div class="ideas" id="ideas"></div>
-    <div class="navlist">
-      <button data-go="s-score" id="navScoreBtn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span><b>How it scored</b><small>Balance, lights, the top and more</small></span><span class="chev">›</span></button>
-      <button data-go="s-fixes"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><span><b>Quick fixes</b><small id="navFixes"></small></span><span class="chev">›</span></button>
-      <button data-go="s-partner"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span><span><b>More ways to change it</b><small>Your own colors and pieces, and earlier versions</small></span><span class="chev">›</span></button>
-    </div>
-    <div class="tellline" id="tellCard">Quantities are our best guess from the photo. <button id="navDetails">Add your tree's details</button> for exact amounts.</div>
+    <button class="scorestrip" id="navScoreBtn" data-go="s-score"><span class="orns" id="stripOrns"></span><span class="sw"><b id="stripWord">How it scored</b><small id="stripSub">Balance, lights, the top and more</small></span><span class="chev">See how it scored ›</span></button>
+    <div class="tellline" id="tellCard">Amounts are our best estimate from the photo. <button id="navDetails">Add your tree's details</button> for a better one.</div>
     <div class="telldone" id="tellDone" hidden></div>
     <div class="card fb" id="fbCard">
       <div id="fbForm">
@@ -985,6 +1010,28 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <p class="small muted" style="font-size:13px">Links open a store search. As an Amazon Associate, TreeStyle may earn from qualifying purchases.</p>
   </section>
 </main>
+
+<div id="restyleSheet" class="sheet" hidden>
+  <div class="sheetbg" data-close></div>
+  <div class="sheetbox" role="dialog" aria-modal="true" aria-labelledby="sheetH">
+    <button class="sheetx" data-close aria-label="Close">✕</button>
+    <div class="sheetk">Your design partner</div>
+    <h3 id="sheetH">What would you change?</h3>
+    <p class="sheetsub">Tell us in your own words. We'll redo the plan and the preview, and keep this version too.</p>
+    <form class="quickask" id="quickAsk">
+      <div class="qarow">
+        <input type="text" id="qaText" placeholder="e.g. More flowers, or go purple" autocomplete="off" enterkeyhint="send" aria-label="What would you change?">
+        <button class="btn" id="qaSend" aria-label="Update my tree">Update</button>
+      </div>
+    </form>
+    <div class="ideas" id="ideas"></div>
+    <div class="sheetmore">
+      <button data-start="I want to work this color into the tree: ">Work in a color</button>
+      <button data-start="Design the tree around these pieces I already own: ">Design around my pieces</button>
+      <button data-start="" id="sheetVersions">Earlier versions</button>
+    </div>
+  </div>
+</div>
 
 <div class="foot" id="foot" hidden><button class="btn" id="footBtn"></button></div>
 
@@ -1523,10 +1570,11 @@ const fixHtml = (f, i) => `<div class="fix"><span class="n">${i + 1}</span><div>
 function fill() {
   const r = result;
   const fixes = r.quick_fixes || [], plan = r.plan || [];
-  $("#navFixes").textContent = `${fixes.length} changes with the biggest payoff`;
   syncTell(r);
   const shopping = TreeGuide.shoppingList(r, mode), nItems = shopping.reduce((a, g) => a + g.items.length, 0);
   $("#navScoreBtn").hidden = !(r.categories || []).length;
+  { const so = r.overall != null ? toOrn(r.overall) : null; $("#stripOrns").innerHTML = so ? ornHtml(so) : ""; $("#stripOrns").hidden = !so;
+    $("#stripWord").textContent = so ? `${levelWord(so)} · ${so} of 5` : "How it scored"; $("#stripSub").textContent = so ? "Your tree today, part by part" : "Balance, lights, the top and more"; }
   $("#fixesSub").textContent = mode === "design" ? "The plan at a glance." : "Biggest difference for the least effort, best first.";
   $("#fixes").innerHTML = fixes.map((f, i) => fixHtml(f, i)).join("");
   // The top three fixes sit right under the preview; the full list stays one tap away
@@ -1545,12 +1593,13 @@ function fill() {
     + [...(r.categories || [])].sort((a, b) => a.score - b.score).map(c => `<div class="cat"><div class="top"><span>${esc(c.name)}</span><span>${c.score}/10</span></div><div class="b"><i style="width:${c.score * 10}%"></i></div><p>${esc(c.note)}</p>${c.score <= 7 && CAT_STEP[c.name] && (r.plan || []).some(p => p.element === CAT_STEP[c.name]) ? `<button class="raise" data-raise="${CAT_STEP[c.name]}">How to raise it</button>` : ""}</div>`).join("");
   $("#cats").querySelectorAll("[data-raise]").forEach(b => b.onclick = () => openPlan(b.dataset.raise));
   shopNow = shopping;
-  $("#shop").innerHTML = (nItems ? `<div class="shophead"><b id="gotCount"></b><button class="btn ghost" id="shareList">Share list</button></div>` : "") + (nItems && !factsSet ? estNote(r) : "")
-    + (nItems ? shopping.map((g, gi) => `<details class="buy"${gi === 0 ? " open" : ""}><summary><span class="buyh">${esc(g.title)}</span><small>${g.items.length} ${g.items.length === 1 ? "item" : "items"}</small></summary>${g.items.map(b => `<div class="buyline${gotItems.has(b.label) ? " have" : ""}"><button class="got${gotItems.has(b.label) ? " on" : ""}" data-got="${esc(b.label)}" aria-label="Got it: ${esc(b.label)}"></button>${buyRow(b)}</div>`).join("")}</details>`).join("") : `<p class="muted">You already have what you need. It's all in how you place it.</p>`);
+  $("#shop").innerHTML = (nItems ? `<div class="shophead"><div><b id="gotCount"></b><span class="gotbar"><i id="gotBar"></i></span></div><button class="btn ghost" id="shareList">Share list</button></div>` : "") + (nItems && !factsSet ? estNote(r) : "")
+    + (nItems ? shopping.map((g, gi) => `<details class="buy"${gi === 0 ? " open" : ""}><summary><span class="bt"><b>${esc(g.title)}</b><small>${g.items.length} ${g.items.length === 1 ? "item" : "items"}</small></span><span class="chevc" aria-hidden="true"></span></summary>${g.items.map(b => `<div class="buyline${gotItems.has(b.label) ? " have" : ""}"><button class="got${gotItems.has(b.label) ? " on" : ""}" data-got="${esc(b.label)}" aria-label="Got it: ${esc(b.label)}"></button>${buyRow(b)}</div>`).join("")}</details>`).join("") : `<p class="muted">You already have what you need. It's all in how you place it.</p>`);
   syncGot();
   $("#brief").textContent = r.render_brief || "";
   $("#ideas").innerHTML = (r.ideas || []).slice(0, 3).map((x, i) => `<button data-i="${i}">Try: ${esc(x.label)}</button>`).join("") + (r.ideas?.length ? `<button data-more>Something else…</button>` : "");
   $("#ideas").querySelectorAll("button").forEach(b => b.onclick = () => {
+    closeRestyle();
     if (b.dataset.more != null) { show("s-partner"); $("#pText").focus({ preventScroll: true }); return; }
     const idea = r.ideas[+b.dataset.i]; partnerSend(idea.request, idea.label);
   });
@@ -1673,6 +1722,18 @@ $("#actPlan").onclick = () => openPlan();
 $("#actShop").onclick = () => show("s-shop");
 document.querySelectorAll("[data-go=s-plan]").forEach(b => b.onclick = () => openPlan());
 $("#hubFixMore").onclick = () => show("s-fixes");
+// Change something: lives on the preview itself, where the eye already is, and opens as a sheet over it
+function openRestyle() { const sh = $("#restyleSheet"); sh.hidden = false; requestAnimationFrame(() => sh.classList.add("on")); $("#sheetVersions").hidden = versions.length < 2; }
+function closeRestyle() { const sh = $("#restyleSheet"); if (sh.hidden) return; sh.classList.remove("on"); setTimeout(() => sh.hidden = true, 280); }
+$("#openRestyle").onclick = openRestyle;
+$("#restyleSheet").addEventListener("click", e => {
+  if (e.target.closest("[data-close]")) { closeRestyle(); return; }
+  const st = e.target.closest("[data-start]"); if (!st) return;
+  closeRestyle(); show("s-partner");
+  if (st.dataset.start) { $("#pText").value = st.dataset.start; $("#pText").focus({ preventScroll: true }); }
+  else $("#versions").scrollIntoView({ block: "start" });
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeRestyle(); });
 
 
 // Shopping list: tick off what you have or bought (kept on this device), and share the list as text
@@ -1680,12 +1741,15 @@ let gotItems = new Set(), shopNow = [];
 function syncGot() {
   const all = shopNow.flatMap(g => g.items), n = all.filter(b => gotItems.has(b.label)).length, el = $("#gotCount");
   if (el) el.textContent = n ? `${n} of ${all.length} ticked off` : `${all.length} things to look for`;
+  const bar = $("#gotBar"); if (bar) bar.style.width = (all.length ? n / all.length * 100 : 0) + "%";
 }
 $("#shop").addEventListener("click", async e => {
   const g = e.target.closest("[data-got]");
   if (g) { const k = g.dataset.got; gotItems.has(k) ? gotItems.delete(k) : gotItems.add(k); g.classList.toggle("on"); g.parentElement.classList.toggle("have"); syncGot(); saveSoon(); return; }
   if (e.target.closest("#shareList")) {
-    const text = "My TreeStyle shopping list\n\n" + shopNow.map(gr => gr.title.toUpperCase() + "\n" + gr.items.map(b => `${gotItems.has(b.label) ? "[x]" : "[ ]"} ${b.label}${b.qty ? " (" + b.qty + ")" : ""}`).join("\n")).join("\n\n");
+    // Easy to read in a text message: an emoji per section, a box or a check per item, the amount on its own line
+    const EMO = { lights: "💡", primary_picks: "🌿", ribbon: "🎀", florals: "🌺", statement: "🔴", medium: "🟡", small_picks: "🍒", crown: "⭐", base: "🎁" };
+    const text = "🎄 My TreeStyle shopping list\n\n" + shopNow.map(gr => `${EMO[gr.key] || "✨"} ${gr.title.toUpperCase()}\n` + gr.items.map(b => !b.q ? `↪️ ${b.label}` : `${gotItems.has(b.label) ? "✅" : "⬜️"} ${b.label.replace(/^./, c => c.toUpperCase())}${b.qty && /\d/.test(b.qty) ? " — " + b.qty : ""}`).join("\n")).join("\n\n") + "\n\n✅ = already have it";
     try { if (navigator.share) { await navigator.share({ title: "My tree shopping list", text }); return; } } catch (err) { if (err.name === "AbortError") return; }
     try { await navigator.clipboard.writeText(text); e.target.textContent = "Copied ✓"; setTimeout(() => e.target.textContent = "Share list", 1800); } catch { e.target.textContent = "Couldn't copy"; }
   }
@@ -1924,7 +1988,7 @@ $("#quickAsk").addEventListener("submit", e => {
   e.preventDefault();
   const req = $("#qaText").value.trim();
   if (!req) { $("#qaText").focus(); return; }
-  $("#qaText").value = "";
+  $("#qaText").value = ""; closeRestyle();
   $("#pText").value = req;   // shows in the design partner's history as their own words
   partnerSend(req, null);
 });
