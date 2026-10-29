@@ -1954,8 +1954,11 @@ $("#resumeNew").onclick = () => { $("#resume").hidden = true; document.querySele
 // Coming back within a few hours lands right back on the tree; after that, the home screen offers it.
 async function startApp() {
   if (!password) { show("s-pass", []); return; }
-  const st = await idb.get(SAVE_KEY);
-  if (st && st.result && Date.now() - st.at < 6 * 3600 * 1000 && await restoreSaved(st)) return;
+  // Refreshing a tree screen (/try/plan, /try/shop…) reopens your saved tree right there;
+  // opening /try/ always starts at Home, which offers "Pick up where you left off".
+  const want = "s-" + (location.pathname.replace(/^\/try\/?/, "").split("/")[0] || "home");
+  const st = SAVE_SCREENS.includes(want) ? await idb.get(SAVE_KEY) : null;
+  if (st && st.result && await restoreSaved(Object.assign({}, st, { screen: want }))) return;
   show("s-home", []);
 }
 
