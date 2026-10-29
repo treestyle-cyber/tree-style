@@ -13,6 +13,10 @@ const LAB_MODEL = "gemini-3-pro-image-preview";
 const LAB_CHECK = `
 
 BEFORE YOU FINISH, CHECK EVERY PIECE: go through the changes above one by one (each ribbon, each kind of flower and stem, each ornament size and color, the topper and the base) and make sure every one is in the picture, clearly visible from across the room, at its stated size, color and count. A piece that is missing or too faint to notice counts as a mistake. Pale pieces on a pale or snowy tree need enough shine, shadow and depth to read.`;
+// Added when the image model refuses: themed trees are painted with generic, unbranded pieces
+const GENERIC = `
+
+IMPORTANT: show the theme only through generic, unbranded decorations in its colors and spirit (for a space or sci-fi theme: stars, planets, rockets, metallic silver and deep blue; for a sports team: its colors and a generic ball). No logos, insignia, emblems, named characters, faces of real people, lettering or trademarked designs anywhere in the picture.`;
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
 
 // When the plan includes shaping the branches, the preview shows them shaped: the same tree, fuller,
@@ -79,6 +83,7 @@ export default async function handler(req, res) {
   const ar = ASPECTS.includes(aspect) ? aspect : null;
 
   const started = Date.now();
+  let retried = false;
   let lastErr = "";
   // Lab test (variant "v2"): Google's higher-quality image model first, plus a closing checklist
   const models = variant === "v2" ? [...new Set([LAB_MODEL, ...MODELS])] : MODELS;
@@ -96,7 +101,16 @@ export default async function handler(req, res) {
     const parts = out.body?.candidates?.[0]?.content?.parts || [];
     const pic = parts.find(p => p.inlineData || p.inline_data);
     if (!pic) {
-      const why = out.body?.candidates?.[0]?.finishReason || parts.find(p => p.text)?.text || "no image returned";
+      const why = out.body?.candidates?.[0]?.finishReason || out.body?.promptFeedback?.blockReason || parts.find(p => p.text)?.text || "no image returned";
+      console.error("RENDER_REFUSED", JSON.stringify({ model, why: String(why).slice(0, 300), revision: !!revision }));
+      // Refused (usually a themed tree naming a film, show, team or brand): try once more with generic designs
+      if (!retried && /SAFETY|PROHIBIT|RECITATION|BLOCK|IMAGE_OTHER|OTHER|copyright|trademark/i.test(String(why))) {
+        retried = true;
+        const again = await callGemini(model, img, prompt + GENERIC, ar, pc, revision ? null : mp);
+        const p2 = again.body?.candidates?.[0]?.content?.parts || [], pic2 = p2.find(p => p.inlineData || p.inline_data);
+        if (again.ok && pic2) { const d2 = pic2.inlineData || pic2.inline_data; return res.status(200).json({ image: `data:${d2.mimeType || d2.mime_type || "image/png"};base64,${d2.data}`, _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: true } }); }
+        console.error("RENDER_REFUSED_AGAIN", JSON.stringify({ model, why: String(again.body?.candidates?.[0]?.finishReason || again.status).slice(0, 200) }));
+      }
       return res.status(502).json({ error: `No image came back (${why})`, model });
     }
     const d = pic.inlineData || pic.inline_data;
