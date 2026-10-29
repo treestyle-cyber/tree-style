@@ -60,6 +60,9 @@
   #gate{max-width:420px;margin:60px auto;text-align:center}
   #gate form{display:flex;gap:8px;margin-top:18px}
   #gate input{flex:1}
+  .adopt{display:grid;gap:6px;border:1px solid var(--gold);border-radius:14px;padding:14px 16px;margin:0 0 18px;background:rgba(184,156,107,.08)}
+  .adopt span{color:var(--muted,#bbb);font-size:14px}
+  .adopt .btn{justify-self:start;margin-top:4px}
 </style>
 </head>
 <body>
@@ -336,6 +339,22 @@ async function start() {
     } catch (err) { $("#refMsg").className = "msg err"; $("#refMsg").textContent = err.message; }
   };
   build(info.photos || {});
+  offerPreviewPicks();
+}
+// On the live Studio: photos picked in the preview Studio, ready to bring over in one tap
+async function offerPreviewPicks() {
+  if (!/^tree-style\.vercel\.app$/.test(location.host)) return;
+  let d; try { d = await call({ action: "adopt-preview", dry: true }); } catch { return; }
+  if (!d.slots || !d.slots.length) return;
+  const names = d.slots.map(id => (SLOTS.find(x => x.id === id) || { name: id }).name);
+  const box = document.createElement("div"); box.className = "adopt";
+  box.innerHTML = `<b>${d.slots.length} photo${d.slots.length === 1 ? "" : "s"} picked in the preview Studio</b><span>${names.join(", ")}</span><button class="btn">Use them on the live site</button><p class="msg"></p>`;
+  $("#studio").prepend(box);
+  box.querySelector("button").onclick = async () => {
+    const b = box.querySelector("button"), m = box.querySelector(".msg"); b.disabled = true; m.textContent = "Copying…";
+    try { await call({ action: "adopt-preview" }); m.className = "msg ok"; m.textContent = "Done. They're live now (allow up to a minute for the app and site)."; setTimeout(() => location.reload(), 1500); }
+    catch (e) { m.className = "msg err"; m.textContent = e.message; b.disabled = false; }
+  };
 }
 start();
 </script>
