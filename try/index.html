@@ -330,7 +330,14 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   /* change something: a pill on the preview and a sheet */
   .vwrap{position:relative}
   .restyle{position:absolute;left:12px;bottom:12px;z-index:3;appearance:none;border:1px solid var(--gold);background:rgba(20,28,44,.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:var(--ivory);font:600 14px var(--sans);padding:11px 16px;border-radius:99px;cursor:pointer;box-shadow:0 6px 18px -6px rgba(0,0,0,.6)}
-  .restyle span{color:var(--gold)}
+  .restyle{display:flex;align-items:center;gap:8px}
+  .restyle svg{width:18px;height:18px;color:var(--gold)}
+  .stylegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 6px}
+  .stylegrid button{appearance:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:rgba(184,156,107,.05);padding:0;cursor:pointer;text-align:left;color:inherit;font:inherit}
+  .stylegrid i{display:block;aspect-ratio:16/10;background-size:cover;background-position:center}
+  .stylegrid b{display:block;font:500 21px/1.1 var(--serif);color:var(--ivory);padding:10px 12px 2px}
+  .stylegrid small{display:block;font-size:13.5px;color:var(--muted);padding:0 12px 11px}
+  .stylegrid button:hover{border-color:var(--gold)}
   .sheet{position:fixed;inset:0;z-index:18}
   .sheetbg{position:absolute;inset:0;background:rgba(8,12,20,.6);opacity:0;transition:opacity .28s}
   .sheetbox{position:absolute;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;background:var(--midnight);border:1px solid rgba(184,156,107,.45);border-bottom:0;border-radius:22px 22px 0 0;padding:22px 18px max(22px,env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1);max-height:88vh;overflow:auto}
@@ -901,14 +908,14 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   <!-- Results hub -->
   <section class="screen" id="s-results" data-title="Your tree" hidden>
     <p class="resline" id="resLine" hidden></p>
-    <div class="vwrap"><div class="viewer" id="viewer"></div><button class="restyle" id="openRestyle" type="button"><span aria-hidden="true">✦</span> Change something</button></div>
+    <div class="vwrap"><div class="viewer" id="viewer"></div><button class="restyle" id="openRestyle" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 11-11"/><path d="m13.5 7.5 3 3"/><path d="M18 2.5v3M16.5 4h3M20.5 9v2.4M19.3 10.2h2.4M9.5 3v2M8.5 4h2"/></svg>Change something</button></div>
     <div class="seg" id="seg" hidden>
       <button data-m="before">Before</button><button data-m="compare" class="on">Compare</button><button data-m="after">After</button>
     </div>
     <div class="hint" id="hint" hidden>Drag across the photo to compare</div>
     <p class="vnote" id="vNote" hidden></p>
     <div class="tools">
-      <button class="btn ghost" id="again">Try another look</button>
+      <button class="btn ghost" id="again">Try another style</button>
       <button class="btn ghost" id="save" hidden>Save and share</button>
     </div>
     <div class="acts" id="acts">
@@ -1037,6 +1044,17 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
       <button data-start="Design the tree around these pieces I already own: ">Design around my pieces</button>
       <button data-start="" id="sheetVersions">Earlier versions</button>
     </div>
+  </div>
+</div>
+
+<div id="styleSheet" class="sheet" hidden>
+  <div class="sheetbg" data-close></div>
+  <div class="sheetbox" role="dialog" aria-modal="true" aria-labelledby="styleH">
+    <button class="sheetx" data-close aria-label="Close">✕</button>
+    <div class="sheetk">Try another style</div>
+    <h3 id="styleH">Same tree, a new look</h3>
+    <p class="sheetsub">We'll redesign the ribbon, stems, ornaments and topper in the style you pick, with a new plan, shopping list and preview. This version stays saved.</p>
+    <div class="stylegrid" id="styleGrid"></div>
   </div>
 </div>
 
@@ -1684,15 +1702,26 @@ function setSeg(m) {
   $("#hint").style.visibility = m === "compare" ? "visible" : "hidden";
 }
 document.querySelectorAll("#seg button").forEach(b => b.onclick = () => setSeg(b.dataset.m));
-$("#again").onclick = async () => {
-  if (previewP) return;
-  $("#again").disabled = true;
-  $("#viewer").innerHTML = `<div class="renderwait"><div class="spin"></div>Creating another version…<div style="font-size:13px">About 20 seconds</div></div>`;
-  $("#seg").hidden = $("#hint").hidden = true;
-  await makePreview(); sweep();
-  $("#again").disabled = false;
-  saveSoon();
+// Try another style: pick a different style and we redesign the whole tree in it (a new version; the current one stays)
+const STYLE_PICK = [["classic", "Traditional", "Nostalgic and warm"], ["rustic", "Rustic", "Cozy and natural"], ["modern", "Modern", "Calm and graphic"], ["elegant", "Elegant", "Rich and luminous"], ["playful", "Playful", "Bold and joyful"]];
+function openSheet(id) { const sh = $(id); sh.hidden = false; requestAnimationFrame(() => sh.classList.add("on")); }
+function closeSheet(id) { const sh = $(id); if (sh.hidden) return; sh.classList.remove("on"); setTimeout(() => sh.hidden = true, 280); }
+$("#again").onclick = () => {
+  const cur = val("style");
+  $("#styleGrid").innerHTML = STYLE_PICK.filter(([v]) => v !== cur).map(([v, name, sub]) => {
+    const card = document.querySelector(`input[name=style][value=${v}] + span .sp`);
+    return `<button data-style="${v}" data-name="${name}"><i style="${card ? card.getAttribute("style") : ""}"></i><b>${name}</b><small>${sub}</small></button>`;
+  }).join("");
+  openSheet("#styleSheet");
 };
+$("#styleSheet").addEventListener("click", e => {
+  if (e.target.closest("[data-close]")) { closeSheet("#styleSheet"); return; }
+  const b = e.target.closest("[data-style]"); if (!b || busy) return;
+  closeSheet("#styleSheet");
+  const r = document.querySelector(`input[name=style][value=${b.dataset.style}]`); if (r) { r.checked = true; syncStyle(); }
+  const req = `Restyle the whole tree in the ${b.dataset.name} style. Rework the ribbon, stems, flowers, ornaments and topper so the ${b.dataset.name} style comes through clearly, keeping the same tree.`;
+  partnerSend(req, `${b.dataset.name} style`);
+});
 // Save and share: the preview with a small TreeStyle mark, through the phone's share sheet when it has one
 async function markedImage() {
   const load = u => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = u; });
@@ -1740,7 +1769,7 @@ $("#restyleSheet").addEventListener("click", e => {
   if (st.dataset.start) { $("#pText").value = st.dataset.start; $("#pText").focus({ preventScroll: true }); }
   else $("#versions").scrollIntoView({ block: "start" });
 });
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeRestyle(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closeRestyle(); closeSheet("#styleSheet"); } });
 
 
 // Shopping list: tick off what you have or bought (kept on this device), and share the list as text
