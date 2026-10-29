@@ -8,6 +8,10 @@
 // On a preview copy, say so in the tab title and with a small badge, so it's never mistaken for the live site
 (function () { if (!/-git-|\.vercel\.app$/.test(location.hostname) || location.hostname === "tree-style.vercel.app") return;
   document.title = "PREVIEW · " + document.title;
+  // a plum background instead of midnight, so a preview never looks like the live site
+  const st = document.createElement("style");
+  st.textContent = ":root{--bg:#2A1730 !important;--paper:#3A2442 !important;--paper-2:#45304D !important}body{background:radial-gradient(120% 80% at 50% 0%,#4A2A50,#2A1730 70%) fixed !important}";
+  document.head.append(st);
   addEventListener("DOMContentLoaded", () => { const b = document.createElement("div"); b.textContent = "Preview copy";
     b.style.cssText = "position:fixed;left:4px;bottom:4px;z-index:99;font:600 11px Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;background:#D0857C;color:#141C2C;padding:4px 10px;border-radius:99px;pointer-events:none;opacity:.92";
     document.body.append(b); }); })();
@@ -31,6 +35,9 @@
   .slot h2{font-weight:400;font-size:26px}
   .slot .where{font-size:12.5px;color:var(--muted);margin-top:-6px}
   .frames{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .slot.wide .frames{grid-template-columns:1fr}
+  .slot.wide .frame.new{order:-1}
+  .slot.wide{max-width:420px}
   .frame{border-radius:12px;overflow:hidden;background:rgba(184,156,107,.08);border:1px dashed var(--line);display:grid;place-items:center;position:relative;color:var(--muted);font-size:12px;text-align:center}
   .frame img{width:100%;height:100%;object-fit:cover;display:block}
   .frame .lbl{position:absolute;left:8px;top:8px;font:600 10px var(--sans);letter-spacing:.16em;text-transform:uppercase;background:rgba(20,28,44,.75);color:var(--gold);padding:4px 7px;border-radius:99px}
@@ -163,10 +170,12 @@ const shrink = (src, max = 1600) => new Promise(res => {
   }; im.src = src;
 });
 
+// Wide photos (home cards, banners) show New above In use, each at about the size it appears in the app
+const wide = a => { const [w, h] = String(a).split(":").map(Number); return w > h; };
 function build(current) {
   const ar = a => a.replace(":", " / ");
   $("#grid").innerHTML = SLOTS.map(s => `
-    <div class="slot${s.texture ? " tex" : ""}" data-id="${s.id}">
+    <div class="slot${s.texture ? " tex" : ""}${wide(s.aspect) ? " wide" : ""}" data-id="${s.id}">
       <h2>${s.name}</h2><div class="where">${s.where}</div>
       <div class="frames">
         <div class="frame cur" style="aspect-ratio:${ar(s.aspect)}"><span class="lbl">In use</span>${current[s.id] ? `<img src="${current[s.id]}" alt="">` : "Fabric texture for now"}</div>
