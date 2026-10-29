@@ -1645,17 +1645,19 @@ async function placementMap() {
     return c2.toDataURL("image/jpeg", .8);
   } catch (e) { console.error(e); return undefined; }
 }
+// Fuller branches in the preview when the plan shapes them or the tree scored low on fullness
+const needsShaping = r => (r.plan || []).some(p => p.element === "fluff") || (r.categories || []).some(c => c.name === "Fullness" && Number(c.score) <= 7);
 let lastMap = null;
 async function makePreview(extraPieces, change) {
   try {
     // A design-partner change edits the preview they're looking at, so nothing else shifts.
     const body = change && change.base
       ? { image: await thumb(change.base, 1536, .92), brief: change.brief, aspect: photoAspect, pieces: extraPieces || undefined, revision: true }
-      : { image: photo, brief: result.render_brief, aspect: photoAspect, pieces: extraPieces || keyPhoto || undefined, map: lastMap = await placementMap(), shape: (result.plan || []).some(p => p.element === "fluff") || undefined };
+      : { image: photo, brief: result.render_brief, aspect: photoAspect, pieces: extraPieces || keyPhoto || undefined, map: lastMap = await placementMap(), shape: needsShaping(result) || undefined };
     if (lastMap) $("#mapImg").src = lastMap;
     const out = await api("/api/render", body);
     after = out.image;
-    $("#timing").textContent = `${evalTiming(result)} · Preview: ${out._meta?.model} · ${out._meta?.seconds}s`;
+    $("#timing").textContent = `${evalTiming(result)} · Preview: ${out._meta?.model} · ${out._meta?.seconds}s${out._meta?.shaped ? " · branches shaped" : ""}`;
     drawViewer();
   } catch (e) {
     after = null;
