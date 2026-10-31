@@ -1096,7 +1096,7 @@ const shopUrl = q => "https://www.amazon.com/s?k=" + encodeURIComponent(q) + (AM
 // Creator picks: products chosen from the Amazon idea lists of creators Eric follows (first batch:
 // Miriam, @ahillcountryhome: Christmas Tree Decor, Christmas Ornaments and Favorite Ribbons, Oct 2026).
 // Also Kinsey Walsh (@kinsey_walsh: Holiday Decor In My Home) and El Peterson (@elpetersondesign: Christmas lists).
-// Each row: [ASIN, step, name, colors, finishes, ribbon width in inches, creator: M Miriam / K Kinsey / E El / Q QianRuu store].
+// Each row: [ASIN, step, name, colors, finishes, ribbon width in inches, creator: M Miriam / K Kinsey / E El / Q QianRuu store / T found by TreeStyle (6in statement velvets)].
 // When a shopping item matches a pick on its step AND its color, Shop opens that exact product
 // (with AMAZON_TAG once it's set, so the sale is credited to TreeStyle). Anything else keeps its store search.
 const PICKS = [["B0FDF513ZS","ribbon","Ribbli Burgundy Velvet, gold sparkling stripe, 4in","burgundy,gold","glitter,matte,stripe,velvet",4.0,"M"],
@@ -1583,7 +1583,11 @@ const PICKS = [["B0FDF513ZS","ribbon","Ribbli Burgundy Velvet, gold sparkling st
   ["B0H5C7B9B2","crown","Giant Gold Bow Tree Topper 20in","gold","",0,"Q"],
   ["B0FK4XZ74V","crown","Silver Glitter Star Tree Topper 8in","silver","glitter",0,"Q"],
   ["B0FMFK51S4","base","Natural Woven Vine Wicker Tree Collar 24in, lighted","brown","",0,"Q"],
-  ["B0FHNZSPXY","base","Natural Rattan Wicker Tree Skirt 36in, woven basket","brown","",0,"Q"]];
+  ["B0FHNZSPXY","base","Natural Rattan Wicker Tree Skirt 36in, woven basket","brown","",0,"Q"],
+  ["B0HHJ6WW4T","ribbon","Burgundy Velvet Wired Ribbon, 6in wide","burgundy","matte,velvet",6,"T"],
+  ["B0HHHPB92Y","ribbon","White Velvet Wired Ribbon, 6in wide","white","matte,velvet",6,"T"],
+  ["B0HHJ2W8VW","ribbon","Green Velvet Wired Ribbon, 6in wide","green","matte,velvet",6,"T"],
+  ["B0HD5VMKML","ribbon","Candy Cane Red and White Striped Velvet Wired Ribbon, 6in wide","red,white","matte,stripe,velvet",6,"T"]];
 const PICK_COLORS = { burgundy: ["burgundy", "wine", "maroon", "oxblood", "bordeaux", "deep red"], red: ["red", "cranberry", "crimson", "scarlet"],
   green: ["green", "moss", "olive", "forest", "emerald", "hunter"], sage: ["sage", "eucalyptus"], "dusty blue": ["dusty blue", "powder blue", "french blue"],
   blue: ["blue", "navy", "cobalt", "sapphire"], navy: ["navy"], gold: ["gold", "golden", "brass"], champagne: ["champagne", "khaki", "pale gold"],
@@ -1618,6 +1622,7 @@ function matchPick(b, key) {
     const cHit = cols.filter(c => pc.includes(c)).length;
     if (cols.length && !cHit) return;   // a color was asked for and this isn't it
     if (key === "ribbon" && qi && r[5] && (r[5] < qi * .66 || r[5] > qi * 1.5)) return;   // ribbon width matters to the design
+    if (key === "ribbon" && /jewel|embroider|brocade/.test(q) && !/jewel|embroider|brocade|rhinestone|filigree/i.test(r[2])) return;   // a statement ribbon asked for, so a plain one won't do
     if (orn) {
       const shape = /finial|teardrop|\bdrop/i.test(r[2]) ? "drop" : /nutcracker|bell|horn|santa|frame|star|gingerbread|cart|animal|candy|peppermint|icicle|wreath|pendant|jewel/i.test(r[2]) ? "novelty" : "round";
       if (shape !== wantShape) return;   // a round ornament for a round one, a drop for a drop
