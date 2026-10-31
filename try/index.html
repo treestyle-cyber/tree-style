@@ -1091,7 +1091,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const AMAZON_TAG = ""; // add the Amazon Associates tracking ID here
+const AMAZON_TAG = "ericmichael04-20"; // Eric's Amazon Associates tracking ID
 const shopUrl = q => "https://www.amazon.com/s?k=" + encodeURIComponent(q) + (AMAZON_TAG ? "&tag=" + encodeURIComponent(AMAZON_TAG) : "");
 // Creator picks: products chosen from the Amazon idea lists of creators Eric follows (first batch:
 // Miriam, @ahillcountryhome: Christmas Tree Decor, Christmas Ornaments and Favorite Ribbons, Oct 2026).
