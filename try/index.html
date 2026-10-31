@@ -1096,7 +1096,7 @@ const shopUrl = q => "https://www.amazon.com/s?k=" + encodeURIComponent(q) + (AM
 // Creator picks: products chosen from the Amazon idea lists of creators Eric follows (first batch:
 // Miriam, @ahillcountryhome: Christmas Tree Decor, Christmas Ornaments and Favorite Ribbons, Oct 2026).
 // Also Kinsey Walsh (@kinsey_walsh: Holiday Decor In My Home) and El Peterson (@elpetersondesign: Christmas lists).
-// Each row: [ASIN, step, name, colors, finishes, ribbon width in inches, creator: M Miriam / K Kinsey / E El].
+// Each row: [ASIN, step, name, colors, finishes, ribbon width in inches, creator: M Miriam / K Kinsey / E El / Q QianRuu store].
 // When a shopping item matches a pick on its step AND its color, Shop opens that exact product
 // (with AMAZON_TAG once it's set, so the sale is credited to TreeStyle). Anything else keeps its store search.
 const PICKS = [["B0FDF513ZS","ribbon","Ribbli Burgundy Velvet, gold sparkling stripe, 4in","burgundy,gold","glitter,matte,stripe,velvet",4.0,"M"],
@@ -1516,7 +1516,59 @@ const PICKS = [["B0FDF513ZS","ribbon","Ribbli Burgundy Velvet, gold sparkling st
   ["B0FBGCWB81","small","Senjie Brown Velvet ornaments 2.36in","brown","matte,velvet",0,"E"],
   ["B0FB3GVXJD","medium","Threan Champagne Gold Etched Mercury Glass ornaments","champagne,gold,silver","metallic,shiny",0,"E"],
   ["B09ZY93PJM","statement","5th LILY Extra Large Mercury Shatterproof ornament","silver","metallic,shiny",0,"E"],
-  ["B0FRN1546P","medium","Threan Brown Mercury Glass Twist ornaments, vintage","brown,silver","metallic,shiny,vintage",0,"E"]];
+  ["B0FRN1546P","medium","Threan Brown Mercury Glass Twist ornaments, vintage","brown,silver","metallic,shiny,vintage",0,"E"],
+  ["B0G25XSJPH","small","Neutral Rustic Brown Textured ornaments 2.36in","brown","rustic",0,"Q"],
+  ["B0HBN7YXSX","statement","Brown Glass Finial ornaments, vintage","brown","shiny,vintage",0,"Q"],
+  ["B0H2HFZ1WK","medium","Multicolor Glass ornaments 3.15in, matte and shiny","","matte,shiny",0,"Q"],
+  ["B0HBN648B4","statement","Navy Blue Glass Finial ornaments, vintage","blue,navy","shiny,vintage",0,"Q"],
+  ["B0H2H6GBMJ","medium","Sage Green Glass ornaments 3.15in, matte and shiny","green,sage","matte,shiny",0,"Q"],
+  ["B0G262HVKH","small","Neutral Rustic Ivory Textured ornaments 2.36in","ivory,white","rustic",0,"Q"],
+  ["B0H719ZK3V","small","Neutral Mini Textured Distressed ornaments","","",0,"Q"],
+  ["B0H29NZS9S","medium","4in Large Gold Glass ornaments, matte and shiny","gold","matte,shiny",0,"Q"],
+  ["B0H71YP76R","small","Hand-blown Confetti Glass ornaments 2.36in","","shiny",0,"Q"],
+  ["B0FZTP61X9","small_picks","Red Shatterproof ornament Cluster Picks","red","",0,"Q"],
+  ["B0GBWG6QPK","small_picks","Champagne Shatterproof ornament Cluster Picks","champagne","",0,"Q"],
+  ["B0H2HC14LP","medium","Champagne Glass ornaments 3.15in, matte and shiny","champagne","matte,shiny",0,"Q"],
+  ["B0H2H8T4NJ","medium","Brown Glass ornaments 3.15in, matte and shiny","brown","matte,shiny",0,"Q"],
+  ["B0H2HHHSQ1","medium","Gold Glass ornaments 3.15in, matte and shiny","gold","matte,shiny",0,"Q"],
+  ["B0H2HDYM5R","medium","Red Glass ornaments 3.15in, matte and shiny","red","matte,shiny",0,"Q"],
+  ["B0H2CKPK2P","statement","Vintage Navy Blue Textured Finial ornaments","blue,navy","vintage",0,"Q"],
+  ["B0H6P6GZFC","small","Pink Pearl Velvet Flocked ornaments 2.36in","pink","matte,velvet",0,"Q"],
+  ["B0H7SGW2L5","medium","Burgundy Glass ornaments 3.15in and 4.72in, vintage","burgundy","shiny,vintage",0,"Q"],
+  ["B0H985HQ49","small","Pastel Macaron Glass ornaments 2.36in","","shiny",0,"Q"],
+  ["B0H2HBKQ4R","medium","Burgundy Glass ornaments 3.15in, matte and shiny","burgundy","matte,shiny",0,"Q"],
+  ["B0G1C6D431","medium","Rust Red Terracotta Copper Textured ornaments 4in","brown,copper,red","",0,"Q"],
+  ["B0H6BJLX4H","medium","Iridescent Glass ornaments 3in","","shiny",0,"Q"],
+  ["B0FY1T82PY","statement","Burgundy Red Textured Glass Finial ornaments","burgundy,red","shiny,vintage",0,"Q"],
+  ["B0H2HC8GSF","medium","White Glass ornaments 3.15in, matte and shiny","white","matte,shiny",0,"Q"],
+  ["B0H82GH526","medium","Vintage Multicolor Mercury Glass ornaments","silver","metallic,shiny,vintage",0,"Q"],
+  ["B0G3PLMQCZ","medium","Red Dot Clear Glass Teardrop Bubble ornaments","red,silver","shiny",0,"Q"],
+  ["B0H6B65DLK","statement","Hand Blown Rainbow Glass Finial ornaments 5.7in","","shiny,vintage",0,"Q"],
+  ["B0H6B3CFCK","statement","Navy Blue Crystal Glass Finial Drop ornaments","blue,navy,silver","shiny,vintage",0,"Q"],
+  ["B0G3PNCTN8","medium","Green Clear Glass Teardrop Bubble ornaments","green,silver","shiny",0,"Q"],
+  ["B0HBN89L5R","statement","Green Glass Finial ornaments, vintage","green","shiny,vintage",0,"Q"],
+  ["B0H6ZK6JB1","medium","Dusty Blue Velvet Flocked ornaments 3.15in","blue,dusty blue","matte,velvet",0,"Q"],
+  ["B0H8MLWMW3","medium","Gold Glitter Metal Music Note Bell ornaments","gold","glitter",0,"Q"],
+  ["B0H15KBQNQ","medium","Vintage Coffee Brown Glass ornaments 3.2in","brown","shiny,vintage",0,"Q"],
+  ["B0H4R1DP4J","medium","Sage Green Rhinestone Velvet ornaments","green,sage","matte,velvet",0,"Q"],
+  ["B0H357L6QK","statement","Large Clear Crystal Glass Teardrop ornaments","silver","shiny",0,"Q"],
+  ["B0H792D9Z3","medium","4in Large Red ornaments","red","",0,"Q"],
+  ["B0H6P2PDQW","small","Ivory Pearl Velvet Flocked ornaments 2.36in","ivory,white","matte,velvet",0,"Q"],
+  ["B0H6JGKMZD","statement","Pastel Finial Drop Shatterproof ornaments","","vintage",0,"Q"],
+  ["B0GZSJ3YF8","medium","4in Blown Glass Vintage Pastel ornaments","","shiny,vintage",0,"Q"],
+  ["B0H7S8KJQK","medium","Amber Brown Glass ornaments 3.15in and 4.72in, vintage","brown","shiny,vintage",0,"Q"],
+  ["B0H9XN2Q8P","small","Red Velvet Flocked ornaments 2.36in","red","matte,velvet",0,"Q"],
+  ["B0HBB978W5","medium","Ice Blue Hand Blown Textured Glass ornaments","blue","shiny",0,"Q"],
+  ["B0H6WPJ38R","statement","Big 8in Navy Blue Vintage ornaments","blue,navy","vintage",0,"Q"],
+  ["B0DF2T1CV4","medium","4in Clear Gold Filled Shatterproof ornaments","gold,silver","",0,"Q"],
+  ["B0H82C6C14","small","Glass ornament Set 1.18in to 2.36in","","shiny",0,"Q"],
+  ["B0HBX4BYS6","medium","Tortoise Shell Glass ornaments with Velvet Ribbon","","matte,shiny,velvet",0,"Q"],
+  ["B0HBN6FNP9","statement","Large Silver Mercury Glass Finial ornaments","silver","metallic,shiny,vintage",0,"Q"],
+  ["B0FRMR813Z","statement","Brown Glass Teardrop ornaments 4.72in","brown","shiny",0,"Q"],
+  ["B0H5K989WP","crown","Gold Metal Vintage Angel Tree Topper 7.9in","gold","vintage",0,"Q"],
+  ["B0H8SMY1RV","crown","Green Velvet Star Tree Topper 9.8in","green","matte,velvet",0,"Q"],
+  ["B0H828SZ2Q","small","Glass ornament Set 1.18in to 2.36in","","shiny",0,"Q"],
+  ["B0HDCCGL6J","statement","6in Large Gold Glitter Glass Pinecone ornaments","gold","glitter,rustic,shiny",0,"Q"]];
 const PICK_COLORS = { burgundy: ["burgundy", "wine", "maroon", "oxblood", "bordeaux", "deep red"], red: ["red", "cranberry", "crimson", "scarlet"],
   green: ["green", "moss", "olive", "forest", "emerald", "hunter"], sage: ["sage", "eucalyptus"], "dusty blue": ["dusty blue", "powder blue", "french blue"],
   blue: ["blue", "navy", "cobalt", "sapphire"], navy: ["navy"], gold: ["gold", "golden", "brass"], champagne: ["champagne", "khaki", "pale gold"],
@@ -1540,7 +1592,7 @@ function creatorPick(b, key) {
     : key === "statement" ? ["statement"] : key === "medium" ? (qi && qi <= 2.5 ? ["small"] : ["medium"]) : [key];
   const cols = pickHits(q, PICK_COLORS), tex = pickHits(q, PICK_TEX), qw = pickWords(b.q);
   // The kind of piece named (pine, magnolia, faux fur...) has to match too for stems, flowers and the base
-  const KINDS = ["pine", "cedar", "cypress", "fir", "eucalyptus", "magnolia", "poinsettia", "rose", "hydrangea", "orchid", "peony", "fur", "knit", "velvet skirt", "plaid", "collar", "basket", "wicker", "rattan", "metal", "galvanized"];
+  const KINDS = ["pine", "cedar", "cypress", "fir", "eucalyptus", "magnolia", "poinsettia", "rose", "hydrangea", "orchid", "peony", "fur", "knit", "velvet skirt", "plaid", "collar", "basket", "wicker", "rattan", "metal", "galvanized", "star", "angel", "bow", "finial"];
   const qk = KINDS.filter(k => q.includes(k));
   const orn = key === "statement" || key === "medium", wantShape = /teardrop|finial|\bdrop/.test(q) ? "drop" : /candy|novelty/.test(q) ? "novelty" : "round";
   let best = null, top = 0;
@@ -1555,7 +1607,7 @@ function creatorPick(b, key) {
       if (shape !== wantShape) return;   // a round ornament for a round one, a drop for a drop
     }
     const nameL = r[2].toLowerCase(), kHit = qk.filter(k => nameL.includes(k) || (k === "pine" && /norfolk|fir\b/.test(nameL))).length;
-    if (["primary_picks", "florals", "base"].includes(key) && qk.length && !kHit) return;   // a cedar stem for cedar, a fur skirt for fur
+    if (["primary_picks", "florals", "base", "crown"].includes(key) && qk.length && !kHit) return;   // a cedar stem for cedar, a fur skirt for fur
     if (key === "primary_picks" && !cols.length && !tex.length && !pc.includes("green")) return;   // plain "pine stems" means natural green, not glittered
     let s = cHit * 3 + kHit * 3 + tex.filter(t => pt.includes(t)).length * 2;
     if (/\bshiny\b/.test(q) && pt.includes("matte") || /\bmatte\b/.test(q) && pt.includes("shiny") && !pt.includes("matte")) s -= 3;   // finish clash
