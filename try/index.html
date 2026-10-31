@@ -1568,7 +1568,22 @@ const PICKS = [["B0FDF513ZS","ribbon","Ribbli Burgundy Velvet, gold sparkling st
   ["B0H5K989WP","crown","Gold Metal Vintage Angel Tree Topper 7.9in","gold","vintage",0,"Q"],
   ["B0H8SMY1RV","crown","Green Velvet Star Tree Topper 9.8in","green","matte,velvet",0,"Q"],
   ["B0H828SZ2Q","small","Glass ornament Set 1.18in to 2.36in","","shiny",0,"Q"],
-  ["B0HDCCGL6J","statement","6in Large Gold Glitter Glass Pinecone ornaments","gold","glitter,rustic,shiny",0,"Q"]];
+  ["B0HDCCGL6J","statement","6in Large Gold Glitter Glass Pinecone ornaments","gold","glitter,rustic,shiny",0,"Q"],
+  ["B0H7SC7K1G","medium","Green Hand Blown Glass ornaments 3in, vintage","green","shiny,vintage",0,"Q"],
+  ["B0G25Z8X3S","small","Neutral Rustic Earthy Brown Textured ornaments 2.36in","brown","rustic",0,"Q"],
+  ["B0FZV7SSZ7","small_picks","Brown Neutral ornament Cluster Picks","brown","",0,"Q"],
+  ["B0GBX666QD","small_picks","Red Green ornament Cluster Picks","green,red","",0,"Q"],
+  ["B0FZTR3KK9","small_picks","Gold ornament Cluster Picks","gold","",0,"Q"],
+  ["B0FZTWLSW5","small_picks","Brown Green Neutral ornament Cluster Picks","brown,green","",0,"Q"],
+  ["B0FR599415","primary_picks","Clear Crystal Icicle Branch Picks 19.7in, glitter","silver","glitter",0,"Q"],
+  ["B0H6W9C4WT","crown","Vintage Mid Century Glass Finial Tree Topper 13in","","shiny,vintage",0,"Q"],
+  ["B0H6VWC94V","crown","Vintage Nutcracker Drum Glass Finial Tree Topper 13in","","shiny,vintage",0,"Q"],
+  ["B0H5K4ZNRN","crown","Small Vintage Gold Metal Bow Tree Topper 5.9in","gold","vintage",0,"Q"],
+  ["B0H5CC24YG","crown","Giant Silver Bow Tree Topper 20in","silver","",0,"Q"],
+  ["B0H5C7B9B2","crown","Giant Gold Bow Tree Topper 20in","gold","",0,"Q"],
+  ["B0FK4XZ74V","crown","Silver Glitter Star Tree Topper 8in","silver","glitter",0,"Q"],
+  ["B0FMFK51S4","base","Natural Woven Vine Wicker Tree Collar 24in, lighted","brown","",0,"Q"],
+  ["B0FHNZSPXY","base","Natural Rattan Wicker Tree Skirt 36in, woven basket","brown","",0,"Q"]];
 const PICK_COLORS = { burgundy: ["burgundy", "wine", "maroon", "oxblood", "bordeaux", "deep red"], red: ["red", "cranberry", "crimson", "scarlet"],
   green: ["green", "moss", "olive", "forest", "emerald", "hunter"], sage: ["sage", "eucalyptus"], "dusty blue": ["dusty blue", "powder blue", "french blue"],
   blue: ["blue", "navy", "cobalt", "sapphire"], navy: ["navy"], gold: ["gold", "golden", "brass"], champagne: ["champagne", "khaki", "pale gold"],
@@ -1601,6 +1616,7 @@ function creatorPick(b, key) {
     const pc = r[3] ? r[3].split(",") : [], pt = r[4] ? r[4].split(",") : [];
     const cHit = cols.filter(c => pc.includes(c)).length;
     if (cols.length && !cHit) return;   // a color was asked for and this isn't it
+    if (key === "crown" && /small|mini/.test(nameL)) s -= 1;   // a topper should be sized for a full tree
     if (key === "ribbon" && qi && r[5] && (r[5] < qi * .66 || r[5] > qi * 1.5)) return;   // ribbon width matters to the design
     if (orn) {
       const shape = /finial|teardrop|\bdrop/i.test(r[2]) ? "drop" : /nutcracker|bell|horn|santa|frame|star|gingerbread|cart|animal|candy|peppermint|icicle|wreath|pendant|jewel/i.test(r[2]) ? "novelty" : "round";
