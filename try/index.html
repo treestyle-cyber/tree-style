@@ -1599,7 +1599,8 @@ const PICK_TEX = { velvet: ["velvet", "flocked"], plaid: ["plaid", "tartan", "bu
 const pickHits = (q, table) => Object.keys(table).filter(k => table[k].some(w => new RegExp("\\b" + w).test(q)));
 const pickWords = s => new Set((String(s).toLowerCase().match(/[a-z]{4,}/g) || []).map(w => w.replace(/(ing|ed|es|s)$/, "")));
 // The best creator pick for one shopping item, or null when nothing fits well enough.
-function creatorPick(b, key) {
+function creatorPick(b, key) { try { return matchPick(b, key); } catch (e) { console.error("creatorPick", e); return null; } }   // a matching problem must never break the shopping list
+function matchPick(b, key) {
   const q = `${b.label || ""} ${b.q || ""}`.toLowerCase();
   if (!b.q || !PICKS.length) return null;
   const inch = (q.match(/(\d+(?:\.\d+)?)\s*(?:"|in\b|inch)/) || [])[1], qi = inch ? parseFloat(inch) : 0;
@@ -1616,7 +1617,6 @@ function creatorPick(b, key) {
     const pc = r[3] ? r[3].split(",") : [], pt = r[4] ? r[4].split(",") : [];
     const cHit = cols.filter(c => pc.includes(c)).length;
     if (cols.length && !cHit) return;   // a color was asked for and this isn't it
-    if (key === "crown" && /small|mini/.test(nameL)) s -= 1;   // a topper should be sized for a full tree
     if (key === "ribbon" && qi && r[5] && (r[5] < qi * .66 || r[5] > qi * 1.5)) return;   // ribbon width matters to the design
     if (orn) {
       const shape = /finial|teardrop|\bdrop/i.test(r[2]) ? "drop" : /nutcracker|bell|horn|santa|frame|star|gingerbread|cart|animal|candy|peppermint|icicle|wreath|pendant|jewel/i.test(r[2]) ? "novelty" : "round";
@@ -1628,6 +1628,7 @@ function creatorPick(b, key) {
     let s = cHit * 3 + kHit * 3 + tex.filter(t => pt.includes(t)).length * 2;
     if (/\bshiny\b/.test(q) && pt.includes("matte") || /\bmatte\b/.test(q) && pt.includes("shiny") && !pt.includes("matte")) s -= 3;   // finish clash
     if (cols.length && pc.length && pc.every(c => cols.includes(c))) s += 1;   // no stray colors
+    if (key === "crown" && /small|mini/.test(nameL)) s -= 1;   // a topper should be sized for a full tree
     if (key === "ribbon" && qi && r[5]) s += Math.abs(r[5] - qi) <= .5 ? 2 : Math.abs(r[5] - qi) <= 1.5 ? 1 : -1;
     const nw = pickWords(r[2]); qw.forEach(w => { if (nw.has(w)) s += .5; });
     if (s > top) { top = s; best = r; }
