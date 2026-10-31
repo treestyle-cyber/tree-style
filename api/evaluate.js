@@ -5,6 +5,7 @@
 //   -> the design partner: a revised plan based on the homeowner's request.
 import { GUIDE, GUIDE_OLD_STYLES, CATS, STYLES } from "../lib/guide.js";
 import { checkPassword, parseDataUrl, extractJson } from "../lib/util.js";
+import { PICKS_RULE } from "../lib/picks.js";
 import { EVAL_SCHEMA, LOOK_SCHEMA, PLAN_SCHEMA, REVISE_SCHEMA, DETAILS_SCHEMA } from "../lib/schema.js";
 
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
@@ -74,7 +75,7 @@ ${CATS.map(c => `- ${c[0]}: ${c[2]}`).join("\n")}
 
   return `You are an expert Christmas tree designer helping someone who loves Christmas but is not a designer.
 
-${variant === "old" ? GUIDE_OLD_STYLES : GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}
+${variant === "old" ? GUIDE_OLD_STYLES : GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}${variant === "picks" && part !== "look" ? "\n\n" + PICKS_RULE : ""}
 
 ${task}
 
