@@ -1695,6 +1695,17 @@ function matchPick(b, key) {
   const KINDS = ["pine", "cedar", "cypress", "fir", "eucalyptus", "magnolia", "poinsettia", "rose", "hydrangea", "orchid", "peony", "fur", "knit", "velvet skirt", "plaid", "collar", "basket", "wicker", "rattan", "metal", "galvanized", "star", "angel", "bow", "finial"];
   const qk = KINDS.filter(k => q.includes(k));
   const orn = key === "statement" || key === "medium", wantShape = /teardrop|finial|\bdrop/.test(q) ? "drop" : /candy|novelty/.test(q) ? "novelty" : "round";
+  // Every describing word they asked for has to be in the pick ("tropical floral" ribbon is not a plain burgundy velvet,
+  // "Golden Girls" ornaments are not gold rounds); sizes, colors, finishes and everyday words don't count
+  const plainW = pickWords("ribbon ribbons wired wire edge edged inch inches yard yards bolt bolts ornament ornaments large extra small medium mini piece pieces "
+    + "stem stems pick picks spray sprays branch branches tree christmas holiday accent thin thick wide narrow laid over with each about round shatterproof plastic long "
+    + "size full faux artificial real touch lush soft deep light dark bright rich luxe luxury luxurious elegant classic traditional simple solid plain assorted mixed "
+    + "matching coordinating finish trim topper skirt collar base leaf leaves sprig sprigs cluster clusters natural lifelike realistic shiny matte metallic glitter "
+    + "velvet satin sheer jeweled embroidered brocade crushed dipped gilded tipped accents tuck tucked layer layered nestled pale warm cool tone tones bold vintage "
+    + "frosted snowy flocked glass gold golden silver white ivory cream green "
+    + Object.values(PICK_COLORS).flat().join(" ") + " " + Object.values(PICK_TEX).flat().join(" ") + " " + KINDS.join(" "));
+  const mustW = [...qw].filter(w => !plainW.has(w) && !/^\d/.test(w));
+  if ((key === "ribbon" || orn) && !cols.length) return null;   // ribbon and ornaments without a color: too loose to pick for them
   let best = null, top = 0;
   PICKS.forEach(r => {
     if (!steps.includes(r[1])) return;
@@ -1707,6 +1718,9 @@ function matchPick(b, key) {
       const shape = /finial|teardrop|\bdrop/i.test(r[2]) ? "drop" : /nutcracker|bell|horn|santa|frame|star|gingerbread|cart|animal|candy|peppermint|icicle|wreath|pendant|jewel/i.test(r[2]) ? "novelty" : "round";
       if (shape !== wantShape) return;   // a round ornament for a round one, a drop for a drop
     }
+    const nw0 = pickWords(r[2]);
+    if (mustW.some(w => !nw0.has(w))) return;   // a describing word they asked for is missing
+    if (key === "ribbon" && /\b(mesh|sheer)\b/i.test(r[2]) !== /\b(mesh|sheer)\b/.test(q)) return;   // sheer for sheer, solid ribbon for solid
     const nameL = r[2].toLowerCase(), kHit = qk.filter(k => nameL.includes(k) || (k === "pine" && /norfolk|fir\b/.test(nameL))).length;
     if (["primary_picks", "florals", "base", "crown"].includes(key) && qk.length && !kHit) return;   // a cedar stem for cedar, a fur skirt for fur
     if (key === "primary_picks" && !cols.length && !tex.length && !pc.includes("green")) return;   // plain "pine stems" means natural green, not glittered
