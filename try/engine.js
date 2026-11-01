@@ -8,7 +8,7 @@
   const arr = a => Array.isArray(a) ? a : [];
   const str = (s, n) => String(s == null ? "" : s).slice(0, n || 400);
   const oneOf = (v, list, d) => list.includes(String(v || "").toLowerCase()) ? String(v).toLowerCase() : d;
-  const RIBBON_TEX = ["satin","velvet","metallic","sheer","plaid","stripe","print","burlap"];
+  const RIBBON_TEX = ["satin","velvet","metallic","sheer","plaid","stripe","print","burlap","jeweled","embroidered","brocade"];
   const PLAN_EL = ["fluff","lights","primary_picks","ribbon","florals","statement","medium","small","small_picks","crown","base"];
   function planEl(p){
     const e = String(p.element || "").toLowerCase().replace(/[\s-]/g, "_");

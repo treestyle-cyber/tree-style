@@ -188,7 +188,7 @@
       // Full designer look: about 2-3 per foot of tree (basic look is 1 per foot)
       const want = mode === "design" ? Math.max(d.moments.length * 2, Math.round(h * 2.5)) : Math.max(6, d.moments.length * 2);
       const fin = d.picks.primary.finish !== "natural" ? d.picks.primary.finish + " " : "";
-      add(PICK_HEX[d.picks.primary.kind] || "#3B7550", `${fin}${d.picks.primary.kind} stems`, `${range(want)} stems`, `${fin}${d.picks.primary.kind} picks christmas tree`);
+      add(PICK_HEX[d.picks.primary.kind] || "#3B7550", `${fin}${d.picks.primary.kind} stems`, `${range(want)} stems`, `${fin}${d.picks.primary.kind} picks`);
     }
     if (key === "ribbon") {
       const rbs = d.ribbons, loops = d.technique === "loops";
@@ -204,20 +204,20 @@
           ? `About ${yards} yards needed. You have some; add ${rolls} (${ROLL_YD} yd each) if you're short`
           : `About ${yards} yards · ${rolls} (${ROLL_YD} yd each)`;
         const tx = rb.texture === "print" && /print|chinoiserie|floral|toile|leopard|tiger|damask/i.test(cn) ? "" : rb.texture + " ";
-        add(rb.color, `${rb.width_in}" ${cn} ${tx}wired ribbon${role}${rb.owned ? " · re-use yours" : ""}`, qty, `${rb.width_in} inch wired ${tx}ribbon ${cn} ${ROLL_YD} yards`);
+        add(rb.color, `${rb.width_in}" ${cn} ${tx}wired ribbon${role}${rb.owned ? " · re-use yours" : ""}`, qty, `${rb.width_in} inch ${cn} ${tx}wired ribbon`);
       });
     }
     if (key === "florals" && d.picks.floral.kind !== "none") {
       const want = Math.max(6, d.moments.filter(m => m.floral).length + d.moments.filter(m => m.floral && m.size >= 3).length + (mode === "design" ? Math.round(h * .6) : 0));
       const cn = colorName(d.picks.floral.color);
-      add(d.picks.floral.color, `${cn} ${d.picks.floral.kind} stems`, `${range(want)} stems`, `${cn} ${d.picks.floral.kind} picks christmas tree`);
+      add(d.picks.floral.color, `${cn} ${d.picks.floral.kind} stems`, `${range(want)} stems`, `${cn} ${d.picks.floral.kind} picks`);
     }
     if (key === "statement") out.push(...ornamentGroups(d, mode, ["xl", "l"]));
     if (key === "medium") out.push(...ornamentGroups(d, mode, ["m", "s"]));
     if (key === "small_picks" && d.picks.small.kind !== "none") {
       const cn = colorName(d.picks.small.color), spray = d.picks.small.kind === "spray";
       const want = Math.max(12, Math.round(h * 3 * (mode === "design" ? 1 : .6)));
-      add(d.picks.small.color, d.picks.small.label || `${cn} ${spray ? "sprays" : "berry stems"}`, range(want), `${cn} ${spray ? "glitter spray picks" : "berry picks"} christmas tree`);
+      add(d.picks.small.color, d.picks.small.label || `${cn} ${spray ? "sprays" : "berry stems"}`, range(want), `${cn} ${spray ? "glitter spray picks" : "berry picks"}`);
     }
     if (key === "crown") {
       // The crown reuses the ribbon, flowers and stems from earlier steps; the only new piece is the topper,
