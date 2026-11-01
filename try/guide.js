@@ -168,7 +168,7 @@
           color: o.color,
           label: `${ins}" ${o.finish !== "shiny" ? o.finish + " " : "shiny "}${cn} ${SHAPE_Q[o.shape] === "ball" ? "ornaments" : SHAPE_Q[o.shape] + (o.shape === "candy" ? "s" : " ornaments")}${x.clusters ? `, including ${plural(x.clusters, "cluster", "clusters")}` : ""}`,
           qty: range(want),
-          q: `${ins} inch ${o.finish} ${cn} ${SHAPE_Q[o.shape]} christmas ornaments${sz === "xl" || sz === "l" ? " shatterproof" : ""}`
+          q: `${ins} inch ${o.finish} ${cn} ${SHAPE_Q[o.shape]} christmas ornaments`
         });
       });
     });
