@@ -5,6 +5,7 @@
 //   -> the design partner: a revised plan based on the homeowner's request.
 import { GUIDE, GUIDE_OLD_STYLES, CATS, STYLES } from "../lib/guide.js";
 import { checkPassword, parseDataUrl, extractJson } from "../lib/util.js";
+import { picksRule } from "../lib/picks.js";
 import { EVAL_SCHEMA, LOOK_SCHEMA, PLAN_SCHEMA, REVISE_SCHEMA, DETAILS_SCHEMA } from "../lib/schema.js";
 
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
@@ -19,7 +20,7 @@ const BRIEF_RULES = (mode, variant) => `RENDER BRIEF: instructions for a photo-e
 
 
 const PLAN_SHAPE = (mode, compact) => `"quick_fixes": [ {"title":"<plain, under 8 words>","how":"<one short sentence>","x":<0-1>,"y":<0-1>} ],
- "plan": [ {"element":"fluff|lights|primary_picks|ribbon|florals|statement|medium|small|small_picks|crown|base","step":"<plain step name, e.g. Ribbon>","title":"<under 8 words>",${compact ? "" : '"how":"<1-2 specific sentences: sizes, counts, where>","effort":"<e.g. 20 minutes>",'}"shop":"<3-7 word store search, e.g. '6 inch wired velvet ribbon burgundy', or empty>"} ],
+ "plan": [ {"element":"fluff|lights|primary_picks|ribbon|florals|statement|medium|small|small_picks|crown|base","step":"<plain step name, e.g. Ribbon>","title":"<under 8 words>",${compact ? "" : '"how":"<1-2 specific sentences: sizes, counts, where>","effort":"<e.g. 20 minutes>",'}"shop":"<3-7 word store search, e.g. '6 inch wired velvet ribbon burgundy', or empty; when the step buys more than one kind of thing, one search per thing separated by '; ', e.g. 'gold teardrop ornaments; flamingo christmas ornaments'>"} ],
  "ideas": [ {"label":"<2-4 words>","request":"<one sentence asking the design partner for this change>"} ],
  "mockup": {
    "lights": {"add":true|false,"kind":"warm|multicolor|solid","color":"#hex","density":"light|medium|heavy"},
@@ -37,8 +38,10 @@ const PLAN_SHAPE = (mode, compact) => `"quick_fixes": [ {"title":"<plain, under 
 
 const PLAN_NOTES = (mode, compact) => `quick_fixes: 3-5, ${mode === "check" ? "biggest improvement for the least effort first; x,y = where on the photo" : "the plan at a glance, in order"}.
 plan: 6-12 items following the order of work, ending with the base (a skirt, collar or basket) unless the tree already has a good one.${mode === "check" ? " If the tree is already well designed (most categories 7 or more), say so plainly in the headline and summary, and keep the plan to 2-5 finishing touches; don't invent work to fill a longer plan." : ""}${compact ? " Titles only here: the written instructions for each step are written in a separate pass, so keep this part short." : ""} Fill "shop" for every step that needs something bought (lights, stems, ribbon, flowers, each ornament step, berry stems, topper, a new skirt or collar); leave it empty only for steps like fluffing or moving what they already own.
+EVERYTHING TO BUY IS ON THE LIST: the shopping list is built from the mockup plus each plan item's "shop", so every piece the plan tells them to add must appear in one of them. Novelty, themed and licensed pieces (flamingo ornaments, cheesecake slice ornaments, official ornaments for a show) aren't in the mockup, so give each its own search in that step's "shop".
 QUANTITIES: pack sizes vary by store, so never mention packs or boxes. Give counts ("about 18 greenery stems", "about 6 extra-large ornaments"), lights in strands of 100, and ribbon in yards plus 10-yard bolts (always "bolts", not rolls). Ribbon math, so your words match the shopping list: yards = tree height in feet × 2.0 for the widest ribbon, × 1.5 for the ribbon laid on top, × 1.3 for the thin accent; give the yards plus whole bolts, rounding up (e.g. "about 15 yards, 2 bolts"), with a range only when fuller loops could need one more (e.g. "about 18 yards, 2-3 bolts"). For a full designer look use about 2-3 greenery stems per foot of tree.
 RIBBON NAMES: all ribbon is wired; always say so (e.g. "6-inch burgundy velvet wired ribbon"). A ribbon printed with a motif (tiger print, leopard, chinoiserie, floral, toile) has texture "print" and its color_name names the print, e.g. "tiger-print" or "blue and white chinoiserie". Sheer ribbon is "sheer ribbon", never gauze or chiffon.
+FILLER (greenery stems plus berries and small picks): a lush tree mixes several kinds that suit the style, not one greenery and one berry: e.g. cedar and eucalyptus stems with red berries and pinecone picks (Traditional or Rustic), gold-dipped magnolia leaves with glitter and crystal sprays (Elegant), frosted pine with icy sprigs. The mockup holds the main greenery and the main small pick; give every other filler kind its own plan item (element "primary_picks" for greenery, "small_picks" for berries, pinecones, sprays and sprigs) with its own "shop" name, so each one lands on the shopping list. A finishing-touch plan on a strong tree can stay with one or two.
 ORNAMENTS: use a tight palette: 2-3 colors, and at most 2 finishes per size. Give sizes in whole inches. Call the biggest "extra-large ornaments".
 COLOR NAMES: every color_name is the name you use in your words (e.g. "champagne", "olive", "burgundy"), and your words never use a different name for the same thing.
 ideas: exactly 3 genuinely different directions worth seeing for this tree.
@@ -75,7 +78,7 @@ ${CATS.map(c => `- ${c[0]}: ${c[2]}`).join("\n")}
 
   return `You are an expert Christmas tree designer helping someone who loves Christmas but is not a designer.
 
-${variant === "old" ? GUIDE_OLD_STYLES : GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}
+${variant === "old" ? GUIDE_OLD_STYLES : GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}${variant === "picks" && part !== "look" ? "\n\n" + picksRule() : ""}
 
 ${task}
 

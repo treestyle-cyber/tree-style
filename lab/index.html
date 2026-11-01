@@ -154,7 +154,8 @@ $("#file").onchange = async e => { for (const f of [...e.target.files].slice(0, 
 
 // What the two columns compare: the rule under test (LAB_RULE in api/evaluate.js, sent as variant "v2") vs the live app.
 // samePlan: both columns paint the SAME plan, so only the picture step is compared
-const COLS = [{ title: "Test: higher-quality image model + checklist", variant: "v2", samePlan: true }, { title: "Live app", variant: undefined }];
+// Earlier test, kept for reference: [{ title: "Test: higher-quality image model + checklist", variant: "v2", samePlan: true }, ...]
+const COLS = [{ title: "Test: designed from creator picks", variant: "picks" }, { title: "Live app", variant: undefined }];
 const ALL_STYLES = [["classic", "Traditional"], ["rustic", "Rustic"], ["modern", "Modern"], ["elegant", "Elegant"], ["playful", "Playful"], ["keep", "Keep my style"]];
 async function runOne(src, idx, mode, style, extra = {}, label = "") {
   const row = document.createElement("div");
@@ -178,7 +179,12 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
       const shape = (result.plan || []).some(p => p.element === "fluff") || (result.categories || []).some(c => c.name === "Fullness" && Number(c.score) <= 7);
       const out = await api("/api/render", { image: src, brief: result.render_brief, aspect, map, variant, shape: shape || undefined });
       $(`#${id}-pic`).innerHTML = `<img src="${out.image}" alt="">`;
-      $(`#${id}-meta`).textContent = `${Math.round((Date.now() - t0) / 1000)}s · ${(result.render_brief || "").split(/\s+/).length} words of instructions · ${out._meta?.model || ""}`;
+      const STEP_LABEL = { ribbon: "Ribbon:", primary_picks: "Greenery:", florals: "Flowers:", statement: "Large ornaments:", medium: "Ornaments:", small_picks: "Picks:", crown: "Top:", base: "Base:", lights: "Lights:" };
+      const used = (result.plan || []).map(p => Object.assign(String(p.shop || "").match(/^\[([A-Z0-9]{10})\]\s*(.*)/) || [], { el: p.element })).filter(m => m[1]);
+      $(`#${id}-meta`).innerHTML = esc(`${Math.round((Date.now() - t0) / 1000)}s · ${(result.render_brief || "").split(/\s+/).length} words of instructions · ${out._meta?.model || ""}`)
+        + (variant === "picks" ? (used.length
+          ? `<div style="margin-top:10px;padding:10px 12px;border:1px solid rgba(184,156,107,.5);border-radius:10px"><b>${used.length} creator pick${used.length === 1 ? "" : "s"} in this design</b> (tap to see the product)${used.map(m => `<br>· <span style="opacity:.7">${esc(STEP_LABEL[m.el] || "")}</span> <a href="https://www.amazon.com/dp/${m[1]}" target="_blank" rel="noopener" style="color:inherit">${esc(m[2] || m[1])}</a>`).join("")}</div>`
+          : `<div style="margin-top:10px"><b>No creator picks used in this design.</b></div>`) : "");
     } catch (e) {
       $(`#${id}-pic`).innerHTML = `<div style="padding:14px;text-align:center"><div class="err">${esc(e.message)}</div><button class="btn ghost" style="margin-top:12px;padding:10px 16px">Try again</button></div>`;
       $(`#${id}-pic`).querySelector("button").onclick = () => { $(`#${id}-pic`).innerHTML = '<div class="spin"></div>'; one(variant, id); };
