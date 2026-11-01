@@ -25,7 +25,7 @@ const PLAN_SHAPE = (mode, compact) => `"quick_fixes": [ {"title":"<plain, under 
  "mockup": {
    "lights": {"add":true|false,"kind":"warm|multicolor|solid","color":"#hex","density":"light|medium|heavy"},
    "ribbon_technique": "cascade|loops",
-   "ribbons": [ {"role":"base|overlay|accent","width_in":<number>,"color":"#hex","color_name":"<the color as a designer would name it, e.g. burgundy, champagne, olive>","texture":"satin|velvet|metallic|sheer|plaid|stripe|print|burlap","accent":"#hex or null","owned":true|false} ],
+   "ribbons": [ {"role":"base|overlay|accent","width_in":<number>,"color":"#hex","color_name":"<the color as a designer would name it, e.g. burgundy, champagne, olive>","texture":"satin|velvet|metallic|sheer|plaid|stripe|print|burlap|jeweled|embroidered|brocade","accent":"#hex or null","owned":true|false} ],
    "picks": {"primary":{"kind":"pine|cedar|eucalyptus|magnolia|none","finish":"natural|frosted|gold|silver"},"floral":{"kind":"poinsettia|rose|magnolia|hydrangea|orchid|none","color":"#hex","color_name":"<name>"},"small":{"kind":"berries|spray|none","color":"#hex","color_name":"<name>","label":"<what they are, plainly, e.g. red berry stems, crystal sprays, small white flowers, frosted pinecone picks>"}},
    "moments": [ {"x":<0-1>,"y":<0-1>,"size":1|2|3,"floral":true|false} ],
    "ornaments": [ {"x":<0-1>,"y":<0-1>,"color":"#hex","color_name":"<name>","size":"xl|l|m|s","shape":"ball|drop|finial|geometric|candy","finish":"shiny|matte|glitter"} ],
