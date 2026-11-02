@@ -2489,6 +2489,19 @@ async function beforeAfterImage(name, tip) {
   g.fillStyle = muted; g.font = "500 18px Inter, system-ui, sans-serif"; spaced("AI PREVIEW BY TREESTYLE", BA.W / 2, BA.H - 34, 4);
   return new Promise(ok => c.toBlob(ok, "image/jpeg", .92));
 }
+// The tip shows off decorating: ribbon, filler or ornaments, never lights or shaping the branches.
+// First choice is a top fix about one of those; otherwise the plan step for ribbon, then filler, then ornaments.
+function baTipPick() {
+  const r = result || {}, txt = f => `${f.title || ""} ${f.how || ""}`.toLowerCase();
+  const skip = /\blight|shap|fluff|fuller|fullness|gaps?\b/, want = /ribbon|bow|cascade|filler|greenery|stem|spray|berr|pinecone|eucalyptus|magnolia|cedar|ornament|finial|teardrop|drop\b/;
+  const fix = (r.quick_fixes || []).find(f => want.test(txt(f)) && !skip.test(txt(f)));
+  if (fix) return fix;
+  const plan = r.plan || [];
+  for (const els of [["ribbon"], ["primary_picks", "small_picks", "florals"], ["statement", "medium", "small"]]) {
+    const p = plan.find(p => els.includes(p.element) && !skip.test(txt(p))); if (p) return p;
+  }
+  return null;
+}
 let baBlob = null, baTimer = 0, baUrl = "";
 async function baDraw() {
   const blob = await beforeAfterImage($("#baName").value.trim(), $("#baTip").value.trim()).catch(() => null);
@@ -2496,8 +2509,7 @@ async function baDraw() {
   baBlob = blob; if (baUrl) URL.revokeObjectURL(baUrl); baUrl = URL.createObjectURL(blob); $("#baImg").src = baUrl;
 }
 $("#baBtn").onclick = () => {
-  const f = (result && result.quick_fixes || [])[0];
-  if (f && !$("#baTip").dataset.edited) $("#baTip").value = [f.title, f.how].filter(Boolean).map(t => t.trim().replace(/\.?$/, ".")).join(" ");
+  if (!$("#baTip").dataset.edited) { const f = baTipPick(); $("#baTip").value = f ? [f.title, f.how].filter(Boolean).map(t => t.trim().replace(/\.?$/, ".")).join(" ") : ""; }
   openSheet("#baSheet"); baDraw();
 };
 $("#baTip").addEventListener("input", () => { $("#baTip").dataset.edited = "1"; clearTimeout(baTimer); baTimer = setTimeout(baDraw, 400); });
