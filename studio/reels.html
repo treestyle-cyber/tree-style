@@ -234,7 +234,9 @@ async function appAfter(before, mode, style) {
     const k = Math.min(1, 1024 / Math.max(cv.width, cv.height)), c2 = document.createElement("canvas");
     c2.width = Math.round(cv.width * k); c2.height = Math.round(cv.height * k); c2.getContext("2d").drawImage(cv, 0, 0, c2.width, c2.height); map = c2.toDataURL("image/jpeg", .8);
   } catch (e) { console.error(e); }
-  const out = await api("/api/render", { image: before, brief: result.render_brief, aspect, map });
+  // Same as the app: fuller branches when the plan shapes them or the tree scored low on fullness
+  const shape = (result.plan || []).some(x => x.element === "fluff") || (result.categories || []).some(c => c.name === "Fullness" && Number(c.score) <= 7);
+  const out = await api("/api/render", { image: before, brief: result.render_brief, aspect, map, shape: shape || undefined });
   return out.image;
 }
 
