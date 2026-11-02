@@ -2502,6 +2502,7 @@ function baTipPick() {
   }
   return null;
 }
+// The tip uses the fix's explanation only: the title just restated it, so the two together read twice
 let baBlob = null, baTimer = 0, baUrl = "";
 async function baDraw() {
   const blob = await beforeAfterImage($("#baName").value.trim(), $("#baTip").value.trim()).catch(() => null);
@@ -2509,7 +2510,7 @@ async function baDraw() {
   baBlob = blob; if (baUrl) URL.revokeObjectURL(baUrl); baUrl = URL.createObjectURL(blob); $("#baImg").src = baUrl;
 }
 $("#baBtn").onclick = () => {
-  if (!$("#baTip").dataset.edited) { const f = baTipPick(); $("#baTip").value = f ? [f.title, f.how].filter(Boolean).map(t => t.trim().replace(/\.?$/, ".")).join(" ") : ""; }
+  if (!$("#baTip").dataset.edited) { const f = baTipPick(); $("#baTip").value = f ? (f.how || f.title || "").trim().replace(/\.?$/, ".") : ""; }
   openSheet("#baSheet"); baDraw();
 };
 $("#baTip").addEventListener("input", () => { $("#baTip").dataset.edited = "1"; clearTimeout(baTimer); baTimer = setTimeout(baDraw, 400); });
