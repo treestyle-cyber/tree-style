@@ -188,7 +188,7 @@
       // Full designer look: about 2-3 per foot of tree (basic look is 1 per foot)
       const want = mode === "design" ? Math.max(d.moments.length * 2, Math.round(h * 2.5)) : Math.max(6, d.moments.length * 2);
       const fin = d.picks.primary.finish !== "natural" ? d.picks.primary.finish + " " : "";
-      add(PICK_HEX[d.picks.primary.kind] || "#3B7550", `${fin}${d.picks.primary.kind} stems`, `${range(want)} stems`, `${fin}${d.picks.primary.kind} picks`);
+      add(PICK_HEX[d.picks.primary.kind] || "#3B7550", `${fin}${d.picks.primary.kind} stems`, `${range(want)} stems`, `${fin}${d.picks.primary.kind} stems`);
     }
     if (key === "ribbon") {
       const rbs = d.ribbons, loops = d.technique === "loops";
@@ -210,14 +210,14 @@
     if (key === "florals" && d.picks.floral.kind !== "none") {
       const want = Math.max(6, d.moments.filter(m => m.floral).length + d.moments.filter(m => m.floral && m.size >= 3).length + (mode === "design" ? Math.round(h * .6) : 0));
       const cn = colorName(d.picks.floral.color);
-      add(d.picks.floral.color, `${cn} ${d.picks.floral.kind} stems`, `${range(want)} stems`, `${cn} ${d.picks.floral.kind} picks`);
+      add(d.picks.floral.color, `${cn} ${d.picks.floral.kind} stems`, `${range(want)} stems`, `${cn} ${d.picks.floral.kind} stems`);
     }
     if (key === "statement") out.push(...ornamentGroups(d, mode, ["xl", "l"]));
     if (key === "medium") out.push(...ornamentGroups(d, mode, ["m", "s"]));
     if (key === "small_picks" && d.picks.small.kind !== "none") {
       const cn = colorName(d.picks.small.color), spray = d.picks.small.kind === "spray";
       const want = Math.max(12, Math.round(h * 3 * (mode === "design" ? 1 : .6)));
-      add(d.picks.small.color, d.picks.small.label || `${cn} ${spray ? "sprays" : "berry stems"}`, range(want), `${cn} ${spray ? "glitter spray picks" : "berry picks"}`);
+      add(d.picks.small.color, d.picks.small.label || `${cn} ${spray ? "sprays" : "berry stems"}`, range(want), `${cn} ${spray ? "glitter sprays" : "berry stems"}`);
     }
     if (key === "crown") {
       // The crown reuses the ribbon, flowers and stems from earlier steps; the only new piece is the topper,
@@ -233,11 +233,12 @@
     // Anything the plan asks for that isn't covered above
     // A step can buy several things ("gold teardrop ornaments; flamingo ornaments"); each search is its own item.
     // Everyday words don't count toward "already on the list", so flamingo ornaments aren't hidden behind teal ornaments.
-    const PLAIN = /^(christmas|holiday|ornaments?|inch(es)?|ribbon|wired|large|extra|small|medium|mini|tree|stems?|picks?|sprays?|shiny|matte|glitter|round|shatterproof|set|with|and|for)$/;
+    const PLAIN = /^(christmas|holiday|ornaments?|inch(es)?|ribbon|wired|large|extra|small|medium|mini|tree|stems?|picks?|sprays?|shiny|matte|glitter|glittered|round|shatterproof|set|with|and|for|tipped|dipped|gilded|accents?|artificial|faux)$/;
     d.plan.filter(p => (p.element === key || (key === "medium" && p.element === "small")) && p.shop).forEach(p => {
       p.shop.split(/\s*;\s*/).filter(Boolean).forEach(shop => {
         const words = shop.toLowerCase().split(/\s+/).filter(w => w.length > 3 && !PLAIN.test(w));
-        const covered = !words.length || out.some(o => o.q && words.length && words.every(w => o.q.toLowerCase().includes(w)));
+        // already on the list when its describing words are all in an item's search or name ("gold glitter leaf spray" = "Gold glitter leaf sprays")
+        const covered = !words.length || out.some(o => o.q && words.length && words.every(w => (o.q + " " + o.label).toLowerCase().includes(w.replace(/s$/, ""))));
         if (!covered) add(null, shop.charAt(0).toUpperCase() + shop.slice(1), "", shop);
       });
     });
