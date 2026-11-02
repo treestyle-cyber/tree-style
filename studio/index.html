@@ -83,7 +83,7 @@
     <div class="intro">
       <div class="eyebrow">Studio</div>
       <h1>Brand photography</h1>
-      <p>Each slot is a photo the app and site use. Generate, adjust the wording if you like, and tap <b>Use this</b> on the one you love. It appears in the app right away. Until you choose one, that spot keeps its fabric texture.</p>
+      <p>Each slot is a photo the app and site use. Generate one (adjust the wording if you like) or <b>Upload</b> your own, then tap <b>Use this</b> on the one you love. It appears in the app right away. Until you choose one, that spot keeps its fabric texture.</p>
     </div>
     <div class="banner" id="setup" hidden><b>One step first:</b> photos you choose are saved in Vercel Blob storage, which isn't connected yet. In Vercel, open the tree-style project → <b>Storage</b> → <b>Create</b> → <b>Blob</b> → connect it to this project → then <b>Redeploy</b>. You can still generate and preview images in the meantime.</div>
     <div class="refcard" id="refCard">
@@ -175,7 +175,7 @@ function build(current) {
       </div>
       ${current[s.id] ? `<button class="fromcur" style="align-self:flex-start;appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:99px;padding:5px 12px;font:500 12.5px var(--sans);cursor:pointer">Start from the photo in use</button>` : ""}
       <textarea>${s.prompt}</textarea>
-      <div class="row"><button class="btn ghost gen">Generate</button><button class="btn use" disabled>Use this</button></div>
+      <div class="row"><button class="btn ghost gen">Generate</button><label class="btn ghost up" style="cursor:pointer">Upload<input type="file" accept="image/*" hidden></label><button class="btn use" disabled>Use this</button></div>
       <details class="fixbox"><summary>Fix the tree in the new photo</summary>
         <div class="fixstep"><b>1 · Clear the streams</b><textarea class="fixtxt rm">Remove every length of ribbon that runs down or across the tree, and any long ribbon tails hanging from the topper; fill those areas with natural green branches and lights. Move ornaments so none line up in a column, row or diagonal: scatter and stagger them, keep the largest set back toward the trunk, and keep the visual weight balanced left and right.</textarea><button class="btn ghost fix" data-k="rm" disabled>Clear the streams</button></div>
         <div class="fixstep"><b>2 · Tuck in the ribbon</b>
@@ -203,6 +203,18 @@ function build(current) {
         if (e.status === 401) return gate("That password didn't work.");
         nf.innerHTML = '<span class="lbl">New</span>Try again'; msg.className = "msg err"; msg.textContent = e.message;
       } finally { genB.disabled = false; }
+    };
+    // Your own photo: shown as New, then Use this saves it like a generated one
+    el.querySelector(".up input").onchange = async e => {
+      const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+      msg.className = "msg"; msg.textContent = "Loading your photo…";
+      try {
+        const src = await new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = no; fr.readAsDataURL(f); });
+        img = await shrink(src);
+        nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; el.dispatchEvent(new Event("ts-img"));
+        useB.disabled = false; fixBs.forEach(b => b.disabled = false);
+        msg.textContent = "Like it? Tap Use this. The app fills the card with it, so the edges may be trimmed.";
+      } catch (err) { msg.className = "msg err"; msg.textContent = "That photo couldn't be opened. Try a JPG or PNG."; }
     };
     const fromCur = el.querySelector(".fromcur");
     if (fromCur) fromCur.onclick = async () => {
