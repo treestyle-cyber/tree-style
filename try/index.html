@@ -157,8 +157,11 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .rating .orns{gap:7px}
   .rating .orns i{width:30px;height:30px}
   .rating .orns i::after{top:-6px;width:9px;height:7px;margin-left:-4.5px}
-  .rrow.after .orns i.f{background:radial-gradient(circle at 35% 30%,#E6D3A8,#B89C6B 58%,#7A6440)}
-  .rrow.after .orns i.h{background:linear-gradient(90deg,#B89C6B 50%,var(--line) 50%)}
+  /* metallic gold: a bright highlight, a warm middle, a deep rim and a soft reflected light low on the right */
+  .rating .orns i::after{background:linear-gradient(90deg,#7A6034,#E9D39C 45%,#B89C6B 60%,#6E552C)}
+  .rrow.after .orns i.f,.rrow.after .orns i.h::before{background:radial-gradient(circle at 68% 82%,rgba(255,226,160,.45),rgba(255,226,160,0) 26%),radial-gradient(circle at 32% 26%,#FFF7DE,#F1DDA6 14%,#CFAF6C 40%,#9A7A40 70%,#5A4320);box-shadow:inset 0 0 0 1px rgba(255,236,190,.18)}
+  .rrow.after .orns i.h{background:var(--line)}
+  .rrow.after .orns i.h::before{content:"";position:absolute;inset:0;border-radius:50%;clip-path:inset(0 50% 0 0)}
   .rword{display:flex;gap:8px;align-items:baseline}
   .rword b{font:italic 600 22px/1.1 var(--serif);color:var(--green)}
   .rword span{font-size:13px;color:var(--muted)}
