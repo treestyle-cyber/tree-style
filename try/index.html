@@ -203,6 +203,13 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--green);animation:spin .8s linear infinite;margin:0 auto 12px}
   .tools{display:flex;gap:8px;margin:10px 0}
   .tools .btn{flex:1;padding:11px 12px;font-size:14px}
+  .tools{flex-wrap:wrap} .tools .btn{min-width:140px}
+  .bafield{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+  .bafield input,.bafield textarea{display:block;width:100%;margin-top:6px;letter-spacing:0;text-transform:none}
+  .bafield textarea{font:16px/1.4 var(--sans);padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper);resize:vertical;color:var(--ink)}
+  .bafield input{border-radius:12px}
+  .baout{display:block;width:100%;border-radius:10px;margin:4px 0 14px;background:var(--paper)}
+  #baSave{width:100%}
 
   /* nav list */
   .navlist{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);margin:18px 0;overflow:hidden}
@@ -918,6 +925,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <div class="tools">
       <button class="btn ghost" id="again">Try another style</button>
       <button class="btn ghost" id="save" hidden>Save and share</button>
+      <button class="btn ghost" id="baBtn" hidden>Before &amp; after</button>
     </div>
     <div class="acts" id="acts">
       <button class="act main" id="actPlan"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></span><span><b>Step-by-step plan</b><small id="actPlanSub">Every step drawn on your tree</small></span><i>→</i></button>
@@ -1056,6 +1064,20 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <h3 id="styleH">Same tree, a new look</h3>
     <p class="sheetsub">We'll redesign the ribbon, stems, ornaments and topper in the style you pick, with a new plan, shopping list and preview. This version stays saved.</p>
     <div class="stylegrid" id="styleGrid"></div>
+  </div>
+</div>
+
+<div id="baSheet" class="sheet" hidden>
+  <div class="sheetbg" data-close></div>
+  <div class="sheetbox" role="dialog" aria-modal="true" aria-labelledby="baH">
+    <button class="sheetx" data-close aria-label="Close">✕</button>
+    <div class="sheetk">Before &amp; after</div>
+    <h3 id="baH">Share the transformation</h3>
+    <p class="sheetsub">The photo and the preview side by side, with one designer tip. Edit the tip in your own words if you like.</p>
+    <label class="bafield">Whose tree (optional)<input type="text" id="baName" maxlength="32" placeholder="e.g. Jennifer's tree"></label>
+    <label class="bafield">Designer tip<textarea id="baTip" rows="3" maxlength="220"></textarea></label>
+    <img class="baout" id="baImg" alt="Before and after image">
+    <button class="btn" id="baSave">Save and share</button>
   </div>
 </div>
 
@@ -2109,7 +2131,7 @@ async function run() {
     return;
   }
   result = lookResult = Object.assign(look, { quick_fixes: [], plan: [], ideas: [], mockup: null, render_brief: "", _lookMeta: look._meta });
-  after = null; previewP = null; previewState = "idle"; stepIdx = 0; doneSteps = new Set(); guide = null; swept = false; gotItems = new Set();
+  after = null; previewP = null; previewState = "idle"; delete $("#baTip").dataset.edited; $("#baTip").value = ""; stepIdx = 0; doneSteps = new Set(); guide = null; swept = false; gotItems = new Set();
   L.done();
   getPlan(myPlan);
   fillReveal();
@@ -2145,7 +2167,7 @@ function getPlan(pending) {
 let previewP = null, previewState = "idle";
 function paintWait() {
   $("#viewer").innerHTML = `<div class="renderwait"><div class="spin"></div>Painting your preview…<div style="font-size:13px">About 30 seconds. Look around while you wait.</div></div>`;
-  $("#seg").hidden = $("#hint").hidden = $("#save").hidden = true;
+  $("#seg").hidden = $("#hint").hidden = $("#save").hidden = $("#baBtn").hidden = true;
 }
 function paintFirst() {
   const forResult = result;
@@ -2327,14 +2349,14 @@ async function makePreview(extraPieces, change) {
   } catch (e) {
     after = null;
     $("#viewer").innerHTML = `<div class="renderwait"><img src="${photo}" alt="" style="max-height:220px;margin:0 auto 12px;border-radius:8px;opacity:.6">The preview didn't come through this time.<div class="err" style="font-size:13px">${esc(e.message).slice(0, 220)}</div></div>`;
-    $("#seg").hidden = $("#hint").hidden = $("#save").hidden = true;
+    $("#seg").hidden = $("#hint").hidden = $("#save").hidden = $("#baBtn").hidden = true;
   }
 }
 let swept = false;
 function drawViewer() {
   $("#viewer").innerHTML = `<div class="compare" id="cmp"><img src="${photo}" alt="Before"><img class="after" src="${after}" alt="After"><div class="line"></div><div class="knob">↔</div><span class="tag l">Before</span><span class="tag r">After</span></div><button class="zoombtn" id="zoomCmp" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6M10.5 7.5v6M7.5 10.5h6"/></svg></button>`;
   $("#zoomCmp").onclick = () => openZoom([{ label: "Before", src: photo }, { label: "After", src: after }], curSeg === "before" ? 0 : 1);
-  $("#seg").hidden = $("#hint").hidden = $("#save").hidden = false;
+  $("#seg").hidden = $("#hint").hidden = $("#save").hidden = $("#baBtn").hidden = false;
   setSeg("compare"); swept = false;
   const box = $("#cmp"); let drag = false;
   const set = x => { const r = box.getBoundingClientRect(); box.style.setProperty("--cut", Math.min(100, Math.max(0, (x - r.left) / r.width * 100)) + "%"); };
@@ -2415,6 +2437,80 @@ $("#save").onclick = async () => {
   }
   const a = document.createElement("a"); a.href = blob ? URL.createObjectURL(blob) : after; a.download = "my-tree-treestyle.jpg"; a.click();
 };
+// Before & after: one branded image for social posts and comment replies. The logo sits once at the top,
+// so the after picture goes in without the Save-and-share mark (a second logo at the bottom looked doubled).
+const BA = { W: 1080, H: 1350 };
+async function beforeAfterImage(name, tip) {
+  const load = u => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = u; });
+  try { await Promise.all(['500 64px "Cormorant Garamond"', 'italic 500 40px "Cormorant Garamond"', '600 22px Inter', '500 20px Inter'].map(f => document.fonts.load(f))); } catch {}
+  const [bi, ai] = await Promise.all([load(photo), load(after)]);
+  const c = document.createElement("canvas"); c.width = BA.W; c.height = BA.H; const g = c.getContext("2d");
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
+  // Midnight with a soft glow behind the photos
+  g.fillStyle = "#141C2C"; g.fillRect(0, 0, BA.W, BA.H);
+  { const rg = g.createRadialGradient(BA.W / 2, BA.H * .42, 80, BA.W / 2, BA.H * .42, BA.H * .8); rg.addColorStop(0, "rgba(44,58,88,.55)"); rg.addColorStop(1, "rgba(10,14,24,.6)"); g.fillStyle = rg; g.fillRect(0, 0, BA.W, BA.H); }
+  const gold = "#C4A877", ivory = "#F3EEE7", muted = "#ABA397", panel = "#1C2538";
+  // Logo once, at the top
+  let y = 48;
+  try { const lg = await load("/brand/logo-horizontal.png"), lw = 500, lh = lw * lg.naturalHeight / lg.naturalWidth; g.drawImage(lg, (BA.W - lw) / 2, y, lw, lh); y += lh; } catch { y += 160; }
+  g.textAlign = "center"; g.textBaseline = "alphabetic";
+  if (name) { g.fillStyle = muted; g.font = 'italic 500 40px "Cormorant Garamond", Georgia, serif'; g.fillText(name, BA.W / 2, y + 46); y += 62; }
+  y += 26;
+  // Tip: wrap to at most four lines
+  const tipFont = 'italic 500 38px "Cormorant Garamond", Georgia, serif';
+  g.font = tipFont; const lines = [];
+  for (const word of (tip || "").split(/\s+/).filter(Boolean)) {
+    const t = lines.length ? lines[lines.length - 1] + " " + word : word;
+    if (lines.length && g.measureText(t).width <= 900) lines[lines.length - 1] = t; else lines.push(word);
+  }
+  if (lines.length > 4) { lines.length = 4; lines[3] = lines[3].replace(/[\s,.;:]*\S*$/, "…"); }
+  const tipH = lines.length ? 60 + lines.length * 48 : 0, footH = 64;
+  // Photos: each shown whole; panels take the taller photo's shape when it fits
+  const w = 480, gap = 40, lx = (BA.W - 2 * w - gap) / 2, pillH = 64;
+  const maxH = BA.H - y - pillH - tipH - footH - 20;
+  const h = Math.min(maxH, Math.max(w * bi.naturalHeight / bi.naturalWidth, w * ai.naturalHeight / ai.naturalWidth));
+  const top = y + (maxH - h) / 2;
+  const spaced = (t, cx, yy, tr) => { const ws = [...t].map(ch => g.measureText(ch).width), tot = ws.reduce((a, b) => a + b, 0) + tr * (t.length - 1); let px = cx - tot / 2; g.textAlign = "left"; [...t].forEach((ch, i) => { g.fillText(ch, px, yy); px += ws[i] + tr; }); g.textAlign = "center"; };
+  const rr = (px, py, rw, rh, r) => { g.beginPath(); g.roundRect ? g.roundRect(px, py, rw, rh, r) : g.rect(px, py, rw, rh); };
+  [[bi, "BEFORE", lx, false], [ai, "AFTER", lx + w + gap, true]].forEach(([im, label, px, on]) => {
+    g.save(); rr(px, top, w, h, 14); g.clip(); g.fillStyle = panel; g.fillRect(px, top, w, h);
+    const s = Math.min(w / im.naturalWidth, h / im.naturalHeight), dw = im.naturalWidth * s, dh = im.naturalHeight * s;
+    g.drawImage(im, px + (w - dw) / 2, top + (h - dh) / 2, dw, dh); g.restore();
+    g.font = "600 22px Inter, system-ui, sans-serif"; const lw2 = g.measureText(label).width + label.length * 5 + 44;
+    g.fillStyle = on ? gold : panel; rr(px + w / 2 - lw2 / 2, top + h + 18, lw2, 44, 22); g.fill();
+    g.fillStyle = on ? "#141C2C" : ivory; spaced(label, px + w / 2, top + h + 48, 5);
+  });
+  // Designer tip
+  let ty = maxH + y + pillH + 26;
+  if (lines.length) {
+    g.fillStyle = gold; g.font = "600 20px Inter, system-ui, sans-serif"; spaced("DESIGNER TIP", BA.W / 2, ty + 10, 5);
+    g.fillStyle = ivory; g.font = tipFont; lines.forEach((l, i) => g.fillText(l, BA.W / 2, ty + 62 + i * 48));
+  }
+  g.fillStyle = muted; g.font = "500 18px Inter, system-ui, sans-serif"; spaced("AI PREVIEW BY TREESTYLE", BA.W / 2, BA.H - 34, 4);
+  return new Promise(ok => c.toBlob(ok, "image/jpeg", .92));
+}
+let baBlob = null, baTimer = 0, baUrl = "";
+async function baDraw() {
+  const blob = await beforeAfterImage($("#baName").value.trim(), $("#baTip").value.trim()).catch(() => null);
+  if (!blob) { $("#baImg").alt = "We couldn't make the image. Try again in a moment."; return; }
+  baBlob = blob; if (baUrl) URL.revokeObjectURL(baUrl); baUrl = URL.createObjectURL(blob); $("#baImg").src = baUrl;
+}
+$("#baBtn").onclick = () => {
+  const f = (result && result.quick_fixes || [])[0];
+  if (f && !$("#baTip").dataset.edited) $("#baTip").value = [f.title, f.how].filter(Boolean).map(t => t.trim().replace(/\.?$/, ".")).join(" ");
+  openSheet("#baSheet"); baDraw();
+};
+$("#baTip").addEventListener("input", () => { $("#baTip").dataset.edited = "1"; clearTimeout(baTimer); baTimer = setTimeout(baDraw, 400); });
+$("#baName").addEventListener("input", () => { clearTimeout(baTimer); baTimer = setTimeout(baDraw, 400); });
+$("#baSheet").addEventListener("click", e => { if (e.target.closest("[data-close]")) closeSheet("#baSheet"); });
+$("#baSave").onclick = async () => {
+  if (!baBlob) await baDraw(); if (!baBlob) return;
+  const file = new File([baBlob], "treestyle-before-after.jpg", { type: "image/jpeg" });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: "Before & after, styled with TreeStyle" }); return; } catch (e) { if (e.name === "AbortError") return; }
+  }
+  const a = document.createElement("a"); a.href = baUrl; a.download = "treestyle-before-after.jpg"; a.click();
+};
 $("#restart").onclick = () => { photo = null; guide = null; photoImg = null; factsSet = false;
   clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d); $("#file").value = ""; $("#dropInner").innerHTML = "<strong>Tap to take or choose a photo</strong>";
@@ -2436,7 +2532,7 @@ $("#restyleSheet").addEventListener("click", e => {
   if (st.dataset.start) { $("#pText").value = st.dataset.start; $("#pText").focus({ preventScroll: true }); }
   else $("#versions").scrollIntoView({ block: "start" });
 });
-document.addEventListener("keydown", e => { if (e.key === "Escape") { closeRestyle(); closeSheet("#styleSheet"); } });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closeRestyle(); closeSheet("#styleSheet"); closeSheet("#baSheet"); } });
 
 
 // Shopping list: tick off what you have or bought (kept on this device), and share the list as text
