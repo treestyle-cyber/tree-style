@@ -198,6 +198,7 @@ function showPlan(p) {
         ${frameBox("start", "Start photo", s.start_image)}
         ${s.mode === "frames" ? frameBox("end", "End photo", s.end_image) : ""}
       </div>
+      <label class="sub hold" style="display:${s.mode === "start" ? "flex" : "none"};gap:8px;align-items:center;margin-top:10px"><input type="checkbox" class="holdbox" checked> Keep the tree exactly the same (the clip ends on the same photo)</label>
       <div class="row"><select class="res" style="width:auto"><option value="720p">720p (about $1)</option><option value="360p">360p draft (cheapest)</option><option value="1080p">1080p (final)</option></select><button class="btn make">Make this clip</button></div>
       <div class="msg"></div><div class="out"></div>
     </div>`).join("");
@@ -246,7 +247,7 @@ function wire(el) {
   const set = (k, src) => { imgs[k] = src; el.querySelector(`.fr[data-k="${k}"] .pic`).innerHTML = `<img src="${src}" alt="">`; addPool(src, el.querySelector("h3").firstChild.textContent.trim() + " · " + k); };
   el._set = set;
   const ut = el.querySelector(".usetree");
-  if (ut) ut.onclick = () => { el.querySelector(".frames").hidden = false; el.dataset.mode = "start"; el.querySelector(".tag").textContent = "From a photo"; ut.remove(); say("Pick a photo from this Reel above. The clip will start from that exact tree."); };
+  if (ut) ut.onclick = () => { el.querySelector(".frames").hidden = false; el.dataset.mode = "start"; el.querySelector(".tag").textContent = "From a photo"; el.querySelector(".hold").style.display = "flex"; ut.remove(); say("Pick a photo from this Reel above. The clip will start from that exact tree."); };
   el.querySelectorAll(".fr").forEach(fr => {
     const k = fr.dataset.k;
     fr.querySelector("input[type=file]").onchange = async e => { const f = e.target.files[0]; if (f) set(k, await shrink(await fileUrl(f))); };
@@ -279,7 +280,7 @@ function wire(el) {
     btn.disabled = true; const out = el.querySelector(".out"); out.innerHTML = '<div class="spin"></div>';
     say("Making the clip… usually 1 to 3 minutes. Keep this page open.");
     try {
-      const d = await api("/api/video", { action: "make", prompt: el.querySelector(".prompt").value.trim(), first: imgs.start, last: mode === "frames" ? imgs.end : undefined, label: el.querySelector("h3").firstChild.textContent.trim(), resolution: el.querySelector(".res").value });
+      const d = await api("/api/video", { action: "make", prompt: el.querySelector(".prompt").value.trim(), first: imgs.start, last: mode === "frames" ? imgs.end : undefined, hold: mode === "start" && el.querySelector(".holdbox").checked, label: el.querySelector("h3").firstChild.textContent.trim(), resolution: el.querySelector(".res").value });
       out.innerHTML = `<video src="${d.url}" controls playsinline loop></video><div style="display:grid;gap:8px;justify-items:start"><a class="mini" href="${d.url}" download target="_blank" style="text-decoration:none;display:inline-block">Download</a><button class="mini lf">Use its last frame</button></div>`;
       const lbl = el.querySelector("h3").firstChild.textContent.trim();
       out.querySelector(".lf").onclick = e => useLastFrame(e.target, d.url, lbl, say);

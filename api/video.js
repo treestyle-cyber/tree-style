@@ -59,7 +59,9 @@ IDEA FROM ERIC: ${String(idea || "(none: choose a strong idea for this format)")
 Write 3-6 shots. For each shot:
 - name: a few words.
 - mode: "text" (made from the prompt alone), "start" (animates a starting photo), or "frames" (moves from a start photo to an end photo; use this for every before-to-after transformation, with a locked-off camera).
-- prompt: 50-120 words for the video model, following SHOT CRAFT. Begin with "Vertical 9:16." Describe the tree in designer terms whenever one is visible.
+- prompt: 50-120 words for the video model, following SHOT CRAFT. Begin with "Vertical 9:16."
+  For "start" and "frames" shots the tree comes from the photo: call it "the tree in the photo" and never describe its look, colors or decorations in the prompt (a description makes the video model draw a different tree). Describe only what moves (people, hands, light, the camera) and the sound. For a "frames" transformation, describe how the change unfolds (lights first, then ribbon, then ornaments, the top last), not what the finished tree looks like; the end photo shows that.
+  For "text" shots, describe any tree in designer terms.
 - start_image / end_image (for start and frames shots): one sentence describing the still photo to use, so Eric can make it in the Studio (e.g. "the ordinary 'before' tree", "the styled 'after' of the same tree, same room and angle").
 - on_screen: the text Eric adds in the editor over this shot (short, or empty).
 Then a caption (2-4 short lines, in the brand voice, ending with the comment TREE call to action and "AI preview") and 5-8 hashtags.`;
@@ -89,12 +91,15 @@ function findVideo(node, depth = 0) {
   return null;
 }
 
-async function makeClip({ prompt, first, last, resolution }) {
-  const a = parseDataUrl(first), b = parseDataUrl(last), input = [];
+// hold: the start photo is also the last frame, so the tree can't drift into a different one.
+async function makeClip({ prompt, first, last, resolution, hold }) {
+  const a = parseDataUrl(first), b = parseDataUrl(last) || (hold ? a : null), input = [];
   if (a) input.push({ type: "image", data: a.data, mime_type: a.mediaType });
   if (a && b) input.push({ type: "image", data: b.data, mime_type: b.mediaType });
-  const lead = a && b ? "The first image is the first frame and the second image is the last frame of this video; move smoothly from one to the other. "
-    : a ? "Animate this image; it is the first frame of the video. " : "";
+  const same = "The Christmas tree in <FIRST_FRAME> is the only tree in this video: the same tree, the same decorations in the same places, the same room and furniture, from the first frame to the last.";
+  const lead = a && b && !hold ? "<FIRST_FRAME> <LAST_FRAME> One continuous shot from the first frame to the last. The room, the camera angle and the tree's shape and size stay exactly the same; only the decorations change, the way the shot describes. "
+    : a && b ? `<FIRST_FRAME> <LAST_FRAME> The first and last frames are the same photo. ${same} Nothing on the tree changes, appears or disappears; the clip ends exactly where it began. Only the people, light and camera move, the way the shot describes. `
+    : a ? `<FIRST_FRAME> ${same} Nothing on the tree changes, appears or disappears; only the people, light and camera move, the way the shot describes. ` : "";
   input.push({ type: "text", text: lead + String(prompt).slice(0, 3000) + "\nNo on-screen text, captions, logos or watermarks." });
   const body = {
     model: VIDEO_MODEL, input,
@@ -164,15 +169,15 @@ export default async function handler(req, res) {
     if (action === "make") {
       if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
       if (!blobConnected()) return res.status(400).json({ error: "Storage isn't connected, so clips can't be saved." });
-      const { prompt, first, last, label, resolution } = req.body;
+      const { prompt, first, last, label, resolution, hold } = req.body;
       if (!prompt) return res.status(400).json({ error: "Missing shot prompt" });
       const day = PREFIX() + today() + "/";
       const made = (await list({ ...tok(), prefix: day, limit: 1000 })).blobs.filter(b => b.pathname.endsWith(".mp4")).length;
       if (made >= DAILY) return res.status(429).json({ error: `That's today's limit of ${DAILY} clips (a spending guard). It resets at midnight, or raise VIDEO_DAILY_LIMIT in Vercel.` });
       const started = Date.now();
-      const buf = await makeClip({ prompt, first, last, resolution });
+      const buf = await makeClip({ prompt, first, last, resolution, hold: !!hold && !last });
       const base = day + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
-      const meta = { label: String(label || "").slice(0, 120), prompt: String(prompt).slice(0, 3000), frames: first && last ? "frames" : first ? "start" : "text", resolution: resolution || "720p", seconds: Math.round((Date.now() - started) / 1000), model: VIDEO_MODEL };
+      const meta = { label: String(label || "").slice(0, 120), prompt: String(prompt).slice(0, 3000), frames: first && last ? "frames" : first ? (hold ? "start, tree held" : "start") : "text", resolution: resolution || "720p", seconds: Math.round((Date.now() - started) / 1000), model: VIDEO_MODEL };
       let b;
       try { b = await put(base + ".mp4", buf, { ...tok(), access: "public", contentType: "video/mp4" }); }
       catch { b = await put(base + ".mp4", buf, { ...tok(), access: "private", contentType: "video/mp4" }); }
