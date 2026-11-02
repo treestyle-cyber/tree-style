@@ -2439,12 +2439,13 @@ $("#save").onclick = async () => {
 };
 // Before & after: one branded image for social posts and comment replies. The logo sits once at the top,
 // so the after picture goes in without the Save-and-share mark (a second logo at the bottom looked doubled).
-const BA = { W: 1080, H: 1350 };
+const BA = { W: 1080, H: 1350, S: 2 };
 async function beforeAfterImage(name, tip) {
   const load = u => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = u; });
   try { await Promise.all(['500 64px "Cormorant Garamond"', 'italic 500 40px "Cormorant Garamond"', '600 22px Inter', '500 20px Inter'].map(f => document.fonts.load(f))); } catch {}
   const [bi, ai] = await Promise.all([load(photo), load(after)]);
-  const c = document.createElement("canvas"); c.width = BA.W; c.height = BA.H; const g = c.getContext("2d");
+  // Drawn at twice the layout size (2160 × 2700) so the trees stay sharp after Facebook and phones compress it
+  const c = document.createElement("canvas"); c.width = BA.W * BA.S; c.height = BA.H * BA.S; const g = c.getContext("2d"); g.scale(BA.S, BA.S);
   g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
   // Midnight with a soft glow behind the photos
   g.fillStyle = "#141C2C"; g.fillRect(0, 0, BA.W, BA.H);
@@ -2487,7 +2488,7 @@ async function beforeAfterImage(name, tip) {
     g.fillStyle = ivory; g.font = tipFont; lines.forEach((l, i) => g.fillText(l, BA.W / 2, ty + 62 + i * 48));
   }
   g.fillStyle = muted; g.font = "500 18px Inter, system-ui, sans-serif"; spaced("AI PREVIEW BY TREESTYLE", BA.W / 2, BA.H - 34, 4);
-  return new Promise(ok => c.toBlob(ok, "image/jpeg", .92));
+  return new Promise(ok => c.toBlob(ok, "image/jpeg", .95));
 }
 // The tip shows off decorating: ribbon, filler or ornaments, never lights or shaping the branches.
 // First choice is a top fix about one of those; otherwise the plan step for ribbon, then filler, then ornaments.
