@@ -2348,8 +2348,10 @@ async function makePreview(extraPieces, change) {
     drawViewer();
   } catch (e) {
     after = null;
-    $("#viewer").innerHTML = `<div class="renderwait"><img src="${photo}" alt="" style="max-height:220px;margin:0 auto 12px;border-radius:8px;opacity:.6">The preview didn't come through this time.<div class="err" style="font-size:13px">${esc(e.message).slice(0, 220)}</div></div>`;
+    $("#viewer").innerHTML = `<div class="renderwait"><img src="${photo}" alt="" style="max-height:220px;margin:0 auto 12px;border-radius:8px;opacity:.6">The preview didn't come through this time.<div class="err" style="font-size:13px">${esc(e.message).slice(0, 220)}</div><button class="btn" id="retryPreview" style="margin-top:12px">Paint it again</button></div>`;
     $("#seg").hidden = $("#hint").hidden = $("#save").hidden = $("#baBtn").hidden = true;
+    // Paint again with the same plan, so a fluke doesn't mean starting over
+    $("#retryPreview").onclick = () => { $("#viewer").innerHTML = `<div class="renderwait"><div class="spin"></div>Painting your tree again…<div style="font-size:13px">About 30 seconds.</div></div>`; makePreview(extraPieces, change); };
   }
 }
 let swept = false;

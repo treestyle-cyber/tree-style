@@ -107,12 +107,14 @@ export default async function handler(req, res) {
     if (!pic) {
       const why = out.body?.candidates?.[0]?.finishReason || out.body?.promptFeedback?.blockReason || parts.find(p => p.text)?.text || "no image returned";
       console.error("RENDER_REFUSED", JSON.stringify({ model, why: String(why).slice(0, 300), revision: !!revision }));
-      // Refused (usually a themed tree naming a film, show, team or brand): try once more with generic designs
-      if (!retried && /SAFETY|PROHIBIT|RECITATION|BLOCK|IMAGE_OTHER|OTHER|copyright|trademark/i.test(String(why))) {
+      // Refused (usually a themed tree naming a film, show, team or brand): try once more with generic designs.
+      // NO_IMAGE (the model simply answered without a picture) is usually a fluke: try once more as it was.
+      const fluke = /NO_IMAGE|no image returned/i.test(String(why));
+      if (!retried && (fluke || /SAFETY|PROHIBIT|RECITATION|BLOCK|IMAGE_OTHER|OTHER|copyright|trademark/i.test(String(why)))) {
         retried = true;
-        const again = await callGemini(model, img, prompt + GENERIC, ar, pc, revision ? null : mp);
+        const again = await callGemini(model, img, fluke ? prompt : prompt + GENERIC, ar, pc, revision ? null : mp);
         const p2 = again.body?.candidates?.[0]?.content?.parts || [], pic2 = p2.find(p => p.inlineData || p.inline_data);
-        if (again.ok && pic2) { const d2 = pic2.inlineData || pic2.inline_data; return res.status(200).json({ image: `data:${d2.mimeType || d2.mime_type || "image/png"};base64,${d2.data}`, _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: true } }); }
+        if (again.ok && pic2) { const d2 = pic2.inlineData || pic2.inline_data; return res.status(200).json({ image: `data:${d2.mimeType || d2.mime_type || "image/png"};base64,${d2.data}`, _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !fluke, retried: true } }); }
         console.error("RENDER_REFUSED_AGAIN", JSON.stringify({ model, why: String(again.body?.candidates?.[0]?.finishReason || again.status).slice(0, 200) }));
       }
       return res.status(502).json({ error: `No image came back (${why})`, model });
