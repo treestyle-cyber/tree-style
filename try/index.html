@@ -2440,11 +2440,12 @@ function bigReveal(done) {
 }
 function sweep() {
   const box = $("#cmp"); if (!box || swept) return;
-  // After the full-screen reveal the slider just waits underneath; a second sweep right after it read as a stutter
-  if (after && revealedSrc !== after) { swept = true; bigReveal(() => setTimeout(showBrandNote, 900)); return; }
+  // No full-screen reveal: the slider sweeps across once to show how to compare before and after
+  revealedSrc = after;
   swept = true;
   let t0; const sw = t => { t0 ??= t; const k = (t - t0) / 1700; if (k > 1) { box.style.setProperty("--cut", "50%"); return; } box.style.setProperty("--cut", (50 + Math.sin(k * Math.PI * 2) * 32) + "%"); requestAnimationFrame(sw); };
   setTimeout(() => requestAnimationFrame(sw), 300);
+  setTimeout(showBrandNote, 2400);   // the themed-tree note, once the sweep is done
 }
 let curSeg = "compare";
 function setSeg(m) {
