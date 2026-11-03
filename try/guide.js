@@ -105,6 +105,17 @@
     arr(m.ribbons).filter(r => obj(r).texture !== "print").forEach(put); arr(m.ornaments).forEach(put); arr(m.clusters).forEach(put);
     put(obj(obj(m.picks).floral)); put(obj(obj(m.picks).small)); put(obj(m.topper));
   };
+  // A color from the words of an item the plan adds: Claude's own color names first, then common ones
+  const WORD_HEX = { burgundy: "#7A1F2B", wine: "#6E1E2C", red: "#B3202A", pink: "#E58FB0", blush: "#E8B4B8", orange: "#E07A2E", amber: "#C9822B", copper: "#B8733A", bronze: "#9C6B3A",
+    "rose gold": "#D9A08B", gold: "#C9A23E", champagne: "#D8C49A", yellow: "#E8C34A", green: "#2F5E3A", emerald: "#1F6B4A", sage: "#9CAF88", teal: "#2A8C8C", turquoise: "#3FB6B2",
+    blue: "#2E5C9A", navy: "#22314F", purple: "#6B3E8C", lavender: "#B7A3D3", silver: "#BFC3C8", clear: "#DDE6EA", white: "#F2F0EA", ivory: "#EFE6D2", cream: "#EFE6D2", black: "#2A2A2A", brown: "#7A5636" };
+  const wordColor = s => {
+    const t = " " + String(s || "").toLowerCase() + " ";
+    const own = Object.entries(NAMES).find(([, n]) => t.includes(" " + n + " "));
+    if (own) return own[0];
+    const w = Object.keys(WORD_HEX).sort((a, b) => b.length - a.length).map(k => [k, t.search(new RegExp("\\b" + k + "\\b"))]).filter(([, i]) => i >= 0).sort((a, b) => a[1] - b[1])[0];
+    return w ? WORD_HEX[w[0]] : null;
+  };
   const colorName = h => {
     if (h && NAMES[String(h).toUpperCase()]) return NAMES[String(h).toUpperCase()];
     const [r, g, b] = rgbOf(h), mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 510;
@@ -244,7 +255,10 @@
         const covered = !words.length || out.some(o => o.q && words.length && words.every(w => (o.q + " " + o.label).toLowerCase().includes(w.replace(/s$/, ""))));
         // The name reads like the rest of the list, not like a store search ("Cedar greenery stems artificial" -> "Cedar greenery stems")
         const name = shop.replace(/\b(artificial|faux|christmas|xmas|tree|decorations?|decor|bulk|for)\b|\b\d+\s*(pcs|pieces|pack|count|ct)\b/gi, " ").replace(/\s+/g, " ").trim() || shop;
-        if (!covered) add(null, name.charAt(0).toUpperCase() + name.slice(1), "", shop);
+        // The plan's own topper is more specific than ours ("amber glass finial" vs "amber finial"): it takes our topper's place instead of showing twice
+        const ours = key === "crown" && /topper/i.test(shop) && out.find(o => o.q && /topper/.test(o.q) && !/^Optional/.test(o.qty || ""));
+        if (ours) { ours.label = name.charAt(0).toUpperCase() + name.slice(1); ours.q = shop; ours.color = wordColor(shop) || ours.color; return; }
+        if (!covered) add(wordColor(shop), name.charAt(0).toUpperCase() + name.slice(1), "", shop);
       });
     });
     return out;
