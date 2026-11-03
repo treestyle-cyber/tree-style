@@ -7,7 +7,7 @@ Read this first in every session. It holds what the team has decided and why, so
 
 - Audience: everyday Michaels / Hobby Lobby shoppers, from skilled crafters to eager beginners who don't want a big time or money investment.
 - First release is Christmas trees only (wreaths, mantels, tables come later).
-- Live site: https://tree-style.vercel.app (waitlist at `/`, the app at `/try`, password-protected while testing).
+- Live site: https://tree-style.vercel.app (waitlist at `/`, the app at `/try`, password-protected while testing). Preview copies have no password.
 
 ## Where things are
 | Path | What it is |
@@ -99,3 +99,4 @@ Read this first in every session. It holds what the team has decided and why, so
 - 2026-11-02: Ribbon picks must show what was suggested: width within about 3/4", only the colors asked for (no red velvet with gold backing for "gold metallic"), the texture asked for, and no glitter, plaid or stripe the design did not call for. Otherwise the ribbon keeps its search.
 - 2026-11-02: Ornament colors repeat: each extra-large and large color appears two or three times in a loose triangle, never one lone ornament (a single amber 8" stood out). Preview instructions give the count per color and describe the biggest as set back toward the trunk, partly behind branches; the image model is told the biggest ornaments sit deep and never perch on the tips or outshine everything else.
 - 2026-11-02: No full-screen reveal: when a preview appears, the before/after slider sweeps across once to show how to compare (Eric preferred it).
+- 2026-11-02: No password on preview copies (app, Studio, Lab, Review): the server skips the check when `VERCEL_ENV` is preview and `env.js` skips the password screen on `-git-` links. Everything on the live site, Studio included, still asks for it.
