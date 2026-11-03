@@ -233,13 +233,15 @@
     // Anything the plan asks for that isn't covered above
     // A step can buy several things ("gold teardrop ornaments; flamingo ornaments"); each search is its own item.
     // Everyday words don't count toward "already on the list", so flamingo ornaments aren't hidden behind teal ornaments.
-    const PLAIN = /^(christmas|holiday|ornaments?|inch(es)?|ribbon|wired|large|extra|small|medium|mini|tree|stems?|picks?|sprays?|shiny|matte|glitter|glittered|round|shatterproof|set|with|and|for|tipped|dipped|gilded|accents?|artificial|faux)$/;
+    const PLAIN = /^(christmas|holiday|ornaments?|inch(es)?|ribbon|wired|large|extra|small|medium|mini|tree|stems?|picks?|sprays?|shiny|matte|glitter|glittered|round|shatterproof|set|with|and|for|tipped|dipped|gilded|accents?|artificial|faux|greenery|greens|foliage|natural|real|realistic|bulk|pack|assorted)$/;
     d.plan.filter(p => (p.element === key || (key === "medium" && p.element === "small")) && p.shop).forEach(p => {
       p.shop.split(/\s*;\s*/).filter(Boolean).forEach(shop => {
         const words = shop.toLowerCase().split(/\s+/).filter(w => w.length > 3 && !PLAIN.test(w));
         // already on the list when its describing words are all in an item's search or name ("gold glitter leaf spray" = "Gold glitter leaf sprays")
         const covered = !words.length || out.some(o => o.q && words.length && words.every(w => (o.q + " " + o.label).toLowerCase().includes(w.replace(/s$/, ""))));
-        if (!covered) add(null, shop.charAt(0).toUpperCase() + shop.slice(1), "", shop);
+        // The name reads like the rest of the list, not like a store search ("Cedar greenery stems artificial" -> "Cedar greenery stems")
+        const name = shop.replace(/\b(artificial|faux|christmas|xmas|tree|decorations?|decor|bulk|for)\b|\b\d+\s*(pcs|pieces|pack|count|ct)\b/gi, " ").replace(/\s+/g, " ").trim() || shop;
+        if (!covered) add(null, name.charAt(0).toUpperCase() + name.slice(1), "", shop);
       });
     });
     return out;
