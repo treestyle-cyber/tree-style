@@ -7,7 +7,7 @@ Read this first in every session. It holds what the team has decided and why, so
 
 - Audience: everyday Michaels / Hobby Lobby shoppers, from skilled crafters to eager beginners who don't want a big time or money investment.
 - First release is Christmas trees only (wreaths, mantels, tables come later).
-- Live site: https://tree-style.vercel.app (waitlist at `/`, the app at `/try`, password-protected while testing).
+- Live site: https://tree-style.vercel.app (waitlist at `/`, the app at `/try`, password-protected while testing). Preview copies have no password.
 
 ## Where things are
 | Path | What it is |
@@ -100,3 +100,4 @@ Read this first in every session. It holds what the team has decided and why, so
 - 2026-11-02: "Before & after" button on the results screen (next to Save and share) makes one branded social image: the logo once at the top, optional "whose tree" line, the photo and the preview side by side in two tall panels that fill nearly the whole width (each photo fills its panel, trimmed evenly at the sides, so the trees are as large as possible; the logo is kept small and the tip to three lines), BEFORE/AFTER pills under them, a designer tip (editable; the fix's explanation only, since the title repeated it) prefilled from the first top fix about ribbon, filler or ornaments, never lights or shaping the branches (falls back to the plan's ribbon, then filler, then ornament step), and "AI preview by TreeStyle" at the bottom. The after picture goes in without the Save-and-share mark so the logo isn't doubled. Built for Eric's Facebook comment replies. Saved at 2160 × 2700 (twice the layout size) so the trees stay sharp; at 1080 wide the saved image looked soft.
 - 2026-11-02: When the image model answers without a picture (NO_IMAGE, a fluke), the render tries once more with the same instructions instead of failing; a failed preview shows "Paint it again", which repaints from the same plan without starting over.
 - 2026-11-02: Every preview link is plum with the "Preview copy" badge, including one-build links (tree-style-abc123-tree-style.vercel.app), not only branch links (-git-). A one-build link looked exactly like the live site and caused confusion.
+- 2026-11-02: No password on preview copies (app, Studio, Lab, Review): the server skips the check when `VERCEL_ENV` is preview and `env.js` skips the password screen on `-git-` links. Everything on the live site, Studio included, still asks for it.
