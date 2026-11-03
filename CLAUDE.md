@@ -7,7 +7,7 @@ Read this first in every session. It holds what the team has decided and why, so
 
 - Audience: everyday Michaels / Hobby Lobby shoppers, from skilled crafters to eager beginners who don't want a big time or money investment.
 - First release is Christmas trees only (wreaths, mantels, tables come later).
-- Live site: https://tree-style.vercel.app (waitlist at `/`, the app at `/try`, password-protected while testing).
+- Live site: https://tree-style.vercel.app (waitlist at `/`, the app at `/try`, password-protected while testing). Preview copies have no password.
 
 ## Where things are
 | Path | What it is |
@@ -99,3 +99,4 @@ Read this first in every session. It holds what the team has decided and why, so
 - 2026-11-02: No full-screen reveal: when a preview appears, the before/after slider sweeps across once to show how to compare (Eric preferred it).
 - 2026-11-02: Rating screen ornaments get a metallic gold gradient for more dimension: the "After your plan" ornaments have a bright highlight, warm middle, deep rim and a soft reflected light, and every ornament cap is a polished gold band instead of flat brass (design branch).
 - 2026-11-02: Studio cards have an Upload button next to Generate, so your own photo can fill any photo spot (it shows as New; Use this saves it the same way as a generated one).
+- 2026-11-02: No password on preview copies (app, Studio, Lab, Review): the server skips the check when `VERCEL_ENV` is preview and `env.js` skips the password screen on `-git-` links. Everything on the live site, Studio included, still asks for it.
