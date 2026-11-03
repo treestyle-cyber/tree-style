@@ -511,6 +511,8 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .src small{font-size:13px;color:#D9CCC0;max-width:24em}
   .ideatxt{width:100%;font:16px/1.5 var(--sans);padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);resize:vertical}
   .roommark{margin-top:14px}
+  .changepill{display:flex;justify-content:center;width:100%;max-width:524px;margin:14px auto 0;cursor:pointer}
+  #s-photo.room label.drop{display:none}
   .rmhint{text-align:center;font:500 11px var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
   .rmwrap{position:relative;border-radius:14px;overflow:hidden;cursor:crosshair;box-shadow:inset 0 0 0 1px var(--line)}
   .rmwrap img{width:100%;display:block}
@@ -836,6 +838,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <div class="roommark" id="roomMark" hidden>
       <div class="rmhint">Tap where the tree will stand</div>
       <div class="rmwrap" id="rmWrap"><img id="rmImg" alt="Your room"><i id="rmDot"></i></div>
+      <label for="file" class="btn ghost changepill" id="roomChange">Change photo</label>
     </div>
     <div class="tipsbox" id="tipsBox"><div class="hubk">Photo tips</div><ul class="tips" id="photoTips"></ul></div>
     <p class="photook" id="photoOk" hidden></p>
@@ -852,7 +855,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
         <label class="chip"><input type="radio" name="kind" value="natural"><span>Real</span></label>
         <label class="chip"><input type="radio" name="kind" value="" checked><span>Not sure</span></label>
       </div></div>
-    <div class="q" id="prelitQ" hidden><div class="lbl">Is it pre-lit?</div>
+    <div class="q" id="prelitQ"><div class="lbl">Is it pre-lit?</div>
       <div class="row">
         <label class="chip"><input type="radio" name="prelit" value="yes"><span>Yes, lights built in</span></label>
         <label class="chip"><input type="radio" name="prelit" value="no"><span>No</span></label>
@@ -1834,7 +1837,7 @@ const FOOT = {
     : mode === "design" && src === "idea"
     ? ({ label: "Design my tree", act: () => { factsSet = true; useIdeaAsStyle(); run(); } })
     : ({ label: "Next", act: () => { factsSet = true; show("s-style"); } }),
-  go: () => ({ label: mode === "design" ? "Design my tree" : "See my tree's potential", act: run }),
+  go: () => !val("style") ? { label: "Pick a style to continue", disabled: true } : ({ label: mode === "design" ? "Design my tree" : "See my tree's potential", act: run }),
   seeIt: () => planState === "wait" ? ({ label: "Finishing your plan…", disabled: true, act: () => {} })
     : planState === "error" ? ({ label: "Try again", act: getPlan })
     : ({ label: previewState === "done" ? (mode === "design" ? "See your finished tree" : "See your improved tree") : "See your plan", act: () => show("s-results", ["s-home"]) })
@@ -1920,6 +1923,12 @@ document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   setPhotoCopy(mode);
   $("#stageQ").hidden = mode === "design";
   $("#inspoRow").hidden = mode !== "design";
+  // Designing from scratch there's nothing to keep, so they pick a style; checking a tree starts from Keep my style
+  const keep = document.querySelector("input[name=style][value=keep]");
+  keep.closest("label").hidden = mode === "design";
+  if (mode === "design" && keep.checked) keep.checked = false;
+  if (mode !== "design" && !val("style")) keep.checked = true;
+  syncStyle();
   $("#detailsSub").textContent = "Optional, but it makes the plan and the preview more accurate.";
   show(mode === "design" ? "s-start" : "s-photo");
 });
@@ -1940,6 +1949,7 @@ const PHOTO_TIPS = {
 let tipsKey = "tree";
 const tipGrid = () => `<ul class="ptips">${PHOTO_TIPS[tipsKey].map(([i, t, d]) => `<li><span class="pti">${TIP_ICON[i]}</span><b>${t}</b><small>${d}</small></li>`).join("")}</ul>`;
 function emptyDrop() {
+  $("#s-photo").classList.remove("room");
   $("#dropInner").innerHTML = `<span class="dropcam">${TIP_ICON.camera}</span><strong>Tap to take or choose a photo</strong><div class="ptipk">For the best result</div>${tipGrid()}`;
 }
 const tipsSeen = () => { try { return localStorage.getItem("ts_photo_tips") === "1"; } catch { return true; } };
@@ -2019,21 +2029,21 @@ function syncTell(r) {
 }
 document.addEventListener("click", e => { if (e.target.closest("[data-tell]")) $("#navDetails").click(); });
 $("#navDetails").onclick = () => {
-  rerunFromHub = true; $("#stageQ").hidden = mode === "design"; $("#prelitQ").hidden = val("kind") !== "artificial";
+  rerunFromHub = true; $("#stageQ").hidden = mode === "design"; $("#prelitQ").hidden = val("kind") === "natural";
   $("#detailsSub").textContent = "Tell us what the photo can't, and we'll make your shopping list and steps more accurate. Your preview stays the same.";
   show("s-details");
 };
 function facts() {
   if (!factsSet) return undefined;
-  return { kind: val("kind") || "", prelit: val("kind") === "artificial" ? (val("prelit") || "") : "", height: Number(val("height")) || 0, density: val("density") || "", stage: mode === "check" ? (val("stage") || "") : "" };
+  return { kind: val("kind") || "", prelit: val("kind") !== "natural" ? (val("prelit") || "") : "", height: Number(val("height")) || 0, density: val("density") || "", stage: mode === "check" ? (val("stage") || "") : "" };
 }
-// Pre-lit only applies to artificial trees
-document.querySelectorAll("input[name=kind]").forEach(r => r.addEventListener("change", () => { $("#prelitQ").hidden = val("kind") !== "artificial"; }));
+// Pre-lit only applies to artificial trees, so a real tree hides the question
+document.querySelectorAll("input[name=kind]").forEach(r => r.addEventListener("change", () => { $("#prelitQ").hidden = val("kind") === "natural"; }));
 // What they told us about the tree wins over the photo: a pre-lit tree needs no lights step, a real one no shaping
 function treeFacts(t) {
   const f = facts(); if (!t || !f) return;
   if (f.kind) t.kind = f.kind;
-  t.prelit = f.kind === "artificial" && f.prelit === "yes";
+  if (f.prelit === "yes" && f.kind !== "natural") { t.kind = "artificial"; t.prelit = true; } else t.prelit = false;   // pre-lit means artificial
 }
 async function pickExtra(input, thumb, lbl, clearBtn, set) {
   const f = input.files[0]; if (!f) return;
@@ -2072,7 +2082,7 @@ $("#file").addEventListener("change", async e => {
     photo = await loadPhoto(f); baseKey = "";
     if (mode === "design" && src === "room") {
       roomPhoto = photo; roomMark = [.5, .8];
-      $("#dropInner").innerHTML = `<strong>Change photo</strong>`;
+      $("#s-photo").classList.add("room");   // the placement picture moves to the top, with Change photo under it
       $("#rmImg").src = roomPhoto; $("#roomMark").hidden = false; drawRoomDot();
     } else
     $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="muted" style="font-size:13px;margin-top:8px">Tap to change photo</div>`;
@@ -2091,7 +2101,7 @@ const STYLE_NOTES = {
   themed: "One story, told by every piece: a collection, a heritage, a place or something you love. Tell us the theme."
 };
 const val = n => (document.querySelector(`input[name=${n}]:checked`) || {}).value;
-function syncStyle() { const s = val("style"); $("#styleNote").textContent = STYLE_NOTES[s]; $("#theme").hidden = s !== "themed"; }
+function syncStyle() { const s = val("style"); $("#styleNote").textContent = STYLE_NOTES[s] || ""; $("#theme").hidden = s !== "themed"; if (typeof setFoot === "function") setFoot(); }
 document.querySelectorAll("input[name=style]").forEach(r => r.addEventListener("change", syncStyle));
 syncStyle();
 
@@ -2133,7 +2143,9 @@ function startTips() {
 }
 function stopTips() { clearInterval(tipTimer); tipTimer = null; }
 
+let loadGen = 0;
 function startLoading(title, steps, evalSeconds, pic) {
+  const gen = ++loadGen;
   $("#loadTitle").textContent = title;
   $("#scan").hidden = !pic; if (pic) $("#scanImg").src = pic;
   $("#loadSteps").innerHTML = steps.map(s => `<li>${s}</li>`).join("");
@@ -2157,7 +2169,7 @@ function startLoading(title, steps, evalSeconds, pic) {
   tick(); const iv = setInterval(tick, 400);
   return {
     painting() { phase = "paint"; t1 = Date.now(); tick(); },
-    done() { clearInterval(iv); stopTips(); $("#loadFill").style.width = "100%"; lis.forEach(li => li.className = "done"); setTimeout(() => $("#loading").hidden = true, 350); }
+    done() { clearInterval(iv); stopTips(); $("#loadFill").style.width = "100%"; lis.forEach(li => li.className = "done"); setTimeout(() => { if (gen === loadGen) $("#loading").hidden = true; }, 350); }
   };
 }
 
