@@ -809,6 +809,16 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
         <label id="ideaLbl">Add photo<input type="file" id="ideaFile" accept="image/*" hidden></label>
         <button id="ideaClear" hidden>Remove</button>
       </div>
+      <div class="extra">
+        <span class="thumb" id="ideaRoomThumb">⌂</span>
+        <div><b>The room it'll go in</b><small>Optional: we'll stand the tree right there, so you see it in your own space.</small></div>
+        <label id="ideaRoomLbl">Add photo<input type="file" id="ideaRoomFile" accept="image/*" hidden></label>
+        <button id="ideaRoomClear" hidden>Remove</button>
+      </div>
+    </div>
+    <div class="roommark" id="ideaRoomMark" hidden>
+      <div class="rmhint">Tap where the tree will stand</div>
+      <div class="rmwrap" id="ideaRmWrap"><img id="ideaRmImg" alt="Your room"><i id="ideaRmDot"></i></div>
     </div>
   </section>
 
@@ -842,6 +852,13 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
         <label class="chip"><input type="radio" name="kind" value="natural"><span>Real</span></label>
         <label class="chip"><input type="radio" name="kind" value="" checked><span>Not sure</span></label>
       </div></div>
+    <div class="q" id="prelitQ" hidden><div class="lbl">Is it pre-lit?</div>
+      <div class="row">
+        <label class="chip"><input type="radio" name="prelit" value="yes"><span>Yes, lights built in</span></label>
+        <label class="chip"><input type="radio" name="prelit" value="no"><span>No</span></label>
+        <label class="chip"><input type="radio" name="prelit" value="" checked><span>Not sure</span></label>
+      </div>
+      <div class="hint2">A pre-lit tree already has its lights, so we'll skip the lights step.</div></div>
     <div class="q"><div class="lbl">How tall?</div>
       <div class="row">
         <label class="chip"><input type="radio" name="height" value="4"><span>4 ft or less</span></label>
@@ -1898,7 +1915,7 @@ document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   mode = b.dataset.mode; rerunFromHub = false; factsSet = false;
   clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d);
-  src = "tree"; roomPhoto = null; ideaPhoto = null; baseKey = ""; photo = null; photoImg = null; $("#roomMark").hidden = true;
+  src = "tree"; clearIdeaRoom(); ideaPhoto = null; baseKey = ""; photo = null; photoImg = null; $("#roomMark").hidden = true;
   emptyDrop();
   setPhotoCopy(mode);
   $("#stageQ").hidden = mode === "design";
@@ -1955,7 +1972,7 @@ function photoChecked() {
 }
 // Design: pick a starting point
 document.querySelectorAll(".src").forEach(b => b.onclick = () => {
-  src = b.dataset.src; baseKey = ""; photo = null; photoImg = null; roomPhoto = null; $("#roomMark").hidden = true;
+  src = b.dataset.src; baseKey = ""; photo = null; photoImg = null; clearIdeaRoom(); $("#roomMark").hidden = true;
   emptyDrop();
   $("#inspoRow").hidden = src === "idea";   // the idea screen has its own inspiration photo
   if (src === "idea") { show("s-idea"); return; }
@@ -1966,7 +1983,19 @@ $("#ideaFile").addEventListener("change", () => pickExtra($("#ideaFile"), $("#id
 $("#ideaClear").onclick = () => { clearExtra($("#ideaFile"), $("#ideaThumb"), $("#ideaLbl"), $("#ideaClear"), "✦", d => ideaPhoto = d); baseKey = ""; setFoot(); };
 $("#ideaText").addEventListener("input", () => { baseKey = ""; setFoot(); });
 // Room: tap where the tree will stand
-function drawRoomDot() { $("#rmDot").style.left = roomMark[0] * 100 + "%"; $("#rmDot").style.top = roomMark[1] * 100 + "%"; }
+function drawRoomDot() { ["#rmDot", "#ideaRmDot"].forEach(d => { $(d).style.left = roomMark[0] * 100 + "%"; $(d).style.top = roomMark[1] * 100 + "%"; }); }
+$("#ideaRmWrap").addEventListener("click", e => { const r = $("#ideaRmImg").getBoundingClientRect(); roomMark = [Math.min(.98, Math.max(.02, (e.clientX - r.left) / r.width)), Math.min(.98, Math.max(.05, (e.clientY - r.top) / r.height))]; baseKey = ""; drawRoomDot(); });
+// From an idea, they can add the room too: the tree is then stood in their room instead of an imagined one
+function clearIdeaRoom() { roomPhoto = null; $("#ideaRoomFile").value = ""; $("#ideaRoomThumb").style.backgroundImage = ""; $("#ideaRoomThumb").textContent = "⌂"; $("#ideaRoomLbl").firstChild.textContent = "Add photo"; $("#ideaRoomClear").hidden = true; $("#ideaRoomMark").hidden = true; }
+$("#ideaRoomFile").addEventListener("change", async () => {
+  const f = $("#ideaRoomFile").files[0]; if (!f) return;
+  try {
+    roomPhoto = await loadPhoto(f); roomMark = [.5, .8]; baseKey = "";
+    $("#ideaRoomThumb").style.backgroundImage = `url(${roomPhoto})`; $("#ideaRoomThumb").textContent = ""; $("#ideaRoomLbl").firstChild.textContent = "Change"; $("#ideaRoomClear").hidden = false;
+    $("#ideaRmImg").src = roomPhoto; $("#ideaRoomMark").hidden = false; drawRoomDot();
+  } catch { $("#startErr").textContent = "Couldn't read that photo. Try a JPG or PNG."; }
+});
+$("#ideaRoomClear").onclick = () => { clearIdeaRoom(); baseKey = ""; };
 $("#rmWrap").addEventListener("click", e => { const r = $("#rmImg").getBoundingClientRect(); roomMark = [Math.min(.98, Math.max(.02, (e.clientX - r.left) / r.width)), Math.min(.98, Math.max(.05, (e.clientY - r.top) / r.height))]; baseKey = ""; drawRoomDot(); });
 $("#detailsSkip").onclick = () => { if (rerunFromHub) { history.back(); return; } factsSet = false; if (mode === "design" && src === "idea") { useIdeaAsStyle(); run(); } else show("s-style"); };
 // From an idea, their own words are the style: "themed", with the description as the theme
@@ -1990,13 +2019,21 @@ function syncTell(r) {
 }
 document.addEventListener("click", e => { if (e.target.closest("[data-tell]")) $("#navDetails").click(); });
 $("#navDetails").onclick = () => {
-  rerunFromHub = true; $("#stageQ").hidden = mode === "design";
+  rerunFromHub = true; $("#stageQ").hidden = mode === "design"; $("#prelitQ").hidden = val("kind") !== "artificial";
   $("#detailsSub").textContent = "Tell us what the photo can't, and we'll make your shopping list and steps more accurate. Your preview stays the same.";
   show("s-details");
 };
 function facts() {
   if (!factsSet) return undefined;
-  return { kind: val("kind") || "", height: Number(val("height")) || 0, density: val("density") || "", stage: mode === "check" ? (val("stage") || "") : "" };
+  return { kind: val("kind") || "", prelit: val("kind") === "artificial" ? (val("prelit") || "") : "", height: Number(val("height")) || 0, density: val("density") || "", stage: mode === "check" ? (val("stage") || "") : "" };
+}
+// Pre-lit only applies to artificial trees
+document.querySelectorAll("input[name=kind]").forEach(r => r.addEventListener("change", () => { $("#prelitQ").hidden = val("kind") !== "artificial"; }));
+// What they told us about the tree wins over the photo: a pre-lit tree needs no lights step, a real one no shaping
+function treeFacts(t) {
+  const f = facts(); if (!t || !f) return;
+  if (f.kind) t.kind = f.kind;
+  t.prelit = f.kind === "artificial" && f.prelit === "yes";
 }
 async function pickExtra(input, thumb, lbl, clearBtn, set) {
   const f = input.files[0]; if (!f) return;
@@ -2135,10 +2172,11 @@ const aspectOf = srcUrl => new Promise(ok => { const im = new Image(); im.onload
 async function makeBase() {
   const f = facts() || {}, key = [src, JSON.stringify(f), roomMark.join(","), (roomPhoto || "").length, $("#ideaText").value.trim(), (ideaPhoto || "").length].join("|");
   if (baseKey === key && photo) return true;
-  const LB = startLoading(src === "room" ? "Placing your tree in the room" : "Imagining your tree", src === "room" ? ["Finding the spot", "Sizing the tree to your room", "Turning on the lights"] : ["Setting the scene", "Shaping the tree", "Turning on the lights"], 25);
+  const inRoom = src === "room" || (src === "idea" && roomPhoto);   // an idea with their room photo stands the tree in that room
+  const LB = startLoading(inRoom ? "Placing your tree in the room" : "Imagining your tree", inRoom ? ["Finding the spot", "Sizing the tree to your room", "Turning on the lights"] : ["Setting the scene", "Shaping the tree", "Turning on the lights"], 25);
   try {
     let body;
-    if (src === "room") {
+    if (inRoom) {
       const im = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = roomPhoto; });
       const k = Math.min(1, 1024 / Math.max(im.width, im.height)), c = document.createElement("canvas"), g = c.getContext("2d");
       c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); g.drawImage(im, 0, 0, c.width, c.height);
@@ -2175,6 +2213,7 @@ async function run() {
     return;
   }
   result = lookResult = Object.assign(look, { quick_fixes: [], plan: [], ideas: [], mockup: null, render_brief: "", _lookMeta: look._meta });
+  treeFacts(result.tree);
   after = null; previewP = null; previewState = "idle"; stepIdx = 0; doneSteps = new Set(); guide = null; swept = false; gotItems = new Set();
   L.done();
   getPlan(myPlan);
@@ -2191,6 +2230,7 @@ function getPlan(pending) {
     if (result !== forLook) return;                 // they started over
     const lm = forLook._lookMeta || {}, pm = pl._meta || {};
     Object.assign(result, pl, { _meta: { model: pm.model || lm.model, seconds: Math.max(lm.seconds || 0, pm.seconds || 0), scoreSeconds: lm.seconds, planSeconds: pm.seconds, scoreUsage: lm.usage, planUsage: pm.usage } });
+    treeFacts(result.tree);
     planState = "ready"; planP = null;
     fill();
     loadDetails();                 // written steps: in the background
@@ -2235,7 +2275,7 @@ let detailsP = null, detailsReady = true;
 function applyFacts() {
   rerunFromHub = false;
   const f = facts() || {};
-  const patch = t => { if (!t) return; if (Number(f.height)) t.height_ft = Number(f.height); if (f.kind) t.kind = f.kind; if (f.density) t.density = f.density; if (f.stage) t.stage = f.stage; };
+  const patch = t => { if (!t) return; if (Number(f.height)) t.height_ft = Number(f.height); if (f.kind) t.kind = f.kind; if (f.density) t.density = f.density; if (f.stage) t.stage = f.stage; treeFacts(t); };
   patch(result.tree);
   versions.forEach(v => patch(v.result && v.result.tree));
   // the written steps get rewritten for the real tree (in the background, like the first time)
@@ -2375,7 +2415,7 @@ async function placementMap() {
   } catch (e) { console.error(e); return undefined; }
 }
 // Fuller branches in the preview when the plan shapes them or the tree scored low on fullness
-const needsShaping = r => (r.plan || []).some(p => p.element === "fluff") || (r.categories || []).some(c => c.name === "Fullness" && Number(c.score) <= 7);
+const needsShaping = r => r.tree?.kind !== "natural" && ((r.plan || []).some(p => p.element === "fluff") || (r.categories || []).some(c => c.name === "Fullness" && Number(c.score) <= 7));   // a real tree isn't shaped
 let lastMap = null;
 async function makePreview(extraPieces, change) {
   try {

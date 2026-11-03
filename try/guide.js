@@ -10,7 +10,7 @@
     const density = oneOf(tree.density, ["open", "dense"], "dense");
     const out = {
       mode,
-      tree: { kind: oneOf(tree.kind, ["artificial", "natural"], "artificial"), density, flocked: !!tree.flocked, height_ft: clamp(tree.height_ft || 7, 3, 16) },
+      tree: { kind: oneOf(tree.kind, ["artificial", "natural"], "artificial"), prelit: !!tree.prelit, density, flocked: !!tree.flocked, height_ft: clamp(tree.height_ft || 7, 3, 16) },
       quick: arr(r.quick_fixes).slice(0, 5).map(q => ({ title: str(obj(q).title, 70), how: str(obj(q).how, 200), x: q && q.x != null ? clamp(q.x, 0, 1) : null, y: q && q.y != null ? clamp(q.y, 0, 1) : null })).filter(q => q.title),
       plan: arr(r.plan).slice(0, 14).map(p => (p = obj(p), { element: planEl(p), step: str(p.step, 40), title: str(p.title, 70), how: str(p.how, 320), effort: str(p.effort, 30), shop: str(p.shop, 200) })).filter(p => p.title),
       cone: { apex: pt(cone.apex, [.5, .1]), left: pt(cone.left, [.22, .85]), right: pt(cone.right, [.78, .85]) },
@@ -177,6 +177,7 @@
   function buyList(d, mode, key) {
     const h = d.tree.height_ft || 7, out = [];
     const add = (color, label, qty, q) => out.push({ color, label, qty, q });
+    if (key === "lights" && d.tree.prelit) return out;   // a pre-lit tree already has its lights
     if (key === "lights" && d.lights.add) {
       const lo = Math.round(h * 100 / 50) * 50, hi = Math.round(h * 200 / 50) * 50;
       const kind = d.lights.kind === "multicolor" ? "multicolor" : d.lights.kind === "solid" ? colorName(d.lights.color) : "warm white";
@@ -406,6 +407,8 @@
     if (has.base) { has.crown = true; has.base = false; }
     if (has.small_picks) { has.primary_picks = true; has.small_picks = false; }   // greenery stems and berries/small picks are one "Filler" step      // the base is finished in the same step as the crown (fewer steps)
     if (mode === "design" && data.tree.kind === "artificial") has.fluff = true;
+    if (data.tree.kind === "natural") has.fluff = false;   // a real tree isn't shaped like an artificial one
+    if (data.tree.prelit) has.lights = false;              // a pre-lit tree already has its lights
     const steps = STEP_ORDER.filter(k => has[k]); steps.push("all");
 
     let placed = [];
