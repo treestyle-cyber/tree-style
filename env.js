@@ -4,6 +4,8 @@
   var LIVE = "tree-style.vercel.app";
   var PREVIEW = "tree-style-git-ux-review-tree-style.vercel.app";   // the preview copy being reviewed now
   var h = location.hostname, isLive = h === LIVE, isPrev = /-git-/.test(h) && /\.vercel\.app$/.test(h);
+  // Preview copies need no password (the server lets them through), so skip the password screen there
+  if (isPrev && !/-git-main-/.test(h)) try { if (!sessionStorage.getItem("ts_pw")) sessionStorage.setItem("ts_pw", "preview"); } catch (e) {}
   if (!isLive && !isPrev) return;
   var tools = /^\/(studio|lab|review)(\/|$)/.test(location.pathname);
   if (isLive && !tools) return;

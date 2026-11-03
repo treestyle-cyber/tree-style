@@ -7,7 +7,7 @@ Read this first in every session. It holds what the team has decided and why, so
 
 - Audience: everyday Michaels / Hobby Lobby shoppers, from skilled crafters to eager beginners who don't want a big time or money investment.
 - First release is Christmas trees only (wreaths, mantels, tables come later).
-- Live site: https://tree-style.vercel.app (waitlist at `/`, the app at `/try`, password-protected while testing).
+- Live site: https://tree-style.vercel.app (waitlist at `/`, the app at `/try`, password-protected while testing). Preview copies have no password.
 
 ## Where things are
 | Path | What it is |
@@ -96,3 +96,8 @@ Read this first in every session. It holds what the team has decided and why, so
 - 2026-11-01: Shopping list picks: a leaf product never stands in for a flower (or the reverse), and within one list a pick goes to one item only, so two different items never share a product. Ornament searches no longer add "shatterproof", which narrowed Amazon results.
 - 2026-11-01: Amazon searches read the way a shopper types: ribbon is "6 inch brick red embroidered wired ribbon" (width, color, texture; no yard count), stems and flowers are "red poinsettia picks" (no "christmas tree"). Ribbon texture can now be jeweled, embroidered or brocade, so the statement ribbon is searched as one.
 - 2026-10-28: Reels added to the Studio (`/studio/reels`): Claude writes shots from `lib/videobrand.js` plus the designer's rules; clips come from Gemini Omni Flash, because Google retired the Veo preview models in the developer API on Oct 22, 2026. Every clip is labeled an AI preview; daily clip limit as a spending guard.
+- 2026-11-02: Filler and flower picks are stricter: the pick must name every kind asked for (pinecone, berry, holly...) and bring no extra kind (a red berry, holly and pinecone pick is not "glittered pinecones"), and glitter asked for needs a glittered pick. Searches drop "picks" (and "christmas tree"); a plan item worded differently from one already on the list ("gold glitter leaf spray christmas picks" vs "Gold glitter leaf sprays") no longer shows twice.
+- 2026-11-02: Ribbon picks must show what was suggested: width within about 3/4", only the colors asked for (no red velvet with gold backing for "gold metallic"), the texture asked for, and no glitter, plaid or stripe the design did not call for. Otherwise the ribbon keeps its search.
+- 2026-11-02: Ornament colors repeat: each extra-large and large color appears two or three times in a loose triangle, never one lone ornament (a single amber 8" stood out). Preview instructions give the count per color and describe the biggest as set back toward the trunk, partly behind branches; the image model is told the biggest ornaments sit deep and never perch on the tips or outshine everything else.
+- 2026-11-02: No full-screen reveal: when a preview appears, the before/after slider sweeps across once to show how to compare (Eric preferred it).
+- 2026-11-02: No password on preview copies (app, Studio, Lab, Review): the server skips the check when `VERCEL_ENV` is preview and `env.js` skips the password screen on `-git-` links. Everything on the live site, Studio included, still asks for it.
