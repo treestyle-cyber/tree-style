@@ -3,7 +3,7 @@
 (function () {
   var LIVE = "tree-style.vercel.app";
   var PREVIEW = "tree-style-git-ux-review-tree-style.vercel.app";   // the preview copy being reviewed now
-  var h = location.hostname, isLive = h === LIVE, isPrev = /-git-/.test(h) && /\.vercel\.app$/.test(h);
+  var h = location.hostname, isLive = h === LIVE, isPrev = h !== LIVE && /^tree-style-.+-tree-style\.vercel\.app$/.test(h);   // branch links and one-build links alike
   if (!isLive && !isPrev) return;
   var tools = /^\/(studio|lab|review)(\/|$)/.test(location.pathname);
   if (isLive && !tools) return;
