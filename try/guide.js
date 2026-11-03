@@ -93,8 +93,8 @@
   }
 
   const STEP_ORDER = ["fluff", "lights", "primary_picks", "ribbon", "florals", "statement", "medium", "small", "small_picks", "crown", "base"];
-  const STEP_TITLE = { fluff: "Shape the branches", lights: "Lights", primary_picks: "Greenery stems", ribbon: "Ribbon", florals: "Flowers", statement: "Extra-large & large ornaments",
-    medium: "Medium & small ornaments", small: "Medium & small ornaments", small_picks: "Small accents", crown: "The crown & base", base: "The crown & base", all: "Your finished tree" };
+  const STEP_TITLE = { fluff: "Shape the branches", lights: "Lights", primary_picks: "Filler", ribbon: "Ribbon", florals: "Flowers", statement: "Extra-large & large ornaments",
+    medium: "Medium & small ornaments", small: "Medium & small ornaments", small_picks: "Filler", crown: "The crown & base", base: "The crown & base", all: "Your finished tree" };
 
   // Claude names its colors (champagne, olive, burgundy...); use those names everywhere, and only
   // guess from the hex when it didn't give one.
@@ -233,23 +233,27 @@
     // Anything the plan asks for that isn't covered above
     // A step can buy several things ("gold teardrop ornaments; flamingo ornaments"); each search is its own item.
     // Everyday words don't count toward "already on the list", so flamingo ornaments aren't hidden behind teal ornaments.
-    const PLAIN = /^(christmas|holiday|ornaments?|inch(es)?|ribbon|wired|large|extra|small|medium|mini|tree|stems?|picks?|sprays?|shiny|matte|glitter|glittered|round|shatterproof|set|with|and|for|tipped|dipped|gilded|accents?|artificial|faux)$/;
+    const PLAIN = /^(christmas|holiday|ornaments?|inch(es)?|ribbon|wired|large|extra|small|medium|mini|tree|stems?|picks?|sprays?|shiny|matte|glitter|glittered|round|shatterproof|set|with|and|for|tipped|dipped|gilded|accents?|artificial|faux|greenery|greens|foliage|natural|real|realistic|bulk|pack|assorted)$/;
     d.plan.filter(p => (p.element === key || (key === "medium" && p.element === "small")) && p.shop).forEach(p => {
       p.shop.split(/\s*;\s*/).filter(Boolean).forEach(shop => {
         const words = shop.toLowerCase().split(/\s+/).filter(w => w.length > 3 && !PLAIN.test(w));
         // already on the list when its describing words are all in an item's search or name ("gold glitter leaf spray" = "Gold glitter leaf sprays")
         const covered = !words.length || out.some(o => o.q && words.length && words.every(w => (o.q + " " + o.label).toLowerCase().includes(w.replace(/s$/, ""))));
-        if (!covered) add(null, shop.charAt(0).toUpperCase() + shop.slice(1), "", shop);
+        // The name reads like the rest of the list, not like a store search ("Cedar greenery stems artificial" -> "Cedar greenery stems")
+        const name = shop.replace(/\b(artificial|faux|christmas|xmas|tree|decorations?|decor|bulk|for)\b|\b\d+\s*(pcs|pieces|pack|count|ct)\b/gi, " ").replace(/\s+/g, " ").trim() || shop;
+        if (!covered) add(null, name.charAt(0).toUpperCase() + name.slice(1), "", shop);
       });
     });
     return out;
   }
   const rgbaOf = (h, a) => { const [r, g, b] = rgbOf(h); return `rgba(${r},${g},${b},${a})`; };
   const PICK_HEX = { pine: "#3B7550", cedar: "#5E8C45", eucalyptus: "#8FA89C", magnolia: "#2E4A2C" };
-  const BUY_ORDER = ["lights", "primary_picks", "ribbon", "florals", "statement", "medium", "small_picks", "crown", "base"];
+  const BUY_ORDER = ["lights", "primary_picks", "ribbon", "florals", "statement", "medium", "crown", "base"];
+  // Filler: greenery stems and berries/small picks together, each item keeping its own picture
+  const fillerBuy = (d, mode) => [...buyList(d, mode, "primary_picks"), ...buyList(d, mode, "small_picks").map(b => ({ ...b, kind: "small_picks" }))];
   function shoppingList(raw, mode) {
     const d = normalize(raw, mode);
-    return BUY_ORDER.map(k => ({ key: k, title: STEP_TITLE[k], items: buyList(d, mode, k) })).filter(s => s.items.length);
+    return BUY_ORDER.map(k => ({ key: k, title: STEP_TITLE[k], items: k === "primary_picks" ? fillerBuy(d, mode) : buyList(d, mode, k) })).filter(s => s.items.length);
   }
 
   function create(img, cv, raw, mode) {
@@ -397,7 +401,8 @@
     STEP_ORDER.forEach(k => { has[k] = !!planL[k]; });
     data.plan.forEach(p => { has[p.element] = true; });
     if (has.small) { has.medium = true; has.small = false; }   // small ornaments are part of the medium & small step
-    if (has.base) { has.crown = true; has.base = false; }      // the base is finished in the same step as the crown (fewer steps)
+    if (has.base) { has.crown = true; has.base = false; }
+    if (has.small_picks) { has.primary_picks = true; has.small_picks = false; }   // greenery stems and berries/small picks are one "Filler" step      // the base is finished in the same step as the crown (fewer steps)
     if (mode === "design" && data.tree.kind === "artificial") has.fluff = true;
     const steps = STEP_ORDER.filter(k => has[k]); steps.push("all");
 
@@ -450,7 +455,7 @@
       const curPos = steps.indexOf(key);
       DRAW_ORDER.forEach(k => {
         const lay = layerFor(k); if (!lay) return;
-        const pos = steps.indexOf(k === "small" ? "medium" : k);
+        const pos = steps.indexOf(k === "small" ? "medium" : k === "small_picks" ? "primary_picks" : k);
         if (key === "all") { o.drawImage(lay, 0, 0); return; }
         if (pos < curPos) { o.globalAlpha = curPos - pos <= 1 ? .22 : .14; o.drawImage(lay, 0, 0); o.globalAlpha = 1; }   // earlier steps fade back so this one reads clearly
         else if (pos === curPos) {
@@ -538,7 +543,7 @@
         fluff: art ? "Unfold each branch from its shipping fold, then coax every tip up and out. Open a few deeper pockets for your largest pieces. It's the quiet step that makes everything after it look effortless."
                    : "Shake out the branches and look for natural openings. They aren't flaws: they're the perfect homes for your largest pieces and for ornaments that need room to hang freely.",
         lights: "Add more lights, wrapping them deeper into the tree, toward the trunk and back out, so the tree glows from within and gains depth. Keep the cord color matched to the branches.",
-        primary_picks: "Nestle the greenery stems in at the marked spots, wrapping each wire around a branch to hold it. Imagine a vine growing up from within the tree, revealing itself here and there: fuller near the base, lighter as it climbs.",
+        primary_picks: (data.picks.primary.kind !== "none" ? "Filler is the mix of greenery stems and small picks (berries, pinecones, sprays, sprigs) that makes a tree look lush. Nestle the greenery stems in at the marked spots, wrapping each wire around a branch to hold it. Imagine a vine growing up from within the tree, revealing itself here and there: fuller near the base, lighter as it climbs." : "Filler is the mix of greenery stems and small picks (berries, pinecones, sprays, sprigs) that makes a tree look lush.") + (data.picks.small.kind !== "none" ? " Save the small picks for last: once the ornaments are on, tuck them in generously all over to add texture and soften any quiet patches." : ""),
         ribbon: ribbonLead(),
         florals: "Nestle each flower into a greenery spot, framed by a ribbon loop and a few berries. Let a few extra gather near the top.",
         statement: `Begin with the extra-large ornaments, about ${Math.round(xl)}" across, set back toward the trunk to create a rich background, then the large ones around them. Give your most treasured pieces the best spots, with a little breathing room.`,
@@ -565,7 +570,7 @@
       if (key === "lights") { const [lo, hi] = lightCount(); out.push({ color: data.lights.kind === "multicolor" ? "conic-gradient(#FF4A3D,#FFB21F,#3FB653,#3C78FF,#E447C8,#FF4A3D)" : data.lights.color, text: `${lo}–${hi} ${data.lights.kind === "multicolor" ? "multicolor" : data.lights.kind === "solid" ? colorName(data.lights.color) : "warm white"} lights` }); }
       if (key === "primary_picks") out.push({ color: pickColor(data), text: `${S.all.length} ${data.picks.primary.finish !== "natural" ? data.picks.primary.finish + " " : ""}${data.picks.primary.kind} stems` });
       if (key === "florals" && data.picks.floral.kind !== "none") out.push({ color: data.picks.floral.color, text: `${S.all.filter(m => m.floral).length + S.all.filter(m => m.floral && m.size >= 3).length} ${colorName(data.picks.floral.color)} ${data.picks.floral.kind}s` });
-      if (key === "small_picks") out.push({ color: data.picks.small.color, text: `About ${Math.max(12, Math.round(S.berries.length * .6))} ${colorName(data.picks.small.color)} ${data.picks.small.kind === "spray" ? "small sprigs" : "berry stems"}` });
+      if (key === "small_picks" || key === "primary_picks" && data.picks.small.kind !== "none") out.push({ color: data.picks.small.color, text: `About ${Math.max(12, Math.round(S.berries.length * .6))} ${colorName(data.picks.small.color)} ${data.picks.small.kind === "spray" ? "small sprigs" : "berry stems"}` });
       if (key === "crown" && data.topper.style !== "none") out.push({ color: data.topper.color, text: `${colorName(data.topper.color)} ${data.topper.style === "floral" ? "flower topper" : data.topper.style === "finial" ? "spire topper" : data.topper.style}` });
       return out;
     }
@@ -591,8 +596,8 @@
       data.ornaments.forEach(b => { const r = Math.max(4, sizes[b.size] * S.pxIn / 2 * 1.15); blob(b.x * W, b.y * H, r, r, b.color, .95); });
     }
 
-    const itemsFor = key => key === "all" ? [] : data.plan.filter(p => p.element === key || (key === "medium" && p.element === "small") || (key === "crown" && p.element === "base"));
-    const buy = key => key === "all" ? [] : key === "crown" ? [...buyList(data, mode, "crown"), ...buyList(data, mode, "base").map(b => ({ ...b, kind: "base" }))] : buyList(data, mode, key);
+    const itemsFor = key => key === "all" ? [] : data.plan.filter(p => p.element === key || (key === "medium" && p.element === "small") || (key === "crown" && p.element === "base") || (key === "primary_picks" && p.element === "small_picks"));
+    const buy = key => key === "all" ? [] : key === "crown" ? [...buyList(data, mode, "crown"), ...buyList(data, mode, "base").map(b => ({ ...b, kind: "base" }))] : key === "primary_picks" ? fillerBuy(data, mode) : buyList(data, mode, key);
     // When the written instructions are in, the step shows only them, plus a short note on how to read
     // the picture where the picture has its own marks (numbered ribbon spots, cluster circles).
     function note(key) {
