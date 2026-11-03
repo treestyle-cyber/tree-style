@@ -217,7 +217,8 @@
     if (key === "small_picks" && d.picks.small.kind !== "none") {
       const cn = colorName(d.picks.small.color), spray = d.picks.small.kind === "spray";
       const want = Math.max(12, Math.round(h * 3 * (mode === "design" ? 1 : .6)));
-      add(d.picks.small.color, d.picks.small.label || `${cn} ${spray ? "sprays" : "berry stems"}`, range(want), `${cn} ${spray ? "glitter sprays" : "berry stems"}`);
+      const own = d.picks.small.label;   // the plan's own name for it ("Peppermint candy stems") is what we search for, the way stores sell it ("picks")
+      add(d.picks.small.color, own || `${cn} ${spray ? "sprays" : "berry stems"}`, range(want), own ? own.toLowerCase().replace(/\bstems?\b/g, "picks") : `${cn} ${spray ? "glitter sprays" : "berry stems"}`);
     }
     if (key === "crown") {
       // The crown reuses the ribbon, flowers and stems from earlier steps; the only new piece is the topper,
@@ -227,7 +228,8 @@
         const cn = colorName(d.topper.color), TOP = { star: "star tree topper", bow: "tree topper bow", floral: "floral spray tree topper", finial: "finial tree topper" };
         add(d.topper.color, `${cn} ${TOP[d.topper.style]}`.replace(/^./, c => c.toUpperCase()), "1", `${cn} ${TOP[d.topper.style]} christmas`);
         const alt = d.topper.style === "floral" ? "finial" : "floral";
-        add(d.topper.color, `Or: a ${cn} ${TOP[alt]}`, "Another look for the top", `${cn} ${TOP[alt]} christmas`);
+        const acn = cn.replace(/\s*\b(striped?|stripes|plaid|polka dots?|checked)\b/gi, "").trim();   // a pattern belongs to the bow, not to a floral spray
+        add(d.topper.color, `${acn} ${TOP[alt]}`.replace(/^./, c => c.toUpperCase()), `Optional: instead of the ${d.topper.style === "floral" ? "floral spray" : d.topper.style}, for a different look`, `${acn} ${TOP[alt]} christmas`);
       }
     }
     // Anything the plan asks for that isn't covered above

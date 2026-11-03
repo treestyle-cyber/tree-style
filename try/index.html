@@ -1675,7 +1675,7 @@ const PICKS = [["B0FDF513ZS","ribbon","Ribbli Burgundy Velvet, gold sparkling st
   ["B0FG8HL227","ribbon","Kryvus Pink Glitter Velvet ribbon, 2.5in","pink","glitter,matte,velvet",2.5,"A"],
   ["B0FB38XJHK","ribbon","CSZD Thick Red Velvet ribbon, gold back, 4in","gold,red","matte,velvet",4.0,"A"],
   ["B0BCM8R524","ribbon","Nutcracker Canvas ribbon, gold red white, 4in","gold,red,white","burlap,vintage",4.0,"A"],
-  ["B0D4RYMHKY","ribbon","Offray Candy Cane Velvet ribbon, 4in","red","matte,velvet",4.0,"A"],
+  ["B0D4RYMHKY","ribbon","Offray Candy Cane Velvet ribbon, 4in","red,white","matte,stripe,velvet",4.0,"A"],
   ["B0DB5H3LDK","ribbon","DINDOSAL White & Gold Velvet ribbon, faux fur edge, 4in","gold,white","matte,velvet",4.0,"A"],
   ["B07BNX1KRN","ribbon","Wrap Etc. Black & White Harlequin ribbon, 4in","black,white","plaid",4.0,"A"],
   ["B07K1GPVST","ribbon","Wrap Etc. Red & White Striped ribbon, 2.5in","red,white","stripe",2.5,"A"],
@@ -1757,11 +1757,13 @@ function matchPick(b, key) {
       if (cols.length && pc.some(c => !cols.includes(c))) return;
       if (["velvet", "satin", "metallic", "plaid", "stripe", "sheer", "burlap", "glitter"].some(t => tex.includes(t) && !pt.includes(t) && !new RegExp(t, "i").test(r[2]))) return;
       if (["plaid", "stripe", "glitter"].some(t => !tex.includes(t) && (pt.includes(t) || new RegExp(t, "i").test(r[2])))) return;
+      if (!tex.includes("stripe") && /candy ?cane|peppermint/i.test(r[2])) return;   // candy cane ribbon is striped
     }
     if (key === "ribbon" && /jewel|embroider|brocade/.test(q) && !/jewel|embroider|brocade|rhinestone|filigree/i.test(r[2])) return;   // a statement ribbon asked for, so a plain one won't do
     if (orn) {
       const shape = /finial|teardrop|\bdrop/i.test(r[2]) ? "drop" : /nutcracker|bell|horn|santa|frame|star|gingerbread|cart|animal|candy|peppermint|icicle|wreath|pendant|jewel/i.test(r[2]) ? "novelty" : "round";
       if (shape !== wantShape) return;   // a round ornament for a round one, a drop for a drop
+      if (cols.length && pc.some(c => !cols.includes(c))) return;   // only the colors asked for: blue and white canes are not red and white
     }
     const nw0 = pickWords(r[2]);
     if (mustW.some(w => !nw0.has(w))) return;   // a describing word they asked for is missing
@@ -1776,6 +1778,9 @@ function matchPick(b, key) {
       if (/\bpine\b/.test(pn) && !/\bpine\b|\bfir\b|norfolk/.test(q)) return;
     }
     if (/glitter/.test(q) && !/glitter|sequin|sparkl/i.test(r[2]) && !pt.includes("glitter")) return;   // glittered asked for, so a plain one won't do
+    if (tex.includes("stripe") && !pt.includes("stripe") && !/stripe|candy|peppermint/i.test(r[2])) return;   // a striped bow or ribbon asked for, so a solid one won't do
+    if (tex.includes("plaid") && !pt.includes("plaid") && !/plaid|tartan|buffalo|check|gingham/i.test(r[2])) return;
+    if (key === "crown" && /extra large|oversized|\b(4\d|[5-9]\d)\s*(in|inch|")/i.test(r[2]) && !/extra large|oversized/.test(q)) return;   // a topper sized for the tree, not a 47" porch bow
     if (/\b(leaf|leaves)\b/i.test(r[2]) !== /\b(leaf|leaves)\b/.test(q)) return;   // a magnolia flower is not a magnolia leaf branch, and the other way round
     if (key === "primary_picks" && !cols.length && !tex.length && !pc.includes("green")) return;   // plain "pine stems" means natural green, not glittered
     let s = cHit * 3 + kHit * 3 + tex.filter(t => pt.includes(t)).length * 2;
