@@ -56,7 +56,8 @@ function factsLine(f) {
   const kind = f.kind === "natural" ? "real" : f.kind === "artificial" ? "artificial" : "real or artificial: decide from the photo";
   const height = Number(f.height) ? `${f.height} ft` : "height not given (estimate it from the room)";
   const density = f.density === "open" ? "open, with natural gaps" : f.density === "dense" ? "full and dense" : "density not sure (decide from the photo)";
-  return `Tree (confirmed by the homeowner; trust these over the photo): ${kind}, ${height}, ${density}. Work out whether it's snowy (flocked) from the photo.`;
+  const notes = [f.kind === "natural" ? "A real tree is never shaped like an artificial one: no \"fluff\" plan item." : "", f.kind === "artificial" && f.prelit === "yes" ? "It is pre-lit (lights built in): don't add lights, set lights.add to false and give no \"lights\" plan item." : ""].filter(Boolean).join(" ");
+  return `Tree (confirmed by the homeowner; trust these over the photo): ${kind}${f.kind === "artificial" && f.prelit === "yes" ? ", pre-lit" : ""}, ${height}, ${density}. Work out whether it's snowy (flocked) from the photo.${notes ? " " + notes : ""}`;
 }
 
 function evalPrompt({ mode, style, theme, facts, imgNotes, part, variant }) {
