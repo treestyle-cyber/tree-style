@@ -30,6 +30,8 @@ function editPrompt(brief, revision, shape) {
 Change to make:
 ${brief}
 
+ORNAMENT DEPTH (important): the biggest ornaments sit deep in the tree toward the trunk, partly covered by the branches in front of them, so they add depth and glow from within; they never perch on the outer tips or float in front of the tree, and none is so much bigger or brighter than the rest that it becomes the first thing you see.
+
 RIBBON SIZE (important): ribbon sizes are WIDTHS across the ribbon's face, not lengths. A 6-inch-wide ribbon is about as wide as a spread hand or a large ornament, far wider than gift ribbon, and reads bold from across the room; 4 inches wide is a little narrower; 1.5-2 inches is the thin accent. Paint each ribbon at its stated width, in true scale to the tree. Jeweled, embroidered and brocade ribbons are full-width wired ribbons with the jewels or embroidery across their whole face, never a narrow trim or braid. A cascade is a long piece of that wide ribbon, 12-18 inches long, spilling out of the branches and falling in a soft waterfall over 2-3 branches before tucking back in.
 
 RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or spiral across or down the tree. It appears as separate loops or short drops tucked into the branches, with green showing between them, winding back and forth across the tree, never lined up in a diagonal row.
@@ -42,6 +44,8 @@ The first image is the photo to edit. Keep exactly the same room, camera angle, 
 Changes to make:
 ${brief}
 ${shape ? "\nRemember: the tree itself must look clearly fuller than the original, with no see-through gaps.\n" : ""}
+
+ORNAMENT DEPTH (important): the biggest ornaments sit deep in the tree toward the trunk, partly covered by the branches in front of them, so they add depth and glow from within; they never perch on the outer tips or float in front of the tree, and none is so much bigger or brighter than the rest that it becomes the first thing you see.
 
 RIBBON SIZE (important): ribbon sizes are WIDTHS across the ribbon's face, not lengths. A 6-inch-wide ribbon is about as wide as a spread hand or a large ornament, far wider than gift ribbon, and reads bold from across the room; 4 inches wide is a little narrower; 1.5-2 inches is the thin accent. Paint each ribbon at its stated width, in true scale to the tree. Jeweled, embroidered and brocade ribbons are full-width wired ribbons with the jewels or embroidery across their whole face, never a narrow trim or braid. A cascade is a long piece of that wide ribbon, 12-18 inches long, spilling out of the branches and falling in a soft waterfall over 2-3 branches before tucking back in.
 

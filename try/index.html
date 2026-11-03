@@ -1116,7 +1116,9 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const AMAZON_TAG = "ericmichael04-20"; // Eric's Amazon Associates tracking ID
-const shopUrl = q => "https://www.amazon.com/s?k=" + encodeURIComponent(q) + (AMAZON_TAG ? "&tag=" + encodeURIComponent(AMAZON_TAG) : "");
+// Searches read the way a shopper types: no "picks" or "christmas tree" tacked on
+const shopQ = q => String(q).replace(/\bchristmas tree\b/gi, "").replace(/\bpicks?\b/gi, "").replace(/\s+/g, " ").trim();
+const shopUrl = q => "https://www.amazon.com/s?k=" + encodeURIComponent(shopQ(q)) + (AMAZON_TAG ? "&tag=" + encodeURIComponent(AMAZON_TAG) : "");
 // Creator picks: products chosen from the Amazon idea lists of creators Eric follows (first batch:
 // Miriam, @ahillcountryhome: Christmas Tree Decor, Christmas Ornaments and Favorite Ribbons, Oct 2026).
 // Also Kinsey Walsh (@kinsey_walsh: Holiday Decor In My Home) and El Peterson (@elpetersondesign: Christmas lists).
@@ -1718,14 +1720,14 @@ function creatorPick(b, key) {
   pickClaims.set(p.asin, me); return p;
 }   // a matching problem must never break the shopping list
 function matchPick(b, key) {
-  const q = `${b.label || ""} ${b.q || ""}`.toLowerCase();
+  const q = `${b.label || ""} ${b.q || ""}`.toLowerCase().replace(/pine ?cones?/g, "pinecone").replace(/berries/g, "berry");
   if (!b.q || !PICKS.length) return null;
   const inch = (q.match(/(\d+(?:\.\d+)?)\s*(?:"|in\b|inch)/) || [])[1], qi = inch ? parseFloat(inch) : 0;
   const steps = key === "ribbon" ? (/\bbows?\b/.test(q) && !/ribbon/.test(q) ? ["ribbon_bows"] : ["ribbon"])
     : key === "statement" ? ["statement"] : key === "medium" ? (qi && qi <= 2.5 ? ["small"] : ["medium"]) : [key];
   const cols = pickHits(q, PICK_COLORS), tex = pickHits(q, PICK_TEX), qw = pickWords(b.q);
   // The kind of piece named (pine, magnolia, faux fur...) has to match too for stems, flowers and the base
-  const KINDS = ["pine", "cedar", "cypress", "fir", "eucalyptus", "magnolia", "poinsettia", "rose", "hydrangea", "orchid", "peony", "fur", "knit", "velvet skirt", "plaid", "collar", "basket", "wicker", "rattan", "metal", "galvanized", "star", "angel", "bow", "finial"];
+  const KINDS = ["pinecone", "berry", "holly", "pine", "cedar", "cypress", "fir", "eucalyptus", "magnolia", "poinsettia", "rose", "hydrangea", "orchid", "peony", "fur", "knit", "velvet skirt", "plaid", "collar", "basket", "wicker", "rattan", "metal", "galvanized", "star", "angel", "bow", "finial"];
   const qk = KINDS.filter(k => q.includes(k));
   const orn = key === "statement" || key === "medium", wantShape = /teardrop|finial|\bdrop/.test(q) ? "drop" : /candy|novelty/.test(q) ? "novelty" : "round";
   // Every describing word they asked for has to be in the pick ("tropical floral" ribbon is not a plain burgundy velvet,
@@ -1745,7 +1747,14 @@ function matchPick(b, key) {
     const pc = r[3] ? r[3].split(",") : [], pt = r[4] ? r[4].split(",") : [];
     const cHit = cols.filter(c => pc.includes(c)).length;
     if (cols.length && !cHit) return;   // a color was asked for and this isn't it
-    if (key === "ribbon" && qi && r[5] && (r[5] < qi * .66 || r[5] > qi * 1.5)) return;   // ribbon width matters to the design
+    if (key === "ribbon") {
+      // What's shown must be what was suggested: the same width (within about 3/4"), only the colors asked for,
+      // the texture asked for, and no glitter, plaid or stripe the design didn't call for
+      if (qi && (!r[5] || Math.abs(r[5] - qi) > .75)) return;
+      if (cols.length && pc.some(c => !cols.includes(c))) return;
+      if (["velvet", "satin", "metallic", "plaid", "stripe", "sheer", "burlap", "glitter"].some(t => tex.includes(t) && !pt.includes(t) && !new RegExp(t, "i").test(r[2]))) return;
+      if (["plaid", "stripe", "glitter"].some(t => !tex.includes(t) && (pt.includes(t) || new RegExp(t, "i").test(r[2])))) return;
+    }
     if (key === "ribbon" && /jewel|embroider|brocade/.test(q) && !/jewel|embroider|brocade|rhinestone|filigree/i.test(r[2])) return;   // a statement ribbon asked for, so a plain one won't do
     if (orn) {
       const shape = /finial|teardrop|\bdrop/i.test(r[2]) ? "drop" : /nutcracker|bell|horn|santa|frame|star|gingerbread|cart|animal|candy|peppermint|icicle|wreath|pendant|jewel/i.test(r[2]) ? "novelty" : "round";
@@ -1755,7 +1764,15 @@ function matchPick(b, key) {
     if (mustW.some(w => !nw0.has(w))) return;   // a describing word they asked for is missing
     if (key === "ribbon" && /\b(mesh|sheer)\b/i.test(r[2]) !== /\b(mesh|sheer)\b/.test(q)) return;   // sheer for sheer, solid ribbon for solid
     const nameL = r[2].toLowerCase(), kHit = qk.filter(k => nameL.includes(k) || (k === "pine" && /norfolk|fir\b/.test(nameL))).length;
-    if (["primary_picks", "florals", "base", "crown"].includes(key) && qk.length && !kHit) return;   // a cedar stem for cedar, a fur skirt for fur
+    if (["primary_picks", "small_picks", "florals", "base", "crown"].includes(key) && qk.length && !kHit) return;   // a cedar stem for cedar, a fur skirt for fur
+    // Filler and flowers: the pick can't bring a kind they didn't ask for (glittered pinecones are not a red berry, holly and pinecone pick)
+    if (["primary_picks", "small_picks", "florals"].includes(key)) {
+      const pn = nameL.replace(/pine ?cones?/g, "pinecone").replace(/berries/g, "berry");
+      const FK = ["pinecone", "berry", "holly", "eucalyptus", "magnolia", "poinsettia", "cedar", "rose", "hydrangea", "orchid", "peony", "icicle", "cotton", "mistletoe"];
+      if (FK.some(k => new RegExp("\\b" + k).test(pn) && !q.includes(k))) return;
+      if (/\bpine\b/.test(pn) && !/\bpine\b|\bfir\b|norfolk/.test(q)) return;
+    }
+    if (/glitter/.test(q) && !/glitter|sequin|sparkl/i.test(r[2]) && !pt.includes("glitter")) return;   // glittered asked for, so a plain one won't do
     if (/\b(leaf|leaves)\b/i.test(r[2]) !== /\b(leaf|leaves)\b/.test(q)) return;   // a magnolia flower is not a magnolia leaf branch, and the other way round
     if (key === "primary_picks" && !cols.length && !tex.length && !pc.includes("green")) return;   // plain "pine stems" means natural green, not glittered
     let s = cHit * 3 + kHit * 3 + tex.filter(t => pt.includes(t)).length * 2;
@@ -2395,8 +2412,8 @@ function bigReveal(done) {
 }
 function sweep() {
   const box = $("#cmp"); if (!box || swept) return;
-  // After the full-screen reveal the slider just waits underneath; a second sweep right after it read as a stutter
-  if (after && revealedSrc !== after) { swept = true; bigReveal(() => {}); return; }
+  // No full-screen reveal: the slider sweeps across once to show how to compare before and after
+  revealedSrc = after;
   swept = true;
   let t0; const sw = t => { t0 ??= t; const k = (t - t0) / 1700; if (k > 1) { box.style.setProperty("--cut", "50%"); return; } box.style.setProperty("--cut", (50 + Math.sin(k * Math.PI * 2) * 32) + "%"); requestAnimationFrame(sw); };
   setTimeout(() => requestAnimationFrame(sw), 300);
