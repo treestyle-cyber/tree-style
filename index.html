@@ -168,6 +168,35 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     section.close form.signup{max-width:460px}
     footer{padding:24px 0 max(32px,env(safe-area-inset-bottom))}
   }
+
+  /* ---------- What you get: warm linen editorial page (designer's approved design) ---------- */
+  section.get{background:#DAD1C4;color:#3A2A21;padding:76px 0 84px}
+  section.get .eyebrow{color:#9E7B45;font-weight:600;font-size:15px;letter-spacing:.24em}
+  section.get h2{color:#3A2A21;font:500 clamp(40px,5.2vw,66px)/1.04 var(--serif);letter-spacing:-.01em;margin:16px 0 50px;max-width:none}
+  .gets{gap:0 72px}
+  .gets div{padding:34px 0 46px;border-top:1px solid #C5B28F}
+  .gets h3{color:#3A2A21;font:500 clamp(27px,2.6vw,34px)/1.12 var(--serif);margin:0 0 14px}
+  .gets p{color:#3A2A21;font-size:19px;line-height:1.6;max-width:30em}
+  section.get .orns{gap:6px;margin-left:12px;vertical-align:.08em}
+  section.get .orns i{width:17px;height:17px;background:#B08A4A}
+  section.get .orns i.h{background:linear-gradient(90deg,#B08A4A 50%,#C9BEAE 50%)}
+  @media (max-width:1023px){
+    section.get{padding:64px 0 68px}
+    .gets{gap:0 40px}
+    .gets div{padding:28px 0 36px}
+    .gets p{font-size:17px}
+  }
+  @media (max-width:767px){
+    section.get{padding:56px 0 52px}
+    section.get .eyebrow{font-size:13px}
+    section.get h2{font-size:clamp(34px,9.6vw,44px);margin:14px 0 34px;max-width:none}
+    .gets{grid-template-columns:1fr;gap:0}
+    .gets div{padding:24px 0 30px}
+    .gets h3{font-size:clamp(25px,7vw,29px);margin-bottom:10px}
+    .gets p{font-size:16.5px;line-height:1.6}
+    section.get .orns i{width:14px;height:14px}
+    section.get .orns{gap:5px;margin-left:10px}
+  }
 </style>
 </head>
 <body>
