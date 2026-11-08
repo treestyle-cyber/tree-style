@@ -790,7 +790,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .plist button b{color:var(--gold)}
 
   /* ---------- Create my space ("What would you like to do?"): warm linen, one photo, two pills ---------- */
-  body.linen{background:#F5F0E8 !important}   /* !important: preview copies paint the page plum (env.js), which must not cover the approved ivory */
+  body.linen{background:#F5F0E8 !important}   /* !important: nothing else may paint over the approved ivory */
   body.linen .appbar,body.linen .appbar.line{background:#F5F0E8}
   body.linen .appbar button{color:#3A2A21}
   body.linen #navBack{color:#3A2A21;box-shadow:inset 0 0 0 1px #C5B28F}

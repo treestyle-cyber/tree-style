@@ -197,6 +197,15 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     section.get .orns i{width:14px;height:14px}
     section.get .orns{gap:5px;margin-left:10px}
   }
+
+  /* ---------- Brand palette only (no purple anywhere): navy sections and footer, ivory form fields ---------- */
+  html{background:#141C2C}
+  body{min-height:100vh;display:flex;flex-direction:column}
+  section.how{background:#141C2C}
+  footer{background:#141C2C;flex:1 0 auto}   /* fills any leftover height so the page ends on the footer, with no empty band below */
+  form.signup input,.hero form.signup input,section.close form.signup input{background:#F5F0E8;color:#3A2A21;caret-color:#3A2A21;border:1px solid #C5B28F}
+  form.signup input::placeholder{color:#8A7F72}
+  form.signup input:focus{border-color:#9A7E50;box-shadow:0 0 0 3px rgba(197,178,143,.35);outline:none}
 </style>
 </head>
 <body>
