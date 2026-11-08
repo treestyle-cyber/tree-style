@@ -548,13 +548,13 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .ba div{aspect-ratio:3/4;background:center/cover;position:relative}
   .ba div span{position:absolute;left:8px;bottom:8px;font:600 10px var(--sans);letter-spacing:.12em;text-transform:uppercase;background:rgba(243,238,231,.92);color:var(--midnight);padding:4px 8px;border-radius:99px}
   .promise{text-align:center;color:var(--muted);font-size:15px;max-width:26em;margin:8px auto 0}
-  #s-home .tiles{margin-top:16px;gap:12px}
+  #s-create .tiles{margin-top:16px;gap:12px}
   .ba div{aspect-ratio:4/3}
   /* On phones the two choices sit side by side with their photo, so both show on the first screen */
   .choice.tile .tpic{aspect-ratio:16/9}
   .choice.tile .tlbl{padding:14px 20px 16px}
-  #s-home .ttl{font-size:28px;margin-top:4px}
-  #s-home .ttl::after{display:none}
+  #s-create .ttl{font-size:28px;margin-top:4px}
+  #s-create .ttl::after{display:none}
   /* Home cards: an eyebrow, the title, a gold rule, then one line, like the brand board's cards */
   .choice.tile .tlbl{padding:18px 20px 20px;align-items:flex-end}
   .choice.tile .tlbl span{gap:0}
@@ -748,6 +748,53 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   :root{--muted:#BDB5A8}
   .navlist small,.hint,.tips,.qahint,.extra small,.cat p{font-size:14.5px}
   .buyrow small{font-size:14px}
+
+  /* ---------- Home (approved mobile design): full-screen photo, gold logo, ivory headline, two pills, cream tab bar ---------- */
+  .homebg{display:none;position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(26,16,10,.62) 0%,rgba(26,16,10,.18) 26%,rgba(26,16,10,.04) 44%,rgba(26,16,10,.42) 64%,rgba(22,14,9,.82) 84%,rgba(22,14,9,.9) 100%),var(--photo-home, var(--photo-hero, url(/brand/velvet-midnight.jpg))) center/cover}
+  body.tabhome .homebg{display:block}
+  body.tabhome{background:#1d140e}
+  body.tabhome .appbar{display:none}
+  body.tabhome main{padding:0 24px}
+  #s-home{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:max(26px,calc(env(safe-area-inset-top) + 10px)) 0 calc(var(--tabh) + 42px)}
+  #s-home .hlogo{width:min(66%,260px);height:auto;filter:drop-shadow(0 4px 18px rgba(0,0,0,.45))}
+  #s-home .hfoot{margin-top:auto;width:100%;padding-top:36px}
+  #s-home h1{font:500 clamp(40px,11.6vw,54px)/.93 var(--serif);color:#F6EFE3;text-align:left;margin:0 0 26px;letter-spacing:-.005em;text-shadow:0 2px 22px rgba(0,0,0,.45)}
+  #s-home h1::after{display:none}
+  .hbtns{display:grid;gap:14px}
+  .hbtn{appearance:none;width:100%;min-height:56px;border-radius:999px;border:1.5px solid #C9AE78;font:500 clamp(21px,6vw,25px)/1 var(--serif);letter-spacing:.005em;cursor:pointer;padding:14px 22px;transition:transform .15s,filter .15s}
+  .hbtn:active{transform:scale(.985)}
+  .hbtn.dark{background:#0F1828;color:#F6EFE3}
+  .hbtn.light{background:#F3ECDF;color:#2B231D}
+  .hbtn:hover{filter:brightness(1.06)}
+  .tabbar{--ink-tab:#1E2738;display:none;position:fixed;left:0;right:0;bottom:0;z-index:12;background:#F3ECDF;border-radius:28px 28px 0 0;box-shadow:0 -10px 30px -12px rgba(0,0,0,.45);padding:10px max(14px,calc(50% - 280px)) max(12px,env(safe-area-inset-bottom));grid-template-columns:repeat(4,1fr)}
+  body.tabs .tabbar{display:grid}
+  body.tabs .appbar #navBack,body.tabs .appbar #navHome{visibility:hidden}
+  body.tabs{--tabh:84px}
+  :root{--tabh:84px}
+  body.tabs main{padding-bottom:calc(var(--tabh) + 40px)}
+  body.tabs.tabhome main{padding-bottom:0}
+  .tabbar button{appearance:none;background:none;border:0;cursor:pointer;display:grid;justify-items:center;gap:3px;padding:6px 0 9px;min-height:58px;color:#5B5048;position:relative}
+  .tabbar svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .tabbar span{font:500 15px/1.1 var(--serif);letter-spacing:.01em}
+  .tabbar button[aria-current=page]{color:var(--ink-tab)}
+  .tabbar button[aria-current=page]::after{content:"";position:absolute;bottom:0;left:50%;width:min(62px,80%);height:2px;margin-left:calc(min(62px,80%) / -2);background:var(--ink-tab);border-radius:2px}
+  .tabbar button:focus-visible{outline:2px solid #C9AE78;outline-offset:-2px;border-radius:12px}
+  /* Inspiration, Trees, Shop and Profile */
+  .igrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+  .icard{appearance:none;border:0;padding:0;cursor:pointer;aspect-ratio:4/5;border-radius:16px;overflow:hidden;position:relative;text-align:left;color:#F6EFE3;background:linear-gradient(180deg,rgba(20,14,10,0) 45%,rgba(20,14,10,.85)),var(--img) center/cover;box-shadow:inset 0 0 0 1px rgba(201,174,120,.35)}
+  .icard b{position:absolute;left:14px;right:14px;bottom:30px;font:500 24px/1.05 var(--serif)}
+  .icard small{position:absolute;left:14px;right:14px;bottom:12px;font-size:13px;color:#E3D9C8}
+  .icard:hover{box-shadow:inset 0 0 0 1.5px #C9AE78}
+  .tabempty{margin-top:22px;display:grid;gap:22px}
+  .tabempty p{margin:0;color:var(--muted);font-size:16px;line-height:1.55}
+  #s-trees .resume{margin-top:18px}
+  .plist{padding:0;margin-top:18px;overflow:hidden}
+  .plist > *{display:block;width:100%;text-align:left;padding:16px 18px;border:0;border-bottom:1px solid var(--line);background:none;color:inherit;font:inherit}
+  .plist > *:last-child{border-bottom:0}
+  .plist b{display:block;font:500 20px/1.2 var(--serif);color:var(--ivory)}
+  .plist small{display:block;color:var(--muted);font-size:14px;margin-top:3px}
+  .plist button{cursor:pointer}
+  .plist button b{color:var(--gold)}
 </style>
 </head>
 <body>
@@ -772,9 +819,45 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <div class="err" id="passErr"></div>
   </section>
 
-  <!-- Home -->
+  <!-- Home: full-screen photo, logo, headline and two buttons (the approved mobile design) -->
   <section class="screen" id="s-home" data-title="" hidden>
-    <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="TreeStyle · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
+    <img class="hlogo" src="/brand/logo-stacked-open.png" alt="TreeStyle · The art of styling">
+    <div class="hfoot">
+      <h1>A more<br>beautiful home<br>starts here.</h1>
+      <div class="hbtns">
+        <button class="hbtn dark" id="goCreate">Create My Space</button>
+        <button class="hbtn light" id="goInspo">Explore Inspiration</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Create my space: check a tree or design one -->
+  <section class="screen" id="s-create" data-title="Create my space" hidden>
+    <h2 class="ttl">What would you like to do?</h2>
+    <p class="promise">A designer's rating, a step-by-step plan, a shopping list and a picture of your finished tree.</p>
+    <div class="tiles">
+      <button class="choice tile" data-mode="check" style="--img:var(--photo-check, url(/brand/velvet-berry.jpg))"><div class="tpic"></div><div class="tlbl"><span><em>Already decorating?</em><b>Check my tree</b><small>A designer's rating and the fixes that matter most</small></span><i>→</i></div></button>
+      <button class="choice tile" data-mode="design" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><div class="tpic"></div><div class="tlbl"><span><em>Starting fresh?</em><b>Design my tree</b><small>A complete design, even before your tree is up</small></span><i>→</i></div></button>
+    </div>
+  </section>
+
+  <!-- Explore inspiration: the styles, each starting a design -->
+  <section class="screen" id="s-inspo" data-title="Inspiration" hidden>
+    <h1>Explore inspiration</h1>
+    <p class="sub">Six ways to style a tree. Tap one to design yours in that style.</p>
+    <div class="igrid">
+      <button class="icard" data-style="classic" style="--img:var(--photo-classic, url(/brand/velvet-berry.jpg))"><b>Traditional</b><small>Nostalgic and warm</small></button>
+      <button class="icard" data-style="elegant" style="--img:var(--photo-elegant, url(/brand/velvet-midnight.jpg))"><b>Elegant</b><small>Rich and luminous</small></button>
+      <button class="icard" data-style="rustic" style="--img:var(--photo-rustic, url(/brand/pattern-plaid.jpg))"><b>Rustic</b><small>Cozy and natural</small></button>
+      <button class="icard" data-style="modern" style="--img:var(--photo-modern, url(/brand/marble.jpg))"><b>Modern</b><small>Calm and graphic</small></button>
+      <button class="icard" data-style="playful" style="--img:var(--photo-playful, url(/brand/pattern-stripe.jpg))"><b>Playful</b><small>Bold and joyful</small></button>
+      <button class="icard" data-style="themed" style="--img:var(--photo-themed, url(/brand/pattern-damask.jpg))"><b>Themed</b><small>One story, your idea</small></button>
+    </div>
+  </section>
+
+  <!-- Trees tab: the tree saved on this device -->
+  <section class="screen" id="s-trees" data-title="Your trees" hidden>
+    <h1>Your trees</h1>
     <div class="card resume" id="resume" hidden>
       <img id="resumeImg" alt="">
       <div>
@@ -783,11 +866,28 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
         <div class="resumebtns"><button class="btn" id="resumeBtn">Pick up where you left off</button><button class="btn ghost" id="resumeNew">Start a new tree</button></div>
       </div>
     </div>
-    <h2 class="ttl">What would you like to do?</h2>
-    <p class="promise">A designer's rating, a step-by-step plan, a shopping list and a picture of your finished tree.</p>
-    <div class="tiles">
-      <button class="choice tile" data-mode="check" style="--img:var(--photo-check, url(/brand/velvet-berry.jpg))"><div class="tpic"></div><div class="tlbl"><span><em>Already decorating?</em><b>Check my tree</b><small>A designer's rating and the fixes that matter most</small></span><i>→</i></div></button>
-      <button class="choice tile" data-mode="design" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><div class="tpic"></div><div class="tlbl"><span><em>Starting fresh?</em><b>Design my tree</b><small>A complete design, even before your tree is up</small></span><i>→</i></div></button>
+    <div class="tabempty" id="treesEmpty" hidden>
+      <p>Your trees will appear here. Check the tree you've decorated, or design one from scratch.</p>
+      <button class="hbtn dark" data-go-create>Create My Space</button>
+    </div>
+  </section>
+
+  <!-- Shop tab with no tree yet (with a tree, Shop opens its shopping list) -->
+  <section class="screen" id="s-bag" data-title="Shop" hidden>
+    <h1>Shop</h1>
+    <div class="tabempty">
+      <p>Your shopping list appears here once we've checked or designed your tree: the ribbon, stems, ornaments and topper, in the order you'll use them.</p>
+      <button class="hbtn dark" data-go-create>Create My Space</button>
+    </div>
+  </section>
+
+  <!-- Profile tab -->
+  <section class="screen" id="s-profile" data-title="Profile" hidden>
+    <h1>Profile</h1>
+    <div class="card plist">
+      <div><b>Early access</b><small>You're one of our first testers. Thank you for helping shape TreeStyle.</small></div>
+      <div><b>Your trees</b><small>Saved on this device only, in this browser.</small></div>
+      <button id="signOut"><b>Sign out</b><small>You'll need the test password to come back in.</small></button>
     </div>
   </section>
 
@@ -1108,6 +1208,13 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 </div>
 
 <div class="foot" id="foot" hidden><button class="btn" id="footBtn"></button></div>
+<div class="homebg" aria-hidden="true"></div>
+<nav class="tabbar" id="tabbar" aria-label="Main">
+  <button data-tab="s-home"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M4.5 13 14 4.8 23.5 13"/><path d="M7 11v12.5h14V11"/><path d="M11.5 23.5v-6.5h5v6.5"/></svg><span>Home</span></button>
+  <button data-tab="s-trees"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M14 3.5v21"/><path d="M14 6.5 10.5 9.5M14 6.5l3.5 3"/><path d="M14 10.5 9 14.5M14 10.5l5 4"/><path d="M14 14.5 7.5 19.5M14 14.5l6.5 5"/><path d="M14 18.5 6 23.5M14 18.5l8 5"/></svg><span>Trees</span></button>
+  <button data-tab="s-bag"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M6 9.5h16l-1.2 15H7.2z"/><path d="M10.5 12V8a3.5 3.5 0 0 1 7 0v4"/></svg><span>Shop</span></button>
+  <button data-tab="s-profile"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="9.5" r="4.8"/><path d="M5 24.5c.8-5 4.5-7.8 9-7.8s8.2 2.8 9 7.8"/></svg><span>Profile</span></button>
+</nav>
 
 <div id="zoom" hidden>
   <div class="zbar">
@@ -1887,12 +1994,16 @@ function paint(isBack) {
   if (kick) { if (!k) { k = document.createElement("div"); k.className = "kicker auto"; const h = el.querySelector(":scope > h1"); if (h) el.insertBefore(k, h); else el.prepend(k); } k.textContent = kick; }
   else if (k) k.remove();
   document.body.classList.toggle("home", id === "s-home" || id === "s-pass");
+  const tabRoot = ["s-home", "s-trees", "s-bag", "s-profile"].includes(id);
+  document.body.classList.toggle("tabs", tabRoot);
+  document.body.classList.toggle("tabhome", id === "s-home");
+  document.querySelectorAll("#tabbar button").forEach(b => { if (b.dataset.tab === id) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   $("#navBack").disabled = stack.length <= 1 || id === "s-pass";
   $("#navHome").disabled = id === "s-home" || id === "s-pass";
   setFoot();
   if (id === "s-plan") drawStep();
   if (id === "s-results") sweep();
-  if (id === "s-home") showResume();
+  if (id === "s-trees") showResume();
   saveSoon();
   scrollTo(0, 0);
 }
@@ -2931,9 +3042,9 @@ function saveSoon() {
 const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 2 ? "just now" : m < 60 ? `${m} minutes ago` : m < 120 ? "an hour ago" : m < 1440 ? `${Math.round(m / 60)} hours ago` : m < 2880 ? "yesterday" : `${Math.round(m / 1440)} days ago`; };
 async function showResume() {
   const st = result ? null : await idb.get(SAVE_KEY);
-  if (stack[stack.length - 1] !== "s-home") return;
+  if (stack[stack.length - 1] !== "s-trees") return;
   const has = result || st;
-  $("#resume").hidden = !has; if (!has) return;
+  $("#resume").hidden = !has; $("#treesEmpty").hidden = !!has; if (!has) return;
   $("#resumeImg").src = (result ? photo : st.photo) || "";
   const m = result ? mode : st.mode;
   $("#resumeSub").textContent = `${m === "design" ? "Your tree design" : "Your checked tree"}${st ? ", saved " + ago(st.at) : ""}. Saved on this device only.`;
@@ -2972,7 +3083,26 @@ $("#resumeBtn").onclick = async () => {
   const st = await idb.get(SAVE_KEY);
   if (!st || !(await restoreSaved(st))) $("#resume").hidden = true;
 };
-$("#resumeNew").onclick = () => { $("#resume").hidden = true; document.querySelector(".tiles").scrollIntoView({ block: "center", behavior: "smooth" }); };
+$("#resumeNew").onclick = () => show("s-create");
+// Home buttons, tab bar, inspiration and profile
+$("#goCreate").onclick = () => show("s-create");
+$("#goInspo").onclick = () => show("s-inspo");
+document.querySelectorAll("[data-go-create]").forEach(b => b.onclick = () => show("s-create"));
+document.querySelectorAll(".icard").forEach(c => c.onclick = () => {
+  document.querySelector('.choice[data-mode="design"]').click();   // set up a fresh design, as Design my tree does
+  setRadio("style", c.dataset.style); syncStyle();
+});
+document.querySelectorAll("#tabbar button").forEach(b => b.onclick = async () => {
+  const t = b.dataset.tab;
+  if (t === "s-home") return show("s-home", []);
+  if (t === "s-bag") {   // with a tree, Shop is its shopping list
+    if (result) return show("s-shop", ["s-home"]);
+    const st = await idb.get(SAVE_KEY);
+    if (st && st.result && await restoreSaved(Object.assign({}, st, { screen: "s-shop" }))) return;
+  }
+  show(t, ["s-home"]);
+});
+$("#signOut").onclick = () => { password = ""; try { sessionStorage.removeItem("ts_pw"); } catch {} show("s-pass", []); };
 // Coming back within a few hours lands right back on the tree; after that, the home screen offers it.
 async function startApp() {
   if (!password) { show("s-pass", []); return; }
