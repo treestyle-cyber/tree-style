@@ -818,22 +818,22 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   body.passpage .appbar{display:none}
   body.passpage main{padding:0 0 max(36px,env(safe-area-inset-bottom));overflow-x:clip}   /* the slide-in of the edge-to-edge photo must not widen the page */
   #s-pass{text-align:center}
-  #s-pass .pbrand{padding:max(26px,calc(env(safe-area-inset-top) + 14px)) 20px 22px}
-  #s-pass .pbrand img{width:min(56%,250px);height:auto;margin:0 auto}
-  #s-pass .phero{position:relative;aspect-ratio:3/2;max-height:68vh;width:100%;background:linear-gradient(72deg,rgba(18,12,8,.74) 0%,rgba(18,12,8,.42) 34%,rgba(18,12,8,0) 58%),var(--photo-pass, var(--photo-hero, url(/brand/velvet-berry.jpg))) center/cover;text-align:left}
-  #s-pass .phl{position:absolute;left:clamp(20px,6.5%,40px);right:30%;bottom:clamp(18px,7%,36px);min-width:200px}
-  #s-pass .phl h1{font:500 clamp(26px,7.4vw,36px)/1.08 var(--serif);color:#F6EFE3;margin:12px 0 14px;text-align:left;max-width:none;text-shadow:0 1px 14px rgba(0,0,0,.35)}
+  #s-pass .pbrand{padding:max(24px,calc(env(safe-area-inset-top) + 12px)) 20px 20px}
+  #s-pass .pbrand img{width:min(42%,210px);height:auto;margin:0 auto}
+  #s-pass .phero{position:relative;aspect-ratio:3/2;max-height:68vh;width:100%;background:linear-gradient(64deg,rgba(16,10,7,.78) 0%,rgba(16,10,7,.5) 30%,rgba(16,10,7,0) 56%),var(--photo-pass, url(/brand/pass-room.jpg)) center/cover;text-align:left}
+  #s-pass .phl{--pl:clamp(20px,5.4%,40px);position:absolute;left:var(--pl);right:30%;bottom:clamp(20px,9%,44px);min-width:200px}
+  #s-pass .phl h1{font:500 clamp(27px,7.6vw,38px)/1.08 var(--serif);color:#F6EFE3;margin:16px 0 0;text-align:left;max-width:none;text-shadow:0 1px 14px rgba(0,0,0,.35)}
   #s-pass .phl h1::after{display:none}
-  #s-pass .prule{display:block;width:clamp(34px,10vw,48px);height:1px;background:#C5B28F}
-  #s-pass .kicker{margin:34px 0 0;font:600 12.5px var(--sans);letter-spacing:.3em;color:#A88B5C}
-  #s-pass .ttl{font:500 clamp(32px,8.6vw,40px)/1.1 var(--serif);color:#3A2A21;margin:12px auto 0}
+  #s-pass .prule{display:block;height:1px;background:#C5B28F;margin-left:calc(-1 * var(--pl));width:calc(var(--pl) + clamp(56px,13vw,140px))}   /* runs in from the photo's left edge, as in the mockup */
+  #s-pass .kicker{margin:30px 0 0;font:600 13px var(--sans);letter-spacing:.24em;color:#A88B5C}
+  #s-pass .ttl{font:500 clamp(28px,7.8vw,38px)/1.1 var(--serif);color:#3A2A21;margin:12px auto 0}
   #s-pass .ttl::after{width:44px;height:1px;background:#C5B28F;margin:18px auto 0}
   #s-pass .sub{color:#857A6C;font-size:16px;margin:18px auto 0;padding:0 20px}
   #s-pass form{display:flex;gap:10px;max-width:440px;margin:24px auto 0;padding:0 20px}
   #s-pass input{flex:1;min-width:0;height:54px;padding:0 22px;border-radius:999px;border:1px solid #C5B28F;background:#FBF8F2;color:#3A2A21;font:16px var(--sans);caret-color:#3A2A21}
   #s-pass input::placeholder{color:#A39887}
   #s-pass input:focus{outline:none;border-color:#9A7E50;box-shadow:0 0 0 3px rgba(197,178,143,.35)}
-  #s-pass .btn{flex:none;height:54px;padding:0 30px;border-radius:999px;background:#141C2C;color:#C5B28F;font:600 14px var(--sans);letter-spacing:.24em;box-shadow:none}
+  #s-pass .btn{flex:none;height:54px;padding:0 26px;border-radius:999px;background:#141C2C;color:#C5B28F;font:600 14px var(--sans);letter-spacing:.24em;box-shadow:none}
   #s-pass .btn:hover{background:#1E2840}
   #s-pass .btn:focus-visible{outline:2px solid #3A2A21;outline-offset:2px}
   #s-pass .err{color:#8E2B2B;margin:14px auto 0;padding:0 20px;min-height:0}
@@ -857,7 +857,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   <section class="screen" id="s-pass" data-title="" hidden>
     <div class="pbrand"><img src="/brand/logo-stacked.png" alt="TreeStyle · The art of styling"></div>
     <div class="phero" role="img" aria-label="A Christmas tree with burgundy velvet bows and gold ornaments beside a glowing fireplace">
-      <div class="phl"><span class="prule"></span><h1>A more beautiful tree starts here.</h1><span class="prule"></span></div>
+      <div class="phl"><span class="prule"></span><h1>A more beautiful tree starts here.</h1></div>
     </div>
     <div class="kicker">Early access</div>
     <h2 class="ttl">Welcome, tester</h2>
