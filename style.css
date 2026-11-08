@@ -1,3 +1,6 @@
+/* Canela Text (Commercial Type) for headings. TRIAL file: testing only; swap in the licensed web font before launch.
+   One Regular face covers every weight so headings never get a fake bold; characters the trial lacks (& · © →) fall back to Cormorant. */
+@font-face{font-family:"Canela Text";src:url(/brand/fonts/CanelaText-Regular-Trial.otf) format("opentype");font-weight:300 700;font-style:normal;font-display:swap}
 :root{
   /* TreeStyle brand: Midnight, Winter Berry, Evergreen, Walnut, Oat, Ivory, Antique Gold */
   --midnight:#141C2C; --winterberry:#6B2E2E; --evergreen:#2C3E2E; --walnut:#4A3620; --oat:#D9CCC0; --ivory:#F3EEE7; --gold:#B89C6B;
@@ -5,7 +8,7 @@
   --bg:var(--midnight); --paper:#1C2538; --paper-2:#232E45; --ink:var(--ivory); --muted:#ABA397; --line:rgba(184,156,107,.26);
   --green:var(--gold); --green-2:#CBB183; --on-accent:var(--midnight); --brass:#C4A877; --berry:#D0857C;
   --radius:14px;
-  --serif:"Cormorant Garamond", Georgia, serif;   /* stands in for Sentiero */
+  --serif:"Canela Text","Cormorant Garamond", Georgia, serif;   /* Canela for editorial headings; Cormorant fills in */
   --sans:"Inter", "Helvetica Neue", system-ui, -apple-system, Segoe UI, sans-serif;   /* stands in for Neue Haas Grotesk */
 }
 *{box-sizing:border-box}
