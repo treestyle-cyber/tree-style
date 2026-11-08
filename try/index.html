@@ -842,6 +842,34 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     #s-pass .phero{width:calc(100% - 40px);margin:0 auto;border-radius:18px;overflow:hidden}
     #s-pass .pbrand{padding-top:40px}
   }
+
+  /* ---------- Results screen: ivory cards on the midnight page (designer's mockup). Colors only; scoped to #s-results ---------- */
+  #s-results .act:not(.main){background:#F5F0E8;color:#3A2A21;box-shadow:inset 0 0 0 1px #C5B28F}
+  #s-results .act:not(.main) .ic{color:#A88B5C;box-shadow:inset 0 0 0 1px #C5B28F}
+  #s-results .act:not(.main) small{color:#3A2A21;opacity:1}
+  #s-results .hubfix .fix{background:#F5F0E8;box-shadow:inset 0 0 0 1px #C5B28F}
+  #s-results .hubfix .fix b{color:#3A2A21}
+  #s-results .hubfix .fix p{color:#3A2A21}
+  #s-results .hubfix .fix .where{color:#8A6D3B}
+  #s-results .scorestrip{background:#F5F0E8;border-color:#C5B28F;color:#3A2A21}
+  #s-results .scorestrip b{color:#3A2A21}
+  #s-results .scorestrip small{color:#3A2A21}
+  #s-results .scorestrip .chev{color:#A88B5C}
+  #s-results .scorestrip .orns i:not(.f):not(.h){background:#A59C90}
+  #s-results .scorestrip .orns i.h{background:linear-gradient(90deg,#6B2E2E 50%,#A59C90 50%)}
+  #s-results .fb{background:#F5F0E8;border-color:#C5B28F;color:#3A2A21}
+  #s-results .fb h3,#s-results .fb .q2{color:#3A2A21}
+  #s-results .fb p.sub{color:#3A2A21}
+  #s-results .fb .muted{color:#857A6C}
+  #s-results .fb .rate button i{background:#A59C90}
+  #s-results .fb .rate button.on i{background:radial-gradient(circle at 35% 30%,#c98f8a,#6B2E2E 58%,#3E1A1A)}
+  #s-results .fb .chip span{background:#FBF8F2;border:1px solid #CFC5B6;color:#3A2A21}
+  #s-results .fb .chip input:checked + span{background:var(--gold);border-color:var(--gold);color:var(--midnight)}
+  #s-results .fb textarea,#s-results .fb input[type=text]{background:#FBF8F2;border:1px solid #CFC5B6;color:#3A2A21;caret-color:#3A2A21}
+  #s-results .fb textarea::placeholder,#s-results .fb input[type=text]::placeholder{color:#8A7F72}
+  #s-results .fb textarea:focus,#s-results .fb input[type=text]:focus{border-color:#A88B5C;box-shadow:0 0 0 3px rgba(197,178,143,.3);outline:none}
+  #s-results .fb .err{color:#8E2B2B}
+  #s-results .fb .thanks{color:#3A2A21}
 </style>
 </head>
 <body>
