@@ -19,6 +19,41 @@ const GENERIC = `
 IMPORTANT: show the theme only through generic, unbranded decorations in its colors and spirit (for a space or sci-fi theme: stars, planets, rockets, metallic silver and deep blue; for a sports team: its colors and a generic ball). No logos, insignia, emblems, named characters, faces of real people, lettering or trademarked designs anywhere in the picture.`;
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
 
+// Safety net for drawn-on marks. The image model sometimes copies the placement map's spots into the
+// preview as circles or rings around ornaments (Eric saw this on Nov 9), even when told not to.
+// After each preview, a quick Claude look asks whether anything is drawn on top of the photo; if so,
+// the image model gets one cleanup edit that removes only those marks.
+const CHECK_MODEL = process.env.CLAUDE_CHECK_MODEL || "claude-haiku-5-5";
+async function hasDrawnMarks(dataUrl) {
+  const im = parseDataUrl(dataUrl);
+  if (!im || !process.env.ANTHROPIC_API_KEY || im.data.length > 6_500_000) return false;   // too big to check: let it through
+  try {
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({
+        model: CHECK_MODEL, max_tokens: 20,
+        messages: [{ role: "user", content: [
+          { type: "image", source: { type: "base64", media_type: im.mediaType, data: im.data } },
+          { type: "text", text: "This should be an ordinary photo of a decorated Christmas tree. Is anything DRAWN ON TOP of the photo, the way someone marks up a picture: outline circles or rings around ornaments or other spots, dotted or dashed outlines, flat colored dots or blobs, halos, arrows, numbers or labels? Real round ornaments, bows, wreaths, ring-shaped ornaments and reflections are physical objects and do NOT count. Answer with exactly one word: YES or NO." }
+        ] }]
+      })
+    });
+    const body = await r.json().catch(() => ({}));
+    if (!r.ok) return false;
+    return /^\s*YES/i.test((body.content || []).map(b => b.text || "").join(""));
+  } catch { return false; }
+}
+const CLEAN = "EDIT this exact photo; do not redraw it. Someone has drawn marks on top of the photo: outline circles or rings around some ornaments or spots (and possibly dots, blobs, outlines, arrows or numbers). Remove every drawn mark, filling in the branches, ornaments and decorations underneath so they look natural. Change nothing else: same tree, same room, every ornament, ribbon, flower and stem exactly where it is, same size, color and lighting. The result must be an ordinary real photograph with no markings.";
+const toDataUrl = pic => { const d = pic.inlineData || pic.inline_data; return `data:${d.mimeType || d.mime_type || "image/png"};base64,${d.data}`; };
+async function cleanIfMarked(model, image, ar) {
+  if (!(await hasDrawnMarks(image))) return { image, cleaned: false };
+  console.error("RENDER_MARKS_FOUND", JSON.stringify({ model }));
+  const out = await callGemini(model, parseDataUrl(image), CLEAN, ar, null, null);
+  const pic = (out.body?.candidates?.[0]?.content?.parts || []).find(p => p.inlineData || p.inline_data);
+  return out.ok && pic ? { image: toDataUrl(pic), cleaned: true } : { image, cleaned: false };
+}
+
 // When the plan includes shaping the branches, the preview shows them shaped: the same tree, fuller,
 // with the see-through gaps filled in by its own branches. Otherwise the plan says "shape the branches"
 // and the preview shows the same sparse tree.
@@ -112,15 +147,15 @@ export default async function handler(req, res) {
         retried = true;
         const again = await callGemini(model, img, prompt + GENERIC, ar, pc, revision ? null : mp);
         const p2 = again.body?.candidates?.[0]?.content?.parts || [], pic2 = p2.find(p => p.inlineData || p.inline_data);
-        if (again.ok && pic2) { const d2 = pic2.inlineData || pic2.inline_data; return res.status(200).json({ image: `data:${d2.mimeType || d2.mime_type || "image/png"};base64,${d2.data}`, _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: true } }); }
+        if (again.ok && pic2) { const c2 = await cleanIfMarked(model, toDataUrl(pic2), ar); return res.status(200).json({ image: c2.image, _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: true, cleaned: c2.cleaned } }); }
         console.error("RENDER_REFUSED_AGAIN", JSON.stringify({ model, why: String(again.body?.candidates?.[0]?.finishReason || again.status).slice(0, 200) }));
       }
       return res.status(502).json({ error: `No image came back (${why})`, model });
     }
-    const d = pic.inlineData || pic.inline_data;
+    const c = await cleanIfMarked(model, toDataUrl(pic), ar);
     return res.status(200).json({
-      image: `data:${d.mimeType || d.mime_type || "image/png"};base64,${d.data}`,
-      _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision }
+      image: c.image,
+      _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, cleaned: c.cleaned }
     });
   }
   return res.status(502).json({ error: lastErr || "No image model available" });
