@@ -249,6 +249,9 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .extra:first-of-type{border-top:0}
   .extra .thumb{width:56px;height:56px;border-radius:10px;background:rgba(184,156,107,.14) center/cover no-repeat;flex:none;display:grid;place-items:center;color:var(--brass);font-size:22px}
   .extra small{display:block;color:var(--muted);font-size:13px}
+  .pcs{display:flex;flex-wrap:wrap;gap:10px;padding:0 0 12px}
+  .pcs span{position:relative;width:52px;height:52px;border-radius:10px;background:center/cover no-repeat;box-shadow:inset 0 0 0 1px var(--line)}
+  .pcs button{position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:50%;border:0;background:var(--ink,#F4EEDF);color:#141C2C;font:700 13px/22px var(--sans);cursor:pointer;padding:0}
   .extra label,.extra button{font:600 14px var(--sans);color:var(--green);cursor:pointer;background:none;border:0;white-space:nowrap}
 
   /* tell us about your tree */
@@ -914,10 +917,11 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
       <h3>Have pieces to build around?</h3>
       <div class="extra">
         <span class="thumb" id="keyThumb">★</span>
-        <div><b>Special pieces</b><small>Heirlooms, favorite ornaments or a found object. We'll build the design around them.</small></div>
-        <label id="keyLbl">Add photo<input type="file" id="keyFile" accept="image/*" hidden></label>
+        <div><b>Special pieces</b><small id="keySub">Heirlooms, favorite ornaments or a found object. Add up to 6 photos and we'll build the design around them.</small></div>
+        <label id="keyLbl">Add photos<input type="file" id="keyFile" accept="image/*" multiple hidden></label>
         <button id="keyClear" hidden>Remove</button>
       </div>
+      <div class="pcs" id="keyPcs" hidden></div>
       <div class="extra" id="inspoRow">
         <span class="thumb" id="inspoThumb">✦</span>
         <div><b>Inspiration photo</b><small>A tree you love from a store, magazine or Pinterest.</small></div>
@@ -1041,7 +1045,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <div class="log" id="log" aria-live="polite"></div>
     <div class="extras">
       <label class="pbtn" id="colorBtn"><input type="color" id="pColor" value="#2E6E8E" aria-label="Pick a color"><span id="colorLbl">Include a color</span><span class="x" id="colorClear" hidden>×</span></label>
-      <label class="pbtn" id="ornBtn"><span id="ornLbl">Add a photo of your pieces</span><input type="file" id="pPhoto" accept="image/*" hidden></label>
+      <label class="pbtn" id="ornBtn"><span id="ornLbl">Add photos of your pieces</span><span class="x" id="ornClear" hidden>×</span><input type="file" id="pPhoto" accept="image/*" multiple hidden></label>
     </div>
     <div class="ask">
       <textarea id="pText" rows="4" placeholder="e.g. Use my grandmother's blue glass ornaments, and make the ribbon softer"></textarea>
@@ -1825,7 +1829,7 @@ const shopFor = (b, key) => {
 };
 
 let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
-let factsSet = false, keyPhoto = null, inspoPhoto = null, rerunFromHub = false;
+let factsSet = false, keyList = [], keyPhoto = null, inspoPhoto = null, rerunFromHub = false;
 let src = "tree", roomTree = null, roomPhoto = null, roomMark = [.5, .8], ideaPhoto = null, baseKey = "";   // design starting point
 let mode = "check", photo = null, photoAspect = "3:4", result = null, after = null, stepIdx = 0, doneSteps = new Set();
 
@@ -1922,7 +1926,7 @@ const PHOTO_COPY = {
 };
 document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   mode = b.dataset.mode; rerunFromHub = false; factsSet = false;
-  clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
+  clearKey();
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d);
   src = "tree"; clearIdeaRoom(); clearRoomTree(); ideaPhoto = null; baseKey = ""; photo = null; photoImg = null; $("#roomMark").hidden = true;
   emptyDrop();
@@ -2061,9 +2065,43 @@ async function pickExtra(input, thumb, lbl, clearBtn, set) {
   catch { $("#startErr").textContent = "Couldn't read that photo."; }
 }
 function clearExtra(input, thumb, lbl, clearBtn, sym, set) { set(null); input.value = ""; thumb.style.backgroundImage = ""; thumb.textContent = sym; lbl.firstChild.textContent = "Add photo"; clearBtn.hidden = true; }
-$("#keyFile").addEventListener("change", () => pickExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), d => keyPhoto = d));
+// Their own pieces: up to 6 photos. Several photos are combined into one board, so every AI call still gets one image.
+const MAX_PIECES = 6;
+async function piecesBoard(list) {
+  if (!list.length) return null;
+  if (list.length === 1) return list[0];
+  const ims = await Promise.all(list.map(u => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = u; })));
+  const cols = list.length <= 4 ? 2 : 3, rows = Math.ceil(list.length / cols), cell = 600, gap = 10;
+  const c = document.createElement("canvas"), g = c.getContext("2d");
+  c.width = cols * cell + (cols + 1) * gap; c.height = rows * cell + (rows + 1) * gap;
+  g.fillStyle = "#EDEBE6"; g.fillRect(0, 0, c.width, c.height);
+  ims.forEach((im, i) => {
+    const x = gap + (i % cols) * (cell + gap), y = gap + Math.floor(i / cols) * (cell + gap), k = Math.min(cell / im.width, cell / im.height), w = im.width * k, h = im.height * k;
+    g.drawImage(im, x + (cell - w) / 2, y + (cell - h) / 2, w, h);
+  });
+  return c.toDataURL("image/jpeg", 0.86);
+}
+async function addPieceFiles(input, list, onErr) {
+  const files = [...(input.files || [])], room = MAX_PIECES - list.length;
+  for (const f of files.slice(0, room)) { try { list.push(await shrink(f, 900)); } catch { onErr("Couldn't read one of those photos. Try a JPG or PNG."); } }
+  if (files.length > room) onErr(`You can add up to ${MAX_PIECES} photos of your pieces.`);
+  input.value = "";
+}
+async function syncKey() {
+  keyPhoto = await piecesBoard(keyList);
+  const n = keyList.length, t = $("#keyThumb");
+  t.style.backgroundImage = n === 1 ? `url(${keyList[0]})` : ""; t.textContent = n === 1 ? "" : "★";   // 2+ photos show in the row below
+  $("#keyLbl").firstChild.textContent = n ? "Add more" : "Add photos"; $("#keyLbl").hidden = n >= MAX_PIECES;
+  $("#keyClear").hidden = !n; $("#keyClear").textContent = n > 1 ? "Remove all" : "Remove";
+  $("#keySub").textContent = n ? `${n} photo${n > 1 ? "s" : ""} added${n < MAX_PIECES ? `. Add up to ${MAX_PIECES}.` : "."} We'll build the design around them.` : "Heirlooms, favorite ornaments or a found object. Add up to 6 photos and we'll build the design around them.";
+  const pc = $("#keyPcs"); pc.hidden = n < 2;
+  pc.innerHTML = keyList.map((u, i) => `<span style="background-image:url(${u})"><button type="button" data-i="${i}" aria-label="Remove photo ${i + 1}">×</button></span>`).join("");
+}
+function clearKey() { keyList = []; $("#keyFile").value = ""; syncKey(); }
+$("#keyPcs").addEventListener("click", e => { const b = e.target.closest("button[data-i]"); if (!b) return; keyList.splice(+b.dataset.i, 1); syncKey(); });
+$("#keyFile").addEventListener("change", async () => { $("#startErr").textContent = ""; await addPieceFiles($("#keyFile"), keyList, m => $("#startErr").textContent = m); syncKey(); });
 $("#inspoFile").addEventListener("change", () => pickExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), d => inspoPhoto = d));
-$("#keyClear").onclick = () => clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
+$("#keyClear").onclick = () => clearKey();
 $("#inspoClear").onclick = () => clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d);
 
 const ASPECTS = [["1:1",1],["2:3",2/3],["3:2",1.5],["3:4",.75],["4:3",4/3],["4:5",.8],["5:4",1.25],["9:16",9/16],["16:9",16/9]];
@@ -2545,7 +2583,7 @@ $("#save").onclick = async () => {
   const a = document.createElement("a"); a.href = blob ? URL.createObjectURL(blob) : after; a.download = "my-tree-treestyle.jpg"; a.click();
 };
 $("#restart").onclick = () => { photo = null; guide = null; photoImg = null; factsSet = false;
-  clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
+  clearKey();
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d); $("#file").value = ""; emptyDrop();
   roomPhoto = null; clearRoomTree(); baseKey = ""; $("#roomMark").hidden = true; $("#tipsBox").hidden = true; $("#photoOk").hidden = true;
   if (mode === "design") show("s-start", ["s-home"]); else show("s-photo", ["s-home"]); };
@@ -2812,7 +2850,7 @@ $("#fbSend").onclick = async () => {
 };
 
 /* ---------------- design partner ---------------- */
-let versions = [], current = 0, chat = [], pickedColor = null, ornPhoto = null, busy = false;
+let versions = [], current = 0, chat = [], pickedColor = null, ornList = [], ornPhoto = null, busy = false;
 function startVersions() { versions = [{ label: "Original", result: JSON.parse(JSON.stringify(result)), after }]; current = 0; chat = []; $("#log").innerHTML = ""; $("#pStatus").textContent = ""; $("#vNote").hidden = true; renderVersions(); }
 function useVersion(i) {
   current = i; const v = versions[i];
@@ -2832,17 +2870,23 @@ $("#starters").onclick = e => { const b = e.target.closest("button"); if (!b) re
 $("#pColor").addEventListener("input", () => { pickedColor = $("#pColor").value.toUpperCase(); $("#colorLbl").textContent = "Include " + pickedColor; $("#colorBtn").classList.add("on"); $("#colorClear").hidden = false; });
 $("#colorClear").addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); clearColor(); });
 function clearColor() { pickedColor = null; $("#colorLbl").textContent = "Include a color"; $("#colorBtn").classList.remove("on"); $("#colorClear").hidden = true; }
-$("#pPhoto").addEventListener("change", async e => {
-  const f = e.target.files[0]; if (!f) return;
-  try { ornPhoto = await shrink(f, 1024); $("#ornLbl").textContent = "Photo added ✓"; $("#ornBtn").classList.add("on"); }
-  catch { $("#pStatus").textContent = "Couldn't read that photo."; }
+$("#pPhoto").addEventListener("change", async () => {
+  $("#pStatus").textContent = "";
+  await addPieceFiles($("#pPhoto"), ornList, m => $("#pStatus").textContent = m);
+  await syncOrn();
 });
-function clearOrn() { ornPhoto = null; $("#pPhoto").value = ""; $("#ornLbl").textContent = "Add a photo of your pieces"; $("#ornBtn").classList.remove("on"); }
+async function syncOrn() {
+  const n = ornList.length; ornPhoto = await piecesBoard(ornList);
+  $("#ornLbl").textContent = n ? `${n} photo${n > 1 ? "s" : ""} added ✓${n < MAX_PIECES ? " · add more" : ""}` : "Add photos of your pieces";
+  $("#ornBtn").classList.toggle("on", !!n); $("#ornClear").hidden = !n;
+}
+$("#ornClear").addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); clearOrn(); });
+function clearOrn() { ornList = []; ornPhoto = null; $("#pPhoto").value = ""; syncOrn(); }
 $("#pText").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("#pSend").click(); } });
 $("#pSend").onclick = () => {
   let req = $("#pText").value.trim();
   if (pickedColor) req = (req ? req + " " : "") + `Include the color ${pickedColor}.`;
-  if (!req && ornPhoto) req = "Design the tree around the pieces in my photo.";
+  if (!req && ornPhoto) req = ornList.length > 1 ? "Design the tree around the pieces in my photos." : "Design the tree around the pieces in my photo.";
   if (!req) { $("#pText").focus(); $("#pStatus").textContent = "Tell us what you'd like to change."; return; }
   partnerSend(req, null);
 };
@@ -2868,7 +2912,7 @@ async function partnerSend(req, label, opts = {}) {
   if (previewP) { $("#pStatus").textContent = "One moment: your first preview is still painting."; await previewP; $("#pStatus").textContent = ""; }
   busy = true; $("#pSend").disabled = true; document.querySelectorAll("#ideas button").forEach(b => b.disabled = true);
   $("#pStatus").textContent = "";
-  const sentColor = pickedColor, sentOrn = ornPhoto;
+  const sentColor = pickedColor, sentOrn = ornPhoto, sentOrnList = ornList.slice();
   addMsg("me", label ? `Try: ${label}` : ($("#pText").value.trim() || "Design around these pieces."), { swatch: label ? null : sentColor, img: label ? null : sentOrn });
   if (!label) { $("#pText").value = ""; clearColor(); clearOrn(); }
   const L = startLoading("Updating your tree", ["Reading your request", "Reworking the plan", "Adjusting ribbon, stems and ornaments", "Creating a preview of the new version"], 35, after || photo);
@@ -2906,7 +2950,7 @@ async function partnerSend(req, label, opts = {}) {
   } catch (e) {
     L.done();
     if (sentColor) { $("#pColor").value = sentColor; $("#pColor").dispatchEvent(new Event("input")); }
-    if (sentOrn) { ornPhoto = sentOrn; $("#ornLbl").textContent = "Photo added ✓"; $("#ornBtn").classList.add("on"); }
+    if (sentOrn) { ornList = sentOrnList; syncOrn(); }
     $("#pStatus").textContent = "That didn't go through: " + e.message;
     if (!stack.includes("s-partner")) show("s-partner");
   } finally {
@@ -2955,7 +2999,7 @@ async function restoreSaved(st) {
     mode = st.mode; src = st.src || "tree"; factsSet = !!st.factsSet;
     const f = st.form || {}; ["kind", "height", "density", "stage", "style"].forEach(n => setRadio(n, f[n] ?? "")); $("#theme").value = f.theme || ""; syncStyle();
     $("#stageQ").hidden = mode === "design"; $("#inspoRow").hidden = mode !== "design"; setPhotoCopy(mode === "design" ? (src === "room" ? "room" : "design") : "check");
-    photo = st.photo; photoAspect = st.photoAspect || "3:4"; photoImg = null; keyPhoto = st.keyPhoto || null; baseKey = "";
+    photo = st.photo; photoAspect = st.photoAspect || "3:4"; photoImg = null; keyPhoto = st.keyPhoto || null; keyList = keyPhoto ? [keyPhoto] : []; baseKey = "";
     $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="muted" style="font-size:13px;margin-top:8px">Tap to change photo</div>`;
     result = lookResult = st.result; after = st.after || null; planState = "ready"; planP = null;
     evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined };
