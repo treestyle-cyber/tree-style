@@ -1,11 +1,3 @@
-/* Butler by Fabian De Smet (CC BY-SA 4.0, credit in brand/fonts/README.md) for editorial headings.
-   Regular headings (400) use Light and semi-bold ones (600) use Medium, keeping the light editorial feel. */
-@font-face{font-family:"Butler";src:url(/brand/fonts/Butler-UltraLight.otf) format("opentype");font-weight:100 250;font-style:normal;font-display:swap}
-@font-face{font-family:"Butler";src:url(/brand/fonts/Butler-Light.otf) format("opentype");font-weight:300 400;font-style:normal;font-display:swap}
-@font-face{font-family:"Butler";src:url(/brand/fonts/Butler-Medium.otf) format("opentype");font-weight:500 600;font-style:normal;font-display:swap}
-@font-face{font-family:"Butler";src:url(/brand/fonts/Butler-Bold.otf) format("opentype");font-weight:700;font-style:normal;font-display:swap}
-@font-face{font-family:"Butler";src:url(/brand/fonts/Butler-ExtraBold.otf) format("opentype");font-weight:800;font-style:normal;font-display:swap}
-@font-face{font-family:"Butler";src:url(/brand/fonts/Butler-Black.otf) format("opentype");font-weight:900;font-style:normal;font-display:swap}
 :root{
   /* TreeStyle brand: Midnight, Winter Berry, Evergreen, Walnut, Oat, Ivory, Antique Gold */
   --midnight:#141C2C; --winterberry:#6B2E2E; --evergreen:#2C3E2E; --walnut:#4A3620; --oat:#D9CCC0; --ivory:#F3EEE7; --gold:#B89C6B;
@@ -13,7 +5,7 @@
   --bg:var(--midnight); --paper:#1C2538; --paper-2:#232E45; --ink:var(--ivory); --muted:#ABA397; --line:rgba(184,156,107,.26);
   --green:var(--gold); --green-2:#CBB183; --on-accent:var(--midnight); --brass:#C4A877; --berry:#D0857C;
   --radius:14px;
-  --serif:"Butler","Cormorant Garamond", Georgia, serif;   /* Butler for editorial headings */
+  --serif:"Cormorant Garamond", Georgia, serif;   /* stands in for Sentiero */
   --sans:"Inter", "Helvetica Neue", system-ui, -apple-system, Segoe UI, sans-serif;   /* stands in for Neue Haas Grotesk */
 }
 *{box-sizing:border-box}
