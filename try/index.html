@@ -24,7 +24,7 @@
 <link rel="stylesheet" href="/style.css">
 <script>
 // Brand photos chosen in the Studio replace the fabric textures (each spot keeps its texture until then)
-fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); } }).catch(() => {});
+fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; window.__PH = ph; if (Array.isArray(d.essentials) && d.essentials.length) window.__ESS = d.essentials; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); } }).catch(() => {});
 </script>
 <link rel="icon" type="image/png" href="/brand/favicon.png">
 <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
@@ -1884,21 +1884,29 @@ const shopFor = (b, key) => {
 // Stylist's essentials: the small tools a designer keeps on hand for any tree, at the end of every shopping list.
 // Not part of the plan, the preview or the "things to look for" count.
 const ESSENTIALS = [
-  { id: "hooks", label: "Ornament hooks", qty: "Enough for every ornament, with extra to spare", q: "gold ornament hooks" },
-  { id: "wire", label: "Green floral paddle wire", qty: "Holds ribbon loops and cascades exactly where you want them", q: "green floral paddle wire" },
-  { id: "ties", label: "Green twist ties", qty: "Fasten stems and picks to the branches, out of sight", q: "green garden twist ties" },
-  { id: "remote", label: "Remote control outlet", qty: "Lights on and off without reaching behind the tree", q: "remote control outlet for christmas lights" },
-  { id: "cord", label: "Green extension cord", qty: "Disappears into the branches", q: "green extension cord indoor" },
-  { id: "scissors", label: "Fabric scissors", qty: "Crisp, clean ribbon tails", q: "fabric scissors" },
+  { id: "hooks", label: "Ornament hooks", qty: "Enough for every ornament, with extra to spare", q: "gold ornament hooks", step: "statement" },
+  { id: "wire", label: "Green floral paddle wire", qty: "Holds ribbon loops and cascades exactly where you want them", q: "green floral paddle wire", step: "ribbon" },
+  { id: "ties", label: "Green twist ties", qty: "Fasten stems and picks to the branches, out of sight", q: "green garden twist ties", step: "primary_picks" },
+  { id: "remote", label: "Remote control outlet", qty: "Lights on and off without reaching behind the tree", q: "remote control outlet for christmas lights", step: "lights" },
+  { id: "cord", label: "Green extension cord", qty: "Disappears into the branches", q: "green extension cord indoor", step: "lights" },
+  { id: "scissors", label: "Fabric scissors", qty: "Crisp, clean ribbon tails", q: "fabric scissors", step: "ribbon" },
 ];
-const essentials = () => ESSENTIALS;
-const essCard = b => `<a class="esscard" data-id="${b.id}" title="${esc(b.qty)}" href="${shopFor(b, "essentials")}" target="_blank" rel="noopener sponsored"><span class="esspic" style="background-image:var(--photo-ess_${b.id}, none)">${itemPic(b, "essentials")}</span><strong>${esc(b.label)}</strong><small>${esc(b.qty)}</small><em>Shop</em></a>`;
+// The list Eric keeps in the Studio's Essentials editor replaces these defaults once saved
+const essentials = () => window.__ESS || ESSENTIALS;
+// An essentials card opens the product Eric chose (with TreeStyle's tag) or, without one, a store search
+const essUrl = b => {
+  const asin = (String(b.link || "").match(/\/(?:dp|gp\/product|gp\/aw\/d)\/([A-Z0-9]{10})/i) || [])[1];
+  if (asin) return "https://www.amazon.com/dp/" + asin.toUpperCase() + (AMAZON_TAG ? "?tag=" + encodeURIComponent(AMAZON_TAG) : "");
+  if (b.link) return b.link;   // a short amzn.to link keeps the tag it was made with
+  return shopUrl(b.q || b.label);
+};
+const essPic = b => window.__PH?.["ess_" + b.id] ? "" : itemPic(b, "essentials");
+const essCard = b => `<a class="esscard" data-id="${b.id}" title="${esc(b.qty)}" href="${essUrl(b)}" target="_blank" rel="noopener sponsored"><span class="esspic" style="background-image:var(--photo-ess_${b.id}, none)">${essPic(b)}</span><strong>${esc(b.label)}</strong><small>${esc(b.qty)}</small><em>Shop</em></a>`;
 const essHtml = (id, title, sub) => `<section class="ess" aria-label="${esc(title)}"><div class="esshead"><span class="bic" aria-hidden="true">${SHOP_ICON.essentials}</span><div><b>${esc(title)}</b><small>${esc(sub)}</small></div></div>`
   + `<div class="essrow" id="${id}">${essentials().map(essCard).join("")}</div><div class="essdots" id="${id}Dots">${essentials().map((_, i) => `<i${i ? "" : ' class="on"'}></i>`).join("")}</div></section>`;
 // In the steps: the tools that step needs, as a small "You'll want" line
-const ESS_STEP = { lights: ["remote", "cord"], primary_picks: ["ties"], ribbon: ["wire", "scissors"], statement: ["hooks"], crown: ["wire"] };
-const essForStep = key => { const ids = ESS_STEP[key]; if (!ids) return ""; const its = ids.map(id => ESSENTIALS.find(e => e.id === id)).filter(Boolean);
-  return `<div class="esswant"><div class="buyh">You'll want</div>${its.map(b => `<a class="esschip" data-id="${b.id}" href="${shopFor(b, "essentials")}" target="_blank" rel="noopener sponsored"><span class="esspic" style="background-image:var(--photo-ess_${b.id}, none)">${itemPic(b, "essentials")}</span><span><strong>${esc(b.label)}</strong><small>${esc(b.qty)}</small></span><em>Shop</em></a>`).join("")}</div>`; };
+const essForStep = key => { const its = essentials().filter(e => e.step === key); if (!its.length) return "";
+  return `<div class="esswant"><div class="buyh">You'll want</div>${its.map(b => `<a class="esschip" data-id="${b.id}" href="${essUrl(b)}" target="_blank" rel="noopener sponsored"><span class="esspic" style="background-image:var(--photo-ess_${b.id}, none)">${essPic(b)}</span><span><strong>${esc(b.label)}</strong><small>${esc(b.qty)}</small></span><em>Shop</em></a>`).join("")}</div>`; };
 // Each essentials row drifts to the next card every few seconds until someone touches it (and never with reduced motion)
 const essTimers = {};
 function essRotate(id) {
@@ -2828,7 +2836,7 @@ const ESS_PIC = {
   scissors: `<circle cx="15" cy="34" r="6" fill="none" stroke="#D4B26E" stroke-width="2.6"/><circle cx="33" cy="34" r="6" fill="none" stroke="#D4B26E" stroke-width="2.6"/><path d="M19 30 34 6M29 30 14 6" stroke="#C9CED8" stroke-width="2.6" stroke-linecap="round"/><circle cx="24" cy="22" r="1.6" fill="#141C2C"/>`,
 };
 function itemPic(b, key) {
-  if (key === "essentials") return `<svg viewBox="0 0 48 48" aria-hidden="true">${ESS_PIC[b.id] || ""}</svg>`;
+  if (key === "essentials") return `<svg viewBox="0 0 48 48" aria-hidden="true">${ESS_PIC[b.id] || `<path d="M14 18h20l-2 22H16z" fill="none" stroke="#D4B26E" stroke-width="2.2" stroke-linejoin="round"/><path d="M19 18a5 5 0 0 1 10 0" fill="none" stroke="#D4B26E" stroke-width="2.2"/>`}</svg>`;
   const c = b.color || "#C9B48A", l = (b.label || "").toLowerCase(), id = "g" + Math.random().toString(36).slice(2, 7);
   const shade = `<defs><radialGradient id="${id}" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient></defs>`;
   const sv = d => `<svg viewBox="0 0 48 48" aria-hidden="true">${shade}${d}</svg>`;

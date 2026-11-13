@@ -47,6 +47,16 @@
   .mk-row .sw{width:24px;height:24px;border-radius:50%;border:2px solid transparent;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
   .mk-row .sw.on{border-color:var(--gold)}
   .mk-row .mk-clear,.mk-row .mk-suggest{appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:99px;padding:4px 10px;font:500 12px var(--sans);cursor:pointer}
+  .essed{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+  .essed .frame{width:104px;height:104px;flex:none}
+  .essed .frame img{width:100%;height:100%;object-fit:cover}
+  .essed .f{flex:1;display:grid;gap:6px;min-width:0}
+  .essed input,.essed select{width:100%;font:14px var(--sans);padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper-2);color:var(--ink)}
+  .essed .acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .essed .acts > *{line-height:1.2}
+  .essed .mini{appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:99px;padding:5px 11px;font:500 12px var(--sans);cursor:pointer}
+  .essed .mini:disabled{opacity:.5}
+  .essed .mini.rm{color:var(--muted)}
   .refcard{margin-bottom:22px;background:var(--paper);border:1px solid var(--gold);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
   .refcard h2{font-weight:400;font-size:26px}
   .refcard .where{font-size:12.5px;color:var(--muted);margin-top:-6px}
@@ -107,6 +117,13 @@
       <div class="row" style="max-width:520px"><button class="btn ghost" id="baMake" disabled>Make the after with the app</button><button class="btn" id="baUse" disabled>Use this pair</button></div>
       <p class="msg" id="baMsg"></p>
     </div>
+    <div class="refcard" id="essCard">
+      <h2>Stylist's essentials</h2>
+      <div class="where">The small tools shown on the results screen, in the steps and at the end of the shopping list. Paste the Amazon link of the exact product you recommend (TreeStyle's tag is added for you), or leave it empty to open a store search. <b>Show in step</b> puts the card under "You'll want" in that step. Use your own photo of the product, or make one. Tap <b>Save the list</b> when you're done.</div>
+      <div id="essList"></div>
+      <div class="row"><button class="btn ghost" id="essAdd">Add a card</button><button class="btn" id="essSave">Save the list</button></div>
+      <p class="msg" id="essMsg"></p>
+    </div>
     <div class="grid" id="grid"></div>
   </div>
 </div>
@@ -115,6 +132,7 @@
 <script src="/try/guide.js"></script>
 <script>
 const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const LOOK = "Editorial interior photograph for a luxury holiday brand. Moody, candlelit, warm low light with soft glowing Christmas lights; deep midnight navy, winter berry red, evergreen and antique gold tones; rich textures like velvet ribbon, brass and walnut. Shot on a full-frame camera, shallow depth of field, magazine quality, photorealistic. No people, no text, no logos, no watermarks.";
 const STYLED = "How the tree is styled: wide wired ribbon weaves in and out of the tree: it emerges from deep inside the branches in soft billows and short drops at about seven separate spots, staggered left and right at different heights, then disappears back into the greenery, so green branches show between each appearance. There are no bows anywhere on the tree. Ornaments are scattered and staggered at different heights and depths, the largest set back toward the trunk, with balanced visual weight left and right.";
 const BARE = "The tree itself is completely bare and undecorated: only warm white lights glowing within fully shaped branches. Nothing hangs on it or is tucked into it: no ornaments, no ribbon, no bows, no flowers, no picks, no garland, no topper.";
@@ -179,7 +197,7 @@ const shrink = (src, max = 1600) => new Promise(res => {
 const wide = a => { const [w, h] = String(a).split(":").map(Number); return w > h; };
 function build(current) {
   const ar = a => a.replace(":", " / ");
-  $("#grid").innerHTML = SLOTS.map(s => `
+  $("#grid").innerHTML = SLOTS.filter(s => !s.product).map(s => `
     <div class="slot${s.texture ? " tex" : ""}${wide(s.aspect) ? " wide" : ""}" data-id="${s.id}">
       <h2>${s.name}</h2><div class="where">${s.where}</div>
       <div class="frames">
@@ -360,14 +378,78 @@ async function start() {
     } catch (err) { $("#refMsg").className = "msg err"; $("#refMsg").textContent = err.message; }
   };
   build(info.photos || {});
+  setupEss(info);
   offerPreviewPicks();
+}
+// ---- Stylist's essentials editor (same defaults as the app until a list is saved) ----
+const ESS_DEFAULT = [
+  { id: "hooks", label: "Ornament hooks", qty: "Enough for every ornament, with extra to spare", q: "gold ornament hooks", step: "statement" },
+  { id: "wire", label: "Green floral paddle wire", qty: "Holds ribbon loops and cascades exactly where you want them", q: "green floral paddle wire", step: "ribbon" },
+  { id: "ties", label: "Green twist ties", qty: "Fasten stems and picks to the branches, out of sight", q: "green garden twist ties", step: "primary_picks" },
+  { id: "remote", label: "Remote control outlet", qty: "Lights on and off without reaching behind the tree", q: "remote control outlet for christmas lights", step: "lights" },
+  { id: "cord", label: "Green extension cord", qty: "Disappears into the branches", q: "green extension cord indoor", step: "lights" },
+  { id: "scissors", label: "Fabric scissors", qty: "Crisp, clean ribbon tails", q: "fabric scissors", step: "ribbon" },
+];
+const ESS_STEPS = [["", "Not in a step"], ["lights", "Lights"], ["primary_picks", "Filler"], ["ribbon", "Ribbon"], ["florals", "Flowers"], ["statement", "Extra-large & large ornaments"], ["medium", "Medium & small ornaments"], ["crown", "The crown & base"]];
+let essList = [], essPhotos = {};
+const essRead = () => [...document.querySelectorAll(".essed")].map(el => ({ id: el.dataset.id, label: el.querySelector(".nm").value.trim(), qty: el.querySelector(".ln").value.trim(), link: el.querySelector(".lk").value.trim(), q: el.querySelector(".sq").value.trim(), step: el.querySelector(".st").value }));
+function essDraw() {
+  $("#essList").innerHTML = essList.map((b, i) => `<div class="essed" data-id="${b.id}">
+    <div class="frame">${essPhotos["ess_" + b.id] ? `<img src="${essPhotos["ess_" + b.id]}" alt="">` : "No photo yet"}</div>
+    <div class="f">
+      <input class="nm" placeholder="Name, e.g. Ornament hooks" value="${esc(b.label)}">
+      <input class="ln" placeholder="What it's for, one short line" value="${esc(b.qty)}">
+      <input class="lk" placeholder="Amazon product link (optional)" value="${esc(b.link || "")}">
+      <input class="sq" placeholder="Store search words, used when there's no link" value="${esc(b.q || "")}">
+      <select class="st">${ESS_STEPS.map(([v, t]) => `<option value="${v}"${b.step === v ? " selected" : ""}>Show in step: ${t}</option>`).join("")}</select>
+      <div class="acts"><label class="mini" style="cursor:pointer">Upload photo<input type="file" class="up" accept="image/*" hidden></label><button class="mini emk">Make a photo</button><button class="mini usep" hidden>Use this photo</button>
+        <button class="mini mv" data-d="-1"${i ? "" : " disabled"}>Move up</button><button class="mini mv" data-d="1"${i < essList.length - 1 ? "" : " disabled"}>Move down</button><button class="mini rm">Remove</button></div>
+      <p class="msg"></p>
+    </div></div>`).join("");
+  document.querySelectorAll(".essed").forEach((el, i) => {
+    const id = el.dataset.id, fr = el.querySelector(".frame"), msg = el.querySelector(".msg"), useP = el.querySelector(".usep");
+    let pending = null;
+    const save = async img => { msg.className = "msg"; msg.textContent = "Saving the photo…"; await call({ action: "use", slot: "ess_" + id, image: img }); essPhotos["ess_" + id] = img; fr.innerHTML = `<img src="${img}" alt="">`; msg.className = "msg ok"; msg.textContent = "Photo saved."; };
+    el.querySelector(".up").onchange = async e => {
+      const f = e.target.files[0]; if (!f) return;
+      try {
+        const src = await new Promise(r => { const rd = new FileReader(); rd.onload = () => r(rd.result); rd.readAsDataURL(f); });
+        const img = await new Promise(res => { const im = new Image(); im.onload = () => { const n = Math.min(im.width, im.height), k = Math.min(1, 1200 / n), c = document.createElement("canvas"); c.width = c.height = Math.round(n * k); c.getContext("2d").drawImage(im, (im.width - n) / 2, (im.height - n) / 2, n, n, 0, 0, c.width, c.height); res(c.toDataURL("image/jpeg", .88)); }; im.src = src; });
+        await save(img);
+      } catch (err) { msg.className = "msg err"; msg.textContent = err.message; }
+    };
+    el.querySelector(".emk").onclick = async e => {
+      const name = el.querySelector(".nm").value.trim(); if (!name) { msg.className = "msg err"; msg.textContent = "Add a name first."; return; }
+      e.target.disabled = true; msg.className = "msg"; msg.textContent = "Making a photo… about 20 seconds";
+      try { const d = await call({ action: "generate", prompt: `${name}. ${el.querySelector(".ln").value.trim()}\n\n${PRODLOOK}`, aspect: "1:1" }); pending = await shrink(d.image, 1200); fr.innerHTML = `<img src="${pending}" alt="">`; useP.hidden = false; msg.textContent = "Like it? Tap Use this photo, or Make a photo again."; }
+      catch (err) { msg.className = "msg err"; msg.textContent = err.message; }
+      finally { e.target.disabled = false; e.target.textContent = "Make a photo"; }
+    };
+    useP.onclick = async () => { if (!pending) return; try { await save(pending); useP.hidden = true; } catch (err) { msg.className = "msg err"; msg.textContent = err.message; } };
+    el.querySelectorAll(".mv").forEach(b => b.onclick = () => { essList = essRead(); const j = i + +b.dataset.d; [essList[i], essList[j]] = [essList[j], essList[i]]; essDraw(); });
+    el.querySelector(".rm").onclick = () => { essList = essRead(); essList.splice(i, 1); essDraw(); };
+  });
+}
+function setupEss(info) {
+  essPhotos = info.photos || {};
+  essList = (info.essentials && info.essentials.length ? info.essentials : ESS_DEFAULT).map(x => ({ ...x }));
+  essDraw();
+  $("#essAdd").onclick = () => { essList = essRead(); essList.push({ id: "c" + Date.now().toString(36), label: "", qty: "", link: "", q: "", step: "" }); essDraw(); document.querySelector(".essed:last-child .nm").focus(); };
+  $("#essSave").onclick = async () => {
+    const items = essRead().filter(x => x.label);
+    const bad = items.find(x => x.link && !/^https:\/\/(www\.)?(amazon\.com|amzn\.to|a\.co)\//.test(x.link));
+    if (bad) { $("#essMsg").className = "msg err"; $("#essMsg").textContent = `The link for "${bad.label}" isn't an Amazon link.`; return; }
+    $("#essMsg").className = "msg"; $("#essMsg").textContent = "Saving…";
+    try { const d = await call({ action: "essentials", items }); essList = d.items; essDraw(); $("#essMsg").className = "msg ok"; $("#essMsg").textContent = "Saved. The app shows the new list within a minute."; }
+    catch (err) { $("#essMsg").className = "msg err"; $("#essMsg").textContent = err.message; }
+  };
 }
 // On the live Studio: photos picked in the preview Studio, ready to bring over in one tap
 async function offerPreviewPicks() {
   if (!/^tree-style\.vercel\.app$/.test(location.host)) return;
   let d; try { d = await call({ action: "adopt-preview", dry: true }); } catch { return; }
   if (!d.slots || !d.slots.length) return;
-  const names = d.slots.map(id => (SLOTS.find(x => x.id === id) || { name: id }).name);
+  const names = d.slots.map(id => id === "essentials" ? "Stylist's essentials list" : /^ess_/.test(id) ? "an Essentials photo" : (SLOTS.find(x => x.id === id) || { name: id }).name);
   const box = document.createElement("div"); box.className = "adopt";
   box.innerHTML = `<b>${d.slots.length} photo${d.slots.length === 1 ? "" : "s"} picked in the preview Studio</b><span>${names.join(", ")}</span><button class="btn">Use them on the live site</button><p class="msg"></p>`;
   $("#studio").prepend(box);

@@ -1,5 +1,7 @@
 // Brand photography for the app and site, made in the Studio (/studio).
 // GET  /api/brand                      -> { photos: { slot: url }, storage: true|false }   (public: the app reads this)
+// GET also returns { essentials: [...] } once the Studio's Essentials editor has saved a list
+// POST /api/brand { action:"essentials", items }          -> { ok }                        (password)
 // GET  /api/brand?img=<slot>           -> the chosen image itself (used when the store is private)
 // POST /api/brand { action:"generate", prompt, aspect }   -> { image: dataURL }            (password)
 // POST /api/brand { action:"use", slot, image }           -> { url }                       (password)
@@ -10,6 +12,8 @@ import { ribbonRef, RIBBON_REF_NOTE } from "../lib/ribbonref.js";
 import { checkPassword, parseDataUrl } from "../lib/util.js";
 
 const SLOTS = ["before", "after", "ribbonref", "velvet", "velvetberry", "hero", "check", "design", "keep", "classic", "rustic", "modern", "elegant", "playful", "themed", "ess_hooks", "ess_wire", "ess_ties", "ess_remote", "ess_cord", "ess_scissors"];
+// Stylist's essentials cards each have a photo spot named ess_<card id>, so cards added in the Studio get one too
+const isSlot = s => SLOTS.includes(s) || /^ess_[a-z0-9]{1,24}$/.test(s);
 const MODELS = [process.env.GEMINI_IMAGE_MODEL, "gemini-3.1-flash-image-preview", "gemini-2.5-flash-image"].filter(Boolean);
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
 
@@ -24,7 +28,7 @@ async function readSlots(prefix) {
       const page = await list({ ...tok(), prefix, cursor, limit: 1000 });
       for (const b of page.blobs) {
         const slot = b.pathname.slice(prefix.length).split("/")[0];
-        if (!SLOTS.includes(slot)) continue;
+        if (!isSlot(slot)) continue;
         if (!out[slot] || t(b) > t(out[slot])) out[slot] = b;
       }
       cursor = page.hasMore ? page.cursor : null;
@@ -42,6 +46,32 @@ async function latest() {
 async function previewPicks() {
   const live = await readSlots("brand/photos/"), prev = await readSlots("preview/brand/photos/");
   return Object.values(prev).filter(b => { const slot = b.pathname.split("/")[3]; return !live[slot] || t(b) > t(live[slot]); });
+}
+
+// The Stylist's essentials list saved in the Studio (newest wins; a preview copy falls back to the live list)
+async function newestJson(prefix) {
+  const page = await list({ ...tok(), prefix, limit: 1000 });
+  const b = page.blobs.sort((a, c) => t(c) - t(a))[0];
+  if (!b) return null;
+  const r = await get(b.pathname, { ...tok(), access: "private" }).catch(() => null);
+  const txt = r && r.stream ? await new Response(r.stream).text() : await (await fetch(b.url)).text();
+  return { blob: b, data: JSON.parse(txt) };
+}
+async function essentialsList() {
+  if (!blobConnected()) return null;
+  const mine = IS_PREVIEW ? await newestJson("preview/brand/essentials/") : null;
+  return (mine || await newestJson("brand/essentials/"))?.data || null;
+}
+const STEPS = ["", "lights", "primary_picks", "ribbon", "florals", "statement", "medium", "crown"];
+const clean = (v, n) => String(v ?? "").replace(/[<>]/g, "").trim().slice(0, n);
+function cleanItems(items) {
+  if (!Array.isArray(items)) return null;
+  return items.slice(0, 12).map(x => ({
+    id: clean(x.id, 24).toLowerCase().replace(/[^a-z0-9]/g, "") || "x" + Math.random().toString(36).slice(2, 8),
+    label: clean(x.label, 60), qty: clean(x.qty, 140), q: clean(x.q, 120),
+    link: /^https:\/\/(www\.)?(amazon\.com|amzn\.to|a\.co)\//.test(String(x.link || "")) ? clean(x.link, 600) : "",
+    step: STEPS.includes(x.step) ? x.step : "",
+  })).filter(x => x.label);
 }
 
 async function generate(prompt, aspect, base, map) {
@@ -85,9 +115,10 @@ export default async function handler(req, res) {
       }
       res.setHeader("cache-control", "public, max-age=60");
       if (!found) return res.status(200).json({ photos: {}, storage: false, vars: blobVarNames() });
+      const essentials = await essentialsList().catch(() => null);
       const photos = {};
       for (const [k, b] of Object.entries(found)) photos[k] = /\.public\.blob\.vercel-storage\.com/.test(b.url) ? b.url : `/api/brand?img=${k}&v=${encodeURIComponent(b.uploadedAt)}`;
-      return res.status(200).json({ photos, storage: true });
+      return res.status(200).json({ photos, storage: true, essentials: essentials || undefined });
     } catch (e) {
       return res.status(200).json({ photos: {}, storage: !!blobConnected(), error: String(e.message || e) });
     }
@@ -113,13 +144,27 @@ export default async function handler(req, res) {
     catch (e) { return res.status(502).json({ error: String(e.message || e) }); }
   }
 
+  if (action === "essentials") {
+    if (!blobConnected()) return res.status(400).json({ error: "Storage isn't connected." });
+    const items = cleanItems(req.body.items);
+    if (!items) return res.status(400).json({ error: "Missing list" });
+    try {
+      await put(envPath(`brand/essentials/${Date.now()}.json`), JSON.stringify(items), { ...tok(), access: "private", contentType: "application/json" });
+      return res.status(200).json({ ok: true, items });
+    } catch (e) { return res.status(500).json({ error: String(e.message || e) }); }
+  }
+
   if (action === "adopt-preview") {
     // Live Studio only: copy the photos picked in the preview Studio onto the live site
     if (IS_PREVIEW) return res.status(400).json({ error: "Open the live Studio to do this." });
     if (!blobConnected()) return res.status(400).json({ error: "Storage isn't connected." });
     try {
       const picks = await previewPicks(), slots = picks.map(b => b.pathname.split("/")[3]);
+      const pe = await newestJson("preview/brand/essentials/").catch(() => null), le = await newestJson("brand/essentials/").catch(() => null);
+      const essNew = pe && (!le || t(pe.blob) > t(le.blob));
+      if (essNew) slots.push("essentials");
       if (req.body.dry) return res.status(200).json({ slots });
+      if (essNew) await put(`brand/essentials/${Date.now()}.json`, JSON.stringify(pe.data), { ...tok(), access: "private", contentType: "application/json" });
       for (const b of picks) {
         const slot = b.pathname.split("/")[3];
         let buf;
@@ -135,7 +180,7 @@ export default async function handler(req, res) {
   }
 
   if (action === "use") {
-    if (!SLOTS.includes(slot)) return res.status(400).json({ error: "Unknown slot" });
+    if (!isSlot(slot)) return res.status(400).json({ error: "Unknown slot" });
     if (!blobConnected()) return res.status(400).json({ error: "Storage isn't connected yet. In Vercel: Storage → Create → Blob → connect it to this project, then Redeploy." });
     const img = parseDataUrl(image);
     if (!img) return res.status(400).json({ error: "Missing image" });
