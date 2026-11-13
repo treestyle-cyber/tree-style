@@ -550,6 +550,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   .src small{font-size:13px;color:#D9CCC0;max-width:24em}
   .ideatxt{width:100%;font:16px/1.5 var(--sans);padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);resize:vertical}
   .roommark{margin-top:14px}
+  .roomtree{margin-top:16px}
   .changepill{display:flex;justify-content:center;width:100%;max-width:524px;margin:14px auto 0;cursor:pointer}
   #s-photo.room label.drop{display:none}
   #s-photo.has #photoSub{display:none}
@@ -965,6 +966,14 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
       <div class="rmhint">Tap where the tree will stand</div>
       <div class="rmwrap" id="rmWrap"><img id="rmImg" alt="Your room"><i id="rmDot"></i></div>
       <label for="file" class="btn ghost changepill" id="roomChange">Change photo</label>
+      <div class="card extrasCard roomtree">
+        <div class="extra">
+          <span class="thumb" id="roomTreeThumb">▲</span>
+          <div><b>Your tree</b><small>Optional: already have one? Add a photo of it and we'll stand that tree in the room.</small></div>
+          <label id="roomTreeLbl">Add photo<input type="file" id="roomTreeFile" accept="image/*" hidden></label>
+          <button id="roomTreeClear" hidden>Remove</button>
+        </div>
+      </div>
     </div>
     <div class="tipsbox" id="tipsBox"><div class="hubk">Photo tips</div><ul class="tips" id="photoTips"></ul></div>
     <p class="photook" id="photoOk" hidden></p>
@@ -1992,7 +2001,7 @@ function essRotate(id) {
 
 let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
 let factsSet = false, keyPhoto = null, inspoPhoto = null, rerunFromHub = false;
-let src = "tree", roomPhoto = null, roomMark = [.5, .8], ideaPhoto = null, baseKey = "";   // design starting point
+let src = "tree", roomTree = null, roomPhoto = null, roomMark = [.5, .8], ideaPhoto = null, baseKey = "";   // design starting point
 let mode = "check", photo = null, photoAspect = "3:4", result = null, after = null, stepIdx = 0, doneSteps = new Set();
 
 /* ---------------- navigation ---------------- */
@@ -2124,7 +2133,7 @@ document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   mode = b.dataset.mode; rerunFromHub = false; factsSet = false;
   clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d);
-  src = "tree"; clearIdeaRoom(); ideaPhoto = null; baseKey = ""; photo = null; photoImg = null; $("#roomMark").hidden = true;
+  src = "tree"; clearIdeaRoom(); clearRoomTree(); ideaPhoto = null; baseKey = ""; photo = null; photoImg = null; $("#roomMark").hidden = true;
   emptyDrop();
   setPhotoCopy(mode);
   $("#stageQ").hidden = true;   // partway or finished: the photo shows it, so the AI decides (Eric: five questions were too many)
@@ -2190,7 +2199,7 @@ function photoChecked() {
 }
 // Design: pick a starting point
 document.querySelectorAll(".src").forEach(b => b.onclick = () => {
-  src = b.dataset.src; baseKey = ""; photo = null; photoImg = null; clearIdeaRoom(); $("#roomMark").hidden = true;
+  src = b.dataset.src; baseKey = ""; photo = null; photoImg = null; clearIdeaRoom(); clearRoomTree(); $("#roomMark").hidden = true;
   emptyDrop();
   $("#inspoRow").hidden = src === "idea";   // the idea screen has its own inspiration photo
   if (src === "idea") { show("s-idea"); return; }
@@ -2215,6 +2224,10 @@ $("#ideaRoomFile").addEventListener("change", async () => {
 });
 $("#ideaRoomClear").onclick = () => { clearIdeaRoom(); baseKey = ""; };
 $("#rmWrap").addEventListener("click", e => { const r = $("#rmImg").getBoundingClientRect(); roomMark = [Math.min(.98, Math.max(.02, (e.clientX - r.left) / r.width)), Math.min(.98, Math.max(.05, (e.clientY - r.top) / r.height))]; baseKey = ""; drawRoomDot(); });
+// Room: optionally their own tree, so the preview stands the tree they own in the room instead of a made-up one
+function clearRoomTree() { clearExtra($("#roomTreeFile"), $("#roomTreeThumb"), $("#roomTreeLbl"), $("#roomTreeClear"), "▲", d => roomTree = d); }
+$("#roomTreeFile").addEventListener("change", () => pickExtra($("#roomTreeFile"), $("#roomTreeThumb"), $("#roomTreeLbl"), $("#roomTreeClear"), d => { roomTree = d; baseKey = ""; }));
+$("#roomTreeClear").onclick = () => { clearRoomTree(); baseKey = ""; };
 $("#detailsSkip").onclick = () => { if (rerunFromHub) { history.back(); return; } factsSet = false; if (mode === "design" && src === "idea") { useIdeaAsStyle(); run(); } else show("s-style"); };
 // From an idea, their own words are the style: "themed", with the description as the theme
 function useIdeaAsStyle() {
@@ -2422,10 +2435,11 @@ let planState = "ready", planP = null, evalBody = null, lookResult = null;
 // Room or idea: first make a realistic photo of a bare, lit tree, then everything runs as usual on it.
 const aspectOf = srcUrl => new Promise(ok => { const im = new Image(); im.onload = () => { const r = im.width / im.height; ok(ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0]); }; im.onerror = () => ok("3:4"); im.src = srcUrl; });
 async function makeBase() {
-  const f = facts() || {}, key = [src, JSON.stringify(f), roomMark.join(","), (roomPhoto || "").length, $("#ideaText").value.trim(), (ideaPhoto || "").length].join("|");
+  const f = facts() || {}, key = [src, JSON.stringify(f), roomMark.join(","), (roomPhoto || "").length, (roomTree || "").length, $("#ideaText").value.trim(), (ideaPhoto || "").length].join("|");
   if (baseKey === key && photo) return true;
   const inRoom = src === "room" || (src === "idea" && roomPhoto);   // an idea with their room photo stands the tree in that room
-  const LB = startLoading(inRoom ? "Placing your tree in the room" : "Imagining your tree", inRoom ? ["Finding the spot", "Sizing the tree to your room", "Turning on the lights"] : ["Setting the scene", "Shaping the tree", "Turning on the lights"], 25);
+  const own = src === "room" && roomTree;
+  const LB = startLoading(inRoom ? "Placing your tree in the room" : "Imagining your tree", inRoom ? ["Finding the spot", own ? "Bringing in your tree" : "Sizing the tree to your room", "Turning on the lights"] : ["Setting the scene", "Shaping the tree", "Turning on the lights"], 25);
   try {
     let body;
     if (inRoom) {
@@ -2434,7 +2448,7 @@ async function makeBase() {
       c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); g.drawImage(im, 0, 0, c.width, c.height);
       const x = roomMark[0] * c.width, y = roomMark[1] * c.height, rw = c.width * .09;
       g.save(); g.translate(x, y); g.scale(1, .35); const gr = g.createRadialGradient(0, 0, 0, 0, 0, rw); gr.addColorStop(0, "rgba(212,175,95,.95)"); gr.addColorStop(1, "rgba(212,175,95,0)"); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, rw, 0, Math.PI * 2); g.fill(); g.restore();
-      body = { kind: "room", image: roomPhoto, marker: c.toDataURL("image/jpeg", .82), facts: f, aspect: photoAspect };
+      body = { kind: "room", image: roomPhoto, marker: c.toDataURL("image/jpeg", .82), tree: src === "room" && roomTree || undefined, facts: f, aspect: photoAspect };
     } else body = { kind: "idea", idea: $("#ideaText").value.trim(), inspo: ideaPhoto || undefined, facts: f };
     const out = await api("/api/base", body);
     photo = await thumb(out.image, 1536, .9); photoImg = null; photoAspect = await aspectOf(photo); baseKey = key;
@@ -2911,7 +2925,7 @@ $("#baSave").onclick = async () => {
 $("#restart").onclick = () => { photo = null; guide = null; photoImg = null; factsSet = false;
   clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d); $("#file").value = ""; emptyDrop();
-  roomPhoto = null; baseKey = ""; $("#roomMark").hidden = true; $("#tipsBox").hidden = true; $("#photoOk").hidden = true;
+  roomPhoto = null; clearRoomTree(); baseKey = ""; $("#roomMark").hidden = true; $("#tipsBox").hidden = true; $("#photoOk").hidden = true;
   if (mode === "design") show("s-start", ["s-home"]); else show("s-photo", ["s-home"]); };
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => b.dataset.go === "s-plan" ? openPlan() : show(b.dataset.go));
 $("#actPlan").onclick = () => openPlan();

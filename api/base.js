@@ -1,5 +1,6 @@
 // "Design my tree" without a tree photo: make a realistic photo of a bare, lit tree to design on.
-// POST { kind: "room", image, marker, facts }   -> the person's room with a bare tree standing at the marked spot
+// POST { kind: "room", image, marker, tree?, facts } -> the person's room with a bare tree standing at the marked spot
+//      (tree: optional photo of their own tree; then it's that tree, taken down to bare, that stands in the room)
 // POST { kind: "idea", idea, inspo, facts }      -> a bare tree in a room that suits the idea
 // -> { image: dataURL }. The rest of the app then works on this photo exactly as on a real tree photo.
 import { checkPassword, parseDataUrl } from "../lib/util.js";
@@ -44,12 +45,23 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
-  const { kind, image, marker, idea, inspo, facts, aspect } = req.body || {};
+  const { kind, image, marker, tree, idea, inspo, facts, aspect } = req.body || {};
   const t = treeWords(facts);
   try {
     if (kind === "room") {
       const img = parseDataUrl(image), mk = parseDataUrl(marker);
       if (!img) return res.status(400).json({ error: "Missing room photo" });
+      const own = parseDataUrl(tree);
+      if (own) {
+        const f = facts || {}, h = Number(f.height);
+        const text = `Edit this photo of a room. Add the homeowner's own Christmas tree, shown in the separate tree photo, standing on the floor where they want it. It must be recognizably that same tree: the same kind of tree (real or artificial, its species or style), needle color and length, shape and silhouette, how full or open the branches are, and any flocking. If it has lights in the tree photo, keep those same lights (same color); if not, give it warm white string lights glowing softly within the branches.
+Show it undecorated and ready to be styled: take off any ornaments, ribbon, garland, flowers, picks, topper and tree skirt it has in its photo, leaving only the tree, its lights and a simple stand. ${f.kind === "natural" ? "" : "If it's artificial, show it fully shaped: every branch pulled out and every tip spread, with no flat or folded branches, while keeping its own silhouette and height. "}
+Size it correctly for this room: ${h ? `a ${h} ft tree` : "the tree's real height, judged from its own photo"} measured against the ceiling, doors and furniture, so it looks like it really stands there. Its base sits on the floor with natural contact shadows, lit by the room's own light, not the light in the tree photo. The whole tree, from the top to the stand, is in the frame. Nothing from the tree photo's room comes along: only the tree.
+Keep the room, camera angle, framing, lighting and everything else exactly the same. The result must be an ordinary real photograph with no markings.`;
+        const parts = [{ text }, { inline_data: { mime_type: img.mediaType, data: img.data } }, { text: "Their tree (use this tree; ignore its surroundings):" }, { inline_data: { mime_type: own.mediaType, data: own.data } }];
+        if (mk) parts.push({ text: "Placement reference (do not copy its marking): the same room with a soft gold mark on the floor where the tree's base should stand. Center the tree on that spot." }, { inline_data: { mime_type: mk.mediaType, data: mk.data } });
+        return res.status(200).json({ image: await gemini(parts, ASPECTS.includes(aspect) ? aspect : null) });
+      }
       const text = `Edit this photo of a room. Add ${t.line}, standing on the floor where the homeowner wants it. ${BARE}
 Size it correctly for this room: a ${t.h} ft tree measured against the ceiling, doors and furniture, so it looks like it really stands there. Its base sits on the floor with natural contact shadows, lit by the room's own light. The whole tree, from the top to the stand, is in the frame.
 Keep the room, camera angle, framing, lighting and everything else exactly the same. The result must be an ordinary real photograph with no markings.`;
