@@ -2239,9 +2239,21 @@ document.querySelectorAll("input[name=style]").forEach(r => r.addEventListener("
 syncStyle();
 
 /* ---------------- API ---------------- */
-async function api(path, body) {
-  const r = await fetch(path, { method: "POST", headers: { "content-type": "application/json", "x-test-password": password }, body: JSON.stringify(body) });
-  let data = {}; try { data = await r.json(); } catch { data = { error: `Server error ${r.status}` }; }
+// Phones (iPhones especially) can freeze the page when someone switches apps, which drops a request in flight.
+// If that happens, wait until they're back and quietly ask again (once), instead of showing an error.
+let hides = 0;   // how many times the app has gone to the background
+document.addEventListener("visibilitychange", () => { if (document.hidden) hides++; });
+const whenVisible = () => document.hidden ? new Promise(ok => { const f = () => { if (!document.hidden) { document.removeEventListener("visibilitychange", f); ok(); } }; document.addEventListener("visibilitychange", f); }) : Promise.resolve();
+async function api(path, body, again) {
+  const h0 = hides, away = () => !again && (hides !== h0 || document.hidden);
+  let r, data = {};
+  try {
+    r = await fetch(path, { method: "POST", headers: { "content-type": "application/json", "x-test-password": password }, body: JSON.stringify(body) });
+    try { data = await r.json(); } catch (e) { if (away()) throw e; data = { error: `Server error ${r.status}` }; }
+  } catch (err) {
+    if (away()) { await whenVisible(); return api(path, body, true); }   // the connection dropped while they were away: ask again once they're back
+    throw err;
+  }
   if (!r.ok) { const e = new Error(data.error || `Error ${r.status}`); e.status = r.status; throw e; }
   return data;
 }
