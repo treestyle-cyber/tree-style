@@ -2018,7 +2018,8 @@ $("#s-details").addEventListener("click", e => {
   if (inp.checked) { e.preventDefault(); const none = lab.parentElement.querySelector('input[value=""]'); none.checked = true; none.dispatchEvent(new Event("change", { bubbles: true })); }
 });
 const FOOT = {
-  photoNext: () => ({ label: photo ? "Next" : "Add a photo to continue", disabled: !photo, act: () => openDetails() }),   // both paths ask about the tree before the analysis, where the answers shape everything
+  // Before a photo, the button adds one (Eric tapped it expecting that); after, it's Next
+  photoNext: () => photo ? ({ label: "Next", act: () => openDetails() }) : ({ label: "Add a photo", act: () => document.querySelector("label.drop").click() }),   // both paths ask about the tree before the analysis, where the answers shape everything
   ideaNext: () => ({ label: ($("#ideaText").value.trim() || ideaPhoto) ? "Next" : "Describe your tree or add a photo", disabled: !($("#ideaText").value.trim() || ideaPhoto), act: () => {
     // the idea becomes the theme (they can still change the style on the next screens)
     useIdeaAsStyle();
