@@ -884,7 +884,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   <!-- Tree details (optional) -->
   <section class="screen" id="s-details" data-title="Your tree" data-foot="details" hidden>
     <h1>About your tree</h1>
-    <p class="sub" id="detailsSub">Optional, but it makes the plan and the preview more accurate.</p>
+    <p class="sub" id="detailsSub">A few quick taps. Your answers shape the plan, the shopping list and the preview, so everything fits your tree.</p>
     <div class="q"><div class="lbl">What kind of tree?</div>
       <div class="row">
         <label class="chip"><input type="radio" name="kind" value="artificial"><span>Artificial</span></label>
@@ -908,7 +908,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
         <label class="chip"><input type="radio" name="height" value="14"><span>13 ft+</span></label>
         <label class="chip"><input type="radio" name="height" value="" checked><span>Not sure</span></label>
       </div></div>
-    <div class="q"><div class="lbl">How full are the branches?</div>
+    <div class="q" id="densityQ"><div class="lbl">How full are the branches?</div>
       <div class="row">
         <label class="chip"><input type="radio" name="density" value="dense"><span>Full and dense</span></label>
         <label class="chip"><input type="radio" name="density" value="open"><span>Open, with gaps</span></label>
@@ -922,7 +922,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
         <label class="chip"><input type="radio" name="stage" value="" checked><span>Let you decide</span></label>
       </div></div>
     <div class="err" id="detailsErr"></div>
-    <button class="skip" id="detailsSkip">Skip for now</button>
+    <button class="skip" id="detailsSkip">Skip, guess from my photo</button>
   </section>
 
   <!-- Style -->
@@ -2036,7 +2036,7 @@ document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   if (mode === "design" && keep.checked) keep.checked = false;
   if (mode !== "design" && !val("style")) keep.checked = true;
   syncStyle();
-  $("#detailsSub").textContent = "Optional, but it makes the plan and the preview more accurate.";
+  $("#detailsSub").textContent = "A few quick taps. Your answers shape the plan, the shopping list and the preview, so everything fits your tree."; $("#densityQ").hidden = false; $("#detailsSkip").textContent = "Skip, guess from my photo";
   show(mode === "design" ? "s-start" : "s-photo");
 });
 // Photo tips: short, with an icon each. Shown once as a pop-up before the first photo, then inside the empty photo box.
@@ -2136,8 +2136,11 @@ function syncTell(r) {
 }
 document.addEventListener("click", e => { if (e.target.closest("[data-tell]")) $("#navDetails").click(); });
 $("#navDetails").onclick = () => {
-  rerunFromHub = true; $("#stageQ").hidden = mode === "design"; $("#prelitQ").hidden = val("kind") === "natural";
+  // After the design is done, only height, kind and pre-lit still change anything (amounts, sizes, the lights step),
+  // so the fullness and decorating-stage questions are left off here
+  rerunFromHub = true; $("#stageQ").hidden = true; $("#densityQ").hidden = true; $("#prelitQ").hidden = val("kind") === "natural";
   $("#detailsSub").textContent = "Tell us what the photo can't, and we'll make your shopping list and steps more accurate. Your preview stays the same.";
+  $("#detailsSkip").textContent = "Cancel";
   show("s-details");
 };
 function facts() {
@@ -3207,7 +3210,7 @@ async function restoreSaved(st) {
   try {
     mode = st.mode; src = st.src || "tree"; factsSet = !!st.factsSet;
     const f = st.form || {}; ["kind", "height", "density", "stage", "style"].forEach(n => setRadio(n, f[n] ?? "")); $("#theme").value = f.theme || ""; syncStyle();
-    $("#stageQ").hidden = mode === "design"; $("#inspoRow").hidden = mode !== "design"; setPhotoCopy(mode === "design" ? (src === "room" ? "room" : "design") : "check");
+    $("#stageQ").hidden = mode === "design"; $("#densityQ").hidden = false; $("#inspoRow").hidden = mode !== "design"; setPhotoCopy(mode === "design" ? (src === "room" ? "room" : "design") : "check");
     photo = st.photo; photoAspect = st.photoAspect || "3:4"; photoImg = null; keyPhoto = st.keyPhoto || null; baseKey = "";
     $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="muted" style="font-size:13px;margin-top:8px">Tap to change photo</div>`;
     result = lookResult = st.result; after = st.after || null; planState = "ready"; planP = null;
