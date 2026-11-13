@@ -2755,6 +2755,7 @@ async function placementMap() {
 const fullScore = r => { const c = (r.categories || []).find(c => c.name === "Fullness"); return c ? Number(c.score) : null; };
 const needsShaping = r => {
   if (r.tree?.kind === "natural") return false;
+  if (src === "room" && roomTree) return false;   // their own tree, stood in the room: its fullness is how it really is (Eric: a sparse tree was filled in and grew taller)
   const f = fullScore(r);
   return f == null ? (r.plan || []).some(p => p.element === "fluff") : f <= 7;
 };
