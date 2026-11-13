@@ -2293,6 +2293,7 @@ async function run() {
   $("#startErr").textContent = $("#detailsErr").textContent = "";
   const L = startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree", mode === "design" ? DESIGN_STEPS : CHECK_STEPS, 12, photo);
   evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined, inspo: mode === "design" ? (inspoPhoto || ideaPhoto || undefined) : undefined };
+  planT0 = Date.now();
   const myPlan = api("/api/evaluate", { ...evalBody, part: "plan" });
   myPlan.catch(() => {});
   let look;
@@ -2314,11 +2315,29 @@ async function run() {
   fillReveal();
   show("s-reveal", ["s-home"]);
 }
+// "Your plan" counts down like the preview does: an estimate from how long plans have taken on this phone (about a minute to start)
+let planT0 = Date.now(), planTimer = null;
+const planTypical = () => { try { return Math.min(120, Math.max(30, +localStorage.getItem("ts_plan_s") || 60)); } catch { return 60; } };
+const planLearn = sec => { if (!(sec > 5 && sec < 240)) return; try { localStorage.setItem("ts_plan_s", Math.round(planTypical() * .6 + sec * .4)); } catch {} };
+function planLeft() {
+  const left = planTypical() - (Date.now() - planT0) / 1000;
+  if (left <= 8) return "designing, almost there…";
+  const n = left > 50 ? Math.round(left / 10) * 10 : Math.ceil(left / 5) * 5;
+  return n >= 60 ? `designing, about ${n === 60 ? "a minute" : Math.round(n / 60 * 2) / 2 + " minutes"}…` : `designing, about ${n} seconds…`;
+}
+function planTick() {
+  clearInterval(planTimer);
+  planTimer = setInterval(() => {
+    if (planState !== "wait") return clearInterval(planTimer);
+    const em = $("#pg1 em"); if (em) em.textContent = planLeft();
+  }, 1000);
+}
 function getPlan(pending) {
   const forLook = lookResult;
   planState = "wait"; setFoot(); fillReveal();
-  const ask = () => api("/api/evaluate", { ...evalBody, part: "plan" });
+  const ask = () => { planT0 = Date.now(); return api("/api/evaluate", { ...evalBody, part: "plan" }); };
   const p = (pending && pending.then ? pending : ask()).catch(() => ask());
+  planTick();
   planP = p;
   p.then(pl => {
     if (result !== forLook) return;                 // they started over
@@ -2326,6 +2345,7 @@ function getPlan(pending) {
     Object.assign(result, pl, { _meta: { model: pm.model || lm.model, seconds: Math.max(lm.seconds || 0, pm.seconds || 0), scoreSeconds: lm.seconds, planSeconds: pm.seconds, scoreUsage: lm.usage, planUsage: pm.usage } });
     treeFacts(result.tree);
     planState = "ready"; planP = null;
+    planLearn((Date.now() - planT0) / 1000);
     fill();
     loadDetails();                 // written steps: in the background
     startVersions(); resetFeedback();
@@ -2442,7 +2462,7 @@ function fillReveal() {
   const step = (el, st, note) => { el.className = st; el.querySelector(".ic").textContent = st === "ok" ? "✓" : st === "bad" ? "!" : ""; el.querySelector("em").textContent = note; };
   const designWord = mode === "design" ? "finished" : "improved";
   $("#pg2").querySelector("small").firstChild.textContent = `A picture of your ${designWord} tree · `;
-  step($("#pg1"), planState === "wait" ? "on" : planState === "error" ? "bad" : "ok", planState === "wait" ? "designing…" : planState === "error" ? "didn't come through. Tap Try again." : "ready");
+  step($("#pg1"), planState === "wait" ? "on" : planState === "error" ? "bad" : "ok", planState === "wait" ? planLeft() : planState === "error" ? "didn't come through. Tap Try again." : "ready");
   step($("#pg2"), planState !== "ready" ? "next" : previewState === "done" ? "ok" : previewState === "failed" ? "bad" : "on",
     planState !== "ready" ? "next" : previewState === "done" ? "ready" : previewState === "failed" ? "didn't come through. Try again from your results." : "painting, about 20 seconds…");
   $("#progress").hidden = false;
