@@ -83,7 +83,7 @@
     <div class="intro">
       <div class="eyebrow">Studio</div>
       <h1>Brand photography</h1>
-      <p>Each slot is a photo the app and site use. Generate, adjust the wording if you like, and tap <b>Use this</b> on the one you love. It appears in the app right away. Until you choose one, that spot keeps its fabric texture.</p>
+      <p>Each slot is a photo the app and site use. Generate one (adjust the wording if you like) or <b>Upload</b> your own, then tap <b>Use this</b> on the one you love. It appears in the app right away. Until you choose one, that spot keeps its fabric texture.</p>
     </div>
     <div class="banner" id="setup" hidden><b>One step first:</b> photos you choose are saved in Vercel Blob storage, which isn't connected yet. In Vercel, open the tree-style project → <b>Storage</b> → <b>Create</b> → <b>Blob</b> → connect it to this project → then <b>Redeploy</b>. You can still generate and preview images in the meantime.</div>
     <div class="refcard" id="refCard">
@@ -126,6 +126,12 @@ const SLOTS = [
     prompt: "Deep winter berry red silk velvet (#6B2E2E), softly draped in a few broad diagonal folds, with warm highlights along the crests of the folds and rich dark shadows. Luxurious, quiet, elegant." },
   { id: "hero", name: "Welcome", where: "Top of the app's welcome screen and the website hero", aspect: "3:4",
     prompt: "A breathtaking, professionally styled 8 ft Christmas tree in an elegant living room at dusk: velvet ribbon billowing out of the branches and tucking back in, oversized antique gold and winter berry ornaments, frosted greenery stems and magnolias, a full, lush crown with a refined topper of stems and ornaments. Candles and a fireplace glow softly nearby. The tree is the hero of the frame, slightly off-center." },
+  { id: "home", name: "App home screen", where: "Full-screen photo behind the app's home screen on phones (logo at the top, headline and buttons at the bottom)", aspect: "9:16",
+    prompt: "Tall portrait photo for a phone screen: a warm, cinematic heritage living room at night, Ralph Lauren Home feeling. A full, beautifully decorated Christmas tree stands in the center of the room, in the middle of the frame, with red and antique gold glass ornaments and warm white lights. Paneled walls, an oil painting in a gilded frame, brass table lamps glowing, a linen sofa with a velvet pillow on the right. Leave quiet, darker space above the tree for a logo and a calm floor area in the lower third for a headline. No text anywhere in the picture." },
+  { id: "pass", name: "Early access sign-in", where: "The wide photo on the app's tester sign-in screen, under the logo; the headline sits over its lower left, so keep that area calm and darker", aspect: "3:2",
+    prompt: "Cinematic close photograph of a beautifully decorated Christmas tree on the right of the frame: deep burgundy velvet ribbon and bows, antique gold ornaments, frosted evergreen branches and red berries, warm white lights. On the left, softly out of focus, a glowing fireplace and candles on a wooden mantel in a warm heritage room. Authentic, warm, art-directed, not oversaturated. No text anywhere in the picture." },
+  { id: "create", name: "What would you like to do?", where: "The one photo on the app's Create my space screen, above the Check My Tree and Design My Tree buttons", aspect: "4:5",
+    prompt: "Editorial interiors-magazine photograph of a professionally decorated Christmas tree, centered and fully in frame from tip to skirt: wide velvet ribbon billowing out of the branches and tucking back in, antique gold and winter berry glass ornaments, frosted greenery stems, warm white lights glowing deep in the branches, a refined topper. Soft, warm natural light in a quiet heritage room with linen and walnut tones. Calm, understated, luxurious. No text anywhere in the picture." },
   { id: "check", name: "Check my tree", where: "Home screen card (wide photo above the words)", aspect: "16:9",
     prompt: "Wide banner photo, framed so it reads at a glance on a phone: a close, intimate view of a beautifully decorated Christmas tree: velvet ribbon billowing out of the branches and tucking back in, glass ornaments in winter berry and antique gold, glowing warm white lights deep in the branches. No cards, tags, signs or writing anywhere in the picture." },
   { id: "design", bare: true, name: "Design my tree", where: "Home screen card (wide photo above the words)", aspect: "16:9",
@@ -175,7 +181,7 @@ function build(current) {
       </div>
       ${current[s.id] ? `<button class="fromcur" style="align-self:flex-start;appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:99px;padding:5px 12px;font:500 12.5px var(--sans);cursor:pointer">Start from the photo in use</button>` : ""}
       <textarea>${s.prompt}</textarea>
-      <div class="row"><button class="btn ghost gen">Generate</button><button class="btn use" disabled>Use this</button></div>
+      <div class="row"><button class="btn ghost gen">Generate</button><label class="btn ghost up" style="cursor:pointer">Upload<input type="file" accept="image/*" hidden></label><button class="btn use" disabled>Use this</button></div>
       <details class="fixbox"><summary>Fix the tree in the new photo</summary>
         <div class="fixstep"><b>1 · Clear the streams</b><textarea class="fixtxt rm">Remove every length of ribbon that runs down or across the tree, and any long ribbon tails hanging from the topper; fill those areas with natural green branches and lights. Move ornaments so none line up in a column, row or diagonal: scatter and stagger them, keep the largest set back toward the trunk, and keep the visual weight balanced left and right.</textarea><button class="btn ghost fix" data-k="rm" disabled>Clear the streams</button></div>
         <div class="fixstep"><b>2 · Tuck in the ribbon</b>
@@ -203,6 +209,18 @@ function build(current) {
         if (e.status === 401) return gate("That password didn't work.");
         nf.innerHTML = '<span class="lbl">New</span>Try again'; msg.className = "msg err"; msg.textContent = e.message;
       } finally { genB.disabled = false; }
+    };
+    // Your own photo: shown as New, then Use this saves it like a generated one
+    el.querySelector(".up input").onchange = async e => {
+      const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+      msg.className = "msg"; msg.textContent = "Loading your photo…";
+      try {
+        const src = await new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = no; fr.readAsDataURL(f); });
+        img = await shrink(src);
+        nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; el.dispatchEvent(new Event("ts-img"));
+        useB.disabled = false; fixBs.forEach(b => b.disabled = false);
+        msg.textContent = "Like it? Tap Use this. The app fills the card with it, so the edges may be trimmed.";
+      } catch (err) { msg.className = "msg err"; msg.textContent = "That photo couldn't be opened. Try a JPG or PNG."; }
     };
     const fromCur = el.querySelector(".fromcur");
     if (fromCur) fromCur.onclick = async () => {
