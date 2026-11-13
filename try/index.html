@@ -548,6 +548,14 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   .roommark{margin-top:14px}
   .changepill{display:flex;justify-content:center;width:100%;max-width:524px;margin:14px auto 0;cursor:pointer}
   #s-photo.room label.drop{display:none}
+  #s-photo.has #photoSub{display:none}
+  #s-photo.has h1::after{display:none}
+  #s-photo.has label.drop{background:none !important;border:0 !important;padding:6px 0 0;min-height:0}
+  #s-photo.has label.drop{display:block;text-align:center;margin-top:8px}
+  #s-photo.has #dropInner img{display:block;margin:0 auto;
+  max-height:max(220px, calc(100dvh - 300px));border-radius:16px;box-shadow:0 14px 34px -16px rgba(0,0,0,.8)}
+  .pcap{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:14px;color:var(--muted)}
+  .pcap b{font:500 13px var(--sans);color:var(--gold);border:1px solid var(--line);border-radius:999px;padding:6px 12px}
   .rmhint{text-align:center;font:500 11px var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
   .rmwrap{position:relative;border-radius:14px;overflow:hidden;cursor:crosshair;box-shadow:inset 0 0 0 1px var(--line)}
   .rmwrap img{width:100%;display:block}
@@ -2139,8 +2147,9 @@ const PHOTO_TIPS = {
 };
 let tipsKey = "tree";
 const tipGrid = () => `<ul class="ptips">${PHOTO_TIPS[tipsKey].map(([i, t, d]) => `<li><span class="pti">${TIP_ICON[i]}</span><b>${t}</b><small>${d}</small></li>`).join("")}</ul>`;
+let photoH = "";
 function emptyDrop() {
-  $("#s-photo").classList.remove("room");
+  $("#s-photo").classList.remove("room", "has"); if (photoH) $("#photoH").textContent = photoH;
   $("#dropInner").innerHTML = `<span class="dropcam">${TIP_ICON.camera}</span><strong>Tap to take or choose a photo</strong><div class="ptipk">For the best result</div>${tipGrid()}`;
 }
 const tipsSeen = () => { try { return localStorage.getItem("ts_photo_tips") === "1"; } catch { return true; } };
@@ -2160,16 +2169,17 @@ $("#tipsSheet").addEventListener("click", e => {
 function setPhotoCopy(key) {
   const c = PHOTO_COPY[key];
   tipsKey = key === "room" ? "room" : "tree"; if (!photo) emptyDrop();
-  $("#photoH").textContent = c.h; $("#photoSub").textContent = c.sub;
+  photoH = c.h; $("#photoH").textContent = c.h; $("#photoSub").textContent = c.sub;
   $("#photoTips").innerHTML = c.tips.map(t => `<li>${t}</li>`).join("");
   $("#tipsBox").hidden = true; $("#photoOk").hidden = true;   // the tips now live inside the photo box
 }
-// Once there's a photo, one short check replaces the tips
+// Once there's a photo the job is done, so the screen gets quiet (Eric: too wordy): the title confirms it,
+// the instructions go, the photo gets the room, and one line under it asks the only check left, next to Change photo.
 function photoChecked() {
   const room = mode === "design" && src === "room";
-  $("#tipsBox").hidden = true;
-  $("#photoOk").hidden = room;
-  $("#photoOk").textContent = "Got it. Just check the whole tree, top included, is in the photo. Tap it to change.";
+  $("#tipsBox").hidden = true; $("#photoOk").hidden = true;
+  $("#s-photo").classList.toggle("has", !room);
+  if (!room) $("#photoH").textContent = "Here's your tree";
 }
 // Design: pick a starting point
 document.querySelectorAll(".src").forEach(b => b.onclick = () => {
@@ -2279,7 +2289,7 @@ $("#file").addEventListener("change", async e => {
       $("#s-photo").classList.add("room");   // the placement picture moves to the top, with Change photo under it
       $("#rmImg").src = roomPhoto; $("#roomMark").hidden = false; drawRoomDot();
     } else
-    $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="muted" style="font-size:13px;margin-top:8px">Tap to change photo</div>`;
+    $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="pcap"><span>Is the whole tree in view, top included?</span><b>Change photo</b></div>`;
     paint(false);
     photoChecked();
   } catch { $("#photoErr").textContent = "Couldn't read that photo. Try a JPG or PNG."; }
@@ -3321,7 +3331,7 @@ async function restoreSaved(st) {
     const f = st.form || {}; ["kind", "density", "stage", "style"].forEach(n => setRadio(n, f[n] ?? "")); $("#hVal").value = f.height ? String(Math.round(Number(f.height))) : ""; $("#theme").value = f.theme || ""; syncStyle();
     $("#stageQ").hidden = true; $("#densityQ").hidden = false; $("#inspoRow").hidden = mode !== "design"; setPhotoCopy(mode === "design" ? (src === "room" ? "room" : "design") : "check");
     photo = st.photo; photoAspect = st.photoAspect || "3:4"; photoImg = null; keyPhoto = st.keyPhoto || null; baseKey = "";
-    $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="muted" style="font-size:13px;margin-top:8px">Tap to change photo</div>`;
+    $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="pcap"><span>Is the whole tree in view, top included?</span><b>Change photo</b></div>`; photoChecked();
     result = lookResult = st.result; after = st.after || null; planState = "ready"; planP = null;
     evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined };
     versions = (st.versions || []).length ? st.versions : [{ label: "Original", result: JSON.parse(JSON.stringify(result)), after }];
