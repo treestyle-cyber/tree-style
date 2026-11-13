@@ -2276,7 +2276,21 @@ function startLoading(title, steps, evalSeconds, pic) {
   tick(); const iv = setInterval(tick, 400);
   return {
     painting() { phase = "paint"; t1 = Date.now(); tick(); },
-    done() { clearInterval(iv); stopTips(); $("#loadFill").style.width = "100%"; lis.forEach(li => li.className = "done"); setTimeout(() => { if (gen === loadGen) $("#loading").hidden = true; }, 350); }
+    // When the answer comes back early, the remaining lines still check off one at a time, slowly enough to read
+    // (each gets at least about 2/3 of a second on screen), instead of all at once.
+    done(fast) {
+      clearInterval(iv); $("#loadFill").style.width = "100%";
+      if (fast) { stopTips(); lis.forEach(li => li.className = "done"); $("#loading").hidden = true; return; }   // something went wrong: show it right away
+      let i = lis.findIndex(li => li.className !== "done"); if (i < 0) i = lis.length;
+      const next = () => {
+        if (gen !== loadGen) return;
+        if (i >= lis.length) { stopTips(); setTimeout(() => { if (gen === loadGen) $("#loading").hidden = true; }, 450); return; }
+        lis[i].className = "done"; if (lis[i + 1]) lis[i + 1].className = "on"; i++;
+        setTimeout(next, 650);
+      };
+      if (lis[i]) lis[i].className = "on";
+      setTimeout(next, i < lis.length ? 650 : 0);
+    }
   };
 }
 
@@ -2307,7 +2321,7 @@ async function makeBase() {
     photo = await thumb(out.image, 1536, .9); photoImg = null; photoAspect = await aspectOf(photo); baseKey = key;
     LB.done(); return true;
   } catch (e) {
-    LB.done();
+    LB.done(true);
     if (e.status === 401) { try { sessionStorage.removeItem("ts_pw"); } catch {} show("s-pass", []); return false; }
     $("#startErr").textContent = $("#detailsErr").textContent = "We couldn't set up your tree: " + e.message; return false;
   }
@@ -2326,7 +2340,7 @@ async function run() {
     look = await api("/api/evaluate", { ...evalBody, part: "look" });
     rerunFromHub = false;
   } catch (e) {
-    L.done();
+    L.done(true);
     if (e.status === 401) { try { sessionStorage.removeItem("ts_pw"); } catch {} $("#passErr").textContent = "That password didn't work."; show("s-pass", []); return; }
     $("#startErr").textContent = $("#detailsErr").textContent = "Something went wrong: " + e.message;
     if (rerunFromHub) { $("#detailsSub").textContent = "That didn't go through: " + e.message; }
@@ -3143,7 +3157,7 @@ async function partnerSend(req, label, opts = {}) {
     L.done();
     show("s-results", ["s-home"]);
   } catch (e) {
-    L.done();
+    L.done(true);
     if (sentColor) { $("#pColor").value = sentColor; $("#pColor").dispatchEvent(new Event("input")); }
     if (sentOrn) { ornPhoto = sentOrn; $("#ornLbl").textContent = "Photo added ✓"; $("#ornBtn").classList.add("on"); }
     $("#pStatus").textContent = "That didn't go through: " + e.message;
