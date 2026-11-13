@@ -737,6 +737,8 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .chevc{flex:none;width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(184,156,107,.55);display:grid;place-items:center;transition:transform .25s,background .25s}
   .chevc::before{content:"";width:8px;height:8px;border-right:2px solid var(--gold);border-bottom:2px solid var(--gold);transform:translateY(-2px) rotate(45deg)}
   details.buy[open] .chevc{transform:rotate(180deg);background:rgba(184,156,107,.14)}
+  details.buy.ess{border-style:dashed}
+  details.buy.ess .buyrow b{background:rgba(20,28,44,.85)}
   details.buy[open] > summary{border-bottom:1px solid var(--line);margin-bottom:12px}
   #shop.card{background:none;border:0;box-shadow:none;padding:0}
   .buyline{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line)}
@@ -1851,6 +1853,17 @@ const shopFor = (b, key) => {
   const p = creatorPick(b, key);
   return p ? "https://www.amazon.com/dp/" + p.asin + (AMAZON_TAG ? "?tag=" + encodeURIComponent(AMAZON_TAG) : "") : shopUrl(b.q);
 };
+// Stylist's essentials: the small tools a designer keeps on hand for any tree, at the end of every shopping list.
+// Not part of the plan, the preview or the "things to look for" count.
+const ESSENTIALS = [
+  { id: "hooks", label: "Ornament hooks", qty: "Enough for every ornament, with extra to spare", q: "gold ornament hooks" },
+  { id: "wire", label: "Green floral paddle wire", qty: "Holds ribbon loops and cascades exactly where you want them", q: "green floral paddle wire" },
+  { id: "ties", label: "Green twist ties", qty: "Fasten stems and picks to the branches, out of sight", q: "green garden twist ties" },
+  { id: "remote", label: "Remote control outlet", qty: "Lights on and off without reaching behind the tree", q: "remote control outlet for christmas lights" },
+  { id: "cord", label: "Green extension cord", qty: "Disappears into the branches", q: "green extension cord indoor" },
+  { id: "scissors", label: "Fabric scissors", qty: "Crisp, clean ribbon tails", q: "fabric scissors" },
+];
+const essentials = () => ESSENTIALS;
 
 let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
 let factsSet = false, keyPhoto = null, inspoPhoto = null, rerunFromHub = false;
@@ -2434,7 +2447,8 @@ function fill() {
   shopNow = shopping;
   resetPicks();
   $("#shop").innerHTML = (nItems ? `<div class="shophead"><div><b id="gotCount"></b><span class="gotbar"><i id="gotBar"></i></span></div><button class="btn ghost" id="shareList">Share list</button></div>` : "") + (nItems && !factsSet ? estNote(r) : "")
-    + (nItems ? shopping.map((g, gi) => `<details class="buy"${gi === 0 ? " open" : ""}><summary><span class="bic" aria-hidden="true">${SHOP_ICON[g.key] || SHOP_ICON.base}</span><span class="bt"><b>${esc(g.title)}</b><small>${g.items.length} ${g.items.length === 1 ? "item" : "items"}</small></span><span class="chevc" aria-hidden="true"></span></summary>${g.items.map(b => `<div class="buyline${gotItems.has(b.label) ? " have" : ""}"><button class="got${gotItems.has(b.label) ? " on" : ""}" data-got="${esc(b.label)}" aria-label="Got it: ${esc(b.label)}"></button>${buyRow(b, g.key)}</div>`).join("")}</details>`).join("") : `<p class="muted">You already have what you need. It's all in how you place it.</p>`);
+    + (nItems ? shopping.map((g, gi) => `<details class="buy"${gi === 0 ? " open" : ""}><summary><span class="bic" aria-hidden="true">${SHOP_ICON[g.key] || SHOP_ICON.base}</span><span class="bt"><b>${esc(g.title)}</b><small>${g.items.length} ${g.items.length === 1 ? "item" : "items"}</small></span><span class="chevc" aria-hidden="true"></span></summary>${g.items.map(b => `<div class="buyline${gotItems.has(b.label) ? " have" : ""}"><button class="got${gotItems.has(b.label) ? " on" : ""}" data-got="${esc(b.label)}" aria-label="Got it: ${esc(b.label)}"></button>${buyRow(b, g.key)}</div>`).join("")}</details>`).join("") : `<p class="muted">You already have what you need. It's all in how you place it.</p>`)
+    + `<details class="buy ess"><summary><span class="bic" aria-hidden="true">${SHOP_ICON.essentials}</span><span class="bt"><b>Stylist's essentials</b><small>The little things that make every tree easier</small></span><span class="chevc" aria-hidden="true"></span></summary>${essentials(r).map(b => `<div class="buyline${gotItems.has(b.label) ? " have" : ""}"><button class="got${gotItems.has(b.label) ? " on" : ""}" data-got="${esc(b.label)}" aria-label="Got it: ${esc(b.label)}"></button>${buyRow(b, "essentials")}</div>`).join("")}</details>`;
   syncGot();
   $("#brief").textContent = r.render_brief || "";
   $("#ideas").innerHTML = (r.ideas || []).slice(0, 3).map((x, i) => `<button data-i="${i}">Try: ${esc(x.label)}</button>`).join("") + (r.ideas?.length ? `<button data-more>Something else…</button>` : "");
@@ -2710,7 +2724,8 @@ $("#shop").addEventListener("click", async e => {
   if (e.target.closest("#shareList")) {
     // Easy to read in a text message: an emoji per section, a box or a check per item, the amount on its own line
     const EMO = { lights: "💡", primary_picks: "🌿", ribbon: "🎀", florals: "🌺", statement: "🔴", medium: "🟡", small_picks: "🍒", crown: "⭐", base: "🎁" };
-    const text = "🎄 My TreeStyle shopping list\n\n" + shopNow.map(gr => `${EMO[gr.key] || "✨"} ${gr.title.toUpperCase()}\n` + gr.items.map(b => !b.q ? `↪️ ${b.label}` : `${gotItems.has(b.label) ? "✅" : "⬜️"} ${b.label.replace(/^./, c => c.toUpperCase())}${b.qty && /\d/.test(b.qty) ? " — " + b.qty : ""}`).join("\n")).join("\n\n") + "\n\n✅ = already have it";
+    const text = "🎄 My TreeStyle shopping list\n\n" + shopNow.map(gr => `${EMO[gr.key] || "✨"} ${gr.title.toUpperCase()}\n` + gr.items.map(b => !b.q ? `↪️ ${b.label}` : `${gotItems.has(b.label) ? "✅" : "⬜️"} ${b.label.replace(/^./, c => c.toUpperCase())}${b.qty && /\d/.test(b.qty) ? " — " + b.qty : ""}`).join("\n")).join("\n\n")
+      + "\n\n🧰 STYLIST'S ESSENTIALS\n" + essentials(result).map(b => `${gotItems.has(b.label) ? "✅" : "⬜️"} ${b.label}`).join("\n") + "\n\n✅ = already have it";
     try { if (navigator.share) { await navigator.share({ title: "My tree shopping list", text }); return; } } catch (err) { if (err.name === "AbortError") return; }
     try { await navigator.clipboard.writeText(text); e.target.textContent = "Copied ✓"; setTimeout(() => e.target.textContent = "Share list", 1800); } catch { e.target.textContent = "Couldn't copy"; }
   }
@@ -2726,9 +2741,20 @@ const SHOP_ICON = {
   medium: _i(`<circle cx="11" cy="20" r="6"/><path d="M9.5 13.8h3v-1.6h-3zM11 12.2V10"/><circle cx="23" cy="22" r="4"/><path d="M22 17.8h2v-1.2h-2zM23 16.6V15"/>`),
   small_picks: _i(`<path d="M10 29c2-7 4-11 8-15"/><circle cx="19" cy="11" r="2.3"/><circle cx="23.5" cy="13" r="2.3"/><circle cx="21" cy="7" r="2.3"/><circle cx="25" cy="8.6" r="2"/><path d="M14 20c-4-1-6 1-7 3 3 0 5-1 7-3z"/>`),
   crown: _i(`<path d="M16 3.5l2.9 6.4 7 .7-5.3 4.7 1.6 6.9L16 18.6l-6.2 3.6 1.6-6.9-5.3-4.7 7-.7z"/><path d="M16 22v7M12.5 29h7"/>`),
+  essentials: _i(`<circle cx="9" cy="24" r="4"/><circle cx="23" cy="24" r="4"/><path d="M11.8 21.2 22 4M20.2 21.2 10 4"/>`),
   base: _i(`<rect x="5" y="13" width="22" height="15" rx="1.5"/><path d="M3.5 9.5h25V13h-25zM16 9.5V28"/><path d="M16 9.5c-3-5-8-5-7-1.5 1 2 7 1.5 7 1.5zM16 9.5c3-5 8-5 7-1.5-1 2-7 1.5-7 1.5z"/>`),
 };
+// Tool drawings for Stylist's essentials, in gold, evergreen and walnut
+const ESS_PIC = {
+  hooks: `<path d="M17 8a4 4 0 1 1 4 4v24c0 4 6 4 6 0" stroke="#D4B26E" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M29 10a3 3 0 1 1 3 3v20c0 3 4.5 3 4.5 0" stroke="#B89C6B" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/>`,
+  wire: `<ellipse cx="24" cy="24" rx="15" ry="9" fill="#5B4632"/><rect x="9" y="17" width="30" height="14" fill="#3E5A44"/><path d="M9 20h30M9 23h30M9 26h30M9 29h30" stroke="#2C4232" stroke-width="1"/><ellipse cx="24" cy="17" rx="15" ry="5" fill="#7A5E42"/><path d="M39 24c4 0 6 3 4 8" stroke="#3E5A44" stroke-width="1.6" fill="none"/>`,
+  ties: `<path d="M10 34c6-10 10-4 14-12s10-6 14-14" stroke="#3E5A44" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M8 24c8-2 10 6 18 4s10-8 16-6" stroke="#4E7356" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+  remote: `<rect x="15" y="6" width="18" height="36" rx="5" fill="#2A3348" stroke="#B89C6B" stroke-width="1.4"/><circle cx="24" cy="15" r="4" fill="#D4B26E"/><rect x="19" y="24" width="10" height="4" rx="2" fill="#6E7891"/><rect x="19" y="31" width="10" height="4" rx="2" fill="#6E7891"/>`,
+  cord: `<path d="M6 30c8-14 18 6 26-8 4-7 8-6 10-4" stroke="#3E5A44" stroke-width="3.2" fill="none" stroke-linecap="round"/><rect x="36" y="13" width="8" height="10" rx="2" fill="#4E7356"/><path d="M38 13V9M42 13V9" stroke="#D4B26E" stroke-width="1.6"/>`,
+  scissors: `<circle cx="15" cy="34" r="6" fill="none" stroke="#D4B26E" stroke-width="2.6"/><circle cx="33" cy="34" r="6" fill="none" stroke="#D4B26E" stroke-width="2.6"/><path d="M19 30 34 6M29 30 14 6" stroke="#C9CED8" stroke-width="2.6" stroke-linecap="round"/><circle cx="24" cy="22" r="1.6" fill="#141C2C"/>`,
+};
 function itemPic(b, key) {
+  if (key === "essentials") return `<svg viewBox="0 0 48 48" aria-hidden="true">${ESS_PIC[b.id] || ""}</svg>`;
   const c = b.color || "#C9B48A", l = (b.label || "").toLowerCase(), id = "g" + Math.random().toString(36).slice(2, 7);
   const shade = `<defs><radialGradient id="${id}" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient></defs>`;
   const sv = d => `<svg viewBox="0 0 48 48" aria-hidden="true">${shade}${d}</svg>`;
