@@ -1024,14 +1024,14 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
       <div class="rarrow" aria-hidden="true">→</div>
       <div class="rrow after" id="afterRow"><div class="rlbl">After your plan</div><div class="orns" id="ornsAfter"></div><div class="rword"><b id="afterWord"></b><span id="afterNum"></span></div></div>
     </div>
-    <h1 id="headline"></h1>
-    <p id="summary"></p>
-    <div class="potential" id="potential" hidden></div>
     <div class="staycard" id="stayNote" hidden><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7.5v5.5"/><circle cx="12" cy="16.3" r=".6" fill="currentColor"/></svg></span><div><b>Keep this screen open</b><span>Closing TreeStyle or switching apps can stop your design.</span></div></div>
     <ol class="progress" id="progress" hidden>
       <li id="pg1"><span class="ic"></span><div><b>Your plan</b><small>Ribbon, stems, ornaments and your shopping list · <em></em></small></div></li>
       <li id="pg2"><span class="ic"></span><div><b>Your preview</b><small>A picture of your finished tree · <em></em></small></div></li>
     </ol>
+    <h1 id="headline"></h1>
+    <p id="summary"></p>
+    <div class="potential" id="potential" hidden></div>
     
     <button class="teaser" id="teaser" hidden><img id="teaserImg" alt=""><span id="teaserTxt">Your improved tree is ready</span></button>
     <p class="eye" id="eye"></p>
@@ -2040,7 +2040,9 @@ const FOOT = {
     ? ({ label: "Design my tree", act: () => { factsSet = true; useIdeaAsStyle(); run(); } })
     : ({ label: "Next", act: () => { factsSet = true; show("s-style"); } }),
   go: () => !val("style") ? { label: "Pick a style to continue", disabled: true } : ({ label: mode === "design" ? "Design my tree" : "See my tree's potential", act: run }),
-  seeIt: () => planState === "wait" ? ({ label: "Finishing your plan…", disabled: true, act: () => {} })
+  // While the plan is designing, no button: the progress right under the rating already says so (Eric: the greyed-out
+  // "Finishing your plan…" pill covered the progress). The button appears the moment the plan is ready.
+  seeIt: () => planState === "wait" ? null
     : planState === "error" ? ({ label: "Try again", act: getPlan })
     : ({ label: previewState === "done" ? (mode === "design" ? "See your finished tree" : "See your improved tree") : "See your plan", act: () => show("s-results", ["s-home"]) })
 };
@@ -2794,17 +2796,18 @@ async function markedImage() {
   const load = u => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = u; });
   const im = await load(after), c = document.createElement("canvas"), g = c.getContext("2d");
   // Work at least 1800px wide: at the preview's own size the logo's small tagline shrank to a blur
-  const k = Math.max(1, 1800 / im.naturalWidth);
-  c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
-  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high"; g.drawImage(im, 0, 0, c.width, c.height);
-  try {
-    // A calm midnight band across the bottom with the gold logo large enough to read on a phone
-    const logo = await load("/brand/logo-horizontal.png"), w = Math.min(c.width * .56, logo.naturalWidth), h = w * logo.naturalHeight / logo.naturalWidth, bh = h + c.width * .07;
-    const gr = g.createLinearGradient(0, c.height - bh * 1.5, 0, c.height);
-    gr.addColorStop(0, "rgba(20,28,44,0)"); gr.addColorStop(.35, "rgba(20,28,44,.82)"); gr.addColorStop(1, "rgba(20,28,44,.94)");
-    g.fillStyle = gr; g.fillRect(0, c.height - bh * 1.5, c.width, bh * 1.5);
-    g.drawImage(logo, (c.width - w) / 2, c.height - bh + (bh - h) / 2, w, h);
-  } catch {}
+  const k = Math.max(1, 1800 / im.naturalWidth), W = Math.round(im.naturalWidth * k), H = Math.round(im.naturalHeight * k);
+  // The logo sits on its own midnight band BELOW the picture, so the whole tree shows (Eric: the old overlay hid its base)
+  let logo = null; try { logo = await load("/brand/logo-horizontal.png"); } catch {}
+  const lw = logo ? Math.min(W * .46, logo.naturalWidth) : 0, lh = logo ? lw * logo.naturalHeight / logo.naturalWidth : 0, band = logo ? Math.round(lh + W * .08) : 0;
+  c.width = W; c.height = H + band;
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
+  g.fillStyle = "#141C2C"; g.fillRect(0, 0, c.width, c.height);
+  g.drawImage(im, 0, 0, W, H);
+  if (logo) {
+    g.fillStyle = "#B89C6B"; g.globalAlpha = .55; g.fillRect(0, H, W, Math.max(2, W * .002)); g.globalAlpha = 1;   // a hairline of gold where the photo ends
+    g.drawImage(logo, (W - lw) / 2, H + (band - lh) / 2, lw, lh);
+  }
   return new Promise(ok => c.toBlob(ok, "image/jpeg", .92));
 }
 $("#save").onclick = async () => {
