@@ -245,15 +245,17 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
 
   /* details + extras */
   .q{margin:18px 0 0}
-  .detline{font:400 27px/1.3 var(--serif);color:var(--ivory);text-align:center;margin:14px auto 26px;max-width:15em}
+  .detline{font:400 27px/1.3 var(--serif);color:var(--ivory);text-align:center;margin:4px auto 26px;max-width:15em}
+  .dskip{display:flex;justify-content:flex-end;margin:6px 0 0}
+  .dskipb{appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:999px;padding:7px 14px;font:500 13px var(--sans);cursor:pointer}
   .dq{display:grid;gap:18px}
   #s-details .q{margin:0;min-width:0}
   .dq{grid-template-columns:minmax(0,1fr)}
-  #s-details .q .lbl{font:600 11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 8px 4px}
-  #s-details .q .lbl small{font:500 11px var(--sans);letter-spacing:.06em;text-transform:none;color:var(--muted);margin-left:4px}
+  #s-details .q .lbl{font:600 13.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:0 0 8px 4px}
+  #s-details .q .lbl small{font:500 12.5px var(--sans);letter-spacing:.06em;text-transform:none;color:var(--muted);margin-left:4px}
   .seg{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:rgba(20,28,44,.55)}
   .seg .chip{flex:1;min-width:0}
-  .seg .chip span{display:block;text-align:center;padding:11px 4px;border:0;border-radius:999px;background:none;font:500 14px var(--sans);white-space:nowrap;transition:background .15s,color .15s}
+  .seg .chip span{display:block;text-align:center;padding:11px 4px;border:0;border-radius:999px;background:none;font:500 15.5px var(--sans);white-space:nowrap;transition:background .15s,color .15s}
   .seg .chip input:checked + span{background:var(--gold);color:var(--midnight)}
   .hwheel{position:relative;width:100%;max-width:100%;border:1px solid var(--line);border-radius:999px;background:rgba(20,28,44,.55);overflow:hidden;height:52px}
   .hwheel::before{content:"";position:absolute;left:50%;top:5px;bottom:5px;width:58px;margin-left:-29px;border-radius:999px;background:rgba(184,156,107,.16);border:1px solid rgba(184,156,107,.5);pointer-events:none;transition:background .2s}
@@ -902,6 +904,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
 
   <!-- Tree details (optional) -->
   <section class="screen" id="s-details" data-title="Your tree" data-foot="details" hidden>
+    <div class="dskip"><button class="dskipb" id="detailsSkip">Skip this step</button></div>
     <p class="detline" id="detailsSub">The more we know,<br>the better we can style it.</p>
     <div class="dq"><div class="q"><div class="lbl">Real or artificial?</div><div class="seg"><label class="chip"><input type="radio" name="kind" value="artificial"><span>Artificial</span></label><label class="chip"><input type="radio" name="kind" value="natural"><span>Real</span></label><input type="radio" name="kind" value="" checked hidden></div></div>
     <div class="q" id="prelitQ"><div class="lbl">Pre-lit?</div><div class="seg"><label class="chip"><input type="radio" name="prelit" value="yes"><span>Yes</span></label><label class="chip"><input type="radio" name="prelit" value="no"><span>No</span></label><input type="radio" name="prelit" value="" checked hidden></div></div>
@@ -912,7 +915,6 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
     <div class="q" id="stageQ" hidden><div class="lbl">Decorating</div><div class="seg"><label class="chip"><input type="radio" name="stage" value="partial"><span>Partway</span></label><label class="chip"><input type="radio" name="stage" value="finished"><span>Finished</span></label><input type="radio" name="stage" value="" checked hidden></div></div></div>
     <p class="dnote">Not sure? Leave it blank and we'll read it from your photo.</p>
     <div class="err" id="detailsErr"></div>
-    <button class="skip" id="detailsSkip">Skip, use my photo</button>
   </section>
 
   <!-- Style -->
@@ -1947,7 +1949,7 @@ hRow.addEventListener("click", e => {
 });
 // About your tree: one minimal page (Eric). Tapping a selected answer clears it, which means "not sure".
 function openDetails() {
-  $("#detailsSub").innerHTML = "The more we know,<br>the better we can style it."; $("#detailsSkip").textContent = "Skip, use my photo";
+  $("#detailsSub").innerHTML = "The more we know,<br>the better we can style it."; $("#detailsSkip").textContent = "Skip this step";
   show("s-details"); hTouched = false; hSet(Number($("#hVal").value) || 0, true);
 }
 $("#s-details").addEventListener("click", e => {
@@ -1996,10 +1998,8 @@ function setFoot() {
 }
 // The small gold line above each page title, like "STEP 2 OF 3" on the brand board
 function kicker(id) {
-  const flow = mode === "design" ? (src === "idea" ? ["s-idea", "s-details"] : ["s-photo", "s-details", "s-style"]) : ["s-photo", "s-details", "s-style"];
-  if (id === "s-details" && rerunFromHub) return "Your tree · optional";
   if (id === "s-start") return "Design my tree";
-  if (flow.includes(id)) return `Step ${flow.indexOf(id) + 1} of ${flow.length}`;
+  // no "Step 2 of 3" on the start screens (Eric: it took space the content needed)
   return { "s-fixes": "Your plan", "s-partner": "Your design partner", "s-score": "Your rating", "s-shop": "Your plan" }[id] || "";
 }
 function paint(isBack) {
