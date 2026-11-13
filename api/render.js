@@ -31,7 +31,11 @@ const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"
 // and the preview shows the same sparse tree.
 const SHAPE = `FIRST AND MOST IMPORTANT: MAKE THE TREE FULLER. In the original photo the tree is sparse: you can see the trunk and the room behind it through gaps between the branches, especially in the lower half. Show it after a decorator shaped every branch: each branch spread away from the trunk and its tips fanned up, out and down. Fill every see-through gap and bare patch with more of this tree's own branches and needles, so in the result you cannot see through the tree anywhere, top to bottom, including just above the floor and the tree skirt. It must look clearly lusher than the original at a glance. Use only this tree's own kind of branches (same needles, same green, same snow or flocking if any), so it is plainly the same tree. Keep its height and top tip; the sides may widen a little, as shaped branches do. Nothing below or around the tree changes. Then make the decorating changes below on the fuller tree.`;
 
-function editPrompt(brief, revision, shape) {
+// Lab test (variant "shape2", Eric Nov 12): shaping means opening every branch the way the tree was made. A sparse style
+// stays sparse; shaping never adds branches, fills the gaps between layers or changes the height.
+const SHAPE2 = `FIRST: SHAPE THE BRANCHES, BUT ADD NONE. Show this same tree after a decorator shaped it the way it was made: any branch folded up against the trunk or hanging flat is spread out from the trunk, and any clumped tips are fanned up, out and down. Work only with the branches already on the tree: never add branches, never fill the open space between its layers, and never make it denser than it was made. If its branches are already spread and the gaps between them are part of its style (a slim, alpine or sparse tree), leave its density exactly as it is: the gaps stay, and the decorations sit in and around them. Keep its exact height, top tip and silhouette; the sides widen only as far as a spread branch naturally reaches. Same needles, same green, same snow or flocking. Nothing below or around the tree changes. Then make the decorating changes below on the shaped tree.`;
+
+function editPrompt(brief, revision, shape, shape2) {
   if (revision) return `EDIT this exact photo; do not redraw it. It shows a decorated Christmas tree that the homeowner has already seen and wants to build on. The result must be recognizably the same picture with one change made: someone comparing them side by side should see the same tree, the same room and the same decorations in the same places, plus the change below. Make ONLY that change and keep everything else exactly as it is: same room, camera angle, framing and lighting, and every ornament, ribbon, flower and stem not mentioned stays exactly where it is, at the same size and color. Do not restyle, rearrange or re-render anything the change doesn't name. Make the change photorealistic, at true real-world scale, tucked into the branches, and clearly visible. The tree itself never changes: its height, outline, top tip and every branch stay exactly as they are. Removing a decoration only takes that decoration off and shows the branches that were behind it; a new topper sits on the tree's existing tip, with the upper branches still full around it. If a topper doesn't fit between the tree's tip and the top of the photo, let it run off the top edge of the frame; never shorten, cut, flatten or shrink the tree to make room for it.
 
 Change to make:
@@ -45,12 +49,12 @@ RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or 
 
 The result must look like an ordinary real photograph, with no circles, rings, outlines or other markings drawn on it.`;
   return `Edit this photo of a Christmas tree to show it after a professional holiday decorator ${shape ? "shaped its branches and " : ""}finished it.
-${shape ? "\n" + SHAPE + "\n" : ""}
-The first image is the photo to edit. Keep exactly the same room, camera angle, framing and lighting${shape ? ", and the tree's height and top tip" : ", tree shape and tree size: the tree keeps its exact height, outline, top tip and every branch"}. If a topper doesn't fit between the tree's tip and the top of the photo, let it run off the top edge of the frame; never shorten, cut, flatten or shrink the tree to make room for it. Keep everything already on the tree unless the instructions say otherwise. Make every addition photorealistic, at true real-world scale, lit by the room's light, and physically tucked into the branches (not floating or pasted on).
+${shape ? "\n" + (shape2 ? SHAPE2 : SHAPE) + "\n" : ""}
+The first image is the photo to edit. Keep exactly the same room, camera angle, framing and lighting${shape && shape2 ? ", and the tree's exact height, top tip and silhouette" : shape ? ", and the tree's height and top tip" : ", tree shape and tree size: the tree keeps its exact height, outline, top tip and every branch"}. If a topper doesn't fit between the tree's tip and the top of the photo, let it run off the top edge of the frame; never shorten, cut, flatten or shrink the tree to make room for it. Keep everything already on the tree unless the instructions say otherwise. Make every addition photorealistic, at true real-world scale, lit by the room's light, and physically tucked into the branches (not floating or pasted on).
 
 Changes to make:
 ${brief}
-${shape ? "\nRemember: the tree itself must look clearly fuller than the original, with no see-through gaps.\n" : ""}
+${shape ? (shape2 ? "\nRemember: it is the same tree with the same branches and the same height; shaping only spreads them out.\n" : "\nRemember: the tree itself must look clearly fuller than the original, with no see-through gaps.\n") : ""}
 
 ORNAMENT DEPTH (important): the biggest ornaments sit deep in the tree toward the trunk, partly covered by the branches in front of them, so they add depth and glow from within; they never perch on the outer tips or float in front of the tree, and none is so much bigger or brighter than the rest that it becomes the first thing you see.
 
@@ -101,7 +105,7 @@ export default async function handler(req, res) {
   const models = variant === "v2" ? [...new Set([LAB_MODEL, ...MODELS])] : MODELS;
   // A branded theme (a film, show, team) is painted with generic pieces from the start, since the model refuses trademarked designs
   const rref = await ribbonRef();
-  const prompt = editPrompt(brief, revision, !!shape && !revision) + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + RIBBON_SHAPE;
+  const prompt = editPrompt(brief, revision, !!shape && !revision, variant === "shape2") + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + RIBBON_SHAPE;
   if (generic) retried = true;
   for (const model of models) {
     let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rref, variant === "map2");

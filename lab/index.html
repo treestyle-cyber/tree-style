@@ -161,7 +161,12 @@ $("#file").onchange = async e => { for (const f of [...e.target.files].slice(0, 
 // buffalo check that didn't fit. To resume: [{ title: "Test: designed from creator picks", variant: "picks" }, { title: "Live app", variant: undefined }]
 // Testing (Nov 12, Eric saw yellow discs on a preview): flower spots on the placement map drawn as a plain blob in the
 // flower's color, without the yellow center, and described that way to the image model. Same plan in both columns.
-const COLS = [{ title: "Test: flower spots without the yellow center", variant: "map2", samePlan: true }, { title: "Live app", variant: undefined }];
+// Two tests are waiting for Eric: /lab (shaping that adds no branches) and /lab?test=map2 (flower spots without the yellow center)
+const TESTS = {
+  shape2: { title: "Test: shaping opens branches, adds none", variant: "shape2", samePlan: true },
+  map2: { title: "Test: flower spots without the yellow center", variant: "map2", samePlan: true },
+};
+const COLS = [TESTS[new URLSearchParams(location.search).get("test")] || TESTS.shape2, { title: "Live app", variant: undefined }];
 const ALL_STYLES = [["classic", "Traditional"], ["rustic", "Rustic"], ["modern", "Modern"], ["elegant", "Elegant"], ["playful", "Playful"], ["keep", "Keep my style"]];
 async function runOne(src, idx, mode, style, extra = {}, label = "") {
   const row = document.createElement("div");
