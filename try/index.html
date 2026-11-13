@@ -737,19 +737,22 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .chevc{flex:none;width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(184,156,107,.55);display:grid;place-items:center;transition:transform .25s,background .25s}
   .chevc::before{content:"";width:8px;height:8px;border-right:2px solid var(--gold);border-bottom:2px solid var(--gold);transform:translateY(-2px) rotate(45deg)}
   details.buy[open] .chevc{transform:rotate(180deg);background:rgba(184,156,107,.14)}
-  .ess{margin:22px -18px 6px;padding:0}
-  .esshead{display:flex;align-items:center;gap:12px;padding:0 18px 12px}
+  .ess{margin:18px -18px 4px;padding:0}
+  .esshead{display:flex;align-items:center;gap:10px;padding:0 18px 10px}
+  .esshead .bic{width:34px;height:34px}
+  .esshead .bic svg{width:20px;height:20px}
   .esshead .bic{background:radial-gradient(circle at 35% 30%,#E6D3A8,#B89C6B 70%);color:var(--midnight)}
-  .esshead b{display:block;font:500 24px/1.15 var(--serif);color:var(--ivory)}
-  .esshead small{display:block;font:600 11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-top:4px}
-  .essrow{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 18px 8px;scroll-padding:0 18px;scrollbar-width:none}
+  .esshead b{display:block;font:500 20px/1.15 var(--serif);color:var(--ivory)}
+  .esshead small{display:block;font:600 10px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:2px}
+  .essrow{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 18px 8px;scroll-padding:0 18px;scrollbar-width:none}
   .essrow::-webkit-scrollbar{display:none}
-  .esscard{flex:0 0 62%;max-width:240px;scroll-snap-align:start;display:flex;flex-direction:column;gap:4px;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:18px;padding:10px 10px 14px;background:linear-gradient(180deg,rgba(184,156,107,.10),rgba(28,37,56,.6))}
-  .esspic{aspect-ratio:1;border-radius:12px;background:rgba(20,28,44,.9) center/cover no-repeat;display:grid;place-items:center;margin-bottom:6px;overflow:hidden}
+  .esscard{flex:0 0 112px;scroll-snap-align:start;display:flex;flex-direction:column;gap:2px;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:14px;padding:6px 6px 9px;background:linear-gradient(180deg,rgba(184,156,107,.10),rgba(28,37,56,.6))}
+  .esspic{aspect-ratio:1;border-radius:9px;background:rgba(20,28,44,.9) center/cover no-repeat;display:grid;place-items:center;margin-bottom:5px;overflow:hidden}
   .esspic svg{width:58%;height:58%}
-  .esscard strong{font:500 19px/1.2 var(--serif);color:var(--ivory);padding:0 4px}
-  .esscard small{font-size:13px;line-height:1.4;color:var(--muted);padding:0 4px;flex:1}
-  .esscard em{align-self:flex-start;margin:8px 4px 0;font:600 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;font-style:normal;background:var(--gold);color:var(--midnight);border-radius:99px;padding:7px 14px}
+  .esscard strong{font:500 13.5px/1.25 var(--sans);color:var(--ivory);padding:0 2px;flex:1}
+  .esscard small{display:none}
+  .esscard em{align-self:flex-start;margin:5px 2px 0;font:600 9.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;font-style:normal;color:var(--gold)}
+  .esscard em::after{content:" ›"}
   .essdots{display:flex;justify-content:center;gap:6px;padding:4px 0 2px}
   .essdots i{width:6px;height:6px;border-radius:50%;background:rgba(184,156,107,.3);transition:background .3s,width .3s}
   .essdots i.on{background:var(--gold);width:16px;border-radius:3px}
@@ -1884,7 +1887,7 @@ let essTimer = null;
 function essRotate() {
   clearInterval(essTimer);
   const row = $("#essRow"), dots = [...document.querySelectorAll("#essDots i")]; if (!row) return;
-  const at = () => Math.round(row.scrollLeft / (row.firstElementChild.offsetWidth + 12));
+  const at = () => Math.round(row.scrollLeft / (row.firstElementChild.offsetWidth + 10));
   row.addEventListener("scroll", () => { const i = Math.min(dots.length - 1, at()); dots.forEach((d, k) => d.classList.toggle("on", k === i)); }, { passive: true });
   const stop = () => clearInterval(essTimer);
   ["pointerdown", "touchstart", "wheel", "focusin"].forEach(ev => row.addEventListener(ev, stop, { passive: true }));
@@ -1892,7 +1895,7 @@ function essRotate() {
   essTimer = setInterval(() => {
     if (!row.isConnected) return stop();
     if (row.getBoundingClientRect().top > innerHeight || !row.offsetParent) return;   // only while it's on screen
-    const w = row.firstElementChild.offsetWidth + 12, n = at() + 1;
+    const w = row.firstElementChild.offsetWidth + 10, n = at() + 1;
     row.scrollTo({ left: n * w > row.scrollWidth - row.clientWidth + 4 ? 0 : n * w, behavior: "smooth" });
   }, 3200);
 }
@@ -2480,8 +2483,8 @@ function fill() {
   resetPicks();
   $("#shop").innerHTML = (nItems ? `<div class="shophead"><div><b id="gotCount"></b><span class="gotbar"><i id="gotBar"></i></span></div><button class="btn ghost" id="shareList">Share list</button></div>` : "") + (nItems && !factsSet ? estNote(r) : "")
     + (nItems ? shopping.map((g, gi) => `<details class="buy"${gi === 0 ? " open" : ""}><summary><span class="bic" aria-hidden="true">${SHOP_ICON[g.key] || SHOP_ICON.base}</span><span class="bt"><b>${esc(g.title)}</b><small>${g.items.length} ${g.items.length === 1 ? "item" : "items"}</small></span><span class="chevc" aria-hidden="true"></span></summary>${g.items.map(b => `<div class="buyline${gotItems.has(b.label) ? " have" : ""}"><button class="got${gotItems.has(b.label) ? " on" : ""}" data-got="${esc(b.label)}" aria-label="Got it: ${esc(b.label)}"></button>${buyRow(b, g.key)}</div>`).join("")}</details>`).join("") : `<p class="muted">You already have what you need. It's all in how you place it.</p>`)
-    + `<section class="ess" aria-label="Stylist's essentials"><div class="esshead"><span class="bic" aria-hidden="true">${SHOP_ICON.essentials}</span><div><b>Stylist's essentials</b><small>The little things that make every tree easier</small></div></div>`
-    + `<div class="essrow" id="essRow">${essentials(r).map(b => `<a class="esscard" data-id="${b.id}" href="${shopFor(b, "essentials")}" target="_blank" rel="noopener sponsored"><span class="esspic" style="background-image:var(--photo-ess_${b.id}, none)">${itemPic(b, "essentials")}</span><strong>${esc(b.label)}</strong><small>${esc(b.qty)}</small><em>Shop</em></a>`).join("")}</div>`
+    + `<section class="ess" aria-label="Stylist's essentials"><div class="esshead"><span class="bic" aria-hidden="true">${SHOP_ICON.essentials}</span><div><b>Stylist's essentials</b><small>Little things for every tree</small></div></div>`
+    + `<div class="essrow" id="essRow">${essentials(r).map(b => `<a class="esscard" data-id="${b.id}" title="${esc(b.qty)}" href="${shopFor(b, "essentials")}" target="_blank" rel="noopener sponsored"><span class="esspic" style="background-image:var(--photo-ess_${b.id}, none)">${itemPic(b, "essentials")}</span><strong>${esc(b.label)}</strong><small>${esc(b.qty)}</small><em>Shop</em></a>`).join("")}</div>`
     + `<div class="essdots" id="essDots">${essentials(r).map((_, i) => `<i${i ? "" : ' class="on"'}></i>`).join("")}</div></section>`;
   essRotate();
   syncGot();
