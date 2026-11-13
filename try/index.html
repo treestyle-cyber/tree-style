@@ -264,13 +264,14 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   .seg .chip{flex:1;min-width:0}
   .seg .chip span{display:block;text-align:center;padding:11px 4px;border:0;border-radius:999px;background:none;font:500 15.5px var(--sans);white-space:nowrap;transition:background .15s,color .15s}
   .seg .chip input:checked + span{background:var(--gold);color:var(--midnight)}
-  .hwheel{position:relative;width:100%;max-width:100%;border:1px solid var(--line);border-radius:999px;background:rgba(20,28,44,.55);overflow:hidden;height:52px}
+  .hwheel{touch-action:pan-x;position:relative;width:100%;max-width:100%;border:1px solid var(--line);border-radius:999px;background:rgba(20,28,44,.55);overflow:hidden;height:52px}
   .hwheel::before{content:"";position:absolute;left:50%;top:5px;bottom:5px;width:58px;margin-left:-29px;border-radius:999px;background:rgba(184,156,107,.16);border:1px solid rgba(184,156,107,.5);pointer-events:none;transition:background .2s}
   .hwheel.set::before{background:var(--gold);border-color:var(--gold)}
-  .hrow{-webkit-mask-image:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent);display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 calc(50% - 29px);position:relative;z-index:1}
+  .hrow{-webkit-mask-image:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent);display:flex;height:100%;overflow-x:auto;overflow-y:hidden;touch-action:pan-x;overscroll-behavior:contain;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 calc(50% - 29px);position:relative;z-index:1}
   .hrow::-webkit-scrollbar{display:none}
   .hrow button{flex:0 0 58px;scroll-snap-align:center;appearance:none;background:none;border:0;color:var(--muted);font:500 17px var(--sans);cursor:pointer;transition:color .15s,transform .15s}
-  .hrow button.on{color:var(--ivory);transform:scale(1.15)}
+  .hrow button{height:100%}
+  .hrow button.on{color:var(--ivory);font-size:20px}
   .hwheel.set .hrow button.on{color:var(--midnight);font-weight:600}
   .dnote{font-size:13px;color:var(--muted);text-align:center;margin:18px 0 0}
   .q .lbl{font-weight:600;margin-bottom:8px}
