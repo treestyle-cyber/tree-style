@@ -119,10 +119,10 @@ const PLAN_PART = `
 
 YOUR PART: the scores and first impression are being written separately at the same time. You write only the plan, ideas, mockup and render brief.`;
 
-function revisePrompt(rv, hasExtra) {
+function revisePrompt(rv, hasExtra, inspoN) {
   const t = rv.tree || {}, mode = rv.mode === "design" ? "design" : "check";
   const history = (rv.history || []).slice(-6).map(h => `${h.role === "user" ? "Homeowner" : "You"}: ${String(h.text).slice(0, 400)}`).join("\n");
-  return `You are an expert Christmas tree designer acting as a design partner for someone who loves Christmas but isn't a designer. You already made the plan below. Revise it based on their request. Image 1 is their tree as it is now (the original photo).${hasExtra ? " Image 2 shows pieces they own (it may be a board of several photos; every piece in it is theirs): design around them and give them the best spots." : ""}
+  return `You are an expert Christmas tree designer acting as a design partner for someone who loves Christmas but isn't a designer. You already made the plan below. Revise it based on their request. Image 1 is their tree as it is now (the original photo).${hasExtra ? " Image 2 shows pieces they own (it may be a board of several photos; every piece in it is theirs): design around them and give them the best spots." : ""}${inspoN ? ` Image ${inspoN} is the inspiration photo the design was built from: keep drawing on it as before (what they love in it, its colors in their proportions, never its background). When they ask for something general like "jewel tones" or "more color", read it through this photo's own colors rather than generic ones.` : ""}
 
 ${GUIDE}
 
@@ -232,8 +232,9 @@ export default async function handler(req, res) {
     if (details) {
       ({ json: result, usage } = await callClaude([img], detailsPrompt(details), 8000, DETAILS_SCHEMA));
     } else if (revise) {
-      const ex = parseDataUrl(extra);
-      ({ json: result, usage } = await callClaude(ex ? [img, ex] : [img], revisePrompt(revise, !!ex), 16000, REVISE_SCHEMA));
+      const ex = parseDataUrl(extra), ins = revise.mode === "design" ? parseDataUrl(inspo) : null;   // the inspiration photo stays in view for changes (Eric: a stained-glass design lost its amber and green)
+      const imgs = [img, ...(ex ? [ex] : []), ...(ins ? [ins] : [])];
+      ({ json: result, usage } = await callClaude(imgs, revisePrompt(revise, !!ex, ins ? imgs.length : 0), 16000, REVISE_SCHEMA));
     } else {
       const imgs = [img], notes = ["Image 1 is their tree" + (mode === "design" ? " before decorating (bare, or with just lights)." : ".")];
       const pc = parseDataUrl(pieces), ins = mode === "design" ? parseDataUrl(inspo) : null;

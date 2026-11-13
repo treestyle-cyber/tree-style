@@ -3326,7 +3326,7 @@ async function partnerSend(req, label, opts = {}) {
   try {
     const cur = { quick_fixes: result.quick_fixes, plan: result.plan, ideas: result.ideas, mockup: result.mockup };
     const res = await api("/api/evaluate", {
-      image: photo, extra: sentOrn || undefined,
+      image: photo, extra: sentOrn || undefined, inspo: mode === "design" ? (inspoPhoto || ideaPhoto || undefined) : undefined,
       revise: { current: cur, request: req, history: chat, style: val("style"), theme: $("#theme").value.trim(), mode, tree: result.tree, cone: result.cone }
     });
     const next = Object.assign(JSON.parse(JSON.stringify(result)), {
