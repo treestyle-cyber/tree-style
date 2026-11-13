@@ -418,7 +418,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   .steptabs::-webkit-scrollbar{display:none}
   .steptabs button{flex:none;appearance:none;border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:9px 16px 9px 9px;font:500 15px var(--sans);color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:9px;white-space:nowrap;min-height:46px}
   .steptabs button i{font-style:normal;width:28px;height:28px;border-radius:50%;background:rgba(184,156,107,.14);display:grid;place-items:center;font-size:13px;font-weight:700}
-  .steptabs button.on{background:var(--green);border-color:var(--green);color:var(--on-accent)}
+  .steptabs button.on{background:var(--green);border-color:var(--green);color:var(--on-accent);font:500 22px/1 var(--serif);padding:8px 20px 8px 9px;min-height:50px}
   .steptabs button.on i{background:rgba(20,28,44,.18);color:var(--on-accent)}
   .steptabs button.done i{background:var(--brass);color:var(--on-accent)}
   .guidebox{position:relative;border-radius:var(--radius);overflow:hidden;background:#222}
@@ -428,6 +428,9 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   .guidebox.anim canvas,.guidebox.anim .peek,.guidebox.anim .zoombtn{display:none}
   .branchanim svg{display:block;width:100%;height:auto}
   .stephead{text-align:center;margin:6px 0 14px}
+  .stepwriting{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--gold);background:rgba(184,156,107,.08);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 12px}
+  .stepwriting .spin{flex:none;width:16px;height:16px;border-radius:50%;border:2px solid rgba(184,156,107,.3);border-top-color:var(--gold);animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
   .stephead .k{font:600 12px var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
   .stephead h2{font:500 34px/1.1 var(--serif);margin:6px 0 0;color:var(--ivory)}
   .stepcard #stepLead{font:17px/1.55 var(--sans);color:var(--ink)}
@@ -1107,6 +1110,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   <section class="screen" id="s-plan" data-title="Step by step" hidden>
     <div class="steptabs" id="stepTabs" role="tablist"></div>
     <div class="stephead"><div class="k" id="stepK"></div><h2 id="stepTitle"></h2></div>
+    <p class="stepwriting" id="stepWriting" hidden><span class="spin"></span>Adding the detailed how-to for each step. It appears here in a few seconds.</p>
     <div class="guidebox"><canvas id="guideCv" aria-label="Diagram of this step on your tree"></canvas><div class="branchanim" id="branchAnim" hidden></div><span class="peek" id="peek" aria-hidden="true">Press and hold to see your photo</span><button class="zoombtn" id="zoomGuide" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6M10.5 7.5v6M7.5 10.5h6"/></svg></button></div>
     <div class="card stepcard">
       <p id="stepLead"></p>
@@ -2575,11 +2579,8 @@ function loadDetails() {
 let pendingKey = null;
 async function openPlan(key) {
   if (typeof key === "string") { pendingKey = key; if (guide) { const i = guide.steps.indexOf(key); if (i >= 0) stepIdx = i; pendingKey = null; } }
-  if (!detailsReady && detailsP) {
-    const L = startLoading("Writing your step-by-step plan", ["Reading your plan", "Writing each step", "Adding sizes and quantities"], 15);
-    await detailsP;
-    L.done();
-  }
+  // Never block here (Eric: the plan was "ready", then a full screen said it was still being written). The steps open
+  // at once with the plan's short version; the detailed instructions fill in a few seconds later (drawStep reruns).
   show("s-plan");
 }
 
@@ -3090,11 +3091,14 @@ async function drawStep() {
   if (anim && !$("#branchAnim").firstChild) $("#branchAnim").innerHTML = branchSvg(result?.tree?.kind === "natural");
   const nd = steps.filter(k => doneSteps.has(k) || goodSteps.has(k)).length;
   const collapsed = goodSteps.has(key) && !openGood.has(key);
-  $("#stepK").textContent = key === "all" ? `${nd} of ${total} steps done` : `Step ${stepIdx + 1} of ${total}`;
-  $("#stepTitle").textContent = guide.title(key);
+  // The active pill at the top is the step's heading (Eric: "Step 2 of 8" and a second title repeated it)
+  $("#stepK").textContent = key === "all" ? `${nd} of ${total} steps done` : ""; $("#stepK").hidden = key !== "all";
+  $("#stepTitle").textContent = guide.title(key); $("#stepTitle").hidden = true;
+  $(".stephead").hidden = key !== "all";
   const its = guide.itemsFor(key), written = its.some(p => p.how);
   const leadTxt = written ? guide.note(key) : guide.lead(key);   // one set of instructions, never two
   $("#stepLead").textContent = leadTxt; $("#stepLead").hidden = !leadTxt || collapsed;
+  $("#stepWriting").hidden = detailsReady || !detailsP || collapsed || key === "all";
   const buy = guide.buy(key), lg = buy.length ? [] : guide.legend(key);
   $("#stepLegend").hidden = !lg.length || collapsed;
   $("#stepLegend").innerHTML = lg.map(l => `<li><b style="background:${l.color}"></b>${esc(l.text)}</li>`).join("");

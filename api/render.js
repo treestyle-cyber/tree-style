@@ -16,6 +16,15 @@ import { ribbonRef } from "../lib/ribbonref.js";
 // Read just before the ribbon shape, which ends the prompt (Nov 12: when the ribbon wording sat after the "no markings"
 // line, map spots showed in a preview; when this check came last and said nothing from the reference photo may appear,
 // bows came back). The ribbon shape now ends with the no-markings sentence, so both stay last.
+function plainRibbon(brief, shaping) {
+  let b = String(brief || "").split(/(?<=[.!?])\s+/).map(sent => {
+    if (!shaping && /\b(shap(e|ed|ing)|fluff\w*|fill(ed|ing)? (out|in) the (branches|gaps)|fuller)\b/i.test(sent) && /\b(branch|tree|gap)/i.test(sent)) return "";
+    if (/\btopper\b/i.test(sent)) return sent.replace(/\bloops?\b/gi, m => m.toLowerCase().endsWith("s") ? "billows" : "billow");
+    return sent.replace(/\btied\b/gi, "tucked").replace(/\btie\b/gi, "tuck").replace(/\bbows\b/gi, "billows").replace(/\bbow\b/gi, "billow").replace(/\blooped\b/gi, "billowed").replace(/\bloops\b/gi, "billows").replace(/\bloop\b/gi, "billow");
+  }).filter(Boolean).join(" ");
+  if (!shaping) b += " Keep the tree's branches exactly as they are in the photo: do not make the tree fuller or fill its gaps.";
+  return b;
+}
 const FINAL_CHECK = `
 
 FINAL CHECK: you are editing ONLY the first image. The placement map is a guide to positions: none of its colored blobs, ovals or dots may appear; every mark becomes a real decoration (ribbon, an ornament, a flower) or nothing. From the ribbon reference photo, copy only HOW its ribbon is used (cascades and soft billows that tuck back into the branches, never bows); never copy its room, tree or colors.`;
@@ -107,6 +116,11 @@ export default async function handler(req, res) {
   const models = variant === "v2" ? [...new Set([LAB_MODEL, ...MODELS])] : MODELS;
   // A branded theme (a film, show, team) is painted with generic pieces from the start, since the model refuses trademarked designs
   const rref = await ribbonRef();
+  // First previews and restyles: the plan's own words can undo the ribbon and shaping rules (Eric, Nov 12: bows came back,
+  // and a tree whose Fullness scored 8 came out fuller). Ribbon "loops" and "bows" are read as tied bows, so they become
+  // billows (a bow topper keeps its name); when the branches aren't being shaped, any talk of shaping them is dropped.
+  // Change something (revision) keeps the person's own words.
+  if (!revision) brief = plainRibbon(brief, !!shape);
   const prompt = editPrompt(brief, revision, !!shape && !revision) + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + FINAL_CHECK + RIBBON_SHAPE;
   if (generic) retried = true;
   for (const model of models) {
