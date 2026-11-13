@@ -178,7 +178,8 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
       const map = await mapFor(src, result, mode);
       if (map) $(`#${id}-map`).innerHTML = `<img src="${map}" style="width:100%;border-radius:8px;margin-top:6px" alt="">`;
       // same branch-shaping rule as the app
-      const shape = (result.plan || []).some(p => p.element === "fluff") || (result.categories || []).some(c => c.name === "Fullness" && Number(c.score) <= 7);
+      // same as the app: never a real tree, never when Fullness scored 8+, else when it scored 7 or less or the plan shapes the branches
+      const fc = (result.categories || []).find(c => c.name === "Fullness"), shape = result.tree?.kind !== "natural" && (fc ? Number(fc.score) <= 7 : (result.plan || []).some(x => x.element === "fluff"));
       const out = await api("/api/render", { image: src, brief: result.render_brief, aspect, map, variant, shape: shape || undefined });
       $(`#${id}-pic`).innerHTML = `<img src="${out.image}" alt="">`;
       const STEP_LABEL = { ribbon: "Ribbon:", primary_picks: "Greenery:", florals: "Flowers:", statement: "Large ornaments:", medium: "Ornaments:", small_picks: "Picks:", crown: "Top:", base: "Base:", lights: "Lights:" };

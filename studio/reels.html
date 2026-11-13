@@ -236,7 +236,8 @@ async function appAfter(before, mode, style) {
     c2.width = Math.round(cv.width * k); c2.height = Math.round(cv.height * k); c2.getContext("2d").drawImage(cv, 0, 0, c2.width, c2.height); map = c2.toDataURL("image/jpeg", .8);
   } catch (e) { console.error(e); }
   // Same as the app: fuller branches when the plan shapes them or the tree scored low on fullness
-  const shape = (result.plan || []).some(x => x.element === "fluff") || (result.categories || []).some(c => c.name === "Fullness" && Number(c.score) <= 7);
+  // same as the app: never a real tree, never when Fullness scored 8+, else when it scored 7 or less or the plan shapes the branches
+  const fc = (result.categories || []).find(c => c.name === "Fullness"), shape = result.tree?.kind !== "natural" && (fc ? Number(fc.score) <= 7 : (result.plan || []).some(x => x.element === "fluff"));
   const out = await api("/api/render", { image: before, brief: result.render_brief, aspect, map, shape: shape || undefined });
   return out.image;
 }

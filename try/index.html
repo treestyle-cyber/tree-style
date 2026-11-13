@@ -2623,7 +2623,14 @@ async function placementMap() {
   } catch (e) { console.error(e); return undefined; }
 }
 // Fuller branches in the preview when the plan shapes them or the tree scored low on fullness
-const needsShaping = r => r.tree?.kind !== "natural" && ((r.plan || []).some(p => p.element === "fluff") || (r.categories || []).some(c => c.name === "Fullness" && Number(c.score) <= 7));   // a real tree isn't shaped
+// Fuller branches in the preview: never for a real tree, never when Fullness already scored 8+ (Eric: an 8 still got
+// the shaping), otherwise when Fullness is 7 or less or the plan includes shaping the branches
+const fullScore = r => { const c = (r.categories || []).find(c => c.name === "Fullness"); return c ? Number(c.score) : null; };
+const needsShaping = r => {
+  if (r.tree?.kind === "natural") return false;
+  const f = fullScore(r);
+  return f == null ? (r.plan || []).some(p => p.element === "fluff") : f <= 7;
+};
 let lastMap = null;
 async function makePreview(extraPieces, change) {
   try {
@@ -3011,7 +3018,9 @@ async function drawStep() {
   $("#stepTabs").querySelectorAll("button").forEach(b => b.onclick = () => { stepIdx = +b.dataset.i; drawStep(); });
   const on = $("#stepTabs .on"); if (on) on.scrollIntoView({ block: "nearest", inline: "center" });
   guide.draw(key, false);
-  const anim = key === "fluff";   // shaping the branches is shown, not pointed at: a branch unfolding, then its tips
+  // shaping the branches is shown, not pointed at: a branch unfolding, then its tips. Not when the branches already scored
+  // well (the step says "Already looking great"), unless they open the step anyway
+  const anim = key === "fluff" && !(goodSteps.has(key) && !openGood.has(key));
   $(".guidebox").classList.toggle("anim", anim); $("#branchAnim").hidden = !anim;
   if (anim && !$("#branchAnim").firstChild) $("#branchAnim").innerHTML = branchSvg(result?.tree?.kind === "natural");
   const nd = steps.filter(k => doneSteps.has(k) || goodSteps.has(k)).length;
