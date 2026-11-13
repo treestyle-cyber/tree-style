@@ -753,15 +753,15 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .buyrow small{font-size:14px}
 
   /* ---------- Home (approved mobile design): full-screen photo, gold logo, ivory headline, two pills, cream tab bar ---------- */
-  .homebg{display:none;position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(14,20,34,.9) 0%,rgba(14,20,34,.72) 18%,rgba(14,20,34,.32) 34%,rgba(14,20,34,0) 48%),linear-gradient(180deg,rgba(26,16,10,0) 0%,rgba(26,16,10,.04) 44%,rgba(26,16,10,.42) 64%,rgba(22,14,9,.82) 84%,rgba(22,14,9,.9) 100%),var(--photo-home, url(/brand/home-tree.jpg)) center/cover}
+  .homebg{display:none;position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(14,20,34,.6) 0%,rgba(14,20,34,.34) 13%,rgba(14,20,34,.1) 22%,rgba(14,20,34,0) 30%),linear-gradient(180deg,rgba(24,15,10,0) 42%,rgba(24,15,10,.32) 58%,rgba(24,15,10,.66) 76%,rgba(24,15,10,.74) 100%),var(--photo-home, url(/brand/home-tree.jpg)) center/cover}   /* overlays are separate layers; the photo itself is untouched */
   body.tabhome .homebg{display:block}
   body.tabhome{background:#1d140e !important}
   body.tabhome .appbar{display:none}
   body.tabhome main{padding:0 24px}
-  #s-home{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:max(26px,calc(env(safe-area-inset-top) + 10px)) 0 calc(var(--tabh) + 42px)}
-  #s-home .hlogo{width:min(66%,260px);height:auto;filter:drop-shadow(0 1px 2px rgba(6,10,20,.9)) drop-shadow(0 3px 10px rgba(6,10,20,.75)) drop-shadow(0 8px 28px rgba(6,10,20,.6))}   /* layered shadow so the thin gold lines stand off any photo */
-  #s-home .hfoot{margin-top:auto;width:100%;padding-top:36px}
-  #s-home h1{font:500 clamp(40px,11.6vw,54px)/.93 var(--serif);color:#F6EFE3;text-align:left;margin:0 0 26px;letter-spacing:-.005em;text-shadow:0 2px 22px rgba(0,0,0,.45)}
+  #s-home{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:max(30px,calc(env(safe-area-inset-top) + 18px)) 0 calc(var(--tabh) + env(safe-area-inset-bottom) + clamp(36px,8vh,84px))}
+  #s-home .hlogo{width:min(53%,208px);height:auto;filter:drop-shadow(0 1px 2px rgba(6,10,20,.9)) drop-shadow(0 3px 10px rgba(6,10,20,.75)) drop-shadow(0 8px 28px rgba(6,10,20,.6))}   /* layered shadow so the thin gold lines stand off any photo */
+  #s-home .hfoot{margin-top:auto;width:100%;padding-top:28px}
+  #s-home h1{font:500 clamp(34px,9.9vw,46px)/1.02 var(--serif);color:#E7DFD2;text-align:left;margin:0 0 24px;letter-spacing:-.005em;text-wrap:balance;text-shadow:0 1px 3px rgba(0,0,0,.35),0 2px 18px rgba(0,0,0,.4)}
   #s-home h1::after{display:none}
   .hbtns{display:grid;gap:14px}
   .hbtn{appearance:none;width:100%;min-height:56px;border-radius:999px;border:1.5px solid #C9AE78;font:500 clamp(21px,6vw,25px)/1 var(--serif);letter-spacing:.005em;cursor:pointer;padding:14px 22px;transition:transform .15s,filter .15s}
@@ -880,6 +880,12 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   #s-results .fb textarea:focus,#s-results .fb input[type=text]:focus{border-color:#A88B5C;box-shadow:0 0 0 3px rgba(197,178,143,.3);outline:none}
   #s-results .fb .err{color:#8E2B2B}
   #s-results .fb .thanks{color:#3A2A21}
+
+  /* Home buttons: premium app controls, matching widths, 54px, 12px apart */
+  #s-home .hbtns{gap:12px}
+  #s-home .hbtn{min-height:54px;padding:0 22px;border-width:1px;border-color:#B89C6B;font:500 clamp(18px,5vw,20px)/1 var(--serif);letter-spacing:.01em}
+  #s-home .hbtn.dark{background:#141C2C;color:#F3EEE7}
+  #s-home .hbtn.light{background:#E7DFD2;color:#3C2A20;border-color:rgba(184,156,107,.7)}
 </style>
 </head>
 <body>
@@ -911,7 +917,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   <section class="screen" id="s-home" data-title="" hidden>
     <img class="hlogo" src="/brand/logo-stacked-open.png" alt="TreeStyle · The art of styling">
     <div class="hfoot">
-      <h1>A more<br>beautiful home<br>starts here.</h1>
+      <h1>A more beautiful <br>home starts here.</h1>
       <div class="hbtns">
         <button class="hbtn dark" id="goCreate">Create My Space</button>
         <button class="hbtn light" id="goInspo">Explore Inspiration</button>
