@@ -2277,7 +2277,7 @@ function startLoading(title, steps, evalSeconds, pic) {
   return {
     painting() { phase = "paint"; t1 = Date.now(); tick(); },
     // When the answer comes back early, the remaining lines still check off one at a time, slowly enough to read
-    // (each gets at least about 2/3 of a second on screen), instead of all at once.
+    // (each gets about 1.5 seconds on screen; the plan keeps working meanwhile), instead of all at once.
     done(fast) {
       clearInterval(iv); $("#loadFill").style.width = "100%";
       if (fast) { stopTips(); lis.forEach(li => li.className = "done"); $("#loading").hidden = true; return; }   // something went wrong: show it right away
@@ -2286,10 +2286,10 @@ function startLoading(title, steps, evalSeconds, pic) {
         if (gen !== loadGen) return;
         if (i >= lis.length) { stopTips(); setTimeout(() => { if (gen === loadGen) $("#loading").hidden = true; }, 450); return; }
         lis[i].className = "done"; if (lis[i + 1]) lis[i + 1].className = "on"; i++;
-        setTimeout(next, 650);
+        setTimeout(next, 1500);
       };
       if (lis[i]) lis[i].className = "on";
-      setTimeout(next, i < lis.length ? 650 : 0);
+      setTimeout(next, i < lis.length ? 1500 : 0);
     }
   };
 }
