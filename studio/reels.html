@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TreeStyle · Studio · Reels</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" type="image/png" href="/brand/favicon.png">
+<style>
+  .wrap{max-width:1000px}
+  header{padding:22px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  nav a{margin-left:16px;text-decoration:none}
+  .intro{text-align:center;margin:6px auto 26px;max-width:40em}
+  .intro h1{font-weight:400;font-size:44px;margin:8px 0 12px}
+  .intro p{color:var(--muted);margin:0}
+  .panel{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:22px}
+  .panel h2{font-weight:400;font-size:28px;margin-bottom:6px}
+  .sub{font-size:13px;color:var(--muted)}
+  textarea,select{width:100%;font:14px/1.45 var(--sans);padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper-2);color:var(--ink)}
+  textarea{min-height:90px;resize:vertical}
+  label.f{display:block;font-size:12.5px;color:var(--muted);margin:12px 0 6px;letter-spacing:.04em}
+  .fmts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+  .fmt{appearance:none;text-align:left;background:var(--paper-2);border:1.5px solid var(--line);border-radius:12px;color:var(--ink);padding:10px 12px;font:500 14px var(--sans);cursor:pointer}
+  .fmt small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:2px}
+  .fmt.on{border-color:var(--gold);background:rgba(184,156,107,.12)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .row .btn{padding:12px 18px}
+  .mini{appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:99px;padding:6px 12px;font:500 12.5px var(--sans);cursor:pointer}
+  .mini:disabled{opacity:.5;cursor:default}
+  .shot{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
+  .shot h3{font-weight:400;font-size:24px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .tag{font:600 10px var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gold);border:1px solid var(--line);padding:3px 8px;border-radius:99px}
+  .ost{font-size:13px;color:var(--muted);margin:4px 0 8px}
+  .ost b{color:var(--ink);font-weight:500}
+  .frames{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+  .fr{border:1px dashed var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}
+  .fr .pic{aspect-ratio:9/16;max-height:300px;border-radius:8px;background:rgba(184,156,107,.08);display:grid;place-items:center;color:var(--muted);font-size:12px;text-align:center;overflow:hidden;position:relative}
+  .fr .pic img{width:100%;height:100%;object-fit:cover}
+  .fr .hint{font-size:12px;color:var(--muted)}
+  .fr .acts{display:flex;gap:6px;flex-wrap:wrap}
+  .tray{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .tray:empty{display:none}
+  .tray span{font-size:11.5px;color:var(--muted);width:100%}
+  .tray button{appearance:none;padding:0;border:1.5px solid var(--line);border-radius:6px;overflow:hidden;width:44px;height:78px;background:none;cursor:pointer}
+  .tray button:hover{border-color:var(--gold)}
+  .tray img{width:100%;height:100%;object-fit:cover}
+  .out{margin-top:12px;display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
+  video{width:220px;aspect-ratio:9/16;border-radius:12px;background:#000}
+  .msg{font-size:13px;color:var(--muted);min-height:1.2em;margin-top:8px}
+  .msg.err{color:var(--berry)} .msg.ok{color:var(--gold)}
+  .spin{width:26px;height:26px;border-radius:50%;border:3px solid rgba(184,156,107,.3);border-top-color:var(--gold);animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+  .lib figure{margin:0}
+  .lib video{width:100%}
+  .lib figcaption{font-size:12px;color:var(--muted);margin-top:6px}
+  .lib a{color:var(--gold);font-size:12px}
+  .caption{white-space:pre-wrap;background:var(--paper-2);border-radius:10px;padding:12px;font-size:14px}
+  #gate{max-width:420px;margin:60px auto;text-align:center}
+  #gate form{display:flex;gap:8px;margin-top:18px}
+  #gate input{flex:1}
+  @media (max-width:560px){.frames{grid-template-columns:1fr}.fr .pic{max-height:260px}video{width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="/"><img class="logoh" src="/brand/logo-horizontal.png" alt="TreeStyle · The art of styling"></a>
+    <nav><a class="eyebrow" href="/studio/">Photos</a><a class="eyebrow" href="/studio/reels" style="color:var(--ink)">Reels</a></nav>
+  </header>
+
+  <div id="gate" hidden>
+    <div class="eyebrow">Studio</div>
+    <h1 style="font-weight:400;font-size:40px;margin-top:8px">Enter the test password</h1>
+    <form id="gateForm"><input type="password" id="pw" placeholder="Password" autocomplete="current-password"><button class="btn">Enter</button></form>
+    <p class="msg err" id="gateErr"></p>
+  </div>
+
+  <div id="app" hidden>
+    <div class="intro">
+      <div class="eyebrow">Studio</div>
+      <h1>Reels</h1>
+      <p>Describe a video. Claude writes the shots using the TreeStyle brand and your design rules, then each shot becomes a real AI clip saved here. Every photo you make or upload appears in later shots, so the same tree carries through the whole Reel. Add the on-screen text and sound in CapCut or Instagram.</p>
+    </div>
+
+    <div class="panel">
+      <h2>1 · The idea</h2>
+      <div class="fmts" id="fmts">
+        <button class="fmt on" data-f="glowup">The glow-up<small>Ordinary tree → designer tree</small></button>
+        <button class="fmt" data-f="order">Build it in order<small>Hands doing each step</small></button>
+        <button class="fmt" data-f="inspo">From inspiration<small>A fabric becomes a tree</small></button>
+        <button class="fmt" data-f="tip">One designer tip<small>A mistake and the fix</small></button>
+        <button class="fmt" data-f="custom">Your own<small>Anything you describe</small></button>
+      </div>
+      <label class="f" for="idea">Your idea (optional, but the more you say the better)</label>
+      <textarea id="idea" placeholder="e.g. A rustic farmhouse tree with buffalo check ribbon. The 'before' is a pre-lit tree with a few red ornaments."></textarea>
+      <div class="row"><button class="btn" id="planBtn">Write the shots</button><span class="sub" id="count"></span></div>
+      <p class="msg" id="planMsg"></p>
+    </div>
+
+    <div id="plan" hidden>
+      <div class="panel"><h2 id="pTitle"></h2><p class="sub" id="pConcept"></p></div>
+      <div id="shots"></div>
+      <div class="panel">
+        <h2>Caption</h2>
+        <div class="caption" id="cap"></div>
+        <div class="row"><button class="mini" id="copyCap">Copy caption</button><span class="msg" id="capMsg" style="margin:0"></span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Saved clips</h2>
+      <p class="sub">Every clip you make is kept here. Download it to your phone, or tap <b>Use its last frame</b> to start the next shot exactly where this one ends.</p>
+      <div class="lib" id="lib" style="margin-top:12px"></div>
+    </div>
+  </div>
+</div>
+
+<script src="/try/engine.js"></script>
+<script src="/try/guide.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const LOOK = "Editorial interior photograph for a luxury holiday brand, vertical 9:16. A real, lived-in home at dusk: moody, warm low lamp and candle light, glowing warm white tree lights; Midnight navy, Winter Berry, Evergreen, Walnut and Antique Gold tones; velvet, brass and walnut textures. Photorealistic, shallow depth of field. No people, no text, no logos.";
+let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
+let format = "glowup", brandPhotos = {}, pool = [];
+const KEY = "ts_reel";
+const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
+const load = k => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch { return null; } };
+function addPool(src, label) {
+  if (!src || pool.some(x => x.src === src)) return;
+  pool.unshift({ src, label }); pool = pool.slice(0, 8);
+  while (pool.length && !store(KEY + "_pool", pool)) pool.pop();   // drop the oldest if the phone is out of room
+  refreshTrays();
+}
+async function lastFrame(url) {
+  let blob;
+  try { const r = await fetch(url); if (!r.ok) throw 0; blob = await r.blob(); }
+  catch { const r = await fetch("/api/video?src=" + encodeURIComponent(url)); if (!r.ok) throw new Error("Couldn't open that clip"); blob = await r.blob(); }
+  const v = document.createElement("video"); v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = URL.createObjectURL(blob);
+  await new Promise((ok, no) => { v.onloadeddata = ok; v.onerror = () => no(new Error("Couldn't read that clip")); });
+  await new Promise(ok => { v.onseeked = ok; v.currentTime = Math.max(0, v.duration - .05); });
+  const c = document.createElement("canvas"), k = Math.min(1, 1280 / Math.max(v.videoWidth, v.videoHeight));
+  c.width = Math.round(v.videoWidth * k); c.height = Math.round(v.videoHeight * k); c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+  URL.revokeObjectURL(v.src); return c.toDataURL("image/jpeg", .9);
+}
+async function useLastFrame(btn, url, label, note) {
+  btn.disabled = true; const t = btn.textContent; btn.textContent = "Getting the last frame…";
+  try { addPool(await lastFrame(url), label + " · last frame"); note("Added to this Reel's photos. Tap it as the start photo of the next shot, so it picks up exactly where this clip ends.", "ok"); }
+  catch (e) { note(e.message, "err"); }
+  finally { btn.disabled = false; btn.textContent = t; }
+}
+function refreshTrays() {
+  document.querySelectorAll(".fr .tray").forEach(t => {
+    t.innerHTML = pool.length ? `<span>This Reel's photos (tap to use)</span>` + pool.map((x, i) => `<button data-p="${i}" title="${esc(x.label)}"><img src="${x.src}" alt=""></button>`).join("") : "";
+    t.querySelectorAll("button").forEach(b => b.onclick = () => { const fr = t.closest(".fr"); fr.closest(".shot")._set(fr.dataset.k, pool[+b.dataset.p].src); });
+  });
+}
+
+const api = async (path, body) => {
+  const r = await fetch(path, { method: "POST", headers: { "content-type": "application/json", "x-test-password": password }, body: JSON.stringify(body) });
+  let d = {}; try { d = await r.json(); } catch { d = { error: r.status === 504 ? "That took too long and timed out. Try again, or try 360p." : "Server error " + r.status }; }
+  if (!r.ok) { const e = new Error(d.error || "Error " + r.status); e.status = r.status; throw e; }
+  return d;
+};
+const shrink = (src, max = 1280) => new Promise((ok, no) => {
+  const im = new Image(); im.crossOrigin = "anonymous";
+  im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL("image/jpeg", .88)); };
+  im.onerror = no; im.src = src;
+});
+const fileUrl = f => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); });
+
+document.querySelectorAll(".fmt").forEach(b => b.onclick = () => { document.querySelectorAll(".fmt").forEach(x => x.classList.toggle("on", x === b)); format = b.dataset.f; });
+
+$("#planBtn").onclick = async () => {
+  const b = $("#planBtn"); b.disabled = true; $("#planMsg").className = "msg"; $("#planMsg").textContent = "Writing the shots… about 30 seconds";
+  try {
+    const p = await api("/api/video", { action: "plan", idea: $("#idea").value.trim(), format });
+    showPlan(p); $("#planMsg").textContent = "";
+  } catch (e) { if (e.status === 401) return gate("That password didn't work."); $("#planMsg").className = "msg err"; $("#planMsg").textContent = e.message; }
+  finally { b.disabled = false; b.textContent = "Write new shots"; }
+};
+
+function showPlan(p) {
+  $("#plan").hidden = false; $("#pTitle").textContent = p.title || "Your Reel"; $("#pConcept").textContent = p.concept || "";
+  $("#cap").textContent = (p.caption || "") + (p.hashtags?.length ? "\n\n" + p.hashtags.map(h => h.startsWith("#") ? h : "#" + h).join(" ") : "");
+  $("#shots").innerHTML = (p.shots || []).map((s, i) => `
+    <div class="shot" data-i="${i}" data-mode="${esc(s.mode)}">
+      <h3>${i + 1} · ${esc(s.name)} <span class="tag">${s.mode === "frames" ? "Start → end photo" : s.mode === "start" ? "From a photo" : "From words"}</span></h3>
+      ${s.on_screen ? `<div class="ost">On-screen text: <b>${esc(s.on_screen)}</b></div>` : ""}
+      <textarea class="prompt">${esc(s.prompt)}</textarea>
+      ${s.mode === "text" ? `<button class="mini usetree" style="margin-top:8px">Show our tree in this shot</button>` : ""}
+      <div class="frames"${s.mode === "text" ? " hidden" : ""}>
+        ${frameBox("start", "Start photo", s.start_image)}
+        ${s.mode === "frames" ? frameBox("end", "End photo", s.end_image) : ""}
+      </div>
+      <label class="sub hold" style="display:${s.mode === "start" ? "flex" : "none"};gap:8px;align-items:center;margin-top:10px"><input type="checkbox" class="holdbox" checked> Keep the tree exactly the same (the clip ends on the same photo)</label>
+      <div class="row"><select class="res" style="width:auto"><option value="720p">720p (about $1)</option><option value="360p">360p draft (cheapest)</option><option value="1080p">1080p (final)</option></select><button class="btn make">Make this clip</button></div>
+      <div class="msg"></div><div class="out"></div>
+    </div>`).join("");
+  document.querySelectorAll(".shot").forEach(wire);
+  refreshTrays();
+  store(KEY, p);
+}
+function frameBox(k, title, hint) {
+  const app = k === "end";
+  return `<div class="fr" data-k="${k}"><b style="font-size:13px">${title}</b><div class="pic">No photo yet</div><div class="tray"></div>
+    ${app ? `<div class="hint">Made by the real app from the start photo: Claude plans the tree with your design rules, then the app paints its preview, exactly as a customer would get it.</div>
+      <div class="acts"><select class="amode" style="width:auto;padding:6px 10px;font-size:12.5px"><option value="check">Check my tree</option><option value="design">Design my tree</option></select>
+      <select class="astyle" style="width:auto;padding:6px 10px;font-size:12.5px"><option value="classic">Traditional</option><option value="keep">Keep my style</option><option value="rustic">Rustic</option><option value="modern">Modern</option><option value="elegant">Elegant</option><option value="playful">Playful</option></select></div>
+      <div class="acts"><button class="mini appgen">Make with the app</button><label class="mini" style="cursor:pointer">Upload<input type="file" accept="image/*" hidden></label>
+      ${brandPhotos.after ? `<button class="mini wl">Use waitlist after</button>` : ""}</div>
+      <details><summary class="hint" style="cursor:pointer">Or a quick edit from a description</summary>
+      <textarea class="desc" style="min-height:60px;margin-top:6px" placeholder="Describe the finished tree">${esc(hint || "")}</textarea>
+      <div class="acts" style="margin-top:6px"><button class="mini gen">Quick edit</button></div></details>`
+    : `<textarea class="desc" style="min-height:60px" placeholder="Describe the photo">${esc(hint || "")}</textarea>
+      <div class="acts"><button class="mini gen">Make this photo</button><label class="mini" style="cursor:pointer">Upload<input type="file" accept="image/*" hidden></label>
+      ${brandPhotos.before ? `<button class="mini wl">Use waitlist before</button>` : ""}</div>`}
+    </div>`;
+}
+// The app's own pipeline: plan the tree (look + plan in parallel), draw the placement map, paint the preview.
+const ASPECTS = [["1:1", 1], ["2:3", 2 / 3], ["3:2", 1.5], ["3:4", .75], ["4:3", 4 / 3], ["4:5", .8], ["5:4", 1.25], ["9:16", 9 / 16], ["16:9", 16 / 9]];
+const loadImg = src => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = src; });
+async function appAfter(before, mode, style) {
+  const [look, plan] = await Promise.all([api("/api/evaluate", { image: before, mode, style, part: "look" }), api("/api/evaluate", { image: before, mode, style, part: "plan" })]);
+  const result = Object.assign({}, look, plan), im = await loadImg(before), r = im.width / im.height;
+  const aspect = ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0];
+  let map;
+  try {
+    const cv = document.createElement("canvas"), g = TreeGuide.create(im, cv, result, mode); g.drawMap();
+    const k = Math.min(1, 1024 / Math.max(cv.width, cv.height)), c2 = document.createElement("canvas");
+    c2.width = Math.round(cv.width * k); c2.height = Math.round(cv.height * k); c2.getContext("2d").drawImage(cv, 0, 0, c2.width, c2.height); map = c2.toDataURL("image/jpeg", .8);
+  } catch (e) { console.error(e); }
+  // Same as the app: fuller branches when the plan shapes them or the tree scored low on fullness
+  const shape = (result.plan || []).some(x => x.element === "fluff") || (result.categories || []).some(c => c.name === "Fullness" && Number(c.score) <= 7);
+  const out = await api("/api/render", { image: before, brief: result.render_brief, aspect, map, shape: shape || undefined });
+  return out.image;
+}
+
+function wire(el) {
+  const msg = el.querySelector(".msg"), imgs = {};
+  const say = (t, k) => { msg.className = "msg" + (k ? " " + k : ""); msg.textContent = t; };
+  const set = (k, src) => { imgs[k] = src; el.querySelector(`.fr[data-k="${k}"] .pic`).innerHTML = `<img src="${src}" alt="">`; addPool(src, el.querySelector("h3").firstChild.textContent.trim() + " · " + k); };
+  el._set = set;
+  const ut = el.querySelector(".usetree");
+  if (ut) ut.onclick = () => { el.querySelector(".frames").hidden = false; el.dataset.mode = "start"; el.querySelector(".tag").textContent = "From a photo"; el.querySelector(".hold").style.display = "flex"; ut.remove(); say("Pick a photo from this Reel above. The clip will start from that exact tree."); };
+  el.querySelectorAll(".fr").forEach(fr => {
+    const k = fr.dataset.k;
+    fr.querySelector("input[type=file]").onchange = async e => { const f = e.target.files[0]; if (f) set(k, await shrink(await fileUrl(f))); };
+    const wl = fr.querySelector(".wl"); if (wl) wl.onclick = async () => { try { set(k, await shrink(brandPhotos[k === "end" ? "after" : "before"])); } catch { say("Couldn't load that photo.", "err"); } };
+    const ag = fr.querySelector(".appgen");
+    if (ag) ag.onclick = async () => {
+      if (!imgs.start) return say("Add the start photo first. The app styles that exact tree, so the room stays the same.", "err");
+      ag.disabled = true; fr.querySelector(".pic").innerHTML = '<div class="spin"></div>'; say("The app is planning and painting the tree… about a minute. Keep this page open.");
+      try { set(k, await shrink(await appAfter(imgs.start, fr.querySelector(".amode").value, fr.querySelector(".astyle").value))); say("Not quite right? Make it again; every plan is a little different."); }
+      catch (e) { fr.querySelector(".pic").textContent = "Try again"; say(e.message, "err"); }
+      finally { ag.disabled = false; ag.textContent = "Make another"; }
+    };
+    fr.querySelector(".gen").onclick = async () => {
+      const desc = fr.querySelector(".desc").value.trim(), btn = fr.querySelector(".gen"); if (!desc) return say("Describe the photo first.", "err");
+      if (k === "end" && !imgs.start) return say("Add the start photo first, so the end photo keeps the same room.", "err");
+      btn.disabled = true; fr.querySelector(".pic").innerHTML = '<div class="spin"></div>'; say(k === "end" ? "Styling the same room… about 20 seconds" : "Making the photo… about 20 seconds");
+      try {
+        const d = k === "end"
+          ? await api("/api/brand", { action: "edit", image: imgs.start, prompt: desc + " The big ornaments are set back toward the trunk; ribbon billows out of the branches and tucks back in, with no bows, swags or wraps.", aspect: "9:16" })
+          : await api("/api/brand", { action: "generate", prompt: desc + "\n\n" + LOOK, aspect: "9:16" });
+        set(k, await shrink(d.image)); say("");
+      } catch (e) { fr.querySelector(".pic").textContent = "Try again"; say(e.message, "err"); }
+      finally { btn.disabled = false; }
+    };
+  });
+  el.querySelector(".make").onclick = async () => {
+    const mode = el.dataset.mode, btn = el.querySelector(".make");
+    if (mode !== "text" && !imgs.start) return say("Add the start photo first.", "err");
+    if (mode === "frames" && !imgs.end) return say("Add the end photo too.", "err");
+    btn.disabled = true; const out = el.querySelector(".out"); out.innerHTML = '<div class="spin"></div>';
+    say("Making the clip… usually 1 to 3 minutes. Keep this page open.");
+    try {
+      const d = await api("/api/video", { action: "make", prompt: el.querySelector(".prompt").value.trim(), first: imgs.start, last: mode === "frames" ? imgs.end : undefined, hold: mode === "start" && el.querySelector(".holdbox").checked, label: el.querySelector("h3").firstChild.textContent.trim(), resolution: el.querySelector(".res").value });
+      out.innerHTML = `<video src="${d.url}" controls playsinline loop></video><div style="display:grid;gap:8px;justify-items:start"><a class="mini" href="${d.url}" download target="_blank" style="text-decoration:none;display:inline-block">Download</a><button class="mini lf">Use its last frame</button></div>`;
+      const lbl = el.querySelector("h3").firstChild.textContent.trim();
+      out.querySelector(".lf").onclick = e => useLastFrame(e.target, d.url, lbl, say);
+      say(`Saved. ${d.today} of ${d.limit} clips today. Not quite right? Adjust the wording and make it again.`, "ok"); count(d.today, d.limit); library();
+    } catch (e) { out.innerHTML = ""; say(e.message, "err"); }
+    finally { btn.disabled = false; btn.textContent = "Make it again"; }
+  };
+}
+
+$("#copyCap").onclick = async () => { try { await navigator.clipboard.writeText($("#cap").textContent); $("#capMsg").textContent = "Copied"; } catch { $("#capMsg").textContent = "Select the text and copy it"; } };
+const count = (n, lim) => { $("#count").textContent = `${n} of ${lim} clips made today`; };
+
+async function library() {
+  try {
+    const d = await api("/api/video", { action: "list" }); count(d.today, d.limit);
+    $("#lib").innerHTML = d.clips.length ? d.clips.map(c => `<figure><video src="${c.url}" controls playsinline preload="metadata"></video><figcaption>${esc(c.label || "Clip")} · ${new Date(c.at).toLocaleDateString()}<br><a href="${c.url}" download target="_blank">Download</a><br><button class="mini lf" data-u="${esc(c.url)}" data-l="${esc(c.label || "Clip")}" style="margin-top:6px">Use its last frame</button><span class="msg" style="display:block;font-size:12px"></span></figcaption></figure>`).join("") : '<p class="sub">No clips yet.</p>';
+    $("#lib").querySelectorAll(".lf").forEach(b => b.onclick = () => { const m = b.nextElementSibling; useLastFrame(b, b.dataset.u, b.dataset.l, (t, k) => { m.className = "msg" + (k ? " " + k : ""); m.textContent = t; }); });
+  } catch (e) { if (e.status === 401) gate("That password didn't work."); else $("#lib").innerHTML = `<p class="msg err">${esc(e.message)}</p>`; }
+}
+
+function gate(err) { $("#app").hidden = true; $("#gate").hidden = false; $("#gateErr").textContent = err || ""; }
+$("#gateForm").onsubmit = e => { e.preventDefault(); password = $("#pw").value.trim(); try { sessionStorage.setItem("ts_pw", password); } catch {} start(); };
+async function start() {
+  if (!password) return gate();
+  $("#gate").hidden = true; $("#app").hidden = false;
+  try { brandPhotos = (await (await fetch("/api/brand")).json()).photos || {}; } catch {}
+  pool = load(KEY + "_pool") || [];
+  const last = load(KEY); if (last && last.shots) { showPlan(last); $("#planBtn").textContent = "Write new shots"; }
+  library();
+}
+start();
+</script>
+</body>
+</html>

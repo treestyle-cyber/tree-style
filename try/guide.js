@@ -595,7 +595,9 @@
     }
 
     // A plain position map for the image model: the photo with soft colored marks where things go.
-    function drawMap(o) {
+    // opts.plainFlowers (Lab variant "map2", Nov 12): flowers as a plain blob in their own color, without the yellow center
+    // that kept showing up in previews as yellow discs
+    function drawMap(o, opts = {}) {
       o.globalAlpha = 1; o.drawImage(img, 0, 0, W, H);
       o.fillStyle = "rgba(255,255,255,.25)"; o.fillRect(0, 0, W, H);
       const u = G.unit, sizes = ORN_IN(data), S = scene;
@@ -610,7 +612,7 @@
       if (RB.accent) (S.accentLoops || []).forEach((L, i) => { if (i % 2) return; blob(L.x, L.y, Math.max(4, RW.accent), Math.max(3, RW.accent * .8), RB.accent.color, .9); });
       if (data.picks.floral.kind !== "none") S.all.filter(m => m.floral).forEach(m => {
         const fx = m.x + RW.base * .9, fy = m.y + RW.base * .3, r = FLOWER_IN[data.picks.floral.kind] * S.pxIn * .55;
-        blob(fx, fy, r, r, data.picks.floral.color, .9); blob(fx, fy, r * .28, r * .28, "#E8C44A", .95);   // flower = color with a yellow center
+        blob(fx, fy, r, r, data.picks.floral.color, .9); if (!opts.plainFlowers) blob(fx, fy, r * .28, r * .28, "#E8C44A", .95);   // flower = color with a yellow center (live)
       });
       data.ornaments.forEach(b => { const r = Math.max(4, sizes[b.size] * S.pxIn / 2 * 1.15); blob(b.x * W, b.y * H, r, r, b.color, .95); });
     }
@@ -625,7 +627,7 @@
       if (key === "all") return lead("all");
       return "";
     }
-    return { steps, title: k => STEP_TITLE[k], draw, drawMap: () => drawMap(ctx), lead, note, legend, itemsFor, buy, data, setAfter: im => { afterImg = im; } };
+    return { steps, title: k => STEP_TITLE[k], draw, drawMap: opts => drawMap(ctx, opts), lead, note, legend, itemsFor, buy, data, setAfter: im => { afterImg = im; } };
   }
 
   window.TreeGuide = { create, normalize, shoppingList };

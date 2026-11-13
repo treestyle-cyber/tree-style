@@ -115,10 +115,10 @@ async function prep(file) {
   c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
   return c.toDataURL("image/jpeg", .86);
 }
-async function mapFor(src, result, mode) {
+async function mapFor(src, result, mode, variant) {
   try {
     const cv = document.createElement("canvas"), g = TreeGuide.create(await loadImg(src), cv, result, mode);
-    g.drawMap();
+    g.drawMap(variant === "map2" ? { plainFlowers: true } : undefined);
     const k = Math.min(1, 1024 / Math.max(cv.width, cv.height)), c2 = document.createElement("canvas");
     c2.width = Math.round(cv.width * k); c2.height = Math.round(cv.height * k); c2.getContext("2d").drawImage(cv, 0, 0, c2.width, c2.height);
     return c2.toDataURL("image/jpeg", .8);
@@ -155,13 +155,24 @@ $("#file").onchange = async e => { for (const f of [...e.target.files].slice(0, 
 // What the two columns compare: the rule under test (LAB_RULE in api/evaluate.js, sent as variant "v2") vs the live app.
 // samePlan: both columns paint the SAME plan, so only the picture step is compared
 // Earlier test, kept for reference: [{ title: "Test: higher-quality image model + checklist", variant: "v2", samePlan: true }, ...]
-const COLS = [{ title: "Test: designed from creator picks", variant: "picks" }, { title: "Live app", variant: undefined }];
+// Earlier test, won and went live Nov 12: [{ title: "Test: your ribbon photo, no bows", variant: "ribbon", samePlan: true }, ...]
+// On hold (Nov 12, Eric): designs built from creator picks, kept for when Amazon's Creators API is connected (after 10
+// qualifying sales) and each pick has its photo and details; Eric liked it overall, but tree 3 brought in a black and red
+// buffalo check that didn't fit. To resume: [{ title: "Test: designed from creator picks", variant: "picks" }, { title: "Live app", variant: undefined }]
+// Testing (Nov 12, Eric saw yellow discs on a preview): flower spots on the placement map drawn as a plain blob in the
+// flower's color, without the yellow center, and described that way to the image model. Same plan in both columns.
+// Two tests are waiting for Eric: /lab (shaping that adds no branches) and /lab?test=map2 (flower spots without the yellow center)
+const TESTS = {
+  shape2: { title: "Test: shaping opens branches, adds none", variant: "shape2", samePlan: true },
+  map2: { title: "Test: flower spots without the yellow center", variant: "map2", samePlan: true },
+};
+const COLS = [TESTS[new URLSearchParams(location.search).get("test")] || TESTS.shape2, { title: "Live app", variant: undefined }];
 const ALL_STYLES = [["classic", "Traditional"], ["rustic", "Rustic"], ["modern", "Modern"], ["elegant", "Elegant"], ["playful", "Playful"], ["keep", "Keep my style"]];
 async function runOne(src, idx, mode, style, extra = {}, label = "") {
   const row = document.createElement("div");
   row.className = "row";
   const col = (title, id) => `<div class="col"><h3>${title}</h3><div class="pic" id="${id}-pic"><div class="spin"></div></div><div class="meta" id="${id}-meta"></div><details><summary>Instructions sent to the image model</summary><pre id="${id}-brief">…</pre></details><details><summary>Placement map</summary><div id="${id}-map"></div></details></div>`;
-  row.innerHTML = `<div class="col"><h3>${label || "Tree " + (idx + 1)}</h3><div class="pic"><img src="${extra.inspo || src}" alt=""></div>${extra.inspo ? `<div class="meta">The bare tree both versions designed:</div><div class="pic"><img src="${src}" alt=""></div>` : ""}</div>` + col(COLS[0].title, `c${idx}`) + col(COLS[1].title, `p${idx}`);
+  row.innerHTML = `<div class="col"><h3>${label || "Tree " + (idx + 1)}</h3><div class="pic"><img src="${extra.inspo || src}" alt=""></div>${extra.inspo ? `<div class="meta">The bare tree both versions designed:</div><div class="pic"><img src="${src}" alt=""></div>` : ""}</div>` + COLS.map((c, k) => col(c.title, (k ? "p" : "c") + idx)).join("");
   $("#out").appendChild(row);
   const im = await loadImg(src), r = im.width / im.height, aspect = ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0];
   let look = {};
@@ -173,7 +184,7 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
       const plan = COLS[0].samePlan ? await (shared ||= api("/api/evaluate", { image: src, mode, style, part: "plan", ...extra })) : await api("/api/evaluate", { image: src, mode, style, part: "plan", variant, ...extra });
       const result = Object.assign({}, look, plan);
       $(`#${id}-brief`).textContent = result.render_brief || "";
-      const map = await mapFor(src, result, mode);
+      const map = await mapFor(src, result, mode, variant);
       if (map) $(`#${id}-map`).innerHTML = `<img src="${map}" style="width:100%;border-radius:8px;margin-top:6px" alt="">`;
       // same branch-shaping rule as the app
       const shape = (result.plan || []).some(p => p.element === "fluff") || (result.categories || []).some(c => c.name === "Fullness" && Number(c.score) <= 7);
@@ -190,7 +201,7 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
       $(`#${id}-pic`).querySelector("button").onclick = () => { $(`#${id}-pic`).innerHTML = '<div class="spin"></div>'; one(variant, id); };
     }
   };
-  await Promise.all([one(COLS[0].variant, `c${idx}`), one(COLS[1].variant, `p${idx}`)]);
+  await Promise.all(COLS.map((c, k) => one(c.variant, (k ? "p" : "c") + idx)));
 }
 $("#go").onclick = async () => {
   const mode = $("#mode").value, style = $("#style").value;
