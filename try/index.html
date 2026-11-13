@@ -247,13 +247,22 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   .q{margin:18px 0 0}
   .detline{font:400 27px/1.3 var(--serif);color:var(--ivory);text-align:center;margin:14px auto 26px;max-width:15em}
   .dq{display:grid;gap:18px}
-  #s-details .q{margin:0}
+  #s-details .q{margin:0;min-width:0}
+  .dq{grid-template-columns:minmax(0,1fr)}
   #s-details .q .lbl{font:600 11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 8px 4px}
   #s-details .q .lbl small{font:500 11px var(--sans);letter-spacing:.06em;text-transform:none;color:var(--muted);margin-left:4px}
   .seg{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:rgba(20,28,44,.55)}
   .seg .chip{flex:1;min-width:0}
   .seg .chip span{display:block;text-align:center;padding:11px 4px;border:0;border-radius:999px;background:none;font:500 14px var(--sans);white-space:nowrap;transition:background .15s,color .15s}
   .seg .chip input:checked + span{background:var(--gold);color:var(--midnight)}
+  .hwheel{position:relative;width:100%;max-width:100%;border:1px solid var(--line);border-radius:999px;background:rgba(20,28,44,.55);overflow:hidden;height:52px}
+  .hwheel::before{content:"";position:absolute;left:50%;top:5px;bottom:5px;width:58px;margin-left:-29px;border-radius:999px;background:rgba(184,156,107,.16);border:1px solid rgba(184,156,107,.5);pointer-events:none;transition:background .2s}
+  .hwheel.set::before{background:var(--gold);border-color:var(--gold)}
+  .hrow{-webkit-mask-image:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent);display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 calc(50% - 29px);position:relative;z-index:1}
+  .hrow::-webkit-scrollbar{display:none}
+  .hrow button{flex:0 0 58px;scroll-snap-align:center;appearance:none;background:none;border:0;color:var(--muted);font:500 17px var(--sans);cursor:pointer;transition:color .15s,transform .15s}
+  .hrow button.on{color:var(--ivory);transform:scale(1.15)}
+  .hwheel.set .hrow button.on{color:var(--midnight);font-weight:600}
   .dnote{font-size:13px;color:var(--muted);text-align:center;margin:18px 0 0}
   .q .lbl{font-weight:600;margin-bottom:8px}
   .q .hint2{font-size:13px;color:var(--muted);margin:6px 2px 0}
@@ -893,10 +902,12 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
 
   <!-- Tree details (optional) -->
   <section class="screen" id="s-details" data-title="Your tree" data-foot="details" hidden>
-    <p class="detline" id="detailsSub">The more we know about your tree, the better we can style it.</p>
+    <p class="detline" id="detailsSub">The more we know,<br>the better we can style it.</p>
     <div class="dq"><div class="q"><div class="lbl">Real or artificial?</div><div class="seg"><label class="chip"><input type="radio" name="kind" value="artificial"><span>Artificial</span></label><label class="chip"><input type="radio" name="kind" value="natural"><span>Real</span></label><input type="radio" name="kind" value="" checked hidden></div></div>
     <div class="q" id="prelitQ"><div class="lbl">Pre-lit?</div><div class="seg"><label class="chip"><input type="radio" name="prelit" value="yes"><span>Yes</span></label><label class="chip"><input type="radio" name="prelit" value="no"><span>No</span></label><input type="radio" name="prelit" value="" checked hidden></div></div>
-    <div class="q"><div class="lbl">Height <small>feet</small></div><div class="seg"><label class="chip"><input type="radio" name="height" value="4"><span>≤ 4</span></label><label class="chip"><input type="radio" name="height" value="5.5"><span>5–6</span></label><label class="chip"><input type="radio" name="height" value="7.5"><span>7–8</span></label><label class="chip"><input type="radio" name="height" value="9.5"><span>9–10</span></label><label class="chip"><input type="radio" name="height" value="11.5"><span>11–12</span></label><label class="chip"><input type="radio" name="height" value="14"><span>13+</span></label><input type="radio" name="height" value="" checked hidden></div></div>
+    <div class="q"><div class="lbl">Height <small id="hNote">feet · swipe to set</small></div>
+      <div class="hwheel" id="hWheel"><div class="hrow" id="hRow"><button type="button" data-ft="3">3</button><button type="button" data-ft="4">4</button><button type="button" data-ft="5">5</button><button type="button" data-ft="6">6</button><button type="button" data-ft="7">7</button><button type="button" data-ft="8">8</button><button type="button" data-ft="9">9</button><button type="button" data-ft="10">10</button><button type="button" data-ft="11">11</button><button type="button" data-ft="12">12</button><button type="button" data-ft="13">13</button><button type="button" data-ft="14">14</button><button type="button" data-ft="15">15</button><button type="button" data-ft="16">16</button></div></div>
+      <input type="radio" name="height" id="hVal" value="" checked hidden></div>
     <div class="q" id="densityQ"><div class="lbl">Branches</div><div class="seg"><label class="chip"><input type="radio" name="density" value="dense"><span>Full</span></label><label class="chip"><input type="radio" name="density" value="open"><span>Open, with gaps</span></label><input type="radio" name="density" value="" checked hidden></div></div>
     <div class="q" id="stageQ" hidden><div class="lbl">Decorating</div><div class="seg"><label class="chip"><input type="radio" name="stage" value="partial"><span>Partway</span></label><label class="chip"><input type="radio" name="stage" value="finished"><span>Finished</span></label><input type="radio" name="stage" value="" checked hidden></div></div></div>
     <p class="dnote">Not sure? Leave it blank and we'll read it from your photo.</p>
@@ -1911,10 +1922,33 @@ let mode = "check", photo = null, photoAspect = "3:4", result = null, after = nu
 
 /* ---------------- navigation ---------------- */
 let stack = [];
+// Height: a wheel of whole feet (Eric). Swipe or tap a number; the one in the middle is the height. Untouched means
+// "not sure" (we read it from the photo); it rests on 7 ft, faded, until they set it.
+const hRow = $("#hRow"), hW = () => hRow.firstElementChild.offsetWidth;
+let hTouched = false, hTimer = null;
+function hMark(ft) { hRow.querySelectorAll("button").forEach(b => b.classList.toggle("on", +b.dataset.ft === ft)); }
+function hSet(ft, scroll) {
+  const v = ft ? Math.max(3, Math.min(16, Math.round(ft))) : 0;
+  $("#hVal").value = v ? String(v) : ""; $("#hWheel").classList.toggle("set", !!v);
+  $("#hNote").textContent = v ? `${v} ft${v === 16 ? " or taller" : v === 3 ? " or shorter" : ""} · tap again to clear` : "feet · swipe to set";
+  hMark(v || 7);
+  if (scroll) requestAnimationFrame(() => hRow.scrollTo({ left: ((v || 7) - 3) * hW(), behavior: scroll === "smooth" ? "smooth" : "auto" }));
+}
+hRow.addEventListener("scroll", () => {
+  const ft = 3 + Math.round(hRow.scrollLeft / hW()); hMark(ft);
+  clearTimeout(hTimer); hTimer = setTimeout(() => { if (hTouched) hSet(ft); }, 120);
+}, { passive: true });
+["pointerdown", "touchstart", "wheel"].forEach(ev => hRow.addEventListener(ev, () => { hTouched = true; }, { passive: true }));
+hRow.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const ft = +b.dataset.ft;
+  if (Number($("#hVal").value) === ft) { hTouched = false; hSet(0); return; }   // tapping the set height again clears it
+  hTouched = true; hSet(ft, "smooth");
+});
 // About your tree: one minimal page (Eric). Tapping a selected answer clears it, which means "not sure".
 function openDetails() {
-  $("#detailsSub").textContent = "The more we know about your tree, the better we can style it."; $("#detailsSkip").textContent = "Skip, use my photo";
-  show("s-details");
+  $("#detailsSub").innerHTML = "The more we know,<br>the better we can style it."; $("#detailsSkip").textContent = "Skip, use my photo";
+  show("s-details"); hTouched = false; hSet(Number($("#hVal").value) || 0, true);
 }
 $("#s-details").addEventListener("click", e => {
   const lab = e.target.closest(".seg .chip"); if (!lab || e.target.tagName === "INPUT") return;
@@ -2113,13 +2147,13 @@ function useIdeaAsStyle() {
 }
 // Height choices are bands; quantities use the middle of the band, and we show the band itself
 const HEIGHT_BANDS = { 4: "4 ft or less", 5.5: "5–6 ft", 7.5: "7–8 ft", 9.5: "9–10 ft", 11.5: "11–12 ft", 14: "13 ft+" };
-const ftTxt = h => { const n = Number(h) || 7; return (factsSet && HEIGHT_BANDS[n]) || (Math.round(n * 2) / 2).toString().replace(".5", "½") + " ft"; };
+const ftTxt = h => { const n = Number(h) || 7; return (Math.round(n * 2) / 2).toString().replace(".5", "½") + " ft"; };
 function estNote(r) { return `<div class="estnote">These amounts are our best estimate for a tree about <b>${ftTxt(r?.tree?.height_ft)}</b> tall, judged from your photo. The more you tell us, the better the estimate. <button data-tell>Add your tree's details</button></div>`; }
 function syncTell(r) {
   $("#tellCard").hidden = factsSet; $("#tellDone").hidden = !factsSet;
   if (factsSet) {
     const k = val("kind"), dn = val("density");
-    const bits = [Number(val("height")) ? (HEIGHT_BANDS[Number(val("height"))] || ftTxt(val("height"))) : null, k === "natural" ? "real" : k === "artificial" ? "artificial" : null, dn === "open" ? "open branches" : dn === "dense" ? "full branches" : null].filter(Boolean);
+    const bits = [Number(val("height")) ? val("height") + " ft" : null, k === "natural" ? "real" : k === "artificial" ? "artificial" : null, dn === "open" ? "open branches" : dn === "dense" ? "full branches" : null].filter(Boolean);
     $("#tellDone").innerHTML = `Using your tree details${bits.length ? ": " + bits.join(", ") : ""}.<button data-tell>Edit</button>`;
   }
 }
@@ -2130,7 +2164,7 @@ $("#navDetails").onclick = () => {
   rerunFromHub = true; $("#stageQ").hidden = true; $("#densityQ").hidden = true; $("#prelitQ").hidden = val("kind") === "natural";
   $("#detailsSub").textContent = "Fine-tune your shopping list and steps. Your preview stays the same.";
   $("#detailsSkip").textContent = "Cancel";
-  show("s-details");
+  show("s-details"); hTouched = false; hSet(Number($("#hVal").value) || 0, true);
 };
 function facts() {
   if (!factsSet) return undefined;
@@ -3198,7 +3232,7 @@ async function restoreSaved(st) {
   restoring = true;
   try {
     mode = st.mode; src = st.src || "tree"; factsSet = !!st.factsSet;
-    const f = st.form || {}; ["kind", "height", "density", "stage", "style"].forEach(n => setRadio(n, f[n] ?? "")); $("#theme").value = f.theme || ""; syncStyle();
+    const f = st.form || {}; ["kind", "density", "stage", "style"].forEach(n => setRadio(n, f[n] ?? "")); $("#hVal").value = f.height ? String(Math.round(Number(f.height))) : ""; $("#theme").value = f.theme || ""; syncStyle();
     $("#stageQ").hidden = true; $("#densityQ").hidden = false; $("#inspoRow").hidden = mode !== "design"; setPhotoCopy(mode === "design" ? (src === "room" ? "room" : "design") : "check");
     photo = st.photo; photoAspect = st.photoAspect || "3:4"; photoImg = null; keyPhoto = st.keyPhoto || null; baseKey = "";
     $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="muted" style="font-size:13px;margin-top:8px">Tap to change photo</div>`;
