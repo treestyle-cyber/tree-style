@@ -829,7 +829,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   body.passpage main{padding:0 0 max(36px,env(safe-area-inset-bottom));overflow-x:clip}   /* the slide-in of the edge-to-edge photo must not widen the page */
   #s-pass{text-align:center}
   #s-pass .pbrand{padding:max(24px,calc(env(safe-area-inset-top) + 12px)) 20px 20px}
-  #s-pass .pbrand img{width:min(42%,210px);height:auto;margin:0 auto}
+  #s-pass .pbrand img{width:min(42%,210px);height:auto;margin:0 auto;filter:drop-shadow(0 1px 1px rgba(58,42,33,.28)) drop-shadow(0 3px 10px rgba(58,42,33,.22))}   /* soft warm shadow so the pale gold logo stands off the ivory */
   #s-pass .phero{position:relative;aspect-ratio:3/2;max-height:68vh;width:100%;background:linear-gradient(20deg,rgba(14,9,6,.72) 0%,rgba(14,9,6,.42) 34%,rgba(14,9,6,0) 60%),var(--photo-pass, url(/brand/pass-room.jpg)) center 70%/cover;text-align:left}   /* portrait photo in a wide frame: center 70% keeps the plum ornament, pinecone and branches in view */
   #s-pass .phl{--pl:clamp(24px,6%,40px);position:absolute;left:var(--pl);right:30%;bottom:clamp(20px,9%,44px);min-width:200px}
   #s-pass .phl h1{font:500 clamp(27px,7.6vw,38px)/1.08 var(--serif);color:#E7DFD2;margin:16px 0 0;text-align:left;max-width:none;text-shadow:0 1px 14px rgba(0,0,0,.35)}
