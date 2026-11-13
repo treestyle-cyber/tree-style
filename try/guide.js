@@ -10,7 +10,7 @@
     const density = oneOf(tree.density, ["open", "dense"], "dense");
     const out = {
       mode,
-      tree: { kind: oneOf(tree.kind, ["artificial", "natural"], "artificial"), density, flocked: !!tree.flocked, height_ft: clamp(tree.height_ft || 7, 3, 16) },
+      tree: { kind: oneOf(tree.kind, ["artificial", "natural"], "artificial"), prelit: !!tree.prelit, density, flocked: !!tree.flocked, height_ft: clamp(tree.height_ft || 7, 3, 16) },
       quick: arr(r.quick_fixes).slice(0, 5).map(q => ({ title: str(obj(q).title, 70), how: str(obj(q).how, 200), x: q && q.x != null ? clamp(q.x, 0, 1) : null, y: q && q.y != null ? clamp(q.y, 0, 1) : null })).filter(q => q.title),
       plan: arr(r.plan).slice(0, 14).map(p => (p = obj(p), { element: planEl(p), step: str(p.step, 40), title: str(p.title, 70), how: str(p.how, 320), effort: str(p.effort, 30), shop: str(p.shop, 200) })).filter(p => p.title),
       cone: { apex: pt(cone.apex, [.5, .1]), left: pt(cone.left, [.22, .85]), right: pt(cone.right, [.78, .85]) },
@@ -105,6 +105,17 @@
     arr(m.ribbons).filter(r => obj(r).texture !== "print").forEach(put); arr(m.ornaments).forEach(put); arr(m.clusters).forEach(put);
     put(obj(obj(m.picks).floral)); put(obj(obj(m.picks).small)); put(obj(m.topper));
   };
+  // A color from the words of an item the plan adds: Claude's own color names first, then common ones
+  const WORD_HEX = { burgundy: "#7A1F2B", wine: "#6E1E2C", red: "#B3202A", pink: "#E58FB0", blush: "#E8B4B8", orange: "#E07A2E", amber: "#C9822B", copper: "#B8733A", bronze: "#9C6B3A",
+    "rose gold": "#D9A08B", gold: "#C9A23E", champagne: "#D8C49A", yellow: "#E8C34A", green: "#2F5E3A", emerald: "#1F6B4A", sage: "#9CAF88", teal: "#2A8C8C", turquoise: "#3FB6B2",
+    blue: "#2E5C9A", navy: "#22314F", purple: "#6B3E8C", lavender: "#B7A3D3", silver: "#BFC3C8", clear: "#DDE6EA", white: "#F2F0EA", ivory: "#EFE6D2", cream: "#EFE6D2", black: "#2A2A2A", brown: "#7A5636" };
+  const wordColor = s => {
+    const t = " " + String(s || "").toLowerCase() + " ";
+    const own = Object.entries(NAMES).find(([, n]) => t.includes(" " + n + " "));
+    if (own) return own[0];
+    const w = Object.keys(WORD_HEX).sort((a, b) => b.length - a.length).map(k => [k, t.search(new RegExp("\\b" + k + "\\b"))]).filter(([, i]) => i >= 0).sort((a, b) => a[1] - b[1])[0];
+    return w ? WORD_HEX[w[0]] : null;
+  };
   const colorName = h => {
     if (h && NAMES[String(h).toUpperCase()]) return NAMES[String(h).toUpperCase()];
     const [r, g, b] = rgbOf(h), mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 510;
@@ -177,6 +188,7 @@
   function buyList(d, mode, key) {
     const h = d.tree.height_ft || 7, out = [];
     const add = (color, label, qty, q) => out.push({ color, label, qty, q });
+    if (key === "lights" && d.tree.prelit) return out;   // a pre-lit tree already has its lights
     if (key === "lights" && d.lights.add) {
       const lo = Math.round(h * 100 / 50) * 50, hi = Math.round(h * 200 / 50) * 50;
       const kind = d.lights.kind === "multicolor" ? "multicolor" : d.lights.kind === "solid" ? colorName(d.lights.color) : "warm white";
@@ -217,7 +229,8 @@
     if (key === "small_picks" && d.picks.small.kind !== "none") {
       const cn = colorName(d.picks.small.color), spray = d.picks.small.kind === "spray";
       const want = Math.max(12, Math.round(h * 3 * (mode === "design" ? 1 : .6)));
-      add(d.picks.small.color, d.picks.small.label || `${cn} ${spray ? "sprays" : "berry stems"}`, range(want), `${cn} ${spray ? "glitter sprays" : "berry stems"}`);
+      const own = d.picks.small.label;   // the plan's own name for it ("Peppermint candy stems") is what we search for, the way stores sell it ("picks")
+      add(d.picks.small.color, own || `${cn} ${spray ? "sprays" : "berry stems"}`, range(want), own ? own.toLowerCase().replace(/\bstems?\b/g, "picks") : `${cn} ${spray ? "glitter sprays" : "berry stems"}`);
     }
     if (key === "crown") {
       // The crown reuses the ribbon, flowers and stems from earlier steps; the only new piece is the topper,
@@ -227,19 +240,25 @@
         const cn = colorName(d.topper.color), TOP = { star: "star tree topper", bow: "tree topper bow", floral: "floral spray tree topper", finial: "finial tree topper" };
         add(d.topper.color, `${cn} ${TOP[d.topper.style]}`.replace(/^./, c => c.toUpperCase()), "1", `${cn} ${TOP[d.topper.style]} christmas`);
         const alt = d.topper.style === "floral" ? "finial" : "floral";
-        add(d.topper.color, `Or: a ${cn} ${TOP[alt]}`, "Another look for the top", `${cn} ${TOP[alt]} christmas`);
+        const acn = cn.replace(/\s*\b(striped?|stripes|plaid|polka dots?|checked)\b/gi, "").trim();   // a pattern belongs to the bow, not to a floral spray
+        add(d.topper.color, `${acn} ${TOP[alt]}`.replace(/^./, c => c.toUpperCase()), `Optional: instead of the ${d.topper.style === "floral" ? "floral spray" : d.topper.style}, for a different look`, `${acn} ${TOP[alt]} christmas`);
       }
     }
     // Anything the plan asks for that isn't covered above
     // A step can buy several things ("gold teardrop ornaments; flamingo ornaments"); each search is its own item.
     // Everyday words don't count toward "already on the list", so flamingo ornaments aren't hidden behind teal ornaments.
-    const PLAIN = /^(christmas|holiday|ornaments?|inch(es)?|ribbon|wired|large|extra|small|medium|mini|tree|stems?|picks?|sprays?|shiny|matte|glitter|glittered|round|shatterproof|set|with|and|for|tipped|dipped|gilded|accents?|artificial|faux)$/;
+    const PLAIN = /^(christmas|holiday|ornaments?|inch(es)?|ribbon|wired|large|extra|small|medium|mini|tree|stems?|picks?|sprays?|shiny|matte|glitter|glittered|round|shatterproof|set|with|and|for|tipped|dipped|gilded|accents?|artificial|faux|greenery|greens|foliage|natural|real|realistic|bulk|pack|assorted)$/;
     d.plan.filter(p => (p.element === key || (key === "medium" && p.element === "small")) && p.shop).forEach(p => {
       p.shop.split(/\s*;\s*/).filter(Boolean).forEach(shop => {
         const words = shop.toLowerCase().split(/\s+/).filter(w => w.length > 3 && !PLAIN.test(w));
         // already on the list when its describing words are all in an item's search or name ("gold glitter leaf spray" = "Gold glitter leaf sprays")
         const covered = !words.length || out.some(o => o.q && words.length && words.every(w => (o.q + " " + o.label).toLowerCase().includes(w.replace(/s$/, ""))));
-        if (!covered) add(null, shop.charAt(0).toUpperCase() + shop.slice(1), "", shop);
+        // The name reads like the rest of the list, not like a store search ("Cedar greenery stems artificial" -> "Cedar greenery stems")
+        const name = shop.replace(/\b(artificial|faux|christmas|xmas|tree|decorations?|decor|bulk|for)\b|\b\d+\s*(pcs|pieces|pack|count|ct)\b/gi, " ").replace(/\s+/g, " ").trim() || shop;
+        // The plan's own topper is more specific than ours ("amber glass finial" vs "amber finial"): it takes our topper's place instead of showing twice
+        const ours = key === "crown" && /topper/i.test(shop) && out.find(o => o.q && /topper/.test(o.q) && !/^Optional/.test(o.qty || ""));
+        if (ours) { ours.label = name.charAt(0).toUpperCase() + name.slice(1); ours.q = shop; ours.color = wordColor(shop) || ours.color; return; }
+        if (!covered) add(wordColor(shop), name.charAt(0).toUpperCase() + name.slice(1), "", shop);
       });
     });
     return out;
@@ -402,6 +421,8 @@
     if (has.base) { has.crown = true; has.base = false; }
     if (has.small_picks) { has.primary_picks = true; has.small_picks = false; }   // greenery stems and berries/small picks are one "Filler" step      // the base is finished in the same step as the crown (fewer steps)
     if (mode === "design" && data.tree.kind === "artificial") has.fluff = true;
+    if (data.tree.kind === "natural") has.fluff = false;   // a real tree isn't shaped like an artificial one
+    if (data.tree.prelit) has.lights = false;              // a pre-lit tree already has its lights
     const steps = STEP_ORDER.filter(k => has[k]); steps.push("all");
 
     let placed = [];

@@ -365,9 +365,6 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .ptips b{font:500 17px/1.15 var(--serif);color:var(--ivory)}
   .ptips small{font-size:12.5px;line-height:1.3;color:var(--muted)}
   #tipsSheet .ptips li{background:rgba(184,156,107,.06)}
-  .brandrow{display:flex;gap:14px;align-items:flex-start;margin:14px 0 0}
-  .brandrow p{margin:0;font-size:16px;line-height:1.5;color:var(--ink)}
-  .brandrow .pti{flex:none;margin:0}
   /* score in one line: the ornaments themselves */
   .scorestrip{display:flex;align-items:center;gap:14px;width:100%;appearance:none;border:1px solid var(--line);border-radius:16px;background:rgba(184,156,107,.05);padding:14px 16px;margin:16px 0;color:inherit;font:inherit;text-align:left;cursor:pointer;flex-wrap:wrap}
   .scorestrip .orns{display:flex;gap:4px}
@@ -511,6 +508,8 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .src small{font-size:13px;color:#D9CCC0;max-width:24em}
   .ideatxt{width:100%;font:16px/1.5 var(--sans);padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);resize:vertical}
   .roommark{margin-top:14px}
+  .changepill{display:flex;justify-content:center;width:100%;max-width:524px;margin:14px auto 0;cursor:pointer}
+  #s-photo.room label.drop{display:none}
   .rmhint{text-align:center;font:500 11px var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
   .rmwrap{position:relative;border-radius:14px;overflow:hidden;cursor:crosshair;box-shadow:inset 0 0 0 1px var(--line)}
   .rmwrap img{width:100%;display:block}
@@ -809,6 +808,16 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
         <label id="ideaLbl">Add photo<input type="file" id="ideaFile" accept="image/*" hidden></label>
         <button id="ideaClear" hidden>Remove</button>
       </div>
+      <div class="extra">
+        <span class="thumb" id="ideaRoomThumb">⌂</span>
+        <div><b>The room it'll go in</b><small>Optional: we'll stand the tree right there, so you see it in your own space.</small></div>
+        <label id="ideaRoomLbl">Add photo<input type="file" id="ideaRoomFile" accept="image/*" hidden></label>
+        <button id="ideaRoomClear" hidden>Remove</button>
+      </div>
+    </div>
+    <div class="roommark" id="ideaRoomMark" hidden>
+      <div class="rmhint">Tap where the tree will stand</div>
+      <div class="rmwrap" id="ideaRmWrap"><img id="ideaRmImg" alt="Your room"><i id="ideaRmDot"></i></div>
     </div>
   </section>
 
@@ -826,6 +835,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <div class="roommark" id="roomMark" hidden>
       <div class="rmhint">Tap where the tree will stand</div>
       <div class="rmwrap" id="rmWrap"><img id="rmImg" alt="Your room"><i id="rmDot"></i></div>
+      <label for="file" class="btn ghost changepill" id="roomChange">Change photo</label>
     </div>
     <div class="tipsbox" id="tipsBox"><div class="hubk">Photo tips</div><ul class="tips" id="photoTips"></ul></div>
     <p class="photook" id="photoOk" hidden></p>
@@ -842,6 +852,13 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
         <label class="chip"><input type="radio" name="kind" value="natural"><span>Real</span></label>
         <label class="chip"><input type="radio" name="kind" value="" checked><span>Not sure</span></label>
       </div></div>
+    <div class="q" id="prelitQ"><div class="lbl">Is it pre-lit?</div>
+      <div class="row">
+        <label class="chip"><input type="radio" name="prelit" value="yes"><span>Yes, lights built in</span></label>
+        <label class="chip"><input type="radio" name="prelit" value="no"><span>No</span></label>
+        <label class="chip"><input type="radio" name="prelit" value="" checked><span>Not sure</span></label>
+      </div>
+      <div class="hint2">A pre-lit tree already has its lights, so we'll skip the lights step.</div></div>
     <div class="q"><div class="lbl">How tall?</div>
       <div class="row">
         <label class="chip"><input type="radio" name="height" value="4"><span>4 ft or less</span></label>
@@ -1072,18 +1089,6 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <p class="sheetsub">A good photo makes a better plan and a truer preview.</p>
     <div id="tipsList"></div>
     <button class="btn" id="tipsGo" style="width:100%;margin-top:18px">Take or choose a photo</button>
-  </div>
-</div>
-
-<div id="brandSheet" class="sheet" hidden>
-  <div class="sheetbg" data-close></div>
-  <div class="sheetbox" role="dialog" aria-modal="true" aria-labelledby="brandH">
-    <button class="sheetx" data-close aria-label="Close">✕</button>
-    <div class="sheetk">A note on themed trees</div>
-    <h3 id="brandH">About your preview</h3>
-    <div class="brandrow"><span class="pti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg></span><p id="brandP"></p></div>
-    <div class="brandrow"><span class="pti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M6 7h12l-1 13H7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></span><p id="brandP2"></p></div>
-    <button class="btn" data-close style="width:100%;margin-top:18px">Got it</button>
   </div>
 </div>
 
@@ -1687,7 +1692,7 @@ const PICKS = [["B0FDF513ZS","ribbon","Ribbli Burgundy Velvet, gold sparkling st
   ["B0FG8HL227","ribbon","Kryvus Pink Glitter Velvet ribbon, 2.5in","pink","glitter,matte,velvet",2.5,"A"],
   ["B0FB38XJHK","ribbon","CSZD Thick Red Velvet ribbon, gold back, 4in","gold,red","matte,velvet",4.0,"A"],
   ["B0BCM8R524","ribbon","Nutcracker Canvas ribbon, gold red white, 4in","gold,red,white","burlap,vintage",4.0,"A"],
-  ["B0D4RYMHKY","ribbon","Offray Candy Cane Velvet ribbon, 4in","red","matte,velvet",4.0,"A"],
+  ["B0D4RYMHKY","ribbon","Offray Candy Cane Velvet ribbon, 4in","red,white","matte,stripe,velvet",4.0,"A"],
   ["B0DB5H3LDK","ribbon","DINDOSAL White & Gold Velvet ribbon, faux fur edge, 4in","gold,white","matte,velvet",4.0,"A"],
   ["B07BNX1KRN","ribbon","Wrap Etc. Black & White Harlequin ribbon, 4in","black,white","plaid",4.0,"A"],
   ["B07K1GPVST","ribbon","Wrap Etc. Red & White Striped ribbon, 2.5in","red,white","stripe",2.5,"A"],
@@ -1769,11 +1774,13 @@ function matchPick(b, key) {
       if (cols.length && pc.some(c => !cols.includes(c))) return;
       if (["velvet", "satin", "metallic", "plaid", "stripe", "sheer", "burlap", "glitter"].some(t => tex.includes(t) && !pt.includes(t) && !new RegExp(t, "i").test(r[2]))) return;
       if (["plaid", "stripe", "glitter"].some(t => !tex.includes(t) && (pt.includes(t) || new RegExp(t, "i").test(r[2])))) return;
+      if (!tex.includes("stripe") && /candy ?cane|peppermint/i.test(r[2])) return;   // candy cane ribbon is striped
     }
     if (key === "ribbon" && /jewel|embroider|brocade/.test(q) && !/jewel|embroider|brocade|rhinestone|filigree/i.test(r[2])) return;   // a statement ribbon asked for, so a plain one won't do
     if (orn) {
       const shape = /finial|teardrop|\bdrop/i.test(r[2]) ? "drop" : /nutcracker|bell|horn|santa|frame|star|gingerbread|cart|animal|candy|peppermint|icicle|wreath|pendant|jewel/i.test(r[2]) ? "novelty" : "round";
       if (shape !== wantShape) return;   // a round ornament for a round one, a drop for a drop
+      if (cols.length && pc.some(c => !cols.includes(c))) return;   // only the colors asked for: blue and white canes are not red and white
     }
     const nw0 = pickWords(r[2]);
     if (mustW.some(w => !nw0.has(w))) return;   // a describing word they asked for is missing
@@ -1788,6 +1795,9 @@ function matchPick(b, key) {
       if (/\bpine\b/.test(pn) && !/\bpine\b|\bfir\b|norfolk/.test(q)) return;
     }
     if (/glitter/.test(q) && !/glitter|sequin|sparkl/i.test(r[2]) && !pt.includes("glitter")) return;   // glittered asked for, so a plain one won't do
+    if (tex.includes("stripe") && !pt.includes("stripe") && !/stripe|candy|peppermint/i.test(r[2])) return;   // a striped bow or ribbon asked for, so a solid one won't do
+    if (tex.includes("plaid") && !pt.includes("plaid") && !/plaid|tartan|buffalo|check|gingham/i.test(r[2])) return;
+    if (key === "crown" && /extra large|oversized|\b(4\d|[5-9]\d)\s*(in|inch|")/i.test(r[2]) && !/extra large|oversized/.test(q)) return;   // a topper sized for the tree, not a 47" porch bow
     if (/\b(leaf|leaves)\b/i.test(r[2]) !== /\b(leaf|leaves)\b/.test(q)) return;   // a magnolia flower is not a magnolia leaf branch, and the other way round
     if (key === "primary_picks" && !cols.length && !tex.length && !pc.includes("green")) return;   // plain "pine stems" means natural green, not glittered
     let s = cHit * 3 + kHit * 3 + tex.filter(t => pt.includes(t)).length * 2;
@@ -1824,7 +1834,7 @@ const FOOT = {
     : mode === "design" && src === "idea"
     ? ({ label: "Design my tree", act: () => { factsSet = true; useIdeaAsStyle(); run(); } })
     : ({ label: "Next", act: () => { factsSet = true; show("s-style"); } }),
-  go: () => ({ label: mode === "design" ? "Design my tree" : "See my tree's potential", act: run }),
+  go: () => !val("style") ? { label: "Pick a style to continue", disabled: true } : ({ label: mode === "design" ? "Design my tree" : "See my tree's potential", act: run }),
   seeIt: () => planState === "wait" ? ({ label: "Finishing your plan…", disabled: true, act: () => {} })
     : planState === "error" ? ({ label: "Try again", act: getPlan })
     : ({ label: previewState === "done" ? (mode === "design" ? "See your finished tree" : "See your improved tree") : "See your plan", act: () => show("s-results", ["s-home"]) })
@@ -1905,11 +1915,17 @@ document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   mode = b.dataset.mode; rerunFromHub = false; factsSet = false;
   clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d);
-  src = "tree"; roomPhoto = null; ideaPhoto = null; baseKey = ""; photo = null; photoImg = null; $("#roomMark").hidden = true;
+  src = "tree"; clearIdeaRoom(); ideaPhoto = null; baseKey = ""; photo = null; photoImg = null; $("#roomMark").hidden = true;
   emptyDrop();
   setPhotoCopy(mode);
   $("#stageQ").hidden = mode === "design";
   $("#inspoRow").hidden = mode !== "design";
+  // Designing from scratch there's nothing to keep, so they pick a style; checking a tree starts from Keep my style
+  const keep = document.querySelector("input[name=style][value=keep]");
+  keep.closest("label").hidden = mode === "design";
+  if (mode === "design" && keep.checked) keep.checked = false;
+  if (mode !== "design" && !val("style")) keep.checked = true;
+  syncStyle();
   $("#detailsSub").textContent = "Optional, but it makes the plan and the preview more accurate.";
   show(mode === "design" ? "s-start" : "s-photo");
 });
@@ -1930,6 +1946,7 @@ const PHOTO_TIPS = {
 let tipsKey = "tree";
 const tipGrid = () => `<ul class="ptips">${PHOTO_TIPS[tipsKey].map(([i, t, d]) => `<li><span class="pti">${TIP_ICON[i]}</span><b>${t}</b><small>${d}</small></li>`).join("")}</ul>`;
 function emptyDrop() {
+  $("#s-photo").classList.remove("room");
   $("#dropInner").innerHTML = `<span class="dropcam">${TIP_ICON.camera}</span><strong>Tap to take or choose a photo</strong><div class="ptipk">For the best result</div>${tipGrid()}`;
 }
 const tipsSeen = () => { try { return localStorage.getItem("ts_photo_tips") === "1"; } catch { return true; } };
@@ -1962,7 +1979,7 @@ function photoChecked() {
 }
 // Design: pick a starting point
 document.querySelectorAll(".src").forEach(b => b.onclick = () => {
-  src = b.dataset.src; baseKey = ""; photo = null; photoImg = null; roomPhoto = null; $("#roomMark").hidden = true;
+  src = b.dataset.src; baseKey = ""; photo = null; photoImg = null; clearIdeaRoom(); $("#roomMark").hidden = true;
   emptyDrop();
   $("#inspoRow").hidden = src === "idea";   // the idea screen has its own inspiration photo
   if (src === "idea") { show("s-idea"); return; }
@@ -1973,7 +1990,19 @@ $("#ideaFile").addEventListener("change", () => pickExtra($("#ideaFile"), $("#id
 $("#ideaClear").onclick = () => { clearExtra($("#ideaFile"), $("#ideaThumb"), $("#ideaLbl"), $("#ideaClear"), "✦", d => ideaPhoto = d); baseKey = ""; setFoot(); };
 $("#ideaText").addEventListener("input", () => { baseKey = ""; setFoot(); });
 // Room: tap where the tree will stand
-function drawRoomDot() { $("#rmDot").style.left = roomMark[0] * 100 + "%"; $("#rmDot").style.top = roomMark[1] * 100 + "%"; }
+function drawRoomDot() { ["#rmDot", "#ideaRmDot"].forEach(d => { $(d).style.left = roomMark[0] * 100 + "%"; $(d).style.top = roomMark[1] * 100 + "%"; }); }
+$("#ideaRmWrap").addEventListener("click", e => { const r = $("#ideaRmImg").getBoundingClientRect(); roomMark = [Math.min(.98, Math.max(.02, (e.clientX - r.left) / r.width)), Math.min(.98, Math.max(.05, (e.clientY - r.top) / r.height))]; baseKey = ""; drawRoomDot(); });
+// From an idea, they can add the room too: the tree is then stood in their room instead of an imagined one
+function clearIdeaRoom() { roomPhoto = null; $("#ideaRoomFile").value = ""; $("#ideaRoomThumb").style.backgroundImage = ""; $("#ideaRoomThumb").textContent = "⌂"; $("#ideaRoomLbl").firstChild.textContent = "Add photo"; $("#ideaRoomClear").hidden = true; $("#ideaRoomMark").hidden = true; }
+$("#ideaRoomFile").addEventListener("change", async () => {
+  const f = $("#ideaRoomFile").files[0]; if (!f) return;
+  try {
+    roomPhoto = await loadPhoto(f); roomMark = [.5, .8]; baseKey = "";
+    $("#ideaRoomThumb").style.backgroundImage = `url(${roomPhoto})`; $("#ideaRoomThumb").textContent = ""; $("#ideaRoomLbl").firstChild.textContent = "Change"; $("#ideaRoomClear").hidden = false;
+    $("#ideaRmImg").src = roomPhoto; $("#ideaRoomMark").hidden = false; drawRoomDot();
+  } catch { $("#startErr").textContent = "Couldn't read that photo. Try a JPG or PNG."; }
+});
+$("#ideaRoomClear").onclick = () => { clearIdeaRoom(); baseKey = ""; };
 $("#rmWrap").addEventListener("click", e => { const r = $("#rmImg").getBoundingClientRect(); roomMark = [Math.min(.98, Math.max(.02, (e.clientX - r.left) / r.width)), Math.min(.98, Math.max(.05, (e.clientY - r.top) / r.height))]; baseKey = ""; drawRoomDot(); });
 $("#detailsSkip").onclick = () => { if (rerunFromHub) { history.back(); return; } factsSet = false; if (mode === "design" && src === "idea") { useIdeaAsStyle(); run(); } else show("s-style"); };
 // From an idea, their own words are the style: "themed", with the description as the theme
@@ -1997,13 +2026,21 @@ function syncTell(r) {
 }
 document.addEventListener("click", e => { if (e.target.closest("[data-tell]")) $("#navDetails").click(); });
 $("#navDetails").onclick = () => {
-  rerunFromHub = true; $("#stageQ").hidden = mode === "design";
+  rerunFromHub = true; $("#stageQ").hidden = mode === "design"; $("#prelitQ").hidden = val("kind") === "natural";
   $("#detailsSub").textContent = "Tell us what the photo can't, and we'll make your shopping list and steps more accurate. Your preview stays the same.";
   show("s-details");
 };
 function facts() {
   if (!factsSet) return undefined;
-  return { kind: val("kind") || "", height: Number(val("height")) || 0, density: val("density") || "", stage: mode === "check" ? (val("stage") || "") : "" };
+  return { kind: val("kind") || "", prelit: val("kind") !== "natural" ? (val("prelit") || "") : "", height: Number(val("height")) || 0, density: val("density") || "", stage: mode === "check" ? (val("stage") || "") : "" };
+}
+// Pre-lit only applies to artificial trees, so a real tree hides the question
+document.querySelectorAll("input[name=kind]").forEach(r => r.addEventListener("change", () => { $("#prelitQ").hidden = val("kind") === "natural"; }));
+// What they told us about the tree wins over the photo: a pre-lit tree needs no lights step, a real one no shaping
+function treeFacts(t) {
+  const f = facts(); if (!t || !f) return;
+  if (f.kind) t.kind = f.kind;
+  if (f.prelit === "yes" && f.kind !== "natural") { t.kind = "artificial"; t.prelit = true; } else t.prelit = false;   // pre-lit means artificial
 }
 async function pickExtra(input, thumb, lbl, clearBtn, set) {
   const f = input.files[0]; if (!f) return;
@@ -2042,7 +2079,7 @@ $("#file").addEventListener("change", async e => {
     photo = await loadPhoto(f); baseKey = "";
     if (mode === "design" && src === "room") {
       roomPhoto = photo; roomMark = [.5, .8];
-      $("#dropInner").innerHTML = `<strong>Change photo</strong>`;
+      $("#s-photo").classList.add("room");   // the placement picture moves to the top, with Change photo under it
       $("#rmImg").src = roomPhoto; $("#roomMark").hidden = false; drawRoomDot();
     } else
     $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="muted" style="font-size:13px;margin-top:8px">Tap to change photo</div>`;
@@ -2061,7 +2098,7 @@ const STYLE_NOTES = {
   themed: "One story, told by every piece: a collection, a heritage, a place or something you love. Tell us the theme."
 };
 const val = n => (document.querySelector(`input[name=${n}]:checked`) || {}).value;
-function syncStyle() { const s = val("style"); $("#styleNote").textContent = STYLE_NOTES[s]; $("#theme").hidden = s !== "themed"; }
+function syncStyle() { const s = val("style"); $("#styleNote").textContent = STYLE_NOTES[s] || ""; $("#theme").hidden = s !== "themed"; if (typeof setFoot === "function") setFoot(); }
 document.querySelectorAll("input[name=style]").forEach(r => r.addEventListener("change", syncStyle));
 syncStyle();
 
@@ -2103,7 +2140,9 @@ function startTips() {
 }
 function stopTips() { clearInterval(tipTimer); tipTimer = null; }
 
+let loadGen = 0;
 function startLoading(title, steps, evalSeconds, pic) {
+  const gen = ++loadGen;
   $("#loadTitle").textContent = title;
   $("#scan").hidden = !pic; if (pic) $("#scanImg").src = pic;
   $("#loadSteps").innerHTML = steps.map(s => `<li>${s}</li>`).join("");
@@ -2127,7 +2166,7 @@ function startLoading(title, steps, evalSeconds, pic) {
   tick(); const iv = setInterval(tick, 400);
   return {
     painting() { phase = "paint"; t1 = Date.now(); tick(); },
-    done() { clearInterval(iv); stopTips(); $("#loadFill").style.width = "100%"; lis.forEach(li => li.className = "done"); setTimeout(() => $("#loading").hidden = true, 350); }
+    done() { clearInterval(iv); stopTips(); $("#loadFill").style.width = "100%"; lis.forEach(li => li.className = "done"); setTimeout(() => { if (gen === loadGen) $("#loading").hidden = true; }, 350); }
   };
 }
 
@@ -2142,10 +2181,11 @@ const aspectOf = srcUrl => new Promise(ok => { const im = new Image(); im.onload
 async function makeBase() {
   const f = facts() || {}, key = [src, JSON.stringify(f), roomMark.join(","), (roomPhoto || "").length, $("#ideaText").value.trim(), (ideaPhoto || "").length].join("|");
   if (baseKey === key && photo) return true;
-  const LB = startLoading(src === "room" ? "Placing your tree in the room" : "Imagining your tree", src === "room" ? ["Finding the spot", "Sizing the tree to your room", "Turning on the lights"] : ["Setting the scene", "Shaping the tree", "Turning on the lights"], 25);
+  const inRoom = src === "room" || (src === "idea" && roomPhoto);   // an idea with their room photo stands the tree in that room
+  const LB = startLoading(inRoom ? "Placing your tree in the room" : "Imagining your tree", inRoom ? ["Finding the spot", "Sizing the tree to your room", "Turning on the lights"] : ["Setting the scene", "Shaping the tree", "Turning on the lights"], 25);
   try {
     let body;
-    if (src === "room") {
+    if (inRoom) {
       const im = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = roomPhoto; });
       const k = Math.min(1, 1024 / Math.max(im.width, im.height)), c = document.createElement("canvas"), g = c.getContext("2d");
       c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); g.drawImage(im, 0, 0, c.width, c.height);
@@ -2182,6 +2222,7 @@ async function run() {
     return;
   }
   result = lookResult = Object.assign(look, { quick_fixes: [], plan: [], ideas: [], mockup: null, render_brief: "", _lookMeta: look._meta });
+  treeFacts(result.tree);
   after = null; previewP = null; previewState = "idle"; stepIdx = 0; doneSteps = new Set(); guide = null; swept = false; gotItems = new Set();
   L.done();
   getPlan(myPlan);
@@ -2198,6 +2239,7 @@ function getPlan(pending) {
     if (result !== forLook) return;                 // they started over
     const lm = forLook._lookMeta || {}, pm = pl._meta || {};
     Object.assign(result, pl, { _meta: { model: pm.model || lm.model, seconds: Math.max(lm.seconds || 0, pm.seconds || 0), scoreSeconds: lm.seconds, planSeconds: pm.seconds, scoreUsage: lm.usage, planUsage: pm.usage } });
+    treeFacts(result.tree);
     planState = "ready"; planP = null;
     fill();
     loadDetails();                 // written steps: in the background
@@ -2242,7 +2284,7 @@ let detailsP = null, detailsReady = true;
 function applyFacts() {
   rerunFromHub = false;
   const f = facts() || {};
-  const patch = t => { if (!t) return; if (Number(f.height)) t.height_ft = Number(f.height); if (f.kind) t.kind = f.kind; if (f.density) t.density = f.density; if (f.stage) t.stage = f.stage; };
+  const patch = t => { if (!t) return; if (Number(f.height)) t.height_ft = Number(f.height); if (f.kind) t.kind = f.kind; if (f.density) t.density = f.density; if (f.stage) t.stage = f.stage; treeFacts(t); };
   patch(result.tree);
   versions.forEach(v => patch(v.result && v.result.tree));
   // the written steps get rewritten for the real tree (in the background, like the first time)
@@ -2382,7 +2424,7 @@ async function placementMap() {
   } catch (e) { console.error(e); return undefined; }
 }
 // Fuller branches in the preview when the plan shapes them or the tree scored low on fullness
-const needsShaping = r => (r.plan || []).some(p => p.element === "fluff") || (r.categories || []).some(c => c.name === "Fullness" && Number(c.score) <= 7);
+const needsShaping = r => r.tree?.kind !== "natural" && ((r.plan || []).some(p => p.element === "fluff") || (r.categories || []).some(c => c.name === "Fullness" && Number(c.score) <= 7));   // a real tree isn't shaped
 let lastMap = null;
 async function makePreview(extraPieces, change) {
   try {
