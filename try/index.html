@@ -743,7 +743,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .buyrow small{font-size:14px}
 
   /* ---------- Home (approved mobile design): full-screen photo, gold logo, ivory headline, two pills, cream tab bar ---------- */
-  .homebg{display:none;position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(26,16,10,.62) 0%,rgba(26,16,10,.18) 26%,rgba(26,16,10,.04) 44%,rgba(26,16,10,.42) 64%,rgba(22,14,9,.82) 84%,rgba(22,14,9,.9) 100%),var(--photo-home, var(--photo-hero, url(/brand/velvet-midnight.jpg))) center/cover}
+  .homebg{display:none;position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(26,16,10,.62) 0%,rgba(26,16,10,.18) 26%,rgba(26,16,10,.04) 44%,rgba(26,16,10,.42) 64%,rgba(22,14,9,.82) 84%,rgba(22,14,9,.9) 100%),var(--photo-home, url(/brand/home-tree.jpg)) center/cover}
   body.tabhome .homebg{display:block}
   body.tabhome{background:#1d140e !important}
   body.tabhome .appbar{display:none}
