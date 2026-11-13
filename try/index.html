@@ -2305,13 +2305,16 @@ function startLoading(title, steps, evalSeconds, pic) {
     // When the answer comes back early, the remaining lines still check off one at a time, slowly enough to read
     // (each gets about 1.5 seconds on screen; the plan keeps working meanwhile), instead of all at once.
     done(fast) {
-      clearInterval(iv); $("#loadFill").style.width = "100%";
-      if (fast) { stopTips(); lis.forEach(li => li.className = "done"); $("#loading").hidden = true; return; }   // something went wrong: show it right away
+      clearInterval(iv);
+      if (fast) { $("#loadFill").style.width = "100%"; stopTips(); lis.forEach(li => li.className = "done"); $("#loading").hidden = true; return; }   // something went wrong: show it right away
       let i = lis.findIndex(li => li.className !== "done"); if (i < 0) i = lis.length;
+      const from = parseFloat($("#loadFill").style.width) || 0, left = Math.max(1, lis.length - i), i0 = i;
+      const fill = () => { $("#loadFill").style.width = (from + (100 - from) * Math.min(1, (i - i0) / left)) + "%"; };   // the bar finishes with the last line
       const next = () => {
         if (gen !== loadGen) return;
+        fill();
         if (i >= lis.length) { stopTips(); setTimeout(() => { if (gen === loadGen) $("#loading").hidden = true; }, 450); return; }
-        lis[i].className = "done"; if (lis[i + 1]) lis[i + 1].className = "on"; i++;
+        lis[i].className = "done"; if (lis[i + 1]) lis[i + 1].className = "on"; i++; fill();
         setTimeout(next, 1500);
       };
       if (lis[i]) lis[i].className = "on";
