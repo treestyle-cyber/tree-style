@@ -2080,7 +2080,7 @@ document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   src = "tree"; clearIdeaRoom(); ideaPhoto = null; baseKey = ""; photo = null; photoImg = null; $("#roomMark").hidden = true;
   emptyDrop();
   setPhotoCopy(mode);
-  $("#stageQ").hidden = mode === "design";
+  $("#stageQ").hidden = true;   // partway or finished: the photo shows it, so the AI decides (Eric: five questions were too many)
   $("#inspoRow").hidden = mode !== "design";
   // Designing from scratch there's nothing to keep, so they pick a style; checking a tree starts from Keep my style
   const keep = document.querySelector("input[name=style][value=keep]");
@@ -3263,7 +3263,7 @@ async function restoreSaved(st) {
   try {
     mode = st.mode; src = st.src || "tree"; factsSet = !!st.factsSet;
     const f = st.form || {}; ["kind", "height", "density", "stage", "style"].forEach(n => setRadio(n, f[n] ?? "")); $("#theme").value = f.theme || ""; syncStyle();
-    $("#stageQ").hidden = mode === "design"; $("#densityQ").hidden = false; $("#inspoRow").hidden = mode !== "design"; setPhotoCopy(mode === "design" ? (src === "room" ? "room" : "design") : "check");
+    $("#stageQ").hidden = true; $("#densityQ").hidden = false; $("#inspoRow").hidden = mode !== "design"; setPhotoCopy(mode === "design" ? (src === "room" ? "room" : "design") : "check");
     photo = st.photo; photoAspect = st.photoAspect || "3:4"; photoImg = null; keyPhoto = st.keyPhoto || null; baseKey = "";
     $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="muted" style="font-size:13px;margin-top:8px">Tap to change photo</div>`;
     result = lookResult = st.result; after = st.after || null; planState = "ready"; planP = null;
