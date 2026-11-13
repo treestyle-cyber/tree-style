@@ -567,6 +567,16 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   .rmhint{text-align:center;font:500 11px var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
   .rmwrap{position:relative;border-radius:14px;overflow:hidden;cursor:crosshair;box-shadow:inset 0 0 0 1px var(--line)}
   .rmwrap img{width:100%;display:block}
+  /* room photo: the picture sizes to the visible height so Change photo and "Your tree" show without scrolling */
+  #s-photo.room #photoSub{display:none}
+  #s-photo.room h1::after{display:none}
+  #s-photo.room .roommark{margin-top:6px}
+  #s-photo.room .rmwrap{width:fit-content;max-width:100%;margin:0 auto}
+  #s-photo.room .rmwrap img{width:auto;max-width:100%;max-height:max(150px, calc(100dvh - 405px))}
+  #s-photo.room .changepill{width:auto;max-width:none;display:table;margin:10px auto 0;padding:9px 20px;font-size:14px}
+  #s-photo.room .roomtree{margin-top:12px;padding-top:4px;padding-bottom:4px}
+  #s-photo.room .roomtree .extra{border-top:0;grid-template-columns:44px 1fr auto;padding:8px 0}
+  #s-photo.room .roomtree .thumb{width:44px;height:44px}
   .rmwrap i{position:absolute;width:44px;height:16px;margin:-8px 0 0 -22px;border-radius:50%;background:rgba(184,156,107,.75);box-shadow:0 0 0 2px #fff,0 0 18px rgba(184,156,107,.9);pointer-events:none}
   .rmwrap i::before{content:"";position:absolute;left:50%;bottom:8px;width:2px;height:60px;margin-left:-1px;background:linear-gradient(transparent,#fff)}
   /* top fixes and "Show me how" on the results hub */
@@ -972,7 +982,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
       <div class="card extrasCard roomtree">
         <div class="extra">
           <span class="thumb" id="roomTreeThumb">▲</span>
-          <div><b>Your tree</b><small>Optional: already have one? Add a photo of it and we'll stand that tree in the room.</small></div>
+          <div><b>Your tree</b><small>Optional: we'll stand your own tree in the room.</small></div>
           <label id="roomTreeLbl">Add photo<input type="file" id="roomTreeFile" accept="image/*" hidden></label>
           <button id="roomTreeClear" hidden>Remove</button>
         </div>
