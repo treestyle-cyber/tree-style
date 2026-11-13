@@ -1002,7 +1002,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
     <div class="q"><div class="lbl">Height <small id="hNote">feet · swipe to set</small></div>
       <div class="hwheel" id="hWheel"><div class="hrow" id="hRow"><button type="button" data-ft="3">3</button><button type="button" data-ft="4">4</button><button type="button" data-ft="5">5</button><button type="button" data-ft="6">6</button><button type="button" data-ft="7">7</button><button type="button" data-ft="8">8</button><button type="button" data-ft="9">9</button><button type="button" data-ft="10">10</button><button type="button" data-ft="11">11</button><button type="button" data-ft="12">12</button><button type="button" data-ft="13">13</button><button type="button" data-ft="14">14</button><button type="button" data-ft="15">15</button><button type="button" data-ft="16">16</button></div></div>
       <input type="radio" name="height" id="hVal" value="" checked hidden></div>
-    <div class="q" id="densityQ"><div class="lbl">Branches</div><div class="seg"><label class="chip"><input type="radio" name="density" value="dense"><span>Full</span></label><label class="chip"><input type="radio" name="density" value="open"><span>Open, with gaps</span></label><input type="radio" name="density" value="" checked hidden></div></div>
+    <div class="q" id="densityQ"><div class="lbl">Branches</div><div class="seg"><label class="chip"><input type="radio" name="density" value="dense"><span>Full</span></label><label class="chip"><input type="radio" name="density" value="open"><span>Sparse style</span></label><label class="chip"><input type="radio" name="density" value="unshaped"><span>Not shaped</span></label><input type="radio" name="density" value="" checked hidden></div></div>
     <div class="q" id="stageQ" hidden><div class="lbl">Decorating</div><div class="seg"><label class="chip"><input type="radio" name="stage" value="partial"><span>Partway</span></label><label class="chip"><input type="radio" name="stage" value="finished"><span>Finished</span></label><input type="radio" name="stage" value="" checked hidden></div></div></div>
     <p class="dnote">Not sure? Leave it blank and we'll read it from your photo.</p>
     <div class="err" id="detailsErr"></div>
@@ -2258,7 +2258,7 @@ function syncTell(r) {
   $("#tellCard").hidden = factsSet; $("#tellDone").hidden = !factsSet;
   if (factsSet) {
     const k = val("kind"), dn = val("density");
-    const bits = [Number(val("height")) ? val("height") + " ft" : null, k === "natural" ? "real" : k === "artificial" ? "artificial" : null, dn === "open" ? "open branches" : dn === "dense" ? "full branches" : null].filter(Boolean);
+    const bits = [Number(val("height")) ? val("height") + " ft" : null, k === "natural" ? "real" : k === "artificial" ? "artificial" : null, dn === "open" ? "a sparse style" : dn === "unshaped" ? "not shaped yet" : dn === "dense" ? "full branches" : null].filter(Boolean);
     $("#tellDone").innerHTML = `Using your tree details${bits.length ? ": " + bits.join(", ") : ""}.<button data-tell>Edit</button>`;
   }
 }
@@ -2755,6 +2755,8 @@ async function placementMap() {
 const fullScore = r => { const c = (r.categories || []).find(c => c.name === "Fullness"); return c ? Number(c.score) : null; };
 const needsShaping = r => {
   if (r.tree?.kind === "natural") return false;
+  if (val("density") === "open") return false;   // a slim or sparse style: the gaps are the look, so the preview never fills them (Eric)
+  if (val("density") === "unshaped") return true;
   if (src === "room" && roomTree) return false;   // their own tree, stood in the room: its fullness is how it really is (Eric: a sparse tree was filled in and grew taller)
   const f = fullScore(r);
   return f == null ? (r.plan || []).some(p => p.element === "fluff") : f <= 7;
