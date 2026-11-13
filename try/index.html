@@ -894,7 +894,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   <!-- Tree details (optional) -->
   <section class="screen" id="s-details" data-title="Your tree" data-foot="details" hidden>
     <h1>About your tree</h1>
-    <p class="sub" id="detailsSub">Tell us a little about your tree, and we'll style it just for you.</p>
+    <p class="sub" id="detailsSub">The more we know about your tree, the better we can style it.</p>
     <div class="detprog" id="detProg"></div>
     <div class="q"><div class="lbl">What kind of tree?</div>
       <div class="row">
@@ -1948,7 +1948,7 @@ let stack = [];
 // From the results screen it's the plain short list.
 function openDetails() {
   const sec = $("#s-details"); sec.classList.add("stepper");
-  $("#detailsSub").textContent = "Tell us a little about your tree, and we'll style it just for you."; $("#detailsSkip").textContent = "Skip, use my photo";
+  $("#detailsSub").textContent = "The more we know about your tree, the better we can style it."; $("#detailsSkip").textContent = "Skip, use my photo";
   show("s-details"); detShow(detQs()[0]);
 }
 const detQs = () => [...$("#s-details").querySelectorAll(".q")].filter(q => !q.hidden);
