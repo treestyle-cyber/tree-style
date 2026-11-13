@@ -245,6 +245,9 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
 
   /* details + extras */
   .q{margin:18px 0 0}
+  .staynote{display:flex;gap:8px;align-items:center;justify-content:center;font-size:13.5px;color:var(--gold);margin:14px auto 18px;max-width:24em;text-align:center}
+  .staynote::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--gold);animation:stay 1.6s ease-in-out infinite}
+  @keyframes stay{50%{opacity:.25}}
   .detline{font:400 27px/1.3 var(--serif);color:var(--ivory);text-align:center;margin:4px auto 26px;max-width:15em}
   .dskip{display:flex;justify-content:flex-end;margin:6px 0 0}
   .dskipb{appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:999px;padding:7px 14px;font:500 13px var(--sans);cursor:pointer}
@@ -965,6 +968,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
       <li id="pg1"><span class="ic"></span><div><b>Your plan</b><small>Ribbon, stems, ornaments and your shopping list · <em></em></small></div></li>
       <li id="pg2"><span class="ic"></span><div><b>Your preview</b><small>A picture of your finished tree · <em></em></small></div></li>
     </ol>
+    <p class="staynote" id="stayNote" hidden>Keep TreeStyle open while we finish</p>
     <button class="teaser" id="teaser" hidden><img id="teaserImg" alt=""><span id="teaserTxt">Your improved tree is ready</span></button>
     <p class="eye" id="eye"></p>
   </section>
@@ -1181,6 +1185,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
     <div class="bar"><i id="loadFill"></i></div>
     <p class="muted" id="loadNote">About a minute. Hang tight.</p>
     <ol id="loadSteps"></ol>
+    <p class="staynote">Keep TreeStyle open until it's done</p>
     <div class="tipcard" aria-live="polite">
       <div class="tipk"><span id="tipK">While you wait</span></div>
       <p id="tipText"></p>
@@ -2444,7 +2449,7 @@ function getPlan(pending) {
 /* ---------------- first preview (in the background, while they read their results) ---------------- */
 let previewP = null, previewState = "idle";
 function paintWait() {
-  $("#viewer").innerHTML = `<div class="renderwait"><div class="spin"></div>Painting your preview…<div style="font-size:13px">About 30 seconds. Look around while you wait.</div></div>`;
+  $("#viewer").innerHTML = `<div class="renderwait"><div class="spin"></div>Painting your preview…<div style="font-size:13px">About 30 seconds. Look around while you wait, and keep TreeStyle open.</div></div>`;
   $("#seg").hidden = $("#hint").hidden = $("#save").hidden = $("#baBtn").hidden = true;
 }
 function paintFirst() {
@@ -2546,6 +2551,7 @@ function fillReveal() {
   step($("#pg2"), planState !== "ready" ? "next" : previewState === "done" ? "ok" : previewState === "failed" ? "bad" : "on",
     planState !== "ready" ? "next" : previewState === "done" ? "ready" : previewState === "failed" ? "didn't come through. Try again from your results." : "painting, about 20 seconds…");
   $("#progress").hidden = false;
+  $("#stayNote").hidden = planState === "ready" && (previewState === "done" || previewState === "failed");
   $("#teaser").hidden = !after;
   if (after) $("#teaserImg").src = after;
   $("#teaserTxt").textContent = `Your ${designWord} tree is ready`;
