@@ -245,6 +245,21 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
 
   /* details + extras */
   .q{margin:18px 0 0}
+  .detgate{display:none;text-align:center;margin-top:10px}
+  .detgate .sub{margin-bottom:22px}
+  .detgate .btn{width:100%}
+  .detgate .skip{margin-top:12px}
+  #s-details.gate .detgate{display:block}
+  #s-details.gate .q, #s-details.gate #detailsSub, #s-details.gate #detailsSkip, #s-details.gate .detprog{display:none}
+  .detprog{display:none;text-align:center;font:600 11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-top:8px}
+  #s-details.stepper .detprog{display:block}
+  #s-details.stepper #detailsSub, #s-details.stepper #detailsSkip{display:none}
+  #s-details.stepper .q:not(.cur){display:none}
+  #s-details.stepper .q.cur{margin-top:26px;animation:qin .3s ease}
+  #s-details.stepper .q.cur .lbl{font:500 26px/1.2 var(--serif);text-align:center;margin-bottom:16px}
+  #s-details.stepper .q.cur .row{justify-content:center}
+  #s-details.stepper .q.cur .hint2{text-align:center}
+  @keyframes qin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .q .lbl{font-weight:600;margin-bottom:8px}
   .q .hint2{font-size:13px;color:var(--muted);margin:6px 2px 0}
   .skip{display:block;margin:18px auto 0;background:none;border:0;color:var(--muted);font:500 14px var(--sans);text-decoration:underline;cursor:pointer}
@@ -884,6 +899,12 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   <!-- Tree details (optional) -->
   <section class="screen" id="s-details" data-title="Your tree" data-foot="details" hidden>
     <h1>About your tree</h1>
+    <div class="detgate" id="detGate">
+      <p class="sub">A few quick taps make your plan, shopping list and preview fit your tree: its size, whether it's real or pre-lit, and more.</p>
+      <button class="btn" id="detGo">Answer a few quick questions</button>
+      <button class="skip" id="detSkip2">Skip, guess from my photo</button>
+    </div>
+    <div class="detprog" id="detProg"></div>
     <p class="sub" id="detailsSub">A few quick taps. Your answers shape the plan, the shopping list and the preview, so everything fits your tree.</p>
     <div class="q"><div class="lbl">What kind of tree?</div>
       <div class="row">
@@ -1932,14 +1953,45 @@ let mode = "check", photo = null, photoAspect = "3:4", result = null, after = nu
 
 /* ---------------- navigation ---------------- */
 let stack = [];
+// In the flow, About your tree starts with a choice (a few quick questions, or skip), then asks one question at a time:
+// each tap moves to the next, and the last one carries on. From the results screen it's the plain list.
+function openDetails() {
+  const sec = $("#s-details"); sec.classList.add("gate"); sec.classList.remove("stepper");
+  sec.querySelectorAll(".q").forEach(q => q.classList.remove("cur"));
+  show("s-details");
+}
+const detQs = () => [...$("#s-details").querySelectorAll(".q")].filter(q => !q.hidden);
+function detShow(q) {
+  const qs = detQs(); $("#s-details").querySelectorAll(".q").forEach(x => x.classList.toggle("cur", x === q));
+  $("#detProg").textContent = `Question ${qs.indexOf(q) + 1} of ${qs.length}`;
+  scrollTo(0, 0);
+}
+function detailsDone() {
+  const sec = $("#s-details"); sec.classList.remove("stepper", "gate");
+  const f = FOOT.details(); if (f && f.act) f.act();
+}
+$("#detGo").onclick = () => { const sec = $("#s-details"); sec.classList.remove("gate"); sec.classList.add("stepper"); detShow(detQs()[0]); setFoot(); };
+$("#detSkip2").onclick = () => { $("#s-details").classList.remove("gate"); $("#detailsSkip").click(); };
+$("#s-details").addEventListener("click", e => {
+  if (e.target.tagName === "INPUT") return;   // a tap on a chip also clicks its hidden radio: count it once
+  const chip = e.target.closest(".chip"), sec = $("#s-details");
+  if (!chip || !sec.classList.contains("stepper")) return;
+  const q = chip.closest(".q");
+  setTimeout(() => {   // after the radio updates (and pre-lit shows or hides for the kind of tree)
+    const qs = detQs(), i = qs.indexOf(q);
+    if (i >= 0 && i < qs.length - 1) detShow(qs[i + 1]); else detailsDone();
+  }, 280);
+});
 const FOOT = {
-  photoNext: () => ({ label: photo ? "Next" : "Add a photo to continue", disabled: !photo, act: () => show("s-details") }),   // both paths ask about the tree before the analysis, where the answers shape everything
+  photoNext: () => ({ label: photo ? "Next" : "Add a photo to continue", disabled: !photo, act: () => openDetails() }),   // both paths ask about the tree before the analysis, where the answers shape everything
   ideaNext: () => ({ label: ($("#ideaText").value.trim() || ideaPhoto) ? "Next" : "Describe your tree or add a photo", disabled: !($("#ideaText").value.trim() || ideaPhoto), act: () => {
     // the idea becomes the theme (they can still change the style on the next screens)
     useIdeaAsStyle();
-    show("s-details");
+    openDetails();
   } }),
-  details: () => rerunFromHub
+  details: () => $("#s-details").classList.contains("gate") ? null
+    : $("#s-details").classList.contains("stepper") ? ({ label: "Skip the rest", act: detailsDone })
+    : rerunFromHub
     ? ({ label: "Update my shopping list and steps", act: () => { factsSet = true; applyFacts(); } })
     : mode === "design" && src === "idea"
     ? ({ label: "Design my tree", act: () => { factsSet = true; useIdeaAsStyle(); run(); } })
@@ -2138,6 +2190,7 @@ document.addEventListener("click", e => { if (e.target.closest("[data-tell]")) $
 $("#navDetails").onclick = () => {
   // After the design is done, only height, kind and pre-lit still change anything (amounts, sizes, the lights step),
   // so the fullness and decorating-stage questions are left off here
+  $("#s-details").classList.remove("gate", "stepper"); $("#s-details").querySelectorAll(".q").forEach(q => q.classList.remove("cur"));
   rerunFromHub = true; $("#stageQ").hidden = true; $("#densityQ").hidden = true; $("#prelitQ").hidden = val("kind") === "natural";
   $("#detailsSub").textContent = "Tell us what the photo can't, and we'll make your shopping list and steps more accurate. Your preview stays the same.";
   $("#detailsSkip").textContent = "Cancel";
