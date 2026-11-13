@@ -13,14 +13,15 @@ const LAB_MODEL = "gemini-3-pro-image-preview";
 import { ribbonRef } from "../lib/ribbonref.js";
 // Ribbon (won in the Lab, Nov 12): previews kept coming back with bows instead of cascades. Every preview gets the designer's
 // own ribbon photo (Studio → Ribbon technique reference), and the ribbon is described as what it physically is.
-// Always the last words the image model reads (Nov 12: after the ribbon wording was added at the end, placement-map
-// spots started showing in a preview). Only the first image is edited; the map and the ribbon photo are guides.
+// Read just before the ribbon shape, which ends the prompt (Nov 12: when the ribbon wording sat after the "no markings"
+// line, map spots showed in a preview; when this check came last and said nothing from the reference photo may appear,
+// bows came back). The ribbon shape now ends with the no-markings sentence, so both stay last.
 const FINAL_CHECK = `
 
-FINAL CHECK (most important): you are editing ONLY the first image. The placement map and the ribbon reference photo are guides, never part of the result: nothing from them may appear, so there are no colored blobs, ovals, dots, circles, rings, outlines, labels or markings anywhere in the picture. Every mark on the placement map must become a real decoration (ribbon, an ornament, a flower) or nothing at all. The result is an ordinary, real photograph.`;
+FINAL CHECK: you are editing ONLY the first image. The placement map is a guide to positions: none of its colored blobs, ovals or dots may appear; every mark becomes a real decoration (ribbon, an ornament, a flower) or nothing. From the ribbon reference photo, copy only HOW its ribbon is used (cascades and soft billows that tuck back into the branches, never bows); never copy its room, tree or colors.`;
 const RIBBON_SHAPE = `
 
-RIBBON SHAPE (most important): the ribbon is NEVER tied. There are no bows anywhere on the tree, unless the instructions ask for a bow (a bow topper sits only at the very top). Each ribbon piece is a length of flat, wide wired ribbon whose two ends are both hidden inside the branches: it emerges from deep in the tree and either spills downward in a soft waterfall over 2-3 branches (a cascade) or puffs out in one soft, open billow, then disappears back into the greenery. Where the instructions say "loops", they mean these open billows pushed into the branches, never loops tied into a bow. No knots, no centers, no V-cut tails hanging free. Before finishing, look at every ribbon piece: if it looks like a bow the instructions didn't ask for, replace it with a cascade or billow of the same ribbon.`;
+RIBBON SHAPE (most important): the ribbon is NEVER tied. There are no bows anywhere on the tree, unless the instructions ask for a bow (a bow topper sits only at the very top). Each ribbon piece is a length of flat, wide wired ribbon whose two ends are both hidden inside the branches: it emerges from deep in the tree and either spills downward in a soft waterfall over 2-3 branches (a cascade) or puffs out in one soft, open billow, then disappears back into the greenery. Where the instructions say "loops", they mean these open billows pushed into the branches, never loops tied into a bow. No knots, no centers, no V-cut tails hanging free. Before finishing, look at every ribbon piece: if it looks like a bow the instructions didn't ask for, replace it with a cascade or billow of the same ribbon. The finished picture is an ordinary, real photograph with no blobs, dots, circles or markings anywhere.`;
 const RIBBON_REF_NOTE = "Reference photo of the designer's own work, showing the ONLY acceptable ribbon technique. Do not copy its room, tree, colors, ribbon or ornaments; copy only HOW the ribbon is used: wide ribbon emerging from deep inside the branches, spilling and billowing, then tucking back in, with green branches between appearances. Paint the ribbons the instructions describe, used this way.";
 const LAB_CHECK = `
 
@@ -106,7 +107,7 @@ export default async function handler(req, res) {
   const models = variant === "v2" ? [...new Set([LAB_MODEL, ...MODELS])] : MODELS;
   // A branded theme (a film, show, team) is painted with generic pieces from the start, since the model refuses trademarked designs
   const rref = await ribbonRef();
-  const prompt = editPrompt(brief, revision, !!shape && !revision) + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + RIBBON_SHAPE + FINAL_CHECK;
+  const prompt = editPrompt(brief, revision, !!shape && !revision) + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + FINAL_CHECK + RIBBON_SHAPE;
   if (generic) retried = true;
   for (const model of models) {
     let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rref);
