@@ -188,8 +188,8 @@ function build(current) {
       </div>
       ${current[s.id] ? `<button class="fromcur" style="align-self:flex-start;appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:99px;padding:5px 12px;font:500 12.5px var(--sans);cursor:pointer">Start from the photo in use</button>` : ""}
       <textarea>${s.prompt}</textarea>
-      <div class="row"><button class="btn ghost gen">Generate</button><button class="btn use" disabled>Use this</button></div>
-      <details class="fixbox"><summary>Fix the tree in the new photo</summary>
+      <div class="row"><button class="btn ghost gen">Generate</button>${s.product ? `<label class="btn ghost" style="cursor:pointer">Upload your photo<input type="file" class="upl" accept="image/*" hidden></label>` : ""}<button class="btn use" disabled>Use this</button></div>
+      <details class="fixbox"${s.product ? " hidden" : ""}><summary>Fix the tree in the new photo</summary>
         <div class="fixstep"><b>1 · Clear the streams</b><textarea class="fixtxt rm">Remove every length of ribbon that runs down or across the tree, and any long ribbon tails hanging from the topper; fill those areas with natural green branches and lights. Move ornaments so none line up in a column, row or diagonal: scatter and stagger them, keep the largest set back toward the trunk, and keep the visual weight balanced left and right.</textarea><button class="btn ghost fix" data-k="rm" disabled>Clear the streams</button></div>
         <div class="fixstep"><b>2 · Tuck in the ribbon</b>
           <div class="mk-help">Tap the photo where the ribbon should peek out of the tree. We've suggested seven staggered spots; tap <i>Clear</i> to place your own.</div>
@@ -263,6 +263,14 @@ function build(current) {
       } catch (e) { msg.className = "msg err"; msg.textContent = e.message; }
       finally { all.forEach(b => b.disabled = false); }
     });
+    // Essentials: your own photo of the product (square, cropped to the middle)
+    const upl = el.querySelector(".upl");
+    if (upl) upl.onchange = async () => {
+      const f = upl.files[0]; if (!f) return;
+      const src = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); });
+      img = await new Promise(res => { const im = new Image(); im.onload = () => { const n = Math.min(im.width, im.height), k = Math.min(1, 1200 / n), c = document.createElement("canvas"); c.width = c.height = Math.round(n * k); c.getContext("2d").drawImage(im, (im.width - n) / 2, (im.height - n) / 2, n, n, 0, 0, c.width, c.height); res(c.toDataURL("image/jpeg", .88)); }; im.src = src; });
+      nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; useB.disabled = false; msg.className = "msg"; msg.textContent = "Like it? Tap Use this.";
+    };
     useB.onclick = async () => {
       if (!img) return;
       useB.disabled = true; msg.className = "msg"; msg.textContent = "Saving…";

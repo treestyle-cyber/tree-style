@@ -753,10 +753,19 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .esscard small{display:none}
   .esscard em{align-self:flex-start;margin:5px 2px 0;font:600 9.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;font-style:normal;color:var(--gold)}
   .esscard em::after{content:" ›"}
+  #hubEss .ess{margin:14px -18px 10px}
+  .esswant{margin:16px 0 0}
+  .esschip{display:flex;align-items:center;gap:12px;padding:8px 12px 8px 8px;margin:0 0 8px;border:1px dashed var(--line);border-radius:12px;text-decoration:none;color:inherit}
+  .esschip .esspic{width:44px;height:44px;margin:0;flex:none;border-radius:8px}
+  .esschip .esspic svg{width:70%;height:70%}
+  .esschip > span:nth-child(2){flex:1;min-width:0}
+  .esschip strong{display:block;font:500 14.5px/1.3 var(--sans);color:var(--ivory)}
+  .esschip small{display:block;font-size:12.5px;color:var(--muted);line-height:1.35}
+  .esschip em{font:600 10px var(--sans);letter-spacing:.14em;text-transform:uppercase;font-style:normal;color:var(--gold)}
   .essdots{display:flex;justify-content:center;gap:6px;padding:4px 0 2px}
   .essdots i{width:6px;height:6px;border-radius:50%;background:rgba(184,156,107,.3);transition:background .3s,width .3s}
   .essdots i.on{background:var(--gold);width:16px;border-radius:3px}
-  .ph-ess_hooks .esscard[data-id=hooks] svg,.ph-ess_wire .esscard[data-id=wire] svg,.ph-ess_ties .esscard[data-id=ties] svg,.ph-ess_remote .esscard[data-id=remote] svg,.ph-ess_cord .esscard[data-id=cord] svg,.ph-ess_scissors .esscard[data-id=scissors] svg{display:none}
+  .ph-ess_hooks .esscard[data-id=hooks] svg,.ph-ess_wire .esscard[data-id=wire] svg,.ph-ess_ties .esscard[data-id=ties] svg,.ph-ess_remote .esscard[data-id=remote] svg,.ph-ess_cord .esscard[data-id=cord] svg,.ph-ess_scissors .esscard[data-id=scissors] svg,.ph-ess_hooks .esschip[data-id=hooks] svg,.ph-ess_wire .esschip[data-id=wire] svg,.ph-ess_ties .esschip[data-id=ties] svg,.ph-ess_remote .esschip[data-id=remote] svg,.ph-ess_cord .esschip[data-id=cord] svg,.ph-ess_scissors .esschip[data-id=scissors] svg{display:none}
   details.buy[open] > summary{border-bottom:1px solid var(--line);margin-bottom:12px}
   #shop.card{background:none;border:0;box-shadow:none;padding:0}
   .buyline{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line)}
@@ -986,6 +995,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
       <button class="act main" id="actPlan"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></span><span><b>Step-by-step plan</b><small id="actPlanSub">Every step drawn on your tree</small></span><i>→</i></button>
       <button class="act" id="actShop"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 7h12l-1 13H7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></span><span><b>Shopping list</b><small id="actShopSub">What to buy, with links</small></span><i>→</i></button>
     </div>
+    <div id="hubEss"></div>
     <div class="hubfix" id="hubFix" hidden>
       <div class="hubk" id="hubFixK">Your top fixes</div>
       <div id="hubFixList"></div>
@@ -1882,21 +1892,28 @@ const ESSENTIALS = [
   { id: "scissors", label: "Fabric scissors", qty: "Crisp, clean ribbon tails", q: "fabric scissors" },
 ];
 const essentials = () => ESSENTIALS;
-// The essentials row drifts to the next card every few seconds until someone touches it (and never with reduced motion)
-let essTimer = null;
-function essRotate() {
-  clearInterval(essTimer);
-  const row = $("#essRow"), dots = [...document.querySelectorAll("#essDots i")]; if (!row) return;
-  const at = () => Math.round(row.scrollLeft / (row.firstElementChild.offsetWidth + 10));
+const essCard = b => `<a class="esscard" data-id="${b.id}" title="${esc(b.qty)}" href="${shopFor(b, "essentials")}" target="_blank" rel="noopener sponsored"><span class="esspic" style="background-image:var(--photo-ess_${b.id}, none)">${itemPic(b, "essentials")}</span><strong>${esc(b.label)}</strong><small>${esc(b.qty)}</small><em>Shop</em></a>`;
+const essHtml = (id, title, sub) => `<section class="ess" aria-label="${esc(title)}"><div class="esshead"><span class="bic" aria-hidden="true">${SHOP_ICON.essentials}</span><div><b>${esc(title)}</b><small>${esc(sub)}</small></div></div>`
+  + `<div class="essrow" id="${id}">${essentials().map(essCard).join("")}</div><div class="essdots" id="${id}Dots">${essentials().map((_, i) => `<i${i ? "" : ' class="on"'}></i>`).join("")}</div></section>`;
+// In the steps: the tools that step needs, as a small "You'll want" line
+const ESS_STEP = { lights: ["remote", "cord"], primary_picks: ["ties"], ribbon: ["wire", "scissors"], statement: ["hooks"], crown: ["wire"] };
+const essForStep = key => { const ids = ESS_STEP[key]; if (!ids) return ""; const its = ids.map(id => ESSENTIALS.find(e => e.id === id)).filter(Boolean);
+  return `<div class="esswant"><div class="buyh">You'll want</div>${its.map(b => `<a class="esschip" data-id="${b.id}" href="${shopFor(b, "essentials")}" target="_blank" rel="noopener sponsored"><span class="esspic" style="background-image:var(--photo-ess_${b.id}, none)">${itemPic(b, "essentials")}</span><span><strong>${esc(b.label)}</strong><small>${esc(b.qty)}</small></span><em>Shop</em></a>`).join("")}</div>`; };
+// Each essentials row drifts to the next card every few seconds until someone touches it (and never with reduced motion)
+const essTimers = {};
+function essRotate(id) {
+  clearInterval(essTimers[id]);
+  const row = document.getElementById(id), dots = [...document.querySelectorAll(`#${id}Dots i`)]; if (!row || !row.firstElementChild) return;
+  const w = () => row.firstElementChild.offsetWidth + 10, at = () => Math.round(row.scrollLeft / w());
   row.addEventListener("scroll", () => { const i = Math.min(dots.length - 1, at()); dots.forEach((d, k) => d.classList.toggle("on", k === i)); }, { passive: true });
-  const stop = () => clearInterval(essTimer);
+  const stop = () => clearInterval(essTimers[id]);
   ["pointerdown", "touchstart", "wheel", "focusin"].forEach(ev => row.addEventListener(ev, stop, { passive: true }));
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  essTimer = setInterval(() => {
+  essTimers[id] = setInterval(() => {
     if (!row.isConnected) return stop();
-    if (row.getBoundingClientRect().top > innerHeight || !row.offsetParent) return;   // only while it's on screen
-    const w = row.firstElementChild.offsetWidth + 10, n = at() + 1;
-    row.scrollTo({ left: n * w > row.scrollWidth - row.clientWidth + 4 ? 0 : n * w, behavior: "smooth" });
+    const rc = row.getBoundingClientRect(); if (!row.offsetParent || rc.top > innerHeight || rc.bottom < 0) return;   // only while it's on screen
+    const n = at() + 1;
+    row.scrollTo({ left: n * w() > row.scrollWidth - row.clientWidth + 4 ? 0 : n * w(), behavior: "smooth" });
   }, 3200);
 }
 
@@ -2503,10 +2520,9 @@ function fill() {
   resetPicks();
   $("#shop").innerHTML = (nItems ? `<div class="shophead"><div><b id="gotCount"></b><span class="gotbar"><i id="gotBar"></i></span></div><button class="btn ghost" id="shareList">Share list</button></div>` : "") + (nItems && !factsSet ? estNote(r) : "")
     + (nItems ? shopping.map((g, gi) => `<details class="buy"${gi === 0 ? " open" : ""}><summary><span class="bic" aria-hidden="true">${SHOP_ICON[g.key] || SHOP_ICON.base}</span><span class="bt"><b>${esc(g.title)}</b><small>${g.items.length} ${g.items.length === 1 ? "item" : "items"}</small></span><span class="chevc" aria-hidden="true"></span></summary>${g.items.map(b => `<div class="buyline${gotItems.has(b.label) ? " have" : ""}"><button class="got${gotItems.has(b.label) ? " on" : ""}" data-got="${esc(b.label)}" aria-label="Got it: ${esc(b.label)}"></button>${buyRow(b, g.key)}</div>`).join("")}</details>`).join("") : `<p class="muted">You already have what you need. It's all in how you place it.</p>`)
-    + `<section class="ess" aria-label="Stylist's essentials"><div class="esshead"><span class="bic" aria-hidden="true">${SHOP_ICON.essentials}</span><div><b>Stylist's essentials</b><small>Little things for every tree</small></div></div>`
-    + `<div class="essrow" id="essRow">${essentials(r).map(b => `<a class="esscard" data-id="${b.id}" title="${esc(b.qty)}" href="${shopFor(b, "essentials")}" target="_blank" rel="noopener sponsored"><span class="esspic" style="background-image:var(--photo-ess_${b.id}, none)">${itemPic(b, "essentials")}</span><strong>${esc(b.label)}</strong><small>${esc(b.qty)}</small><em>Shop</em></a>`).join("")}</div>`
-    + `<div class="essdots" id="essDots">${essentials(r).map((_, i) => `<i${i ? "" : ' class="on"'}></i>`).join("")}</div></section>`;
-  essRotate();
+    + essHtml("essRow", "Stylist's essentials", "Little things for every tree");
+  $("#hubEss").innerHTML = nItems ? essHtml("essHub", "Every stylist keeps these on hand", "Little things that make it easier") : "";
+  essRotate("essRow"); essRotate("essHub");
   syncGot();
   $("#brief").textContent = r.render_brief || "";
   $("#ideas").innerHTML = (r.ideas || []).slice(0, 3).map((x, i) => `<button data-i="${i}">Try: ${esc(x.label)}</button>`).join("") + (r.ideas?.length ? `<button data-more>Something else…</button>` : "");
@@ -2943,6 +2959,7 @@ async function drawStep() {
   resetPicks();
   if (buy.length) items += (factsSet ? "" : estNote(result)) + `<div class="buy"><div class="buyh">What to buy</div>${buy.map(b => buyRow(b, key)).join("")}</div>`;
   items += its.map(p => `<div class="planitem"><h4>${esc(p.title)}</h4>${p.how ? `<p>${esc(p.how)}</p>` : ""}</div>`).join("");
+  items += essForStep(key);
   $("#stepItems").innerHTML = items;
   }
   $("#prevStep").hidden = stepIdx === 0;
