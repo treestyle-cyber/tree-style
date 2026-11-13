@@ -845,6 +845,21 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   }
   @media (max-height: 620px) {
     #loading .scan, #loading .tipcard{display:none}
+    .foot{padding-top:10px;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+    .dskip{margin:0}
+    .dskipb{padding:5px 12px;font-size:12.5px}
+    .detline{font-size:20px;margin:0 auto 6px}
+    .dq{gap:6px}
+    #s-details .q .lbl{font-size:12px;margin-bottom:4px}
+    .seg .chip span{padding:7px 4px;font-size:14.5px}
+    .hwheel{height:40px}
+    .dnote{margin-top:8px;font-size:12.5px}
+    .screen > h1,.ttl{font-size:24px}
+    .screen > h1::after,.ttl::after{margin-top:6px}
+    .screen > .sub{margin:6px auto 10px;font-size:13.5px}
+    label.drop{min-height:0;padding:10px}
+    label.drop img{max-height:max(130px, calc(100dvh - 420px))}
+    #photoOk{font-size:13.5px;padding:8px 12px}
   }
 </style>
 </head>
