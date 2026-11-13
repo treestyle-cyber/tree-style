@@ -203,6 +203,13 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--green);animation:spin .8s linear infinite;margin:0 auto 12px}
   .tools{display:flex;gap:8px;margin:10px 0}
   .tools .btn{flex:1;padding:11px 12px;font-size:14px}
+  .tools{flex-wrap:wrap} .tools .btn{min-width:140px}
+  .bafield{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+  .bafield input,.bafield textarea{display:block;width:100%;margin-top:6px;letter-spacing:0;text-transform:none}
+  .bafield textarea{font:16px/1.4 var(--sans);padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper);resize:vertical;color:var(--ink)}
+  .bafield input{border-radius:12px}
+  .baout{display:block;width:100%;border-radius:10px;margin:4px 0 14px;background:var(--paper)}
+  #baSave{width:100%}
 
   /* nav list */
   .navlist{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);margin:18px 0;overflow:hidden}
@@ -953,6 +960,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <div class="tools">
       <button class="btn ghost" id="again">Try another style</button>
       <button class="btn ghost" id="save" hidden>Save and share</button>
+      <button class="btn ghost" id="baBtn" hidden>Before &amp; after</button>
     </div>
     <div class="acts" id="acts">
       <button class="act main" id="actPlan"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></span><span><b>Step-by-step plan</b><small id="actPlanSub">Every step drawn on your tree</small></span><i>→</i></button>
@@ -1115,6 +1123,20 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     <h3 id="styleH">Same tree, a new look</h3>
     <p class="sheetsub">We'll redesign the ribbon, stems, ornaments and topper in the style you pick, with a new plan, shopping list and preview. This version stays saved.</p>
     <div class="stylegrid" id="styleGrid"></div>
+  </div>
+</div>
+
+<div id="baSheet" class="sheet" hidden>
+  <div class="sheetbg" data-close></div>
+  <div class="sheetbox" role="dialog" aria-modal="true" aria-labelledby="baH">
+    <button class="sheetx" data-close aria-label="Close">✕</button>
+    <div class="sheetk">Before &amp; after</div>
+    <h3 id="baH">Share the transformation</h3>
+    <p class="sheetsub">The photo and the preview side by side, with one designer tip. Edit the tip in your own words if you like.</p>
+    <label class="bafield">Whose tree (optional)<input type="text" id="baName" maxlength="32" placeholder="e.g. Jennifer's tree"></label>
+    <label class="bafield">Designer tip<textarea id="baTip" rows="3" maxlength="220"></textarea></label>
+    <img class="baout" id="baImg" alt="Before and after image">
+    <button class="btn" id="baSave">Save and share</button>
   </div>
 </div>
 
@@ -2238,7 +2260,7 @@ async function run() {
   }
   result = lookResult = Object.assign(look, { quick_fixes: [], plan: [], ideas: [], mockup: null, render_brief: "", _lookMeta: look._meta });
   treeFacts(result.tree);
-  after = null; previewP = null; previewState = "idle"; stepIdx = 0; doneSteps = new Set(); guide = null; swept = false; gotItems = new Set();
+  after = null; previewP = null; previewState = "idle"; delete $("#baTip").dataset.edited; $("#baTip").value = ""; stepIdx = 0; doneSteps = new Set(); guide = null; swept = false; gotItems = new Set();
   L.done();
   getPlan(myPlan);
   fillReveal();
@@ -2275,7 +2297,7 @@ function getPlan(pending) {
 let previewP = null, previewState = "idle";
 function paintWait() {
   $("#viewer").innerHTML = `<div class="renderwait"><div class="spin"></div>Painting your preview…<div style="font-size:13px">About 30 seconds. Look around while you wait.</div></div>`;
-  $("#seg").hidden = $("#hint").hidden = $("#save").hidden = true;
+  $("#seg").hidden = $("#hint").hidden = $("#save").hidden = $("#baBtn").hidden = true;
 }
 function paintFirst() {
   const forResult = result;
@@ -2458,15 +2480,17 @@ async function makePreview(extraPieces, change) {
     setTimeout(showBrandNote, 1200);   // shows only once the results are on screen and any reveal has closed
   } catch (e) {
     after = null;
-    $("#viewer").innerHTML = `<div class="renderwait"><img src="${photo}" alt="" style="max-height:220px;margin:0 auto 12px;border-radius:8px;opacity:.6">The preview didn't come through this time.<div class="err" style="font-size:13px">${esc(e.message).slice(0, 220)}</div></div>`;
-    $("#seg").hidden = $("#hint").hidden = $("#save").hidden = true;
+    $("#viewer").innerHTML = `<div class="renderwait"><img src="${photo}" alt="" style="max-height:220px;margin:0 auto 12px;border-radius:8px;opacity:.6">The preview didn't come through this time.<div class="err" style="font-size:13px">${esc(e.message).slice(0, 220)}</div><button class="btn" id="retryPreview" style="margin-top:12px">Paint it again</button></div>`;
+    $("#seg").hidden = $("#hint").hidden = $("#save").hidden = $("#baBtn").hidden = true;
+    // Paint again with the same plan, so a fluke doesn't mean starting over
+    $("#retryPreview").onclick = () => { $("#viewer").innerHTML = `<div class="renderwait"><div class="spin"></div>Painting your tree again…<div style="font-size:13px">About 30 seconds.</div></div>`; makePreview(extraPieces, change); };
   }
 }
 let swept = false;
 function drawViewer() {
   $("#viewer").innerHTML = `<div class="compare" id="cmp"><img src="${photo}" alt="Before"><img class="after" src="${after}" alt="After"><div class="line"></div><div class="knob">↔</div><span class="tag l">Before</span><span class="tag r">After</span></div><button class="zoombtn" id="zoomCmp" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6M10.5 7.5v6M7.5 10.5h6"/></svg></button>`;
   $("#zoomCmp").onclick = () => openZoom([{ label: "Before", src: photo }, { label: "After", src: after }], curSeg === "before" ? 0 : 1);
-  $("#seg").hidden = $("#hint").hidden = $("#save").hidden = false;
+  $("#seg").hidden = $("#hint").hidden = $("#save").hidden = $("#baBtn").hidden = false;
   setSeg("compare"); swept = false;
   const box = $("#cmp"); let drag = false;
   const set = x => { const r = box.getBoundingClientRect(); box.style.setProperty("--cut", Math.min(100, Math.max(0, (x - r.left) / r.width * 100)) + "%"); };
@@ -2560,6 +2584,95 @@ $("#save").onclick = async () => {
   }
   const a = document.createElement("a"); a.href = blob ? URL.createObjectURL(blob) : after; a.download = "my-tree-treestyle.jpg"; a.click();
 };
+// Before & after: one branded image for social posts and comment replies. The logo sits once at the top,
+// so the after picture goes in without the Save-and-share mark (a second logo at the bottom looked doubled).
+const BA = { W: 1080, H: 1350, S: 2 };
+async function beforeAfterImage(name, tip) {
+  const load = u => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = u; });
+  try { await Promise.all(['500 64px "Cormorant Garamond"', 'italic 500 40px "Cormorant Garamond"', '600 22px Inter', '500 20px Inter'].map(f => document.fonts.load(f))); } catch {}
+  const [bi, ai] = await Promise.all([load(photo), load(after)]);
+  // Drawn at twice the layout size (2160 × 2700) so the trees stay sharp after Facebook and phones compress it
+  const c = document.createElement("canvas"); c.width = BA.W * BA.S; c.height = BA.H * BA.S; const g = c.getContext("2d"); g.scale(BA.S, BA.S);
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
+  // Midnight with a soft glow behind the photos
+  g.fillStyle = "#141C2C"; g.fillRect(0, 0, BA.W, BA.H);
+  { const rg = g.createRadialGradient(BA.W / 2, BA.H * .42, 80, BA.W / 2, BA.H * .42, BA.H * .8); rg.addColorStop(0, "rgba(44,58,88,.55)"); rg.addColorStop(1, "rgba(10,14,24,.6)"); g.fillStyle = rg; g.fillRect(0, 0, BA.W, BA.H); }
+  const gold = "#C4A877", ivory = "#F3EEE7", muted = "#ABA397", panel = "#1C2538";
+  // Logo once, at the top
+  // Logo once, at the top, kept small so the trees get the room
+  let y = 30;
+  try { const lg = await load("/brand/logo-horizontal.png"), lw = 330, lh = lw * lg.naturalHeight / lg.naturalWidth; g.drawImage(lg, (BA.W - lw) / 2, y, lw, lh); y += lh; } catch { y += 110; }
+  g.textAlign = "center"; g.textBaseline = "alphabetic";
+  if (name) { g.fillStyle = muted; g.font = 'italic 500 34px "Cormorant Garamond", Georgia, serif'; g.fillText(name, BA.W / 2, y + 36); y += 46; }
+  y += 18;
+  // Tip: wrap to at most three lines
+  const tipFont = 'italic 500 34px "Cormorant Garamond", Georgia, serif';
+  g.font = tipFont; const lines = [];
+  for (const word of (tip || "").split(/\s+/).filter(Boolean)) {
+    const t = lines.length ? lines[lines.length - 1] + " " + word : word;
+    if (lines.length && g.measureText(t).width <= 960) lines[lines.length - 1] = t; else lines.push(word);
+  }
+  if (lines.length > 3) { lines.length = 3; lines[2] = lines[2].replace(/[\s,.;:]*\S*$/, "…"); }
+  const tipH = lines.length ? 46 + lines.length * 42 : 0, footH = 46;
+  // Photos: two tall panels, nearly full width. Each photo fills its panel, trimmed evenly at the sides
+  // (the tree sits in the middle), so the trees are as large as the image allows.
+  const gap = 16, lx = 20, w = (BA.W - 2 * lx - gap) / 2, pillH = 56;
+  const h = BA.H - y - pillH - tipH - footH - 14;
+  const top = y;
+  const spaced = (t, cx, yy, tr) => { const ws = [...t].map(ch => g.measureText(ch).width), tot = ws.reduce((a, b) => a + b, 0) + tr * (t.length - 1); let px = cx - tot / 2; g.textAlign = "left"; [...t].forEach((ch, i) => { g.fillText(ch, px, yy); px += ws[i] + tr; }); g.textAlign = "center"; };
+  const rr = (px, py, rw, rh, r) => { g.beginPath(); g.roundRect ? g.roundRect(px, py, rw, rh, r) : g.rect(px, py, rw, rh); };
+  [[bi, "BEFORE", lx, false], [ai, "AFTER", lx + w + gap, true]].forEach(([im, label, px, on]) => {
+    g.save(); rr(px, top, w, h, 12); g.clip(); g.fillStyle = panel; g.fillRect(px, top, w, h);
+    const s = Math.max(w / im.naturalWidth, h / im.naturalHeight), sw = w / s, sh = h / s;
+    g.drawImage(im, (im.naturalWidth - sw) / 2, (im.naturalHeight - sh) / 2, sw, sh, px, top, w, h); g.restore();
+    g.font = "600 20px Inter, system-ui, sans-serif"; const lw2 = g.measureText(label).width + label.length * 5 + 40;
+    g.fillStyle = on ? gold : panel; rr(px + w / 2 - lw2 / 2, top + h + 12, lw2, 40, 20); g.fill();
+    g.fillStyle = on ? "#141C2C" : ivory; spaced(label, px + w / 2, top + h + 39, 5);
+  });
+  // Designer tip
+  const ty = top + h + pillH + 8;
+  if (lines.length) {
+    g.fillStyle = gold; g.font = "600 18px Inter, system-ui, sans-serif"; spaced("DESIGNER TIP", BA.W / 2, ty + 12, 5);
+    g.fillStyle = ivory; g.font = tipFont; lines.forEach((l, i) => g.fillText(l, BA.W / 2, ty + 54 + i * 42));
+  }
+  g.fillStyle = muted; g.font = "500 18px Inter, system-ui, sans-serif"; spaced("AI PREVIEW BY TREESTYLE", BA.W / 2, BA.H - 22, 4);
+  return new Promise(ok => c.toBlob(ok, "image/jpeg", .95));
+}
+// The tip shows off decorating: ribbon, filler or ornaments, never lights or shaping the branches.
+// First choice is a top fix about one of those; otherwise the plan step for ribbon, then filler, then ornaments.
+function baTipPick() {
+  const r = result || {}, txt = f => `${f.title || ""} ${f.how || ""}`.toLowerCase();
+  const skip = /\blight|shap|fluff|fuller|fullness|gaps?\b/, want = /ribbon|bow|cascade|filler|greenery|stem|spray|berr|pinecone|eucalyptus|magnolia|cedar|ornament|finial|teardrop|drop\b/;
+  const fix = (r.quick_fixes || []).find(f => want.test(txt(f)) && !skip.test(txt(f)));
+  if (fix) return fix;
+  const plan = r.plan || [];
+  for (const els of [["ribbon"], ["primary_picks", "small_picks", "florals"], ["statement", "medium", "small"]]) {
+    const p = plan.find(p => els.includes(p.element) && !skip.test(txt(p))); if (p) return p;
+  }
+  return null;
+}
+// The tip uses the fix's explanation only: the title just restated it, so the two together read twice
+let baBlob = null, baTimer = 0, baUrl = "";
+async function baDraw() {
+  const blob = await beforeAfterImage($("#baName").value.trim(), $("#baTip").value.trim()).catch(() => null);
+  if (!blob) { $("#baImg").alt = "We couldn't make the image. Try again in a moment."; return; }
+  baBlob = blob; if (baUrl) URL.revokeObjectURL(baUrl); baUrl = URL.createObjectURL(blob); $("#baImg").src = baUrl;
+}
+$("#baBtn").onclick = () => {
+  if (!$("#baTip").dataset.edited) { const f = baTipPick(); $("#baTip").value = f ? (f.how || f.title || "").trim().replace(/\.?$/, ".") : ""; }
+  openSheet("#baSheet"); baDraw();
+};
+$("#baTip").addEventListener("input", () => { $("#baTip").dataset.edited = "1"; clearTimeout(baTimer); baTimer = setTimeout(baDraw, 400); });
+$("#baName").addEventListener("input", () => { clearTimeout(baTimer); baTimer = setTimeout(baDraw, 400); });
+$("#baSheet").addEventListener("click", e => { if (e.target.closest("[data-close]")) closeSheet("#baSheet"); });
+$("#baSave").onclick = async () => {
+  if (!baBlob) await baDraw(); if (!baBlob) return;
+  const file = new File([baBlob], "treestyle-before-after.jpg", { type: "image/jpeg" });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: "Before & after, styled with TreeStyle" }); return; } catch (e) { if (e.name === "AbortError") return; }
+  }
+  const a = document.createElement("a"); a.href = baUrl; a.download = "treestyle-before-after.jpg"; a.click();
+};
 $("#restart").onclick = () => { photo = null; guide = null; photoImg = null; factsSet = false;
   clearExtra($("#keyFile"), $("#keyThumb"), $("#keyLbl"), $("#keyClear"), "★", d => keyPhoto = d);
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d); $("#file").value = ""; emptyDrop();
@@ -2581,7 +2694,7 @@ $("#restyleSheet").addEventListener("click", e => {
   if (st.dataset.start) { $("#pText").value = st.dataset.start; $("#pText").focus({ preventScroll: true }); }
   else $("#versions").scrollIntoView({ block: "start" });
 });
-document.addEventListener("keydown", e => { if (e.key === "Escape") { closeRestyle(); closeSheet("#styleSheet"); } });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closeRestyle(); closeSheet("#styleSheet"); closeSheet("#baSheet"); } });
 
 
 // Shopping list: tick off what you have or bought (kept on this device), and share the list as text
