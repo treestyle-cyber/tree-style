@@ -811,6 +811,41 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   :root{--muted:#BDB5A8}
   .navlist small,.hint,.tips,.qahint,.extra small,.cat p{font-size:14.5px}
   .buyrow small{font-size:14px}
+  /* ---- Fit the visible screen (Eric's iPhone: the bottom kept getting cut off) ----
+     Sizes follow the height actually visible in the browser (dvh = between Safari's bars), not the device model. */
+  #loading{overflow-y:auto}
+  label.drop img{max-height:max(160px, min(52vh, calc(100dvh - 470px)));object-fit:contain}
+  @media (max-height: 860px) {
+    .screen > h1,.ttl{font-size:32px}
+    .screen > h1::after,.ttl::after{margin-top:10px}
+    .screen > .sub{margin:10px auto 16px;font-size:14.5px;line-height:1.45}
+    label.drop{min-height:220px;padding:14px}
+    #loading .scan{width:92px;margin-bottom:12px}
+    .staycard{padding:10px 14px;margin-bottom:14px;gap:12px}
+    .staycard .si{width:36px;height:36px}
+    .staycard b{font-size:16px}
+    .staycard span:not(.si){font-size:13px}
+    #loading h2{font-size:30px;margin:0}
+    #loading .bar{margin:10px auto 6px}
+    #loading li{padding:4px 0 4px 30px;font-size:14.5px}
+    #loading li::before{top:7px}
+    #loading li.done::after{top:10px}
+    #loading .tipcard{margin-top:12px;padding:12px 14px}
+    .detline{font-size:24px;margin:0 auto 16px}
+    .dq{gap:12px}
+    #s-details .q .lbl{margin-bottom:6px}
+    .seg .chip span{padding:9px 4px}
+    .hwheel{height:46px}
+    .dnote{margin-top:12px}
+  }
+  @media (max-height: 740px) {
+    #loading .scan{width:72px;margin-bottom:10px}
+    .screen > h1,.ttl{font-size:28px}
+    label.drop{min-height:180px}
+  }
+  @media (max-height: 620px) {
+    #loading .scan, #loading .tipcard{display:none}
+  }
 </style>
 </head>
 <body>
