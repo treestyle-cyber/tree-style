@@ -245,16 +245,16 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
 
   /* details + extras */
   .q{margin:18px 0 0}
-  .detprog{display:none;text-align:center;font:600 11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-top:8px}
-  #s-details.stepper .detprog{display:block}
-  #s-details.stepper #detailsSub{text-align:center;margin:6px auto 0;max-width:22em}
-  #s-details.stepper .detprog{margin-top:22px}
-  #s-details.stepper .q:not(.cur){display:none}
-  #s-details.stepper .q.cur{margin-top:26px;animation:qin .3s ease}
-  #s-details.stepper .q.cur .lbl{font:500 26px/1.2 var(--serif);text-align:center;margin-bottom:16px}
-  #s-details.stepper .q.cur .row{justify-content:center}
-  #s-details.stepper .q.cur .hint2{text-align:center}
-  @keyframes qin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .detline{font:400 27px/1.3 var(--serif);color:var(--ivory);text-align:center;margin:14px auto 26px;max-width:15em}
+  .dq{display:grid;gap:18px}
+  #s-details .q{margin:0}
+  #s-details .q .lbl{font:600 11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 8px 4px}
+  #s-details .q .lbl small{font:500 11px var(--sans);letter-spacing:.06em;text-transform:none;color:var(--muted);margin-left:4px}
+  .seg{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:rgba(20,28,44,.55)}
+  .seg .chip{flex:1;min-width:0}
+  .seg .chip span{display:block;text-align:center;padding:11px 4px;border:0;border-radius:999px;background:none;font:500 14px var(--sans);white-space:nowrap;transition:background .15s,color .15s}
+  .seg .chip input:checked + span{background:var(--gold);color:var(--midnight)}
+  .dnote{font-size:13px;color:var(--muted);text-align:center;margin:18px 0 0}
   .q .lbl{font-weight:600;margin-bottom:8px}
   .q .hint2{font-size:13px;color:var(--muted);margin:6px 2px 0}
   .skip{display:block;margin:18px auto 0;background:none;border:0;color:var(--muted);font:500 14px var(--sans);text-decoration:underline;cursor:pointer}
@@ -893,45 +893,13 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
 
   <!-- Tree details (optional) -->
   <section class="screen" id="s-details" data-title="Your tree" data-foot="details" hidden>
-    <h1>About your tree</h1>
-    <p class="sub" id="detailsSub">The more we know about your tree, the better we can style it.</p>
-    <div class="detprog" id="detProg"></div>
-    <div class="q"><div class="lbl">What kind of tree?</div>
-      <div class="row">
-        <label class="chip"><input type="radio" name="kind" value="artificial"><span>Artificial</span></label>
-        <label class="chip"><input type="radio" name="kind" value="natural"><span>Real</span></label>
-        <label class="chip"><input type="radio" name="kind" value="" checked><span>Not sure</span></label>
-      </div></div>
-    <div class="q" id="prelitQ"><div class="lbl">Is it pre-lit?</div>
-      <div class="row">
-        <label class="chip"><input type="radio" name="prelit" value="yes"><span>Yes, lights built in</span></label>
-        <label class="chip"><input type="radio" name="prelit" value="no"><span>No</span></label>
-        <label class="chip"><input type="radio" name="prelit" value="" checked><span>Not sure</span></label>
-      </div>
-      <div class="hint2">A pre-lit tree already has its lights, so we'll skip the lights step.</div></div>
-    <div class="q"><div class="lbl">How tall?</div>
-      <div class="row">
-        <label class="chip"><input type="radio" name="height" value="4"><span>4 ft or less</span></label>
-        <label class="chip"><input type="radio" name="height" value="5.5"><span>5–6 ft</span></label>
-        <label class="chip"><input type="radio" name="height" value="7.5"><span>7–8 ft</span></label>
-        <label class="chip"><input type="radio" name="height" value="9.5"><span>9–10 ft</span></label>
-        <label class="chip"><input type="radio" name="height" value="11.5"><span>11–12 ft</span></label>
-        <label class="chip"><input type="radio" name="height" value="14"><span>13 ft+</span></label>
-        <label class="chip"><input type="radio" name="height" value="" checked><span>Not sure</span></label>
-      </div></div>
-    <div class="q" id="densityQ"><div class="lbl">How full are the branches?</div>
-      <div class="row">
-        <label class="chip"><input type="radio" name="density" value="dense"><span>Full and dense</span></label>
-        <label class="chip"><input type="radio" name="density" value="open"><span>Open, with gaps</span></label>
-        <label class="chip"><input type="radio" name="density" value="" checked><span>Not sure</span></label>
-      </div>
-      <div class="hint2">Most artificial trees are full. Open trees (like a noble fir) have space between branches.</div></div>
-    <div class="q" id="stageQ"><div class="lbl">Where are you with decorating?</div>
-      <div class="row">
-        <label class="chip"><input type="radio" name="stage" value="partial"><span>Partway there</span></label>
-        <label class="chip"><input type="radio" name="stage" value="finished"><span>Finished</span></label>
-        <label class="chip"><input type="radio" name="stage" value="" checked><span>Let you decide</span></label>
-      </div></div>
+    <p class="detline" id="detailsSub">The more we know about your tree, the better we can style it.</p>
+    <div class="dq"><div class="q"><div class="lbl">Real or artificial?</div><div class="seg"><label class="chip"><input type="radio" name="kind" value="artificial"><span>Artificial</span></label><label class="chip"><input type="radio" name="kind" value="natural"><span>Real</span></label><input type="radio" name="kind" value="" checked hidden></div></div>
+    <div class="q" id="prelitQ"><div class="lbl">Pre-lit?</div><div class="seg"><label class="chip"><input type="radio" name="prelit" value="yes"><span>Yes</span></label><label class="chip"><input type="radio" name="prelit" value="no"><span>No</span></label><input type="radio" name="prelit" value="" checked hidden></div></div>
+    <div class="q"><div class="lbl">Height <small>feet</small></div><div class="seg"><label class="chip"><input type="radio" name="height" value="4"><span>≤ 4</span></label><label class="chip"><input type="radio" name="height" value="5.5"><span>5–6</span></label><label class="chip"><input type="radio" name="height" value="7.5"><span>7–8</span></label><label class="chip"><input type="radio" name="height" value="9.5"><span>9–10</span></label><label class="chip"><input type="radio" name="height" value="11.5"><span>11–12</span></label><label class="chip"><input type="radio" name="height" value="14"><span>13+</span></label><input type="radio" name="height" value="" checked hidden></div></div>
+    <div class="q" id="densityQ"><div class="lbl">Branches</div><div class="seg"><label class="chip"><input type="radio" name="density" value="dense"><span>Full</span></label><label class="chip"><input type="radio" name="density" value="open"><span>Open, with gaps</span></label><input type="radio" name="density" value="" checked hidden></div></div>
+    <div class="q" id="stageQ" hidden><div class="lbl">Decorating</div><div class="seg"><label class="chip"><input type="radio" name="stage" value="partial"><span>Partway</span></label><label class="chip"><input type="radio" name="stage" value="finished"><span>Finished</span></label><input type="radio" name="stage" value="" checked hidden></div></div></div>
+    <p class="dnote">Not sure? Leave it blank and we'll read it from your photo.</p>
     <div class="err" id="detailsErr"></div>
     <button class="skip" id="detailsSkip">Skip, use my photo</button>
   </section>
@@ -1943,33 +1911,15 @@ let mode = "check", photo = null, photoAspect = "3:4", result = null, after = nu
 
 /* ---------------- navigation ---------------- */
 let stack = [];
-// In the flow, About your tree opens straight on the first question (Eric: a choice before seeing any question was
-// abstract), one at a time: each tap moves to the next, the last one carries on, and Skip keeps what's answered.
-// From the results screen it's the plain short list.
+// About your tree: one minimal page (Eric). Tapping a selected answer clears it, which means "not sure".
 function openDetails() {
-  const sec = $("#s-details"); sec.classList.add("stepper");
   $("#detailsSub").textContent = "The more we know about your tree, the better we can style it."; $("#detailsSkip").textContent = "Skip, use my photo";
-  show("s-details"); detShow(detQs()[0]);
-}
-const detQs = () => [...$("#s-details").querySelectorAll(".q")].filter(q => !q.hidden);
-function detShow(q) {
-  const qs = detQs(); $("#s-details").querySelectorAll(".q").forEach(x => x.classList.toggle("cur", x === q));
-  $("#detProg").textContent = `Question ${qs.indexOf(q) + 1} of ${qs.length}`;
-  scrollTo(0, 0);
-}
-function detailsDone() {
-  const sec = $("#s-details"); sec.classList.remove("stepper");
-  const f = FOOT.details(); if (f && f.act) f.act();
+  show("s-details");
 }
 $("#s-details").addEventListener("click", e => {
-  if (e.target.tagName === "INPUT") return;   // a tap on a chip also clicks its hidden radio: count it once
-  const chip = e.target.closest(".chip"), sec = $("#s-details");
-  if (!chip || !sec.classList.contains("stepper")) return;
-  const q = chip.closest(".q");
-  setTimeout(() => {   // after the radio updates (and pre-lit shows or hides for the kind of tree)
-    const qs = detQs(), i = qs.indexOf(q);
-    if (i >= 0 && i < qs.length - 1) detShow(qs[i + 1]); else detailsDone();
-  }, 280);
+  const lab = e.target.closest(".seg .chip"); if (!lab || e.target.tagName === "INPUT") return;
+  const inp = lab.querySelector("input");
+  if (inp.checked) { e.preventDefault(); const none = lab.parentElement.querySelector('input[value=""]'); none.checked = true; none.dispatchEvent(new Event("change", { bubbles: true })); }
 });
 const FOOT = {
   photoNext: () => ({ label: photo ? "Next" : "Add a photo to continue", disabled: !photo, act: () => openDetails() }),   // both paths ask about the tree before the analysis, where the answers shape everything
@@ -1978,8 +1928,7 @@ const FOOT = {
     useIdeaAsStyle();
     openDetails();
   } }),
-  details: () => $("#s-details").classList.contains("stepper") ? null
-    : rerunFromHub
+  details: () => rerunFromHub
     ? ({ label: "Update my shopping list and steps", act: () => { factsSet = true; applyFacts(); } })
     : mode === "design" && src === "idea"
     ? ({ label: "Design my tree", act: () => { factsSet = true; useIdeaAsStyle(); run(); } })
@@ -2154,7 +2103,7 @@ $("#ideaRoomFile").addEventListener("change", async () => {
 });
 $("#ideaRoomClear").onclick = () => { clearIdeaRoom(); baseKey = ""; };
 $("#rmWrap").addEventListener("click", e => { const r = $("#rmImg").getBoundingClientRect(); roomMark = [Math.min(.98, Math.max(.02, (e.clientX - r.left) / r.width)), Math.min(.98, Math.max(.05, (e.clientY - r.top) / r.height))]; baseKey = ""; drawRoomDot(); });
-$("#detailsSkip").onclick = () => { if ($("#s-details").classList.contains("stepper")) { if (detQs().indexOf($("#s-details .q.cur")) > 0) { detailsDone(); return; } $("#s-details").classList.remove("stepper"); } if (rerunFromHub) { history.back(); return; } factsSet = false; if (mode === "design" && src === "idea") { useIdeaAsStyle(); run(); } else show("s-style"); };
+$("#detailsSkip").onclick = () => { if (rerunFromHub) { history.back(); return; } factsSet = false; if (mode === "design" && src === "idea") { useIdeaAsStyle(); run(); } else show("s-style"); };
 // From an idea, their own words are the style: "themed", with the description as the theme
 function useIdeaAsStyle() {
   const t = $("#ideaText").value.trim();
@@ -2178,9 +2127,8 @@ document.addEventListener("click", e => { if (e.target.closest("[data-tell]")) $
 $("#navDetails").onclick = () => {
   // After the design is done, only height, kind and pre-lit still change anything (amounts, sizes, the lights step),
   // so the fullness and decorating-stage questions are left off here
-  $("#s-details").classList.remove("stepper"); $("#s-details").querySelectorAll(".q").forEach(q => q.classList.remove("cur"));
   rerunFromHub = true; $("#stageQ").hidden = true; $("#densityQ").hidden = true; $("#prelitQ").hidden = val("kind") === "natural";
-  $("#detailsSub").textContent = "Tell us what the photo can't, and we'll make your shopping list and steps more accurate. Your preview stays the same.";
+  $("#detailsSub").textContent = "Fine-tune your shopping list and steps. Your preview stays the same.";
   $("#detailsSkip").textContent = "Cancel";
   show("s-details");
 };
