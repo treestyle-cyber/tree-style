@@ -11,12 +11,12 @@ const MODELS = [
 // Under test in the Lab: does the higher-quality model, with a checklist, paint every piece the plan names?
 const LAB_MODEL = "gemini-3-pro-image-preview";
 import { ribbonRef } from "../lib/ribbonref.js";
-// Lab test (variant "ribbon"): previews kept coming back with bows instead of cascades. The designer's own ribbon
-// photo (Studio → Ribbon technique reference) goes with the preview, and the ribbon is described as what it physically is.
-const RIBBON_LAB = `
+// Ribbon (won in the Lab, Nov 12): previews kept coming back with bows instead of cascades. Every preview gets the designer's
+// own ribbon photo (Studio → Ribbon technique reference), and the ribbon is described as what it physically is.
+const RIBBON_SHAPE = `
 
-RIBBON SHAPE (most important): the ribbon is NEVER tied. There are no bows anywhere on the tree (unless the instructions name a bow topper, which sits only at the very top). Each ribbon piece is a length of flat, wide wired ribbon whose two ends are both hidden inside the branches: it emerges from deep in the tree and either spills downward in a soft waterfall over 2-3 branches (a cascade) or puffs out in one soft, open billow, then disappears back into the greenery. Where the instructions say "loops", they mean these open billows pushed into the branches, never loops tied into a bow. No knots, no centers, no V-cut tails hanging free. Before finishing, look at every ribbon piece: if it looks like a bow, replace it with a cascade or billow of the same ribbon.`;
-const RIBBON_REF_LAB = "Reference photo of the designer's own work, showing the ONLY acceptable ribbon technique. Do not copy its room, tree, colors, ribbon or ornaments; copy only HOW the ribbon is used: wide ribbon emerging from deep inside the branches, spilling and billowing, then tucking back in, with green branches between appearances. Paint the ribbons the instructions describe, used this way.";
+RIBBON SHAPE (most important): the ribbon is NEVER tied. There are no bows anywhere on the tree, unless the instructions ask for a bow (a bow topper sits only at the very top). Each ribbon piece is a length of flat, wide wired ribbon whose two ends are both hidden inside the branches: it emerges from deep in the tree and either spills downward in a soft waterfall over 2-3 branches (a cascade) or puffs out in one soft, open billow, then disappears back into the greenery. Where the instructions say "loops", they mean these open billows pushed into the branches, never loops tied into a bow. No knots, no centers, no V-cut tails hanging free. Before finishing, look at every ribbon piece: if it looks like a bow the instructions didn't ask for, replace it with a cascade or billow of the same ribbon.`;
+const RIBBON_REF_NOTE = "Reference photo of the designer's own work, showing the ONLY acceptable ribbon technique. Do not copy its room, tree, colors, ribbon or ornaments; copy only HOW the ribbon is used: wide ribbon emerging from deep inside the branches, spilling and billowing, then tucking back in, with green branches between appearances. Paint the ribbons the instructions describe, used this way.";
 const LAB_CHECK = `
 
 BEFORE YOU FINISH, CHECK EVERY PIECE: go through the changes above one by one (each ribbon, each kind of flower and stem, each ornament size and color, the topper and the base) and make sure every one is in the picture, clearly visible from across the room, at its stated size, color and count. A piece that is missing or too faint to notice counts as a mistake. Pale pieces on a pale or snowy tree need enough shine, shadow and depth to read.`;
@@ -72,9 +72,9 @@ async function callGemini(model, img, prompt, aspect, pieces, map, ref) {
       contents: [{ parts: [
         { text: prompt },
         { inline_data: { mime_type: img.mediaType, data: img.data } },
-        ...(map ? [{ text: "Placement map (reference only, do not edit or copy its drawing style): the same photo with soft colored blobs showing WHERE each addition goes: ovals in the ribbon color = a spot where " + (ref ? "a piece of wide ribbon spills or billows out of the branches (never a bow)" : "ribbon loops poke out of the branches") + "; small blobs in the accent ribbon color = small accent loops; blobs with a yellow center = flowers; round blobs = ornaments in that color at that size. The blobs are position hints only: the finished photo must contain NO circles, rings, outlines, dots, blobs, labels or markings of any kind, only real decorations. Follow its positions and spacing so the result matches the homeowner's step-by-step guide, and don't add groupings or extra pieces the map and instructions don't show. If the written instructions and the map disagree about where something goes, follow the map." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : []),
+        ...(map ? [{ text: "Placement map (reference only, do not edit or copy its drawing style): the same photo with soft colored blobs showing WHERE each addition goes: ovals in the ribbon color = a spot where a piece of wide ribbon spills or billows out of the branches (never a bow); small blobs in the accent ribbon color = small accent loops; blobs with a yellow center = flowers; round blobs = ornaments in that color at that size. The blobs are position hints only: the finished photo must contain NO circles, rings, outlines, dots, blobs, labels or markings of any kind, only real decorations. Follow its positions and spacing so the result matches the homeowner's step-by-step guide, and don't add groupings or extra pieces the map and instructions don't show. If the written instructions and the map disagree about where something goes, follow the map." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : []),
         ...(pieces ? [{ text: "Reference only (do not edit this one): the homeowner's own special pieces. Show these exact pieces on the tree where the instructions place them." }, { inline_data: { mime_type: pieces.mediaType, data: pieces.data } }] : []),
-        ...(ref ? [{ text: RIBBON_REF_LAB }, { inline_data: { mime_type: ref.mediaType, data: ref.data } }] : [])
+        ...(ref ? [{ text: RIBBON_REF_NOTE }, { inline_data: { mime_type: ref.mediaType, data: ref.data } }] : [])
       ] }],
       generationConfig
     })
@@ -100,8 +100,8 @@ export default async function handler(req, res) {
   // Lab test (variant "v2"): Google's higher-quality image model first, plus a closing checklist
   const models = variant === "v2" ? [...new Set([LAB_MODEL, ...MODELS])] : MODELS;
   // A branded theme (a film, show, team) is painted with generic pieces from the start, since the model refuses trademarked designs
-  const rref = variant === "ribbon" ? await ribbonRef() : null;
-  const prompt = editPrompt(brief, revision, !!shape && !revision) + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + (variant === "ribbon" ? RIBBON_LAB : "");
+  const rref = await ribbonRef();
+  const prompt = editPrompt(brief, revision, !!shape && !revision) + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + RIBBON_SHAPE;
   if (generic) retried = true;
   for (const model of models) {
     let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rref);

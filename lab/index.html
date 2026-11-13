@@ -155,9 +155,9 @@ $("#file").onchange = async e => { for (const f of [...e.target.files].slice(0, 
 // What the two columns compare: the rule under test (LAB_RULE in api/evaluate.js, sent as variant "v2") vs the live app.
 // samePlan: both columns paint the SAME plan, so only the picture step is compared
 // Earlier test, kept for reference: [{ title: "Test: higher-quality image model + checklist", variant: "v2", samePlan: true }, ...]
-// Earlier test, kept for reference: [{ title: "Test: designed from creator picks", variant: "picks" }, { title: "Live app", variant: undefined }]
-// Now testing (Nov 12, previews showing bows): the same plan painted with the designer's ribbon photo and "never tied" ribbon wording
-const COLS = [{ title: "Test: your ribbon photo, no bows", variant: "ribbon", samePlan: true }, { title: "Live app", variant: undefined }];
+// Earlier test, won and went live Nov 12: [{ title: "Test: your ribbon photo, no bows", variant: "ribbon", samePlan: true }, ...]
+// Back to the creator picks test, which was paused for the ribbon test
+const COLS = [{ title: "Test: designed from creator picks", variant: "picks" }, { title: "Live app", variant: undefined }];
 const ALL_STYLES = [["classic", "Traditional"], ["rustic", "Rustic"], ["modern", "Modern"], ["elegant", "Elegant"], ["playful", "Playful"], ["keep", "Keep my style"]];
 async function runOne(src, idx, mode, style, extra = {}, label = "") {
   const row = document.createElement("div");
