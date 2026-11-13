@@ -115,10 +115,10 @@ async function prep(file) {
   c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
   return c.toDataURL("image/jpeg", .86);
 }
-async function mapFor(src, result, mode) {
+async function mapFor(src, result, mode, variant) {
   try {
     const cv = document.createElement("canvas"), g = TreeGuide.create(await loadImg(src), cv, result, mode);
-    g.drawMap();
+    g.drawMap(variant === "map2" ? { plainFlowers: true } : undefined);
     const k = Math.min(1, 1024 / Math.max(cv.width, cv.height)), c2 = document.createElement("canvas");
     c2.width = Math.round(cv.width * k); c2.height = Math.round(cv.height * k); c2.getContext("2d").drawImage(cv, 0, 0, c2.width, c2.height);
     return c2.toDataURL("image/jpeg", .8);
@@ -159,8 +159,9 @@ $("#file").onchange = async e => { for (const f of [...e.target.files].slice(0, 
 // On hold (Nov 12, Eric): designs built from creator picks, kept for when Amazon's Creators API is connected (after 10
 // qualifying sales) and each pick has its photo and details; Eric liked it overall, but tree 3 brought in a black and red
 // buffalo check that didn't fit. To resume: [{ title: "Test: designed from creator picks", variant: "picks" }, { title: "Live app", variant: undefined }]
-// Nothing under test: the Lab shows the live app only.
-const COLS = [{ title: "Live app (nothing under test)", variant: undefined }];
+// Testing (Nov 12, Eric saw yellow discs on a preview): flower spots on the placement map drawn as a plain blob in the
+// flower's color, without the yellow center, and described that way to the image model. Same plan in both columns.
+const COLS = [{ title: "Test: flower spots without the yellow center", variant: "map2", samePlan: true }, { title: "Live app", variant: undefined }];
 const ALL_STYLES = [["classic", "Traditional"], ["rustic", "Rustic"], ["modern", "Modern"], ["elegant", "Elegant"], ["playful", "Playful"], ["keep", "Keep my style"]];
 async function runOne(src, idx, mode, style, extra = {}, label = "") {
   const row = document.createElement("div");
@@ -178,7 +179,7 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
       const plan = COLS[0].samePlan ? await (shared ||= api("/api/evaluate", { image: src, mode, style, part: "plan", ...extra })) : await api("/api/evaluate", { image: src, mode, style, part: "plan", variant, ...extra });
       const result = Object.assign({}, look, plan);
       $(`#${id}-brief`).textContent = result.render_brief || "";
-      const map = await mapFor(src, result, mode);
+      const map = await mapFor(src, result, mode, variant);
       if (map) $(`#${id}-map`).innerHTML = `<img src="${map}" style="width:100%;border-radius:8px;margin-top:6px" alt="">`;
       // same branch-shaping rule as the app
       const shape = (result.plan || []).some(p => p.element === "fluff") || (result.categories || []).some(c => c.name === "Fullness" && Number(c.score) <= 7);
