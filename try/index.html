@@ -769,14 +769,14 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .hbtn.dark{background:#0F1828;color:#F6EFE3}
   .hbtn.light{background:#F3ECDF;color:#2B231D}
   .hbtn:hover{filter:brightness(1.06)}
-  .tabbar{--ink-tab:#1E2738;display:none;position:fixed;left:0;right:0;bottom:0;z-index:12;background:#F3ECDF;border-radius:28px 28px 0 0;box-shadow:0 -10px 30px -12px rgba(0,0,0,.45);padding:10px max(14px,calc(50% - 280px)) max(12px,env(safe-area-inset-bottom));grid-template-columns:repeat(4,1fr)}
+  .tabbar{--ink-tab:var(--midnight);display:none;position:fixed;left:0;right:0;bottom:0;z-index:12;background:#F3ECDF;border-radius:28px 28px 0 0;box-shadow:0 -10px 30px -12px rgba(0,0,0,.45);padding:10px max(14px,calc(50% - 280px)) max(12px,env(safe-area-inset-bottom));grid-template-columns:repeat(4,1fr)}
   body.tabs .tabbar{display:grid}
   body.tabs .appbar #navBack,body.tabs .appbar #navHome{visibility:hidden}
   body.tabs{--tabh:84px}
   :root{--tabh:84px}
   body.tabs main{padding-bottom:calc(var(--tabh) + 40px)}
   body.tabs.tabhome main{padding-bottom:0}
-  .tabbar button{appearance:none;background:none;border:0;cursor:pointer;display:grid;justify-items:center;gap:3px;padding:6px 0 9px;min-height:58px;color:#5B5048;position:relative}
+  .tabbar button{appearance:none;background:none;border:0;cursor:pointer;display:grid;justify-items:center;gap:3px;padding:6px 0 9px;min-height:58px;color:var(--walnut);position:relative}
   .tabbar svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
   .tabbar span{font:500 15px/1.1 var(--serif);letter-spacing:.01em}
   .tabbar button[aria-current=page]{color:var(--ink-tab)}
