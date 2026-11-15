@@ -23,7 +23,7 @@
 *{box-sizing:border-box}
 [hidden]{display:none !important}
 html,body{margin:0}
-body{background:linear-gradient(rgba(20,28,44,.9),rgba(20,28,44,.96)),var(--photo-velvet, url(/brand/velvet-midnight.jpg)) center top/cover fixed,var(--bg);color:var(--ink);font:16px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+body{background:linear-gradient(rgba(20,28,44,.9),rgba(20,28,44,.96)),var(--photo-velvet, url(/brand/velvet-midnight.jpg)) center top/cover fixed,var(--bg);color:var(--ink);font:calc(16px * var(--s-body,1))/1.55 var(--sans);-webkit-font-smoothing:antialiased}
 img,svg{display:block;max-width:100%}
 a{color:inherit}
 .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
@@ -31,18 +31,18 @@ a{color:inherit}
 .brand img{height:40px;width:auto}
 .brand img.logoh{height:54px}
 .brand .wm{display:grid;gap:2px;line-height:1}
-.brand b{font:500 21px var(--serif);letter-spacing:.24em;text-transform:uppercase;padding-left:.12em}
-.brand small{font:500 8.5px var(--sans);letter-spacing:.32em;text-transform:uppercase;color:var(--brass)}
-.btn{appearance:none;border:0;border-radius:var(--btn-radius);background:var(--green);color:var(--on-accent);font:600 13px var(--sans);letter-spacing:.14em;text-transform:var(--btn-case);padding:15px 24px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background .15s, transform .15s}
+.brand b{font:500 calc(21px * var(--s-label,1)) var(--serif);letter-spacing:.24em;text-transform:uppercase;padding-left:.12em}
+.brand small{font:500 calc(8.5px * var(--s-label,1)) var(--sans);letter-spacing:.32em;text-transform:uppercase;color:var(--brass)}
+.btn{appearance:none;border:0;border-radius:var(--btn-radius);background:var(--green);color:var(--on-accent);font:600 calc(13px * var(--s-button,1)) var(--sans);letter-spacing:.14em;text-transform:var(--btn-case);padding:15px 24px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background .15s, transform .15s}
 .btn:hover{background:var(--green-2)}
 .btn:active{transform:translateY(1px)}
 .btn:disabled{opacity:.55;cursor:default}
 .btn.ghost{background:transparent;color:var(--green);box-shadow:inset 0 0 0 1.5px var(--green)}
 .btn.ghost:hover{background:rgba(184,156,107,.1)}
 ::placeholder{color:#8C8578}
-input[type=email],input[type=password],input[type=text]{font:16px var(--sans);padding:13px 16px;border:1.5px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);min-width:0}
+input[type=email],input[type=password],input[type=text]{font:calc(16px * var(--s-body,1)) var(--sans);padding:13px 16px;border:1.5px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);min-width:0}
 input:focus{outline:none;border-color:var(--brass)}
-.eyebrow{font:500 12px var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--brass)}
+.eyebrow{font:500 calc(12px * var(--s-label,1)) var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--brass)}
 h1,h2,h3{font-family:var(--serif);font-weight:500;color:var(--ink);margin:0;line-height:1.08}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius)}
 .muted{color:var(--muted)}

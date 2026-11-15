@@ -34,18 +34,18 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
      Paste your Mailchimp embedded-form action URL between the quotes in the script at the bottom (MAILCHIMP_ACTION). */
   header.top{padding:18px 0}
   header.top .wrap{display:flex;justify-content:space-between;align-items:center}
-  header.top a.join{font:500 12px var(--sans);letter-spacing:.18em;text-transform:uppercase;text-decoration:none;color:var(--ink)}
+  header.top a.join{font:500 calc(12px * var(--s-label,1)) var(--sans);letter-spacing:.18em;text-transform:uppercase;text-decoration:none;color:var(--ink)}
 
   .hero{padding:36px 0 64px}
   .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
-  .hero h1{font-size:clamp(44px,6vw,72px);margin:14px 0 18px}
+  .hero h1{font-size:calc(clamp(44px,6vw,72px) * var(--s-body,1));margin:14px 0 18px}
   .hero h1 em{font-style:italic;color:var(--winterberry)}
-  .hero p.lede{font-size:18px;color:var(--muted);max-width:30em;margin:0 0 26px}
+  .hero p.lede{font-size:calc(18px * var(--s-body,1));color:var(--muted);max-width:30em;margin:0 0 26px}
 
   form.signup{display:flex;gap:10px;max-width:560px}
   form.signup input{flex:1;min-width:0}
   form.signup input.fname{flex:.7}
-  .formnote{font-size:13px;color:var(--muted);margin-top:10px;min-height:1.4em}
+  .formnote{font-size:calc(13px * var(--s-body,1));color:var(--muted);margin-top:10px;min-height:1.4em}
   .formnote.ok{color:var(--green);font-weight:600}
   .formnote.err{color:var(--berry)}
 
@@ -53,17 +53,17 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .compare svg{position:absolute;inset:0;width:100%;height:100%}
   .compare .after{clip-path:inset(0 0 0 var(--cut,50%))}
   .compare .bar{position:absolute;top:0;bottom:0;left:var(--cut,50%);width:2px;background:#fff;transform:translateX(-1px)}
-  .compare .knob{position:absolute;top:50%;left:var(--cut,50%);width:42px;height:42px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.18);font:600 14px var(--sans);color:var(--green);cursor:ew-resize}
-  .compare .tag{position:absolute;top:14px;font:600 11px var(--sans);letter-spacing:.12em;text-transform:uppercase;background:rgba(255,253,248,.9);color:var(--green);padding:6px 10px;border-radius:999px}
+  .compare .knob{position:absolute;top:50%;left:var(--cut,50%);width:42px;height:42px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.18);font:600 calc(14px * var(--s-body,1)) var(--sans);color:var(--green);cursor:ew-resize}
+  .compare .tag{position:absolute;top:14px;font:600 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.12em;text-transform:uppercase;background:rgba(255,253,248,.9);color:var(--green);padding:6px 10px;border-radius:999px}
   .compare .tag.l{left:14px}.compare .tag.r{right:14px}
   .compare img.real{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none}
 
   section.how{padding:64px 0}
-  section.how h2,section.get h2{font-size:clamp(32px,4vw,44px);margin:10px 0 34px}
+  section.how h2,section.get h2{font-size:calc(clamp(32px,4vw,44px) * var(--s-body,1));margin:10px 0 34px}
   .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
   .steps .card{padding:26px}
-  .steps .n{font-family:var(--serif);font-size:44px;color:var(--brass);line-height:1}
-  .steps h3{font-size:26px;margin:10px 0 8px}
+  .steps .n{font-family:var(--serif);font-size:calc(44px * var(--s-subheadline,1));color:var(--brass);line-height:1}
+  .steps h3{font-size:calc(26px * var(--s-body,1));margin:10px 0 8px}
   .steps p{margin:0;color:var(--muted)}
 
   section.get{padding:64px 0;background:linear-gradient(rgba(40,18,18,.72),rgba(30,14,14,.86)),var(--photo-velvetberry, url(/brand/velvet-berry.jpg)) center/cover;color:#E9E1D3}
@@ -71,17 +71,17 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   section.get .eyebrow{color:var(--gold)}
   .gets{display:grid;grid-template-columns:repeat(2,1fr);gap:18px 40px}
   .gets div{padding:18px 0;border-top:1px solid rgba(184,156,107,.3)}
-  .gets h3{color:var(--ivory);font-size:26px;margin-bottom:6px}
+  .gets h3{color:var(--ivory);font-size:calc(26px * var(--s-body,1));margin-bottom:6px}
   .gets p{margin:0;color:#B9B2A6}
   .orns{display:inline-flex;gap:4px;vertical-align:middle;margin-left:6px}
   .orns i{width:14px;height:14px;border-radius:50%;background:var(--gold);display:block}
   .orns i.h{background:linear-gradient(90deg,var(--gold) 50%,rgba(255,255,255,.2) 50%)}
 
   section.close{padding:72px 0 56px;text-align:center}
-  section.close h2{font-size:clamp(34px,4.5vw,52px);margin:12px auto 14px;max-width:16em}
+  section.close h2{font-size:calc(clamp(34px,4.5vw,52px) * var(--s-body,1));margin:12px auto 14px;max-width:16em}
   section.close p{color:var(--muted);margin:0 auto 26px;max-width:32em}
   section.close form.signup{margin:0 auto}
-  footer{padding:28px 0 40px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+  footer{padding:28px 0 40px;border-top:1px solid var(--line);font-size:calc(13px * var(--s-body,1));color:var(--muted)}
   footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
 
@@ -124,15 +124,15 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     .wrap{padding:0 28px}
     .hero{padding:104px 0 60px}
     .hero .wrap{grid-template-columns:1.12fr .88fr;gap:36px}
-    .hero h1{font-size:clamp(40px,5.6vw,56px)}
-    .hero p.lede{font-size:17px}
+    .hero h1{font-size:calc(clamp(40px,5.6vw,56px) * var(--s-body,1))}
+    .hero p.lede{font-size:calc(17px * var(--s-body,1))}
     form.signup{flex-wrap:wrap}
     form.signup input,form.signup input.fname{flex:1 1 40%}
     form.signup .btn{flex:1 1 100%;min-height:48px}
     section.how,section.get{padding:56px 0}
     .steps{gap:16px}
     .steps .card{padding:22px 20px}
-    .steps h3{font-size:23px}
+    .steps h3{font-size:calc(23px * var(--s-body,1))}
     .gets{gap:6px 32px}
     section.close{padding:64px 0 52px}
   }
@@ -144,8 +144,8 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     .brand img.logoh{height:46px}
     .hero{padding:100px 0 52px}
     .hero .wrap{grid-template-columns:1fr;gap:40px}
-    .hero h1{font-size:clamp(40px,11.2vw,52px);line-height:1.04;margin:14px 0 16px}
-    .hero p.lede{font-size:16.5px;line-height:1.6;margin-bottom:26px}
+    .hero h1{font-size:calc(clamp(40px,11.2vw,52px) * var(--s-body,1));line-height:1.04;margin:14px 0 16px}
+    .hero p.lede{font-size:calc(16.5px * var(--s-body,1));line-height:1.6;margin-bottom:26px}
     form.signup{flex-direction:column;gap:12px;max-width:none}
     form.signup input,form.signup input.fname,form.signup .btn{flex:none;width:100%;min-height:52px}
     .formnote{text-align:center}
@@ -156,28 +156,28 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     .divider .wrap{gap:14px}
     .divider img{width:28px}
     section.how,section.get{padding:56px 0}
-    section.how h2,section.get h2{font-size:clamp(30px,8.6vw,40px);margin:12px 0 28px;max-width:12em}
+    section.how h2,section.get h2{font-size:calc(clamp(30px,8.6vw,40px) * var(--s-body,1));margin:12px 0 28px;max-width:12em}
     .steps{grid-template-columns:1fr;gap:14px}
     .steps .card{padding:22px 22px 24px}
-    .steps .n{font-size:40px}
-    .steps h3{font-size:25px}
+    .steps .n{font-size:calc(40px * var(--s-body,1))}
+    .steps h3{font-size:calc(25px * var(--s-body,1))}
     .gets{grid-template-columns:1fr;gap:0}
     .gets div{padding:20px 0 22px}
-    .gets h3{font-size:25px}
+    .gets h3{font-size:calc(25px * var(--s-body,1))}
     section.close{padding:64px 0 52px}
-    section.close h2{font-size:clamp(32px,9vw,42px)}
+    section.close h2{font-size:calc(clamp(32px,9vw,42px) * var(--s-body,1))}
     section.close form.signup{max-width:460px}
     footer{padding:24px 0 max(32px,env(safe-area-inset-bottom))}
   }
 
   /* ---------- What you get: warm linen editorial page (designer's approved design) ---------- */
   section.get{background:#DAD1C4;color:var(--espresso);padding:76px 0 84px}
-  section.get .eyebrow{color:#9E7B45;font-weight:600;font-size:15px;letter-spacing:.24em}
-  section.get h2{color:var(--espresso);font:500 clamp(40px,5.2vw,66px)/1.04 var(--serif);letter-spacing:-.01em;margin:16px 0 50px;max-width:none}
+  section.get .eyebrow{color:#9E7B45;font-weight:600;font-size:calc(15px * var(--s-label,1));letter-spacing:.24em}
+  section.get h2{color:var(--espresso);font:500 calc(clamp(40px,5.2vw,66px) * var(--s-headline,1))/1.04 var(--serif);letter-spacing:-.01em;margin:16px 0 50px;max-width:none}
   .gets{gap:0 72px}
   .gets div{padding:34px 0 46px;border-top:1px solid var(--champagne)}
-  .gets h3{color:var(--espresso);font:500 clamp(27px,2.6vw,34px)/1.12 var(--serif);margin:0 0 14px}
-  .gets p{color:var(--espresso);font-size:19px;line-height:1.6;max-width:30em}
+  .gets h3{color:var(--espresso);font:500 calc(clamp(27px,2.6vw,34px) * var(--s-subheadline,1))/1.12 var(--serif);margin:0 0 14px}
+  .gets p{color:var(--espresso);font-size:calc(19px * var(--s-body,1));line-height:1.6;max-width:30em}
   section.get .orns{gap:6px;margin-left:12px;vertical-align:.08em}
   section.get .orns i{width:17px;height:17px;background:#B08A4A}
   section.get .orns i.h{background:linear-gradient(90deg,#B08A4A 50%,#C9BEAE 50%)}
@@ -185,16 +185,16 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     section.get{padding:64px 0 68px}
     .gets{gap:0 40px}
     .gets div{padding:28px 0 36px}
-    .gets p{font-size:17px}
+    .gets p{font-size:calc(17px * var(--s-body,1))}
   }
   @media (max-width:767px){
     section.get{padding:56px 0 52px}
-    section.get .eyebrow{font-size:13px}
-    section.get h2{font-size:clamp(34px,9.6vw,44px);margin:14px 0 34px;max-width:none}
+    section.get .eyebrow{font-size:calc(13px * var(--s-label,1))}
+    section.get h2{font-size:calc(clamp(34px,9.6vw,44px) * var(--s-body,1));margin:14px 0 34px;max-width:none}
     .gets{grid-template-columns:1fr;gap:0}
     .gets div{padding:24px 0 30px}
-    .gets h3{font-size:clamp(25px,7vw,29px);margin-bottom:10px}
-    .gets p{font-size:16.5px;line-height:1.6}
+    .gets h3{font-size:calc(clamp(25px,7vw,29px) * var(--s-body,1));margin-bottom:10px}
+    .gets p{font-size:calc(16.5px * var(--s-body,1));line-height:1.6}
     section.get .orns i{width:14px;height:14px}
     section.get .orns{gap:5px;margin-left:10px}
   }

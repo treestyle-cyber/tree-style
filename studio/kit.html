@@ -39,6 +39,17 @@
   .chips{display:flex;gap:8px;flex-wrap:wrap}
   .chip{appearance:none;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);border-radius:99px;padding:9px 14px;font:500 13.5px var(--sans);cursor:pointer}
   .chip.on{border-color:var(--gold);background:rgba(184,156,107,.18);color:var(--gold)}
+  .role{background:var(--paper-2);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+  .rhead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .rhead b{font-size:16px}
+  .rhead small{color:var(--muted);font-size:12.5px;flex:1;min-width:180px}
+  .rctl{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px 14px;margin-top:12px;font-size:12.5px;color:var(--muted)}
+  .rctl label{display:grid;gap:5px}
+  .rctl select{width:100%;font:14px var(--sans);padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+  .rctl input[type=range]{width:100%;accent-color:var(--gold)}
+  .rctl .val{color:var(--ink)}
+  .rctl .chips .chip{padding:6px 11px;font-size:12.5px}
+  .rsample{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--paper);color:var(--ink);line-height:1.2;overflow-wrap:anywhere}
   .fontrow{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:start;margin-bottom:16px}
   @media (max-width:600px){.fontrow{grid-template-columns:1fr}}
   .fontrow select{width:100%;font:15px var(--sans);padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink)}
@@ -107,17 +118,15 @@
 
         <section class="sec">
           <h2>Fonts</h2>
-          <div class="where">Headings are the large editorial type; the app font is everything else (buttons, labels, body text). Upload your own font file (WOFF2, WOFF, OTF or TTF) once it is licensed.</div>
-          <div class="fontrow"><div><b>Headings</b><br><button class="reset" data-reset="heading" hidden>Back to Butler</button></div><div><select id="fHeading"></select><div class="sample"><div class="h" id="sHeading">A more beautiful home starts here.</div></div></div></div>
-          <div class="fontrow"><div><b>App font</b><br><button class="reset" data-reset="body" hidden>Back to Inter</button></div><div><select id="fBody"></select><div class="sample"><div class="b" id="sBody" style="color:var(--ink)">Shape the branches, then add the ribbon in three widths. Check my tree · Design my tree</div></div></div></div>
+          <div class="where">Five roles, the same on the app and the website. For each, choose the font, weight, size, letter spacing and capitals. Anything you leave alone stays as designed. Subheadlines follow the headline font and labels follow the body font unless you give them their own. Upload your own font file (WOFF2, WOFF, OTF or TTF) once it is licensed.</div>
+          <div id="roles"></div>
           <input type="file" id="fontFile" accept=".woff2,.woff,.otf,.ttf" hidden>
         </section>
 
         <section class="sec">
           <h2>Buttons</h2>
-          <div class="where">The shape and lettering of every button.</div>
+          <div class="where">The shape of every button. Their lettering is under Fonts → Buttons.</div>
           <h3>Shape</h3><div class="chips" id="bShape"></div>
-          <h3>Lettering</h3><div class="chips" id="bCase"></div>
           <div class="btnsample"><span class="btn" id="bs1">Create my space</span><span class="btn ghost" id="bs2">Explore inspiration</span></div>
         </section>
 
@@ -191,8 +200,17 @@ const SUPPORT = [
   ["champagne", "Champagne", "#C5B28F", "Thin rules and borders"],
   ["warmivory", "Warm ivory", "#E7DFD2", "Headlines over photos"],
 ];
-const HEADING_FONTS = [["", "Butler (current)"], ["Cormorant Garamond", "Cormorant Garamond"], ["Playfair Display", "Playfair Display"], ["EB Garamond", "EB Garamond"], ["Libre Caslon Display", "Libre Caslon Display"], ["DM Serif Display", "DM Serif Display"], ["Bodoni Moda", "Bodoni Moda"], ["Gilda Display", "Gilda Display"]];
-const BODY_FONTS = [["", "Inter (current)"], ["DM Sans", "DM Sans"], ["Work Sans", "Work Sans"], ["Montserrat", "Montserrat"], ["Jost", "Jost"], ["Lato", "Lato"], ["Manrope", "Manrope"]];
+const SERIF_FONTS = ["Cormorant Garamond", "Playfair Display", "EB Garamond", "Libre Caslon Display", "DM Serif Display", "Bodoni Moda", "Gilda Display", "Lora", "Cinzel"];
+const SANS_FONTS = ["Inter", "DM Sans", "Work Sans", "Montserrat", "Jost", "Lato", "Manrope", "Josefin Sans", "Raleway"];
+// Each font role: what it covers, how it looks as designed, and a sample line
+const ROLES = [
+  { k: "headline", name: "Headline", where: "Screen titles and the big lines on the home, sign-in and website hero", font: "Butler", design: "As designed (Butler)", stack: "Butler, Georgia, serif", w: 500, px: 32, ls: 0, caps: false, text: "A more beautiful home starts here." },
+  { k: "subheadline", name: "Subheadline", where: "Lines under titles, card and step titles, tips", font: "", design: "Same as Headline", stack: "", w: 500, px: 21, ls: 0, caps: false, text: "Your beautifully styled tree starts here." },
+  { k: "body", name: "Body copy", where: "Paragraphs, instructions, lists, form fields", font: "Inter", design: "As designed (Inter)", stack: "Inter, system-ui, sans-serif", w: 400, px: 15, ls: 0, caps: false, text: "Shape the branches first, then add the ribbon in three widths, setting it back toward the trunk." },
+  { k: "label", name: "Labels", where: "Small spaced words such as EARLY ACCESS, STUDIO and step labels, and the tab bar names", font: "", design: "Same as Body copy", stack: "", w: 500, px: 12, ls: .22, caps: true, text: "Early access · Step 2 of 8" },
+  { k: "button", name: "Buttons", where: "Every button: the large home pills and the gold buttons", font: "", design: "As designed (Butler & Inter)", stack: "", w: 600, px: 13, ls: .14, caps: true, text: "Create my space" },
+];
+const WEIGHTS = [["", "As designed"], ["300", "Light"], ["400", "Regular"], ["500", "Medium"], ["600", "Semibold"], ["700", "Bold"]];
 const SHAPES = [["", "Pill (current)"], ["rounded", "Rounded"], ["square", "Square"]];
 const CASES = [["", "UPPERCASE (current)"], ["none", "Normal"]];
 const BG = [["", "Midnight velvet (current)"], ["berry", "Winter Berry velvet"], ["color", "Plain color"], ["image", "Your own texture"]];
@@ -215,9 +233,16 @@ function set(path, value) {
   const keys = path.split("."), last = keys.pop();
   let o = draft; for (const k of keys) o = o[k] = o[k] || {};
   if (value === "" || value == null) delete o[last]; else o[last] = value;
-  // tidy empty sections
+  // tidy empty font roles and sections
+  if (draft.fonts) for (const r of Object.keys(draft.fonts)) if (draft.fonts[r] && typeof draft.fonts[r] === "object" && !Object.keys(draft.fonts[r]).length) delete draft.fonts[r];
   for (const k of ["colors", "fonts", "buttons", "background", "icons", "logos"]) if (draft[k] && !Object.keys(draft[k]).length) delete draft[k];
   changed();
+}
+// Change a role's font (several fields at once, one update)
+function setFont(k, fields) {
+  draft.fonts = draft.fonts || {}; const o = draft.fonts[k] = draft.fonts[k] || {};
+  for (const [key, v] of Object.entries(fields)) { if (v === "" || v == null) delete o[key]; else o[key] = v; }
+  set("fonts." + k + "._", "");
 }
 function changed() {
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
@@ -241,16 +266,13 @@ function render() {
   }
 
   const f = draft.fonts || {};
-  const fontSel = (sel, list, cur) => { const opts = list.map(([v, l]) => `<option value="${esc(v)}" ${(cur && !cur.url && cur.family === v) || (!cur && !v) ? "selected" : ""}>${esc(l)}</option>`); if (cur && cur.url) opts.push(`<option value="__own" selected>${esc(cur.family)} (your file)</option>`); opts.push(`<option value="__upload">Upload my own font…</option>`); $(sel).innerHTML = opts.join(""); };
-  fontSel("#fHeading", HEADING_FONTS, f.heading); fontSel("#fBody", BODY_FONTS, f.body);
-  $("[data-reset=heading]").hidden = !f.heading; $("[data-reset=body]").hidden = !f.body;
-  sampleFont("#sHeading", f.heading, "Butler, Georgia, serif"); sampleFont("#sBody", f.body, "Inter, system-ui, sans-serif");
+  renderRoles(f);
 
   const b = draft.buttons || {};
   const chips = (sel, list, cur, path) => { $(sel).innerHTML = list.map(([v, l]) => `<button class="chip ${(cur || "") === v ? "on" : ""}" data-set="${path}" data-v="${v}">${l}</button>`).join(""); };
-  chips("#bShape", SHAPES, b.shape, "buttons.shape"); chips("#bCase", CASES, b.case, "buttons.case");
-  const rad = { rounded: "12px", square: "3px" }[b.shape] || "999px", tc = b.case === "none" ? "none" : "uppercase";
-  for (const id of ["#bs1", "#bs2"]) { $(id).style.borderRadius = rad; $(id).style.textTransform = tc; $(id).style.fontFamily = f.body ? `"${f.body.family}", sans-serif` : ""; }
+  chips("#bShape", SHAPES, b.shape, "buttons.shape");
+  const rad = { rounded: "12px", square: "3px" }[b.shape] || "999px", fb = f.button || {}, tc = fb.caps === "none" ? "none" : "uppercase";
+  for (const id of ["#bs1", "#bs2"]) { $(id).style.borderRadius = rad; $(id).style.textTransform = tc; $(id).style.fontFamily = f.button && f.button.family ? `"${f.button.family}", sans-serif` : f.body && f.body.family ? `"${f.body.family}", sans-serif` : ""; }
 
   const g = draft.background || {};
   chips("#bgKind", BG, g.kind, "background.kind");
@@ -266,11 +288,52 @@ function render() {
   const lg = draft.logos || {};
   $("#logos").innerHTML = LOGOS.map(([k, name, def, where]) => `<div class="tile"><div class="pic dark"><img src="${esc(lg[k] || def)}" alt=""></div><b>${name}</b><small>${where}</small><div class="acts"><label class="up">Upload<input type="file" accept="image/png,image/svg+xml,image/webp" hidden data-file="logo" data-k="${k}"></label><button class="reset" data-lr="${k}" ${lg[k] ? "" : "hidden"}>↺</button></div></div>`).join("");
 }
-// Show each font sample in its own font (loading Google fonts here too)
-function sampleFont(sel, o, fallback) {
-  if (o && o.url) { const name = "Sample " + sel; if (!document.getElementById("ff" + sel)) { const st = document.createElement("style"); st.id = "ff" + sel; document.head.appendChild(st); } document.getElementById("ff" + sel).textContent = `@font-face{font-family:"${name}";src:url("${o.url}")}`; $(sel).style.fontFamily = `"${name}", ${fallback}`; return; }
-  if (o && o.google) { const id = "gf-" + o.family.replace(/\W/g, ""); if (!document.getElementById(id)) { const l = document.createElement("link"); l.id = id; l.rel = "stylesheet"; l.href = `https://fonts.googleapis.com/css2?family=${o.family.replace(/ /g, "+")}:wght@300;400;500;600&display=swap`; document.head.appendChild(l); } $(sel).style.fontFamily = `"${o.family}", ${fallback}`; return; }
-  $(sel).style.fontFamily = fallback;
+// Font roles: built once, then updated in place so sliders keep moving smoothly
+function renderRoles(f) {
+  if (!$("#roles").children.length) $("#roles").innerHTML = ROLES.map(r => `<div class="role" data-role="${r.k}">
+    <div class="rhead"><b>${r.name}</b><small>${r.where}</small><button class="reset" data-rr="${r.k}" hidden>Back to design</button></div>
+    <div class="rctl">
+      <label>Font<select data-rf="${r.k}"></select></label>
+      <label>Weight<select data-rw="${r.k}">${WEIGHTS.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select></label>
+      <label>Size <span class="val" data-rsv="${r.k}"></span><input type="range" data-rs="${r.k}" min="70" max="140" step="5"></label>
+      <label>Letter spacing <span class="val" data-rlv="${r.k}"></span><input type="range" data-rl="${r.k}" min="-0.05" max="0.4" step="0.01"></label>
+      <label>Capitals<span class="chips">${[["", "As designed"], ["upper", "ABC"], ["none", "Abc"]].map(([v, l]) => `<button class="chip" data-rc="${r.k}" data-v="${v}">${l}</button>`).join("")}</span></label>
+    </div>
+    <div class="rsample" data-rsample="${r.k}">${esc(r.text)}</div></div>`).join("");
+  const famOf = k => { const o = f[k] || {}; if (o.family) return o; if (k === "subheadline") return famOf("headline"); if (k === "label" || k === "button") return famOf("body"); return null; };
+  for (const r of ROLES) {
+    const o = f[r.k] || {}, sel = document.querySelector(`[data-rf=${r.k}]`);
+    if (sel !== document.activeElement) {
+      const opt = (v, l) => `<option value="${esc(v)}" ${o.family === v && !o.url ? "selected" : ""}>${esc(l)}</option>`;
+      sel.innerHTML = `<option value="" ${o.family ? "" : "selected"}>${esc(r.design)}</option>`
+        + (r.k === "headline" || r.k === "subheadline" ? "" : "") + `<optgroup label="Serif">${["Butler"].concat(SERIF_FONTS).map(v => opt(v, v)).join("")}</optgroup><optgroup label="Sans serif">${SANS_FONTS.map(v => opt(v, v)).join("")}</optgroup>`
+        + (o.url ? `<option value="__own" selected>${esc(o.family)} (your file)</option>` : "") + `<option value="__upload">Upload my own font…</option>`;
+    }
+    document.querySelector(`[data-rw=${r.k}]`).value = o.weight || "";
+    const size = o.size || 100, rs = document.querySelector(`[data-rs=${r.k}]`);
+    if (rs !== document.activeElement) rs.value = size;
+    document.querySelector(`[data-rsv=${r.k}]`).textContent = size === 100 ? "100% (as designed)" : size + "%";
+    const rl = document.querySelector(`[data-rl=${r.k}]`), ls = typeof o.spacing === "number" ? o.spacing : null;
+    if (rl !== document.activeElement) rl.value = ls == null ? r.ls : ls;
+    document.querySelector(`[data-rlv=${r.k}]`).textContent = ls == null ? "as designed" : ls.toFixed(2) + " em";
+    document.querySelectorAll(`[data-rc=${r.k}]`).forEach(c => c.classList.toggle("on", (o.caps || "") === c.dataset.v));
+    document.querySelector(`[data-rr=${r.k}]`).hidden = !f[r.k];
+    // Sample line in this role's look
+    const fam = famOf(r.k), smp = document.querySelector(`[data-rsample=${r.k}]`);
+    smp.style.fontFamily = fam ? loadFont(fam) : (r.stack || (r.k === "subheadline" ? "Butler, Georgia, serif" : r.k === "button" ? "Butler, Georgia, serif" : "Inter, system-ui, sans-serif"));
+    smp.style.fontWeight = o.weight || r.w;
+    smp.style.fontSize = (r.px * size / 100) + "px";
+    smp.style.letterSpacing = (ls == null ? r.ls : ls) + "em";
+    smp.style.textTransform = o.caps === "upper" || (r.caps && o.caps !== "none") ? "uppercase" : "none";
+  }
+}
+// Load a font for the samples on this page; returns the font-family to use
+function loadFont(o) {
+  if (o.family === "Butler") return "Butler, Georgia, serif";
+  if (o.url) { const id = "ff-" + o.family.replace(/\W/g, ""); if (!document.getElementById(id)) { const st = document.createElement("style"); st.id = id; st.textContent = `@font-face{font-family:"${o.family}";src:url("${o.url}");font-weight:100 900}`; document.head.appendChild(st); } return `"${o.family}", Georgia, serif`; }
+  const id = "gf-" + o.family.replace(/\W/g, "");
+  if (!document.getElementById(id)) { const l = document.createElement("link"); l.id = id; l.rel = "stylesheet"; l.href = `https://fonts.googleapis.com/css2?family=${o.family.replace(/ /g, "+")}:wght@300;400;500;600;700&display=swap`; document.head.appendChild(l); }
+  return `"${o.family}", serif`;
 }
 
 // ---- Inputs ----
@@ -278,20 +341,23 @@ document.addEventListener("input", e => {
   const t = e.target;
   if (t.dataset.c) { set("colors." + t.dataset.c, t.value.toUpperCase()); const tx = document.querySelector(`[data-ct=${t.dataset.c}]`); if (tx) tx.value = t.value.toUpperCase(); }
   if (t.dataset.ct && /^#[0-9a-f]{6}$/i.test(t.value)) { set("colors." + t.dataset.ct, t.value.toUpperCase()); const p = document.querySelector(`[data-c=${t.dataset.ct}]`); if (p) p.value = t.value; }
+  if (t.dataset.rs) set(`fonts.${t.dataset.rs}.size`, Number(t.value) === 100 ? "" : Number(t.value));
+  if (t.dataset.rl) set(`fonts.${t.dataset.rl}.spacing`, Number(t.value));
   if (t.id === "bgShade") { $("#bgShadeV").textContent = Math.round(t.value * 100) + "%"; set("background.shade", Number(t.value)); }
   if (t.id === "bgColor") set("background.color", t.value.toUpperCase());
 });
 document.addEventListener("change", async e => {
   const t = e.target;
-  if (t.id === "fHeading" || t.id === "fBody") {
-    const which = t.id === "fHeading" ? "heading" : "body";
-    if (t.value === "__upload") { pending = which; $("#fontFile").value = ""; $("#fontFile").click(); render(); return; }
+  if (t.dataset.rf) {
+    const k = t.dataset.rf;
+    if (t.value === "__upload") { pending = k; $("#fontFile").value = ""; $("#fontFile").click(); return; }
     if (t.value === "__own") return;
-    set("fonts." + which, t.value ? { family: t.value, google: true } : "");
+    setFont(k, t.value ? { family: t.value, google: t.value !== "Butler", url: "" } : { family: "", google: "", url: "" });
   }
+  if (t.dataset.rw) set(`fonts.${t.dataset.rw}.weight`, t.value);
   if (t.id === "fontFile" && t.files[0]) {
     const file = t.files[0], family = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").replace(/[^\w ]/g, "").trim() || "Brand font";
-    await upload(file, url => set("fonts." + pending, { family, url }));
+    await upload(file, url => setFont(pending, { family, url, google: "" }));
   }
   if (t.dataset.file === "logo" && t.files[0]) { const k = t.dataset.k; await upload(t.files[0], url => set("logos." + k, url)); }
   if (t.dataset.file === "bg" && t.files[0]) await upload(t.files[0], url => { set("background.image", url); });
@@ -306,7 +372,8 @@ document.addEventListener("click", e => {
   const t = e.target.closest("button"); if (!t) return;
   if (t.dataset.set) { set(t.dataset.set, t.dataset.v); if (t.dataset.set === "background.kind" && !t.dataset.v) set("background", ""); }
   if (t.dataset.cr) set("colors." + t.dataset.cr, "");
-  if (t.dataset.reset) set("fonts." + t.dataset.reset, "");
+  if (t.dataset.rr) set("fonts." + t.dataset.rr, "");
+  if (t.dataset.rc) set(`fonts.${t.dataset.rc}.caps`, t.dataset.v);
   if (t.dataset.ir) set("icons." + t.dataset.ir, "");
   if (t.dataset.lr) set("logos." + t.dataset.lr, "");
   if (t.dataset.pv) { $("#frame").src = t.dataset.pv; $("#pv").querySelectorAll(".chip").forEach(c => c.classList.toggle("on", c === t)); }
@@ -354,6 +421,7 @@ async function start() {
   if (!password) return gate();
   $("#gate").hidden = true; $("#app").hidden = false; $("#bar").hidden = false;
   try { const d = await (await fetch("/api/brand?kit=1", { cache: "no-store" })).json(); saved = d.kit || {}; } catch { saved = {}; }
+  if (saved.fonts) saved.fonts = TSKit.fontsOf(saved);
   draft = clone(saved);
   await loadOrigIcons();
   $("#pv").innerHTML = [["/try/", "App"], ["/", "Website"]].map(([u, l], i) => `<button class="chip ${i ? "" : "on"}" data-pv="${u}">${l}</button>`).join("");
