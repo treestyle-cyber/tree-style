@@ -93,9 +93,9 @@ export default async function handler(req, res) {
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
 
-  const { image, brief, aspect, pieces, map, revision, shape, variant, generic, ribbonStyle } = req.body || {};
+  const { image, brief, aspect, pieces, map, revision, shape, variant, generic, ribbonStyle, removeFirst } = req.body || {};
   const pc = parseDataUrl(pieces), mp = parseDataUrl(map);
-  const img = parseDataUrl(image);
+  let img = parseDataUrl(image);
   if (!img || !brief) return res.status(400).json({ error: "Missing photo or brief" });
   const ar = ASPECTS.includes(aspect) ? aspect : null;
 
@@ -118,6 +118,16 @@ export default async function handler(req, res) {
   const showNew = rs ? ` Make the new ribbon plainly visible from across the room: 6 to 10 separate ribbon spots spread over the whole tree, top to bottom and left to right, in the ribbon colors and widths the instructions name.` : "";
   const prompt = clearOld + editPrompt(brief, revision, !!shape && !revision, variant === "shape2") + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + shapeText + showNew;
   if (generic) retried = true;
+  // Lab "ribbon6": when the plan says old ribbon or garland runs across the tree, take it off in its own small edit first
+  // (Eric, Nov 14: asked inside the full decorating instructions, the model kept leaving it on), then decorate that picture.
+  let cleared = false;
+  if (rs && !revision && typeof removeFirst === "string" && removeFirst.trim()) {
+    const rp = `Edit this photo and change only one thing: remove ${removeFirst.trim().slice(0, 300)} completely from the Christmas tree. Where it was, show the tree's own green branches and lights, matching the rest of the tree. Keep everything else exactly as it is: the same tree, the same ornaments and decorations, the same room, framing and lighting. Do not add anything.`;
+    const c = await callGemini(models[0], img, rp, ar, null, null, null, false);
+    const cp = (c.body?.candidates?.[0]?.content?.parts || []).find(p => p.inlineData || p.inline_data);
+    if (c.ok && cp) { const d = cp.inlineData || cp.inline_data; img = { mediaType: d.mimeType || d.mime_type || "image/png", data: d.data }; cleared = true; }
+    else console.error("RIBBON_CLEAR_FAILED", c.status, JSON.stringify(c.body?.candidates?.[0]?.finishReason || c.body?.error?.message || "").slice(0, 200));
+  }
   for (const model of models) {
     let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rref, variant === "map2", refNote);
     // Some models reject imageConfig; retry once without it.
@@ -148,7 +158,7 @@ export default async function handler(req, res) {
     const d = pic.inlineData || pic.inline_data;
     return res.status(200).json({
       image: `data:${d.mimeType || d.mime_type || "image/png"};base64,${d.data}`,
-      _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !!generic, ribbonRef: refUsed }
+      _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !!generic, ribbonRef: refUsed, cleared }
     });
   }
   return res.status(502).json({ error: lastErr || "No image model available" });

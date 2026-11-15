@@ -195,11 +195,12 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
       // same branch-shaping rule as the app
       // same as the app: never a real tree, never when Fullness scored 8+, else when it scored 7 or less or the plan shapes the branches
       const fc = (result.categories || []).find(c => c.name === "Fullness"), shape = result.tree?.kind !== "natural" && (fc ? Number(fc.score) <= 7 : (result.plan || []).some(x => x.element === "fluff"));
-      const out = await api("/api/render", { image: src, brief: result.render_brief, aspect, map, variant, shape: shape || undefined, ribbonStyle: variant === "ribbon6" ? result.mockup?.ribbon_technique : undefined });
+      const out = await api("/api/render", { image: src, brief: result.render_brief, aspect, map, variant, shape: shape || undefined, ribbonStyle: variant === "ribbon6" ? result.mockup?.ribbon_technique : undefined, removeFirst: variant === "ribbon6" ? result.remove_first || undefined : undefined });
       $(`#${id}-pic`).innerHTML = `<img src="${out.image}" alt="">`;
       const STEP_LABEL = { ribbon: "Ribbon:", primary_picks: "Greenery:", florals: "Flowers:", statement: "Large ornaments:", medium: "Ornaments:", small_picks: "Picks:", crown: "Top:", base: "Base:", lights: "Lights:" };
       const used = (result.plan || []).map(p => Object.assign(String(p.shop || "").match(/^\[([A-Z0-9]{10})\]\s*(.*)/) || [], { el: p.element })).filter(m => m[1]);
       $(`#${id}-meta`).innerHTML = esc(`${Math.round((Date.now() - t0) / 1000)}s · ${(result.render_brief || "").split(/\s+/).length} words of instructions · ${out._meta?.model || ""}`)
+        + (variant === "ribbon6" && result.remove_first ? `<div style="margin-top:8px">Old ribbon removed first: ${esc(result.remove_first)}${out._meta?.cleared ? "" : " <b>(removal step failed)</b>"}</div>` : "")
         + (variant === "ribbon6" ? `<div style="margin-top:10px"><b>Ribbon style chosen: ${esc(RSTYLE[result.mockup?.ribbon_technique] || result.mockup?.ribbon_technique || "none")}</b> · reference photo: ${esc(out._meta?.ribbonRef || "none")}</div>` : "")
         + (variant === "picks" ? (used.length
           ? `<div style="margin-top:10px;padding:10px 12px;border:1px solid rgba(184,156,107,.5);border-radius:10px"><b>${used.length} creator pick${used.length === 1 ? "" : "s"} in this design</b> (tap to see the product)${used.map(m => `<br>· <span style="opacity:.7">${esc(STEP_LABEL[m.el] || "")}</span> <a href="https://www.amazon.com/dp/${m[1]}" target="_blank" rel="noopener" style="color:inherit">${esc(m[2] || m[1])}</a>`).join("")}</div>`
