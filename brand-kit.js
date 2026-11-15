@@ -73,6 +73,8 @@
 
     // Page background (the light editorial screens keep their own)
     var bg = kit.background || {}, base = hex(c.midnight) ? c.midnight : "#141C2C", css = "";
+    // A changed Midnight also tints the velvet behind every page (the original velvet keeps its texture)
+    if (!bg.kind && hex(c.midnight)) bg = { kind: "velvet" };
     if (bg.kind) {
       var shade = typeof bg.shade === "number" ? Math.max(0, Math.min(1, bg.shade)) : .9;
       var tex = bg.kind === "berry" ? "url(/brand/velvet-berry.jpg)" : bg.kind === "image" && bg.image ? "url(\"" + bg.image + "\")" : bg.kind === "velvet" ? "var(--photo-velvet, url(/brand/velvet-midnight.jpg))" : "";

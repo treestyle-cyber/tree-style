@@ -1,4 +1,4 @@
-// Which copy of the site is this? The preview copy says so (tab title, plum background) and every
+// Which copy of the site is this? The preview copy says so (tab title and the pink corner pill) and every
 // working page has a small switch to its live or preview counterpart. Testers on the live app never see it.
 (function () {
   var LIVE = "tree-style.vercel.app";
@@ -11,8 +11,9 @@
   if (isLive && !tools) return;
   if (isPrev) {
     document.title = "PREVIEW · " + document.title;
+    // No plum tint: previews show the colors and background set in the Studio's Brand kit
     var st = document.createElement("style");
-    st.textContent = ":root{--bg:#2A1730 !important;--paper:#3A2442 !important;--paper-2:#45304D !important}body{background:radial-gradient(120% 80% at 50% 0%,#4A2A50,#2A1730 70%) fixed !important}.foot{padding-bottom:max(40px,env(safe-area-inset-bottom)) !important}";
+    st.textContent = ".foot{padding-bottom:max(40px,env(safe-area-inset-bottom)) !important}";
     document.head.appendChild(st);
   }
   addEventListener("DOMContentLoaded", function () {
