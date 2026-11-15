@@ -103,6 +103,12 @@
       <div class="refrow"><div class="frame" id="refCur" style="aspect-ratio:3/4;max-width:200px">No reference yet</div>
         <div><label class="btn" style="cursor:pointer">Add your photo<input type="file" id="refFile" accept="image/*" hidden></label><p class="msg" id="refMsg"></p></div></div>
     </div>
+    <div class="refcard" id="rsCard">
+      <h2>Ribbon styles (in the Lab)</h2>
+      <div class="where">One photo for each ribbon style you approved. In the Lab test, the plan picks the style that suits each tree and the preview copies only that style's photo. The live app keeps using the single reference above until this test wins.</div>
+      <div id="rsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-top:12px"></div>
+      <p class="msg" id="rsMsg"></p>
+    </div>
     <div class="refcard" id="baCard">
       <h2>Waitlist before &amp; after</h2>
       <div class="where">The slider on the website. Add a real "before" photo, then make the "after" with the actual app (the same plan and preview your customers get). Make another until you love it, then use the pair.</div>
@@ -378,9 +384,27 @@ async function start() {
       $("#refMsg").className = "msg ok"; $("#refMsg").textContent = "Saved. New photos, fixes and app previews will copy this ribbon technique (allow up to 10 minutes for the app).";
     } catch (err) { $("#refMsg").className = "msg err"; $("#refMsg").textContent = err.message; }
   };
+  setupRibbonStyles(info.photos || {});
   build(info.photos || {});
   setupEss(info);
   offerPreviewPicks();
+}
+// ---- Ribbon styles: one reference photo per approved style (slots ribbon_<key>, used by the Lab's "ribbon6" test) ----
+const RIBBON_STYLES = [["billows", "Woven billows"], ["cascades", "Waterfall cascades"], ["layered", "Layered ribbons"], ["loops", "Big loops"], ["bursts", "Loop bursts"], ["curls", "Curls"]];
+function setupRibbonStyles(photos) {
+  $("#rsGrid").innerHTML = RIBBON_STYLES.map(([k, n]) => `<div><div class="frame" id="rs_${k}" style="aspect-ratio:3/4">${photos["ribbon_" + k] ? `<img src="${photos["ribbon_" + k]}" alt="">` : "No photo yet"}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:6px"><b style="font-size:14px">${n}</b><label class="btn" style="cursor:pointer;padding:6px 12px;font-size:12px">Change<input type="file" data-k="${k}" accept="image/*" hidden></label></div></div>`).join("");
+  $("#rsGrid").querySelectorAll("input[type=file]").forEach(inp => inp.onchange = async e => {
+    const f = e.target.files[0], k = inp.dataset.k; if (!f) return;
+    $("#rsMsg").className = "msg"; $("#rsMsg").textContent = "Saving…";
+    try {
+      const raw = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); });
+      const data = await shrink(raw, 1400);
+      await call({ action: "use", slot: "ribbon_" + k, image: data });
+      $("#rs_" + k).innerHTML = `<img src="${data}" alt="">`;
+      $("#rsMsg").className = "msg ok"; $("#rsMsg").textContent = "Saved (the Lab picks it up within 10 minutes).";
+    } catch (err) { $("#rsMsg").className = "msg err"; $("#rsMsg").textContent = err.message; }
+  });
 }
 // ---- Stylist's essentials editor (same defaults as the app until a list is saved) ----
 const ESS_DEFAULT = [

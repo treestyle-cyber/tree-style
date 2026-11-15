@@ -11,6 +11,7 @@ const MODELS = [
 // Under test in the Lab: does the higher-quality model, with a checklist, paint every piece the plan names?
 const LAB_MODEL = "gemini-3-pro-image-preview";
 import { ribbonRef } from "../lib/ribbonref.js";
+import { RIBBON_STYLES } from "../lib/ribbonstyles.js";
 // Ribbon (won in the Lab, Nov 12): previews kept coming back with bows instead of cascades. Every preview gets the designer's
 // own ribbon photo (Studio → Ribbon technique reference), and the ribbon is described as what it physically is.
 const RIBBON_SHAPE = `
@@ -65,7 +66,7 @@ RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or 
 The result must look like an ordinary real photograph of the same tree in the same room, not an illustration, with no circles, rings, outlines or other markings drawn on it.`;
 }
 
-async function callGemini(model, img, prompt, aspect, pieces, map, ref, plainFlowers) {
+async function callGemini(model, img, prompt, aspect, pieces, map, ref, plainFlowers, refNote = RIBBON_REF_NOTE) {
   // (map is skipped for small revisions: the current preview already shows the placements)
   const generationConfig = { responseModalities: ["IMAGE"] };
   if (aspect) generationConfig.imageConfig = { aspectRatio: aspect };
@@ -78,7 +79,7 @@ async function callGemini(model, img, prompt, aspect, pieces, map, ref, plainFlo
         { inline_data: { mime_type: img.mediaType, data: img.data } },
         ...(map ? [{ text: "Placement map (reference only, do not edit or copy its drawing style): the same photo with soft colored blobs showing WHERE each addition goes: ovals in the ribbon color = a spot where a piece of wide ribbon spills or billows out of the branches (never a bow); small blobs in the accent ribbon color = small accent loops; " + (plainFlowers ? "blobs in the flower color = flowers" : "blobs with a yellow center = flowers") + "; round blobs = ornaments in that color at that size. The blobs are position hints only: the finished photo must contain NO circles, rings, outlines, dots, blobs, labels or markings of any kind, only real decorations. Follow its positions and spacing so the result matches the homeowner's step-by-step guide, and don't add groupings or extra pieces the map and instructions don't show. If the written instructions and the map disagree about where something goes, follow the map." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : []),
         ...(pieces ? [{ text: "Reference only (do not edit this one): the homeowner's own special pieces (it may be a board of several photos side by side; the board itself is not part of the scene). Show these exact pieces on the tree where the instructions place them." }, { inline_data: { mime_type: pieces.mediaType, data: pieces.data } }] : []),
-        ...(ref ? [{ text: RIBBON_REF_NOTE }, { inline_data: { mime_type: ref.mediaType, data: ref.data } }] : [])
+        ...(ref ? [{ text: refNote }, { inline_data: { mime_type: ref.mediaType, data: ref.data } }] : [])
       ] }],
       generationConfig
     })
@@ -92,7 +93,7 @@ export default async function handler(req, res) {
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
 
-  const { image, brief, aspect, pieces, map, revision, shape, variant, generic } = req.body || {};
+  const { image, brief, aspect, pieces, map, revision, shape, variant, generic, ribbonStyle } = req.body || {};
   const pc = parseDataUrl(pieces), mp = parseDataUrl(map);
   const img = parseDataUrl(image);
   if (!img || !brief) return res.status(400).json({ error: "Missing photo or brief" });
@@ -104,13 +105,17 @@ export default async function handler(req, res) {
   // Lab test (variant "v2"): Google's higher-quality image model first, plus a closing checklist
   const models = variant === "v2" ? [...new Set([LAB_MODEL, ...MODELS])] : MODELS;
   // A branded theme (a film, show, team) is painted with generic pieces from the start, since the model refuses trademarked designs
-  const rref = await ribbonRef();
-  const prompt = editPrompt(brief, revision, !!shape && !revision, variant === "shape2") + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + RIBBON_SHAPE;
+  // Lab variant "ribbon6": the ribbon style the plan chose, with that style's own photo and description
+  const rs = variant === "ribbon6" ? RIBBON_STYLES[ribbonStyle] : null;
+  const rref = rs ? (await ribbonRef("ribbon_" + ribbonStyle)) || await ribbonRef() : await ribbonRef();
+  const refNote = rs ? `Reference photo showing the ribbon style to use, "${rs.name}". Do not copy its room, tree, colors, ribbon or ornaments; copy only HOW the ribbon is placed on the tree. Paint the ribbons the instructions describe, used this way.` : undefined;
+  const shapeText = rs ? `\n\nRIBBON STYLE (most important): ${rs.name}. ${rs.paint}` : RIBBON_SHAPE;
+  const prompt = editPrompt(brief, revision, !!shape && !revision, variant === "shape2") + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + shapeText;
   if (generic) retried = true;
   for (const model of models) {
-    let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rref, variant === "map2");
+    let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rref, variant === "map2", refNote);
     // Some models reject imageConfig; retry once without it.
-    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, prompt, null, pc, revision ? null : mp, rref, variant === "map2");
+    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, prompt, null, pc, revision ? null : mp, rref, variant === "map2", refNote);
     if (!out.ok) {
       lastErr = out.body?.error?.message || `Gemini error ${out.status}`;
       // Model not available, or no quota for it on this account: try the next one
@@ -127,7 +132,7 @@ export default async function handler(req, res) {
       const fluke = /NO_IMAGE|no image returned/i.test(String(why));
       if (!retried && (fluke || /SAFETY|PROHIBIT|RECITATION|BLOCK|IMAGE_OTHER|OTHER|copyright|trademark/i.test(String(why)))) {
         retried = true;
-        const again = await callGemini(model, img, fluke ? prompt : prompt + GENERIC, ar, pc, revision ? null : mp, rref, variant === "map2");
+        const again = await callGemini(model, img, fluke ? prompt : prompt + GENERIC, ar, pc, revision ? null : mp, rref, variant === "map2", refNote);
         const p2 = again.body?.candidates?.[0]?.content?.parts || [], pic2 = p2.find(p => p.inlineData || p.inline_data);
         if (again.ok && pic2) { const d2 = pic2.inlineData || pic2.inline_data; return res.status(200).json({ image: `data:${d2.mimeType || d2.mime_type || "image/png"};base64,${d2.data}`, _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !fluke, retried: true } }); }
         console.error("RENDER_REFUSED_AGAIN", JSON.stringify({ model, why: String(again.body?.candidates?.[0]?.finishReason || again.status).slice(0, 200) }));

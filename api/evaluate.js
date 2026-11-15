@@ -6,7 +6,8 @@
 import { GUIDE, GUIDE_OLD_STYLES, CATS, STYLES } from "../lib/guide.js";
 import { checkPassword, parseDataUrl, extractJson } from "../lib/util.js";
 import { picksRule } from "../lib/picks.js";
-import { EVAL_SCHEMA, LOOK_SCHEMA, PLAN_SCHEMA, REVISE_SCHEMA, DETAILS_SCHEMA } from "../lib/schema.js";
+import { EVAL_SCHEMA, LOOK_SCHEMA, PLAN_SCHEMA, PLAN_SCHEMA_R6, REVISE_SCHEMA, DETAILS_SCHEMA } from "../lib/schema.js";
+import { RIBBON6_RULE } from "../lib/ribbonstyles.js";
 
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
 
@@ -81,7 +82,7 @@ ${CATS.map(c => `- ${c[0]}: ${c[2]}`).join("\n")}
 
   return `You are an expert Christmas tree designer helping someone who loves Christmas but is not a designer.
 
-${variant === "old" ? GUIDE_OLD_STYLES : GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}${variant === "picks" && part !== "look" ? "\n\n" + picksRule() : ""}
+${variant === "old" ? GUIDE_OLD_STYLES : GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}${variant === "ribbon6" && part !== "look" ? "\n\n" + RIBBON6_RULE : ""}${variant === "picks" && part !== "look" ? "\n\n" + picksRule() : ""}
 
 ${task}
 
@@ -242,7 +243,7 @@ export default async function handler(req, res) {
       const pc = parseDataUrl(pieces), ins = mode === "design" ? parseDataUrl(inspo) : null;
       if (pc) { imgs.push(pc); notes.push(`Image ${imgs.length} shows special pieces they own (ornaments, heirlooms or found objects; it may be a board of several photos, and every piece in it is theirs): design around them, give them the best spots, and let them set the theme and colors if they fit the style.`); }
       if (ins) { imgs.push(ins); notes.push(`Image ${imgs.length} is an inspiration photo (art, a room, fabric, an object). First decide what in the photo is the inspiration and what is just background: use their own words (if they say they love the fabric on a chair, the inspiration is the fabric, not the chair, its frame or the room; brass sconces photographed on a towel are about the sconces, not the towel), and otherwise the clear subject. Draw only from that, never from the surroundings, surface or setting. Usually the inspiration is a reference, so nothing in the photo goes on the tree literally; but if their words say the pieces themselves go on the tree (e.g. "build a tree around this set of vintage ornaments"), they own them: put those very pieces on the tree in the best spots and build everything else around them. Design the tree the way a top designer would around it: read more than its colors. Notice what is actually in it (its hero subject, its flowers and plants by kind, its objects and patterns, its materials, its cultural or period style) and translate those into real decor. Echo its hero subject in a figural piece or two; carry its flowers in as matching floral stems in the same kinds and colors; find ornaments shaped like or patterned after its objects (glass flowers, figural or patterned pieces), not only round ornaments, and repeat a signature object in a few sizes through the tree; let its pattern or style show in the ribbon choice, and small bows in one of its accent colors can carry that color through the tree; the base can echo it too, in a way that suits the tree's overall feel (an elegant design gets a tree skirt in its colors or fabric; a collar or basket suits a rustic or casual one), with its colors drawn from the image. Keep it to a considered handful of these motifs woven through the whole tree, and follow the guide for placement, ribbon and balance. Name these pieces specifically in the plan and the brief so the preview shows them.${INSPO_MORE}`); }
-      ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" "), part, variant }), part === "look" ? 4000 : 16000, part === "look" ? LOOK_SCHEMA : part === "plan" ? PLAN_SCHEMA : EVAL_SCHEMA));
+      ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" "), part, variant }), part === "look" ? 4000 : 16000, part === "look" ? LOOK_SCHEMA : part === "plan" ? (variant === "ribbon6" ? PLAN_SCHEMA_R6 : PLAN_SCHEMA) : EVAL_SCHEMA));
       // Weighted overall score, 0-100
       if (Array.isArray(result.categories) && result.categories.length) {
         let sum = 0, w = 0;
