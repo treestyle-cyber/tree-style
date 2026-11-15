@@ -118,7 +118,7 @@ async function prep(file) {
 async function mapFor(src, result, mode, variant) {
   try {
     const cv = document.createElement("canvas"), g = TreeGuide.create(await loadImg(src), cv, result, mode);
-    g.drawMap(variant === "map2" ? { plainFlowers: true } : undefined);
+    g.drawMap(variant === "map2" || variant === "ribbon6" ? { plainFlowers: true } : undefined);
     const k = Math.min(1, 1024 / Math.max(cv.width, cv.height)), c2 = document.createElement("canvas");
     c2.width = Math.round(cv.width * k); c2.height = Math.round(cv.height * k); c2.getContext("2d").drawImage(cv, 0, 0, c2.width, c2.height);
     return c2.toDataURL("image/jpeg", .8);
