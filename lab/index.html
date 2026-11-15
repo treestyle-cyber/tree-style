@@ -63,7 +63,7 @@
     <div class="intro">
       <div class="eyebrow">Lab</div>
       <h1>Current vs. proposed</h1>
-      <p class="eyebrow" style="margin:0 0 10px">Testing the picture step: both columns get the same plan; the left is painted by Google's higher-quality image model with a "check every piece" list, the right by the live app's model. Choose a style to compare.</p>
+      <p class="eyebrow" id="testDesc" style="margin:0 0 10px"></p>
       <p>Run the same trees through the app as it is today and the proposed change, side by side. Nothing here changes the live app. Your test photos stay in this browser for next time.</p>
     </div>
     <div class="panel">
@@ -162,18 +162,20 @@ $("#file").onchange = async e => { for (const f of [...e.target.files].slice(0, 
 // Testing (Nov 12, Eric saw yellow discs on a preview): flower spots on the placement map drawn as a plain blob in the
 // flower's color, without the yellow center, and described that way to the image model. Same plan in both columns.
 // Tests waiting for Eric: /lab (six ribbon styles), /lab?test=shape2 (shaping that adds no branches), /lab?test=map2 (flower spots without the yellow center)
+const RSLOT = { woven_billows: "ribbon_billows", waterfall_cascades: "ribbon_cascades", layered_ribbons: "ribbon_layered", big_loops: "ribbon_loops", loop_bursts: "ribbon_bursts", curls: "ribbon_curls" };
 const RSTYLE = { woven_billows: "Woven billows", waterfall_cascades: "Waterfall cascades", layered_ribbons: "Layered ribbons", big_loops: "Big loops", loop_bursts: "Loop bursts", curls: "Curls" };
 const TESTS = {
   ribbon6: { title: "Test: six ribbon styles, the plan picks one", variant: "ribbon6" },
   shape2: { title: "Test: shaping opens branches, adds none", variant: "shape2", samePlan: true },
   map2: { title: "Test: flower spots without the yellow center", variant: "map2", samePlan: true },
 };
+const DESC = { ribbon6: "Testing ribbon styles: the left column's plan picks one of your six ribbon styles and the picture copies that style's photo (shown above each test picture). The right column is the live app with your single ribbon photo.", shape2: "Testing branch shaping: both columns paint the same plan; the left opens the branches without adding any.", map2: "Testing flower spots: both columns paint the same plan; the left draws flower spots without the yellow center." };
 const COLS = [TESTS[new URLSearchParams(location.search).get("test")] || TESTS.ribbon6, { title: "Live app", variant: undefined }];
 const ALL_STYLES = [["classic", "Traditional"], ["rustic", "Rustic"], ["modern", "Modern"], ["elegant", "Elegant"], ["playful", "Playful"], ["keep", "Keep my style"]];
 async function runOne(src, idx, mode, style, extra = {}, label = "") {
   const row = document.createElement("div");
   row.className = "row";
-  const col = (title, id) => `<div class="col"><h3>${title}</h3><div class="pic" id="${id}-pic"><div class="spin"></div></div><div class="meta" id="${id}-meta"></div><details><summary>Instructions sent to the image model</summary><pre id="${id}-brief">…</pre></details><details><summary>Placement map</summary><div id="${id}-map"></div></details></div>`;
+  const col = (title, id) => `<div class="col"><h3>${title}</h3><div id="${id}-badge"></div><div class="pic" id="${id}-pic"><div class="spin"></div></div><div class="meta" id="${id}-meta"></div><details><summary>Instructions sent to the image model</summary><pre id="${id}-brief">…</pre></details><details><summary>Placement map</summary><div id="${id}-map"></div></details></div>`;
   row.innerHTML = `<div class="col"><h3>${label || "Tree " + (idx + 1)}</h3><div class="pic"><img src="${extra.inspo || src}" alt=""></div>${extra.inspo ? `<div class="meta">The bare tree both versions designed:</div><div class="pic"><img src="${src}" alt=""></div>` : ""}</div>` + COLS.map((c, k) => col(c.title, (k ? "p" : "c") + idx)).join("");
   $("#out").appendChild(row);
   const im = await loadImg(src), r = im.width / im.height, aspect = ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0];
@@ -186,6 +188,8 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
       const plan = COLS[0].samePlan ? await (shared ||= api("/api/evaluate", { image: src, mode, style, part: "plan", ...extra })) : await api("/api/evaluate", { image: src, mode, style, part: "plan", variant, ...extra });
       const result = Object.assign({}, look, plan);
       $(`#${id}-brief`).textContent = result.render_brief || "";
+      if (variant === "ribbon6") { const k = result.mockup?.ribbon_technique, slot = RSLOT[k];
+        $(`#${id}-badge`).innerHTML = `<div style="display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--gold);border-radius:10px;background:rgba(184,156,107,.12)">${slot ? `<img src="/api/brand?img=${slot}" alt="" style="width:46px;height:60px;object-fit:cover;border-radius:6px">` : ""}<div><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)">Ribbon style chosen</div><div style="font:500 22px var(--serif);color:var(--ivory)">${esc(RSTYLE[k] || k || "none")}</div></div></div>`; }
       const map = await mapFor(src, result, mode, variant);
       if (map) $(`#${id}-map`).innerHTML = `<img src="${map}" style="width:100%;border-radius:8px;margin-top:6px" alt="">`;
       // same branch-shaping rule as the app
@@ -243,7 +247,7 @@ $("#big").onclick = () => $("#big").hidden = true;
 
 function gate() { $("#lab").hidden = true; $("#gate").hidden = false; }
 $("#gateForm").onsubmit = e => { e.preventDefault(); password = $("#pw").value.trim(); try { sessionStorage.setItem("ts_pw", password); } catch {} start(); };
-function start() { if (!password) return gate(); $("#gate").hidden = true; $("#lab").hidden = false; drawPhotos(); drawInspo(); syncMode(); }
+function start() { const tk = new URLSearchParams(location.search).get("test"); $("#testDesc").textContent = DESC[TESTS[tk] ? tk : "ribbon6"]; if (!password) return gate(); $("#gate").hidden = true; $("#lab").hidden = false; drawPhotos(); drawInspo(); syncMode(); }
 start();
 </script>
 </body>
