@@ -122,7 +122,7 @@ export default async function handler(req, res) {
   // (Eric, Nov 14: asked inside the full decorating instructions, the model kept leaving it on), then decorate that picture.
   let cleared = false;
   if (rs && !revision && typeof removeFirst === "string" && removeFirst.trim()) {
-    const rp = `Edit this photo and change only one thing: remove ${removeFirst.trim().slice(0, 300)} completely from the Christmas tree. Where it was, show the tree's own green branches and lights, matching the rest of the tree. Keep everything else exactly as it is: the same tree, the same ornaments and decorations, the same room, framing and lighting. Do not add anything.`;
+    const rp = `Edit this photo and change only one thing: remove ${removeFirst.trim().slice(0, 300)} completely from the Christmas tree. Where it was, show the tree's own green branches and lights, matching the rest of the tree. Keep everything else exactly as it is: the same tree, every decoration not named, the same room, framing and lighting. Do not add anything.`;
     const c = await callGemini(models[0], img, rp, ar, null, null, null, false);
     const cp = (c.body?.candidates?.[0]?.content?.parts || []).find(p => p.inlineData || p.inline_data);
     if (c.ok && cp) { const d = cp.inlineData || cp.inline_data; img = { mediaType: d.mimeType || d.mime_type || "image/png", data: d.data }; cleared = true; }
