@@ -79,7 +79,7 @@
         <label>Style<select id="style"><option value="all" selected>Every style</option><option value="keep">Keep my style</option><option value="classic">Traditional</option><option value="rustic">Rustic</option><option value="modern">Modern</option><option value="elegant">Elegant</option><option value="playful">Playful</option></select></label>
         <label>Kind of tree<select id="fKind"><option value="">Not sure</option><option value="artificial">Artificial</option><option value="natural">Real</option></select></label>
         <label>How tall<select id="fHeight"><option value="">Not sure</option><option value="4">4 ft or less</option><option value="5.5">5–6 ft</option><option value="7.5">7–8 ft</option><option value="9.5">9–10 ft</option><option value="11.5">11–12 ft</option><option value="14">13 ft+</option></select></label>
-        <label>Branches<select id="fDensity"><option value="">Not sure</option><option value="dense">Full and dense</option><option value="open">Open, with gaps</option></select></label>
+        <label>Branches<select id="fDensity"><option value="">Not sure</option><option value="dense">Full</option><option value="open">Sparse style</option><option value="unshaped">Not shaped</option></select></label>
         <label id="fStageL">Decorating<select id="fStage"><option value="">Let it decide</option><option value="partial">Partway there</option><option value="finished">Finished</option></select></label>
         <button class="btn" id="go">Run comparison →</button>
       </div>
@@ -118,7 +118,7 @@ async function prep(file) {
 async function mapFor(src, result, mode, variant) {
   try {
     const cv = document.createElement("canvas"), g = TreeGuide.create(await loadImg(src), cv, result, mode);
-    g.drawMap(variant === "map2" || variant === "ribbon6" ? { plainFlowers: true } : undefined);
+    g.drawMap(variant === "map2" || variant === "ribbon6" || variant === "simple" ? { plainFlowers: true } : undefined);
     const k = Math.min(1, 1024 / Math.max(cv.width, cv.height)), c2 = document.createElement("canvas");
     c2.width = Math.round(cv.width * k); c2.height = Math.round(cv.height * k); c2.getContext("2d").drawImage(cv, 0, 0, c2.width, c2.height);
     return c2.toDataURL("image/jpeg", .8);
@@ -165,12 +165,13 @@ $("#file").onchange = async e => { for (const f of [...e.target.files].slice(0, 
 const RSLOT = { woven_billows: "ribbon_billows", waterfall_cascades: "ribbon_cascades", layered_ribbons: "ribbon_layered", big_loops: "ribbon_loops", loop_bursts: "ribbon_bursts", curls: "ribbon_curls" };
 const RSTYLE = { woven_billows: "Woven billows", waterfall_cascades: "Waterfall cascades", layered_ribbons: "Layered ribbons", big_loops: "Big loops", loop_bursts: "Loop bursts", curls: "Curls" };
 const TESTS = {
+  simple: { title: "Test: your designer's brief (simpler rules)", variant: "simple" },
   ribbon6: { title: "Test: six ribbon styles, the plan picks one", variant: "ribbon6" },
   shape2: { title: "Test: shaping opens branches, adds none", variant: "shape2", samePlan: true },
   map2: { title: "Test: flower spots without the yellow center", variant: "map2", samePlan: true },
 };
-const DESC = { ribbon6: "Testing ribbon styles: the left column's plan picks one of your six ribbon styles and the picture copies that style's photo (shown above each test picture). The right column is the live app with your single ribbon photo.", shape2: "Testing branch shaping: both columns paint the same plan; the left opens the branches without adding any.", map2: "Testing flower spots: both columns paint the same plan; the left draws flower spots without the yellow center." };
-const COLS = [TESTS[new URLSearchParams(location.search).get("test")] || TESTS.ribbon6, { title: "Live app", variant: undefined }];
+const DESC = { simple: "Testing your designer's brief: the left column follows the simpler rules (four steps, six ribbon styles, ornaments only as needed, shaping that adds no branches, the eight hard limits). The right column is the live app. Run as Check my tree with Keep my style.", ribbon6: "Testing ribbon styles: the left column's plan picks one of your six ribbon styles and the picture copies that style's photo (shown above each test picture). The right column is the live app with your single ribbon photo.", shape2: "Testing branch shaping: both columns paint the same plan; the left opens the branches without adding any.", map2: "Testing flower spots: both columns paint the same plan; the left draws flower spots without the yellow center." };
+const COLS = [TESTS[new URLSearchParams(location.search).get("test")] || TESTS.simple, { title: "Live app", variant: undefined }];
 const ALL_STYLES = [["classic", "Traditional"], ["rustic", "Rustic"], ["modern", "Modern"], ["elegant", "Elegant"], ["playful", "Playful"], ["keep", "Keep my style"]];
 async function runOne(src, idx, mode, style, extra = {}, label = "") {
   const row = document.createElement("div");
@@ -188,20 +189,20 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
       const plan = COLS[0].samePlan ? await (shared ||= api("/api/evaluate", { image: src, mode, style, part: "plan", ...extra })) : await api("/api/evaluate", { image: src, mode, style, part: "plan", variant, ...extra });
       const result = Object.assign({}, look, plan);
       $(`#${id}-brief`).textContent = result.render_brief || "";
-      if (variant === "ribbon6") { const k = result.mockup?.ribbon_technique, slot = RSLOT[k];
+      if (variant === "ribbon6" || variant === "simple") { const k = result.mockup?.ribbon_technique, slot = RSLOT[k];
         $(`#${id}-badge`).innerHTML = `<div style="display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--gold);border-radius:10px;background:rgba(184,156,107,.12)">${slot ? `<img src="/api/brand?img=${slot}" alt="" style="width:46px;height:60px;object-fit:cover;border-radius:6px">` : ""}<div><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)">Ribbon style chosen</div><div style="font:500 22px var(--serif);color:var(--ivory)">${esc(RSTYLE[k] || k || "none")}</div></div></div>`; }
       const map = await mapFor(src, result, mode, variant);
       if (map) $(`#${id}-map`).innerHTML = `<img src="${map}" style="width:100%;border-radius:8px;margin-top:6px" alt="">`;
       // same branch-shaping rule as the app
       // same as the app: never a real tree, never when Fullness scored 8+, else when it scored 7 or less or the plan shapes the branches
-      const fc = (result.categories || []).find(c => c.name === "Fullness"), shape = result.tree?.kind !== "natural" && (fc ? Number(fc.score) <= 7 : (result.plan || []).some(x => x.element === "fluff"));
-      const out = await api("/api/render", { image: src, brief: result.render_brief, aspect, map, variant, shape: shape || undefined, ribbonStyle: variant === "ribbon6" ? result.mockup?.ribbon_technique : undefined, removeFirst: variant === "ribbon6" ? result.remove_first || undefined : undefined });
+      const fc = (result.categories || []).find(c => c.name === "Fullness"), dn = extra.facts?.density, shape = result.tree?.kind !== "natural" && dn !== "open" && (dn === "unshaped" || (fc ? Number(fc.score) <= 7 : (result.plan || []).some(x => x.element === "fluff")));
+      const out = await api("/api/render", { image: src, brief: result.render_brief, aspect, map, variant, shape: shape || undefined, ribbonStyle: (variant === "ribbon6" || variant === "simple") ? result.mockup?.ribbon_technique : undefined, removeFirst: (variant === "ribbon6" || variant === "simple") ? result.remove_first || undefined : undefined });
       $(`#${id}-pic`).innerHTML = `<img src="${out.image}" alt="">`;
       const STEP_LABEL = { ribbon: "Ribbon:", primary_picks: "Greenery:", florals: "Flowers:", statement: "Large ornaments:", medium: "Ornaments:", small_picks: "Picks:", crown: "Top:", base: "Base:", lights: "Lights:" };
       const used = (result.plan || []).map(p => Object.assign(String(p.shop || "").match(/^\[([A-Z0-9]{10})\]\s*(.*)/) || [], { el: p.element })).filter(m => m[1]);
       $(`#${id}-meta`).innerHTML = esc(`${Math.round((Date.now() - t0) / 1000)}s · ${(result.render_brief || "").split(/\s+/).length} words of instructions · ${out._meta?.model || ""}`)
-        + (variant === "ribbon6" && result.remove_first ? `<div style="margin-top:8px">Old ribbon removed first: ${esc(result.remove_first)}${out._meta?.cleared ? "" : " <b>(removal step failed)</b>"}</div>` : "")
-        + (variant === "ribbon6" ? `<div style="margin-top:10px"><b>Ribbon style chosen: ${esc(RSTYLE[result.mockup?.ribbon_technique] || result.mockup?.ribbon_technique || "none")}</b> · reference photo: ${esc(out._meta?.ribbonRef || "none")}</div>` : "")
+        + ((variant === "ribbon6" || variant === "simple") && result.remove_first ? `<div style="margin-top:8px">Taken off first: ${esc(result.remove_first)}${out._meta?.cleared ? "" : " <b>(removal step failed)</b>"}</div>` : "")
+        + ((variant === "ribbon6" || variant === "simple") ? `<div style="margin-top:10px"><b>Ribbon style chosen: ${esc(RSTYLE[result.mockup?.ribbon_technique] || result.mockup?.ribbon_technique || "none")}</b> · reference photo: ${esc(out._meta?.ribbonRef || "none")}</div>` : "")
         + (variant === "picks" ? (used.length
           ? `<div style="margin-top:10px;padding:10px 12px;border:1px solid rgba(184,156,107,.5);border-radius:10px"><b>${used.length} creator pick${used.length === 1 ? "" : "s"} in this design</b> (tap to see the product)${used.map(m => `<br>· <span style="opacity:.7">${esc(STEP_LABEL[m.el] || "")}</span> <a href="https://www.amazon.com/dp/${m[1]}" target="_blank" rel="noopener" style="color:inherit">${esc(m[2] || m[1])}</a>`).join("")}</div>`
           : `<div style="margin-top:10px"><b>No creator picks used in this design.</b></div>`) : "");
@@ -248,7 +249,7 @@ $("#big").onclick = () => $("#big").hidden = true;
 
 function gate() { $("#lab").hidden = true; $("#gate").hidden = false; }
 $("#gateForm").onsubmit = e => { e.preventDefault(); password = $("#pw").value.trim(); try { sessionStorage.setItem("ts_pw", password); } catch {} start(); };
-function start() { const tk = new URLSearchParams(location.search).get("test"); $("#testDesc").textContent = DESC[TESTS[tk] ? tk : "ribbon6"]; if (!password) return gate(); $("#gate").hidden = true; $("#lab").hidden = false; drawPhotos(); drawInspo(); syncMode(); }
+function start() { const tk = new URLSearchParams(location.search).get("test"); $("#testDesc").textContent = DESC[TESTS[tk] ? tk : "simple"]; if (!TESTS[tk] || tk === "simple") { $("#mode").value = "check"; $("#style").value = "keep"; } if (!password) return gate(); $("#gate").hidden = true; $("#lab").hidden = false; drawPhotos(); drawInspo(); syncMode(); }
 start();
 </script>
 </body>

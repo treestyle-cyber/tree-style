@@ -12,6 +12,7 @@ const MODELS = [
 const LAB_MODEL = "gemini-3-pro-image-preview";
 import { ribbonRef } from "../lib/ribbonref.js";
 import { RIBBON_STYLES } from "../lib/ribbonstyles.js";
+import { PICTURE_LIMITS } from "../lib/simple.js";
 // Ribbon (won in the Lab, Nov 12): previews kept coming back with bows instead of cascades. Every preview gets the designer's
 // own ribbon photo (Studio → Ribbon technique reference), and the ribbon is described as what it physically is.
 const RIBBON_SHAPE = `
@@ -35,6 +36,17 @@ const SHAPE = `FIRST AND MOST IMPORTANT: MAKE THE TREE FULLER. In the original p
 // Lab test (variant "shape2", Eric Nov 12): shaping means opening every branch the way the tree was made. A sparse style
 // stays sparse; shaping never adds branches, fills the gaps between layers or changes the height.
 const SHAPE2 = `FIRST: SHAPE THE BRANCHES, BUT ADD NONE. Show this same tree after a decorator shaped it the way it was made: any branch folded up against the trunk or hanging flat is spread out from the trunk, and any clumped tips are fanned up, out and down. Work only with the branches already on the tree: never add branches, never fill the open space between its layers, and never make it denser than it was made. If its branches are already spread and the gaps between them are part of its style (a slim, alpine or sparse tree), leave its density exactly as it is: the gaps stay, and the decorations sit in and around them. Keep its exact height, top tip and silhouette; the sides widen only as far as a spread branch naturally reaches. Same needles, same green, same snow or flocking. Nothing below or around the tree changes. Then make the decorating changes below on the shaped tree.`;
+
+// Lab test "simple" (Eric's brief, Nov 14): the plan describes the finished tree plainly, and the picture gets the
+// chosen ribbon style plus the short list of hard limits, once. Shaping opens branches and adds none (shape2).
+function simplePrompt(brief, shape, rs) {
+  return `Edit this photo of a Christmas tree to show it after a professional holiday decorator ${shape ? "shaped its branches and " : ""}finished it. The first image is the photo to edit: keep the same room, camera angle, framing and lighting.
+${shape ? "\n" + SHAPE2 + "\n" : ""}
+Changes to make:
+${brief}
+${rs ? `\nRIBBON STYLE: ${rs.name}. ${rs.paint}\n` : ""}
+${PICTURE_LIMITS}`;
+}
 
 function editPrompt(brief, revision, shape, shape2) {
   if (revision) return `EDIT this exact photo; do not redraw it. It shows a decorated Christmas tree that the homeowner has already seen and wants to build on. The result must be recognizably the same picture with one change made: someone comparing them side by side should see the same tree, the same room and the same decorations in the same places, plus the change below. Make ONLY that change and keep everything else exactly as it is: same room, camera angle, framing and lighting, and every ornament, ribbon, flower and stem not mentioned stays exactly where it is, at the same size and color. Do not restyle, rearrange or re-render anything the change doesn't name. Make the change photorealistic, at true real-world scale, tucked into the branches, and clearly visible. The tree itself never changes: its height, outline, top tip and every branch stay exactly as they are. Removing a decoration only takes that decoration off and shows the branches that were behind it; a new topper sits on the tree's existing tip, with the upper branches still full around it. If a topper doesn't fit between the tree's tip and the top of the photo, let it run off the top edge of the frame; never shorten, cut, flatten or shrink the tree to make room for it.
@@ -106,7 +118,8 @@ export default async function handler(req, res) {
   const models = variant === "v2" ? [...new Set([LAB_MODEL, ...MODELS])] : MODELS;
   // A branded theme (a film, show, team) is painted with generic pieces from the start, since the model refuses trademarked designs
   // Lab variant "ribbon6": the ribbon style the plan chose, with that style's own photo and description
-  const rs = variant === "ribbon6" ? RIBBON_STYLES[ribbonStyle] : null;
+  const simple = variant === "simple" && !revision;
+  const rs = variant === "ribbon6" || variant === "simple" ? RIBBON_STYLES[ribbonStyle] : null;
   const styleRef = rs ? await ribbonRef(rs.slot) : null;
   const rref = styleRef || await ribbonRef();
   const refUsed = styleRef ? rs.slot : rref ? "ribbonref" : "none";
@@ -115,8 +128,8 @@ export default async function handler(req, res) {
   // Lab "ribbon6": the old ribbon comes off first, and the new ribbon has to be plainly visible (Eric: a diagonal plaid
   // ribbon stayed on and the chosen Layered ribbons never appeared)
   const clearOld = ""; // the separate removal edit (remove_first) does this now; a blanket "remove every ribbon" also took off ribbon the plan kept
-  const showNew = rs ? ` Make the new ribbon plainly visible from across the room: 6 to 10 separate ribbon spots spread over the whole tree, top to bottom and left to right, in the ribbon colors and widths the instructions name, never one continuous band. Place the ornaments, flowers and picks exactly as the instructions and map describe; the ribbon style changes only the ribbon.` : "";
-  const prompt = clearOld + editPrompt(brief, revision, !!shape && !revision, variant === "shape2") + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + shapeText + showNew;
+  const showNew = rs && !simple ? ` Make the new ribbon plainly visible from across the room: 6 to 10 separate ribbon spots spread over the whole tree, top to bottom and left to right, in the ribbon colors and widths the instructions name, never one continuous band. Place the ornaments, flowers and picks exactly as the instructions and map describe; the ribbon style changes only the ribbon.` : "";
+  const prompt = simple ? simplePrompt(brief, !!shape, rs) + (generic ? GENERIC : "") : clearOld + editPrompt(brief, revision, !!shape && !revision, variant === "shape2") + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + shapeText + showNew;
   if (generic) retried = true;
   // Lab "ribbon6": when the plan says old ribbon or garland runs across the tree, take it off in its own small edit first
   // (Eric, Nov 14: asked inside the full decorating instructions, the model kept leaving it on), then decorate that picture.
@@ -129,9 +142,9 @@ export default async function handler(req, res) {
     else console.error("RIBBON_CLEAR_FAILED", c.status, JSON.stringify(c.body?.candidates?.[0]?.finishReason || c.body?.error?.message || "").slice(0, 200));
   }
   for (const model of models) {
-    let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6", refNote);
+    let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote);
     // Some models reject imageConfig; retry once without it.
-    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, prompt, null, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6", refNote);
+    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, prompt, null, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote);
     if (!out.ok) {
       lastErr = out.body?.error?.message || `Gemini error ${out.status}`;
       // Model not available, or no quota for it on this account: try the next one
@@ -148,7 +161,7 @@ export default async function handler(req, res) {
       const fluke = /NO_IMAGE|no image returned/i.test(String(why));
       if (!retried && (fluke || /SAFETY|PROHIBIT|RECITATION|BLOCK|IMAGE_OTHER|OTHER|copyright|trademark/i.test(String(why)))) {
         retried = true;
-        const again = await callGemini(model, img, fluke ? prompt : prompt + GENERIC, ar, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6", refNote);
+        const again = await callGemini(model, img, fluke ? prompt : prompt + GENERIC, ar, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote);
         const p2 = again.body?.candidates?.[0]?.content?.parts || [], pic2 = p2.find(p => p.inlineData || p.inline_data);
         if (again.ok && pic2) { const d2 = pic2.inlineData || pic2.inline_data; return res.status(200).json({ image: `data:${d2.mimeType || d2.mime_type || "image/png"};base64,${d2.data}`, _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !fluke, retried: true } }); }
         console.error("RENDER_REFUSED_AGAIN", JSON.stringify({ model, why: String(again.body?.candidates?.[0]?.finishReason || again.status).slice(0, 200) }));

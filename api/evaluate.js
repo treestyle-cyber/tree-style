@@ -8,6 +8,7 @@ import { checkPassword, parseDataUrl, extractJson } from "../lib/util.js";
 import { picksRule } from "../lib/picks.js";
 import { EVAL_SCHEMA, LOOK_SCHEMA, PLAN_SCHEMA, PLAN_SCHEMA_R6, REVISE_SCHEMA, DETAILS_SCHEMA } from "../lib/schema.js";
 import { RIBBON6_RULE, ribbonStyleKey } from "../lib/ribbonstyles.js";
+import { SIMPLE_GUIDE, PROCESS, HARD_LIMITS } from "../lib/simple.js";
 
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
 
@@ -53,6 +54,22 @@ mockup.clusters: optional ornament clusters (see ORNAMENT CLUSTERS). They are on
 mockup.topper.style: none if the current topper is right. Don't default to a star: consider an oversized bow with long tails, a burst of stems and flowers rising from the crown, a finial, or a spray of sprigs and ornaments; use a star only when the style truly calls for it. Vary toppers from tree to tree.
 mockup.picks.small: small accents are not only berries: small flowers, crystal or glitter sprays, frosted sprigs, pinecone picks and similar. Choose what suits the style, and say it plainly in small.label.${mode === "check" ? " The mockup shows what they should add or re-place, not what stays as it is. If the plan re-uses ribbon they already own, include it in mockup.ribbons with owned: true (it still shows on the shopping list as a top-up, since they may not have enough); new ribbon has owned: false. Owning some ribbon never excuses breaking the ribbon rules: if theirs is too narrow, too little, or only one width, add the right ribbon (e.g. a 5-6 inch wired ribbon as the widest layer, owned: false) and re-use theirs as the narrower layer or the accent. The same goes for everything else: if they have some large ornaments but not enough, still plan the right number and say to add to what they have." : " ribbons[].owned is false."}`;
 
+// Lab test "simple": the same brief and plan notes with the pieces Eric's brief changed (ribbon style, ornament count, depth)
+function briefRules(mode, variant) {
+  if (variant !== "simple") return BRIEF_RULES(mode, variant);
+  let b = BRIEF_RULES(mode, "ribbon6");
+  for (const [a, z] of [["describe the extra-large ones as set back toward the trunk, partly hidden by the branches in front of them", "describe the extra-large ones as set partway in toward the trunk, still clearly visible"],
+    ["(including re-placing the same ribbon as loops or short drops)", "(including re-placing the same ribbon in the chosen ribbon style)"]]) { if (!b.includes(a)) throw new Error("briefRules: " + a.slice(0, 40)); b = b.replace(a, z); }
+  return b;
+}
+function planNotes(mode, variant) {
+  let n = PLAN_NOTES(mode, true);
+  if (variant !== "simple") return n;
+  for (const [a, z] of [["mockup.ribbon_technique: cascade for OPEN trees, loops for DENSE. ", "mockup.ribbon_technique: one of the six ribbon styles (see RIBBON STYLE). "],
+    ["mockup.ornaments: 12-26 NEW ornaments: a few xl in gaps, then l, mostly m and s.", "mockup.ornaments: as many NEW ornaments as this tree truly needs, which on a strong tree may be few or none ([]); when it needs many, a few xl in gaps, then l, mostly m and s."]]) { if (!n.includes(a)) throw new Error("planNotes: " + a.slice(0, 40)); n = n.replace(a, z); }
+  return n;
+}
+
 function factsLine(f) {
   if (!f) return "Tree facts: work them out from the photo: real or artificial, open or dense, snowy (flocked) or not, and the height (estimate it from the room; ceilings are usually 8-9 ft).";
   const kind = f.kind === "natural" ? "real" : f.kind === "artificial" ? "artificial" : "real or artificial: decide from the photo";
@@ -82,7 +99,7 @@ ${CATS.map(c => `- ${c[0]}: ${c[2]}`).join("\n")}
 
   return `You are an expert Christmas tree designer helping someone who loves Christmas but is not a designer.
 
-${variant === "old" ? GUIDE_OLD_STYLES : GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) && variant !== "ribbon6" ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}${variant === "ribbon6" && part !== "look" ? "\n\n" + RIBBON6_RULE : ""}${variant === "picks" && part !== "look" ? "\n\n" + picksRule() : ""}
+${variant === "simple" ? SIMPLE_GUIDE + "\n\n" + PROCESS + "\n\n" + HARD_LIMITS : variant === "old" ? GUIDE_OLD_STYLES : GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) && variant !== "ribbon6" && variant !== "simple" ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}${(variant === "ribbon6" || variant === "simple") && part !== "look" ? "\n\n" + RIBBON6_RULE : ""}${variant === "picks" && part !== "look" ? "\n\n" + picksRule() : ""}
 
 ${task}
 
@@ -91,7 +108,7 @@ ${factsLine(facts)}
 Style: ${variant === "old" && style === "classic" ? "Classic" : styleLine(style, theme)}
 ${scoring}
 ${COORDS}
-${part === "look" ? LOOK_PART : BRIEF_RULES(mode, variant)}${part === "plan" ? PLAN_PART : ""}
+${part === "look" ? LOOK_PART : briefRules(mode, variant)}${part === "plan" ? PLAN_PART : ""}
 
 Reply with this JSON:
 {
@@ -106,7 +123,7 @@ ${[
   part !== "look" && ` ${PLAN_SHAPE(mode, true)}`
 ].filter(Boolean).join(",\n")}
 }
-${part === "look" ? "" : PLAN_NOTES(mode, true) + "\n"}${part === "plan" ? "" : mode === "design" ? 'Because this is a design (not a check): set tree.stage to "bare", eye_first to "", categories to [], and potential to 0 and 0.' : 'tree.stage is "partial" or "finished".'}${part === "look" ? "" : ' For ribbons with no accent color, set accent to "".'}`;
+${part === "look" ? "" : planNotes(mode, variant) + "\n"}${part === "plan" ? "" : mode === "design" ? 'Because this is a design (not a check): set tree.stage to "bare", eye_first to "", categories to [], and potential to 0 and 0.' : 'tree.stage is "partial" or "finished".'}${part === "look" ? "" : ' For ribbons with no accent color, set accent to "".'}`;
 }
 
 // Under test in /lab (variant "v2"): one design rule at a time, against the live app.
@@ -243,9 +260,9 @@ export default async function handler(req, res) {
       const pc = parseDataUrl(pieces), ins = mode === "design" ? parseDataUrl(inspo) : null;
       if (pc) { imgs.push(pc); notes.push(`Image ${imgs.length} shows special pieces they own (ornaments, heirlooms or found objects; it may be a board of several photos, and every piece in it is theirs): design around them, give them the best spots, and let them set the theme and colors if they fit the style.`); }
       if (ins) { imgs.push(ins); notes.push(`Image ${imgs.length} is an inspiration photo (art, a room, fabric, an object). First decide what in the photo is the inspiration and what is just background: use their own words (if they say they love the fabric on a chair, the inspiration is the fabric, not the chair, its frame or the room; brass sconces photographed on a towel are about the sconces, not the towel), and otherwise the clear subject. Draw only from that, never from the surroundings, surface or setting. Usually the inspiration is a reference, so nothing in the photo goes on the tree literally; but if their words say the pieces themselves go on the tree (e.g. "build a tree around this set of vintage ornaments"), they own them: put those very pieces on the tree in the best spots and build everything else around them. Design the tree the way a top designer would around it: read more than its colors. Notice what is actually in it (its hero subject, its flowers and plants by kind, its objects and patterns, its materials, its cultural or period style) and translate those into real decor. Echo its hero subject in a figural piece or two; carry its flowers in as matching floral stems in the same kinds and colors; find ornaments shaped like or patterned after its objects (glass flowers, figural or patterned pieces), not only round ornaments, and repeat a signature object in a few sizes through the tree; let its pattern or style show in the ribbon choice, and small bows in one of its accent colors can carry that color through the tree; the base can echo it too, in a way that suits the tree's overall feel (an elegant design gets a tree skirt in its colors or fabric; a collar or basket suits a rustic or casual one), with its colors drawn from the image. Keep it to a considered handful of these motifs woven through the whole tree, and follow the guide for placement, ribbon and balance. Name these pieces specifically in the plan and the brief so the preview shows them.${INSPO_MORE}`); }
-      ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" "), part, variant }), part === "look" ? 4000 : 16000, part === "look" ? LOOK_SCHEMA : part === "plan" ? (variant === "ribbon6" ? PLAN_SCHEMA_R6 : PLAN_SCHEMA) : EVAL_SCHEMA));
+      ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" "), part, variant }), part === "look" ? 4000 : 16000, part === "look" ? LOOK_SCHEMA : part === "plan" ? (variant === "ribbon6" || variant === "simple" ? PLAN_SCHEMA_R6 : PLAN_SCHEMA) : EVAL_SCHEMA));
       // Lab "ribbon6": make sure the ribbon style is one of the six names, whatever wording came back
-      if (variant === "ribbon6" && result.mockup) result.mockup.ribbon_technique = ribbonStyleKey(result.mockup.ribbon_technique, result.render_brief);
+      if ((variant === "ribbon6" || variant === "simple") && result.mockup) result.mockup.ribbon_technique = ribbonStyleKey(result.mockup.ribbon_technique, result.render_brief);
       // Weighted overall score, 0-100
       if (Array.isArray(result.categories) && result.categories.length) {
         let sum = 0, w = 0;
