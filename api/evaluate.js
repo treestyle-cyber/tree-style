@@ -70,6 +70,16 @@ function planNotes(mode, variant) {
   return n;
 }
 
+// The JSON template the plan follows. The strict schema is often rejected as too large (logged "structured format rejected"),
+// and then this template is all the plan sees, so the ribbon tests' extra fields must be spelled out here too.
+function planShape(mode, variant) {
+  const t = PLAN_SHAPE(mode, true);
+  if (variant !== "ribbon6" && variant !== "simple") return t;
+  const a = '"ribbon_technique": "cascade|loops",';
+  if (!t.includes(a)) throw new Error("planShape: ribbon_technique line moved");
+  return t.replace(a, '"ribbon_technique": "woven_billows|waterfall_cascades|layered_ribbons|big_loops|loop_bursts|curls",') + ',\n "remove_first": "<what must come off the tree before decorating, described physically (e.g. the navy velvet ribbon swagged diagonally across the whole tree), or empty>"';
+}
+
 function factsLine(f) {
   if (!f) return "Tree facts: work them out from the photo: real or artificial, open or dense, snowy (flocked) or not, and the height (estimate it from the room; ceilings are usually 8-9 ft).";
   const kind = f.kind === "natural" ? "real" : f.kind === "artificial" ? "artificial" : "real or artificial: decide from the photo";
@@ -120,7 +130,7 @@ ${[
  "categories": ${mode === "check" ? `[\n${cats}\n ]` : "[]"},
  "potential": ${mode === "check" ? '{"after_quick_fixes":<0-100>,"after_full_plan":<0-100>}' : '{"after_quick_fixes":0,"after_full_plan":0}'},
  "cone": {"apex":[x,y],"left":[x,y],"right":[x,y]}`,
-  part !== "look" && ` ${PLAN_SHAPE(mode, true)}`
+  part !== "look" && ` ${planShape(mode, variant)}`
 ].filter(Boolean).join(",\n")}
 }
 ${part === "look" ? "" : planNotes(mode, variant) + "\n"}${part === "plan" ? "" : mode === "design" ? 'Because this is a design (not a check): set tree.stage to "bare", eye_first to "", categories to [], and potential to 0 and 0.' : 'tree.stage is "partial" or "finished".'}${part === "look" ? "" : ' For ribbons with no accent color, set accent to "".'}`;
@@ -263,6 +273,8 @@ export default async function handler(req, res) {
       ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" "), part, variant }), part === "look" ? 4000 : 16000, part === "look" ? LOOK_SCHEMA : part === "plan" ? (variant === "ribbon6" || variant === "simple" ? PLAN_SCHEMA_R6 : PLAN_SCHEMA) : EVAL_SCHEMA));
       // Lab "ribbon6": make sure the ribbon style is one of the six names, whatever wording came back
       if ((variant === "ribbon6" || variant === "simple") && result.mockup) result.mockup.ribbon_technique = ribbonStyleKey(result.mockup.ribbon_technique, result.render_brief);
+      // ...and if the plan wrote its removal only into the picture instructions ("Remove first: the navy ribbon swagged across..."), use that
+      if ((variant === "ribbon6" || variant === "simple") && !String(result.remove_first || "").trim()) { const m = String(result.render_brief || "").match(/^\s*remove(?: first)?:?\s+(.{8,300}?)(?:\.\s|\.$|;\s*then)/i); if (m) result.remove_first = m[1]; }
       // Weighted overall score, 0-100
       if (Array.isArray(result.categories) && result.categories.length) {
         let sum = 0, w = 0;
