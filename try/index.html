@@ -1368,6 +1368,10 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
 <script src="/try/engine.js?v=202610180545"></script>
 <script src="/try/guide.js?v=202610180545"></script>
 <script>
+// Screen preview (Studio → Screens): /try/<screen>?screen-preview opens that screen straight away with the
+// Studio's sample tree (or ?screen-preview=mine, this browser's own last tree). Nothing links here from the app.
+// In this mode nothing is saved and the AI is never called.
+const SAMPLE = new URLSearchParams(location.search).has("screen-preview");
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const AMAZON_TAG = "ericmichael04-20"; // Eric's Amazon Associates tracking ID
@@ -2345,6 +2349,7 @@ syncStyle();
 
 /* ---------------- API ---------------- */
 async function api(path, body) {
+  if (SAMPLE) throw new Error("This is a screen preview with a sample tree, so nothing is sent.");
   const r = await fetch(path, { method: "POST", headers: { "content-type": "application/json", "x-test-password": password }, body: JSON.stringify(body) });
   let data = {}; try { data = await r.json(); } catch { data = { error: `Server error ${r.status}` }; }
   if (!r.ok) { const e = new Error(data.error || `Error ${r.status}`); e.status = r.status; throw e; }
@@ -3261,7 +3266,7 @@ const idb = {
 let saveTimer = 0, restoring = false;
 const SAVE_SCREENS = ["s-reveal", "s-results", "s-fixes", "s-plan", "s-partner", "s-score", "s-shop"];
 function saveSoon() {
-  if (restoring || !result || planState !== "ready" || !(result.plan || []).length || !photo) return;
+  if (SAMPLE || restoring || !result || planState !== "ready" || !(result.plan || []).length || !photo) return;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     const scr = stack[stack.length - 1];
@@ -3338,6 +3343,7 @@ document.querySelectorAll("#tabbar button").forEach(b => b.onclick = async () =>
 $("#signOut").onclick = () => { password = ""; try { sessionStorage.removeItem("ts_pw"); } catch {} show("s-pass", []); };
 // Coming back within a few hours lands right back on the tree; after that, the home screen offers it.
 async function startApp() {
+  if (SAMPLE && password && (await sampleStart())) return;   // the Studio password (or a preview copy) is needed
   if (!password) { show("s-pass", []); return; }
   // Refreshing a tree screen (/try/plan, /try/shop…) reopens your saved tree right there;
   // opening /try/ always starts at Home, which offers "Pick up where you left off".
@@ -3345,6 +3351,45 @@ async function startApp() {
   const st = SAVE_SCREENS.includes(want) ? await idb.get(SAVE_KEY) : null;
   if (st && st.result && await restoreSaved(Object.assign({}, st, { screen: want }))) return;
   show("s-home", []);
+}
+
+// Screen preview: open the screen in the address with the sample tree, mark it, and tell the Studio how many plan steps there are
+async function sampleStart() {
+  const q = new URLSearchParams(location.search), name = location.pathname.replace(/^\/try\/?/, "").split("/")[0] || q.get("s") || "home";
+  const badge = document.createElement("div");
+  badge.textContent = "Sample";
+  badge.style.cssText = "position:fixed;right:8px;top:8px;z-index:200;font:600 10px Inter,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;background:rgba(20,28,44,.85);color:#C5B28F;padding:4px 8px;border-radius:99px;pointer-events:none";
+  document.body.appendChild(badge);
+  if (name === "pass") { show("s-pass", []); return true; }
+  // The tree: the Studio's sample (its pictures fetched back into the page), or this browser's own
+  let st = null;
+  try {
+    if (q.get("screen-preview") === "mine") st = await idb.get(SAVE_KEY);
+    else {
+      const d = await (await fetch("/api/brand?sample=1")).json();
+      st = d.sample || null;
+      if (st) {
+        const toData = async u => { if (!u || /^data:/.test(u)) return u; const b = await (await fetch(u)).blob(); return await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); }); };
+        st.photo = await toData(st.photo); st.after = await toData(st.after); st.keyPhoto = await toData(st.keyPhoto);
+        for (const v of st.versions || []) v.after = await toData(v.after);
+      }
+    }
+  } catch (e) { console.error("sample", e); st = null; }
+  const id = "s-" + (name === "loading" ? "results" : name);
+  if (!document.getElementById(id)) return false;
+  const treeScreens = SAVE_SCREENS.concat(["s-plan"]);
+  if (st && st.result) {
+    if (q.has("step")) st.stepIdx = Math.max(0, parseInt(q.get("step"), 10) - 1 || 0);
+    if (!(await restoreSaved(Object.assign({}, st, { screen: treeScreens.includes(id) ? id : "s-results" })))) st = null;
+  }
+  if (!treeScreens.includes(id)) show(id, id === "s-home" ? [] : ["s-home"]);
+  else if (!st || !st.result) {
+    badge.textContent = "No sample tree yet";
+    show(id, ["s-home"]);
+  }
+  if (name === "loading") startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree", mode === "design" ? DESIGN_STEPS : CHECK_STEPS, 600, photo);
+  if (id === "s-plan") { for (let i = 0; i < 40 && !guide; i++) await new Promise(r => setTimeout(r, 100)); if (guide) parent.postMessage({ type: "ts-screen-steps", steps: guide.steps.length }, location.origin); }
+  return true;
 }
 
 /* ---------------- start ---------------- */

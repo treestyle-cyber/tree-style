@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TreeStyle · Studio · Screens</title>
+<script src="/env.js"></script>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script src="/brand-kit.js"></script>
+<link rel="icon" type="image/png" href="/brand/favicon.png">
+<style>
+  .wrap{max-width:none;padding:0 24px}
+  header{padding:22px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  header nav{display:flex;gap:18px;flex-wrap:wrap}
+  header nav a{text-decoration:none}
+  .intro{margin:6px 0 18px;max-width:52em}
+  .intro h1{font-weight:400;font-size:44px;margin:8px 0 10px}
+  .intro p{color:var(--muted);margin:0}
+  .samplecard{display:flex;gap:16px;align-items:center;flex-wrap:wrap;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px 18px;margin-bottom:16px}
+  .samplecard img{width:54px;height:68px;object-fit:cover;border-radius:8px;background:var(--paper-2)}
+  .samplecard .txt{flex:1;min-width:220px;font-size:14px;color:var(--muted)}
+  .samplecard .txt b{color:var(--ink);display:block;font-size:15px}
+  .tools{position:sticky;top:0;z-index:30;display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:rgba(14,20,33,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 24px;margin:0 -24px 22px;font-size:13px;color:var(--muted)}
+  .tools select{font:13.5px var(--sans);padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink)}
+  .tools input[type=range]{width:130px;accent-color:var(--gold)}
+  .tools .sp{flex:1}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{appearance:none;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);border-radius:99px;padding:7px 12px;font:500 13px var(--sans);cursor:pointer}
+  .chip.on{border-color:var(--gold);background:rgba(184,156,107,.18);color:var(--gold)}
+  .chip.note.on{background:var(--gold);color:var(--midnight)}
+  .draftnote{color:var(--gold)}
+  .group{margin-bottom:34px}
+  .group h2{font-weight:400;font-size:28px;margin-bottom:14px}
+  .row{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+  .card{display:grid;gap:8px}
+  .card .lbl{font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;min-width:0}
+  .card .lbl b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .card .lbl a{flex:none}
+  .card .lbl b{color:var(--ink);font-weight:500}
+  .card .lbl a{color:var(--gold);text-decoration:none;font-size:12px}
+  .fw{position:relative;border-radius:18px;overflow:hidden;background:#000;box-shadow:0 14px 40px -18px rgba(0,0,0,.8);outline:1px solid rgba(255,255,255,.08)}
+  .fw iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0;background:#141C2C}
+  .fw .pins{position:absolute;inset:0;pointer-events:none}
+  body.noting .fw .pins{pointer-events:auto;cursor:crosshair;background:rgba(184,156,107,.06)}
+  .pin{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:var(--gold);color:var(--midnight);font:700 12px/26px var(--sans);text-align:center;box-shadow:0 0 0 2px rgba(20,28,44,.9),0 4px 10px rgba(0,0,0,.5);cursor:pointer;pointer-events:auto}
+  .pin.done{background:#6E7A68;color:#fff;opacity:.75}
+  .pop{position:fixed;z-index:60;width:300px;background:var(--paper);border:1px solid var(--gold);border-radius:14px;padding:14px;box-shadow:0 20px 50px -10px rgba(0,0,0,.8);display:grid;gap:8px;font-size:14px}
+  .pop textarea{width:100%;min-height:90px;font:14px/1.4 var(--sans);padding:9px 11px;border-radius:10px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);resize:vertical}
+  .pop input{width:100%;font:13.5px var(--sans);padding:8px 11px;border-radius:99px}
+  .pop .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+  .pop .btn{padding:10px 14px;font-size:12px}
+  .pop .meta{color:var(--muted);font-size:12px}
+  .notes{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:10px 0 60px;max-width:900px}
+  .notes h2{font-weight:400;font-size:28px;margin-bottom:6px}
+  .notes ol{margin:10px 0 0;padding-left:22px;display:grid;gap:8px}
+  .notes li{font-size:14px}
+  .notes li.done{color:var(--muted);text-decoration:line-through}
+  .notes li small{color:var(--muted)}
+  .msg{font-size:13.5px;color:var(--muted);margin:0}
+  .msg.err{color:var(--berry)}
+  .msg.ok{color:var(--gold)}
+  #gate{max-width:420px;margin:60px auto;text-align:center}
+  #gate form{display:flex;gap:8px;margin-top:18px}
+  #gate input{flex:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="/"><img class="logoh" src="/brand/logo-horizontal.png" alt="TreeStyle · The art of styling"></a>
+    <nav><a class="eyebrow" href="/studio/kit">Brand kit</a><a class="eyebrow" href="/studio/">Photos</a><a class="eyebrow" href="/studio/screens" style="color:var(--ink)">Screens</a><a class="eyebrow" href="/studio/reels">Reels</a><a class="eyebrow" href="/try/">Open the app →</a></nav>
+  </header>
+
+  <div id="gate" hidden>
+    <div class="eyebrow">Studio</div>
+    <h1 style="font-weight:400;font-size:40px;margin-top:8px">Enter the test password</h1>
+    <form id="gateForm"><input type="password" id="pw" placeholder="Password" autocomplete="current-password"><button class="btn">Enter</button></form>
+    <p class="msg err" id="gateErr"></p>
+  </div>
+
+  <div id="app" hidden>
+    <div class="intro">
+      <div class="eyebrow">Studio</div>
+      <h1>Screens</h1>
+      <p>Every screen of the app at once, in the order people move through it. Each one is the real app, so you can scroll and tap inside it. Turn on <b>Add notes</b> and tap any spot to leave a note there. Unsaved changes in the <a href="/studio/kit">Brand kit</a> show here too.</p>
+    </div>
+
+    <div class="samplecard">
+      <img id="sampleImg" alt="" hidden>
+      <div class="txt" id="sampleTxt"><b>Sample tree</b>Checking…</div>
+      <button class="btn ghost" id="useMine">Use my last tree as the sample</button>
+      <p class="msg" id="sampleMsg"></p>
+    </div>
+
+    <div class="tools">
+      <label>Phone <select id="device"></select></label>
+      <label>Size <input type="range" id="zoom" min="0.2" max="1" step="0.05"> <span id="zoomV"></span></label>
+      <span class="chips" id="treeSrc"></span>
+      <span class="chips" id="groups"></span>
+      <span class="sp"></span>
+      <span class="draftnote" id="draftNote" hidden>Showing unsaved Brand kit changes</span>
+      <button class="chip note" id="noteMode">Add notes</button>
+      <button class="chip" id="copyNotes">Copy notes for Claude</button>
+      <button class="chip" id="reload">Reload all</button>
+    </div>
+
+    <div id="grid"></div>
+
+    <section class="notes">
+      <h2>Notes</h2>
+      <p class="msg" id="notesMsg">Turn on Add notes and tap a spot on any screen.</p>
+      <ol id="notesList"></ol>
+    </section>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+
+const DEVICES = [["se", "iPhone SE", 375, 667], ["i15", "iPhone 15", 393, 852], ["max", "iPhone 15 Pro Max", 430, 932], ["s23", "Galaxy S23", 360, 780], ["ipad", "iPad", 820, 1180]];
+const GROUPS = [
+  ["start", "Getting started", [["pass", "Sign-in"], ["home", "Home"], ["create", "What would you like to do?"], ["inspo", "Inspiration"], ["start", "Design my tree"], ["idea", "Your idea"], ["photo", "Your photo"], ["details", "About your tree"], ["style", "Style"]]],
+  ["wait", "While it works", [["loading", "Looking at your tree"], ["reveal", "Your results"]]],
+  ["results", "Results", [["results", "Results"], ["fixes", "Quick fixes"], ["score", "How it scored"], ["partner", "Design partner"]]],
+  ["plan", "Step by step", Array.from({ length: 9 }, (_, i) => ["plan", "Step " + (i + 1), i + 1])],
+  ["shop", "Shopping and tabs", [["shop", "Shopping list"], ["trees", "Your trees"], ["bag", "Shop tab"], ["profile", "Profile"]]],
+];
+let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
+let device = store.get("scr_device", "i15"), zoom = store.get("scr_zoom", 0.4), group = store.get("scr_group", "all"), mine = store.get("scr_mine", false);
+let notes = [], noting = false, planSteps = 9;
+const call = async body => {
+  const r = await fetch("/api/brand", { method: "POST", headers: { "content-type": "application/json", "x-test-password": password }, body: JSON.stringify(body) });
+  let d = {}; try { d = await r.json(); } catch { d = { error: "Server error " + r.status }; }
+  if (!r.ok) { const e = new Error(d.error || "Error " + r.status); e.status = r.status; throw e; }
+  return d;
+};
+const key = (name, step) => name + (step ? "-" + step : "");
+const dev = () => DEVICES.find(d => d[0] === device) || DEVICES[1];
+const url = (name, step) => `/try/?screen-preview${mine ? "=mine" : ""}&s=${name}${step ? "&step=" + step : ""}`;
+
+// ---- The grid of phones ----
+function build() {
+  const [, , w, h] = dev();
+  $("#grid").innerHTML = GROUPS.filter(g => group === "all" || g[0] === group).map(([gid, gname, list]) => `<section class="group"><h2>${gname}</h2><div class="row">${list.map(([name, label, step]) => `
+    <div class="card" data-key="${key(name, step)}" style="width:${Math.max(120, Math.round(w * zoom))}px" ${name === "plan" && step > planSteps ? "hidden" : ""}>
+      <div class="lbl"><b title="${esc(label)}">${label}</b><a href="${url(name, step)}" target="_blank" rel="noopener">Open ↗</a></div>
+      <div class="fw" style="width:${Math.round(w * zoom)}px;height:${Math.round(h * zoom)}px">
+        <iframe data-src="${url(name, step)}" title="${esc(label)}" style="width:${w}px;height:${h}px;transform:scale(${zoom})" loading="lazy"></iframe>
+        <div class="pins" data-key="${key(name, step)}" data-label="${esc(label)}"></div>
+      </div></div>`).join("")}</div></section>`).join("");
+  // Load each phone when it comes into view (two dozen copies of the app at once would be slow)
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { const f = e.target; if (!f.src) f.src = f.dataset.src; io.unobserve(f); } }), { rootMargin: "400px" });
+  document.querySelectorAll("#grid iframe").forEach(f => io.observe(f));
+  drawPins();
+}
+function setZoom(z) {
+  zoom = z; store.set("scr_zoom", z); $("#zoomV").textContent = Math.round(z * 100) + "%";
+  const [, , w, h] = dev();
+  document.querySelectorAll(".card").forEach(c => { c.style.width = Math.max(120, Math.round(w * z)) + "px"; });
+  document.querySelectorAll(".fw").forEach(fw => { fw.style.width = Math.round(w * z) + "px"; fw.style.height = Math.round(h * z) + "px"; fw.querySelector("iframe").style.transform = `scale(${z})`; });
+}
+function toolbar() {
+  $("#device").innerHTML = DEVICES.map(([id, name, w, h]) => `<option value="${id}" ${id === device ? "selected" : ""}>${name} · ${w}×${h}</option>`).join("");
+  $("#zoom").value = zoom; $("#zoomV").textContent = Math.round(zoom * 100) + "%";
+  $("#groups").innerHTML = [["all", "All"]].concat(GROUPS.map(g => [g[0], g[1]])).map(([id, n]) => `<button class="chip ${group === id ? "on" : ""}" data-group="${id}">${n}</button>`).join("");
+  $("#treeSrc").innerHTML = [[false, "Sample tree"], [true, "My last tree"]].map(([v, n]) => `<button class="chip ${mine === v ? "on" : ""}" data-mine="${v}">${n}</button>`).join("");
+}
+$("#device").onchange = e => { device = e.target.value; store.set("scr_device", device); build(); };
+$("#zoom").oninput = e => setZoom(Number(e.target.value));
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-group]"); if (g) { group = g.dataset.group; store.set("scr_group", group); toolbar(); build(); }
+  const m = e.target.closest("[data-mine]"); if (m) { mine = m.dataset.mine === "true"; store.set("scr_mine", mine); toolbar(); build(); }
+});
+$("#reload").onclick = build;
+// The plan tells us how many steps it has; hide the extra phones
+addEventListener("message", e => {
+  if (e.origin !== location.origin || !e.data || e.data.type !== "ts-screen-steps") return;
+  planSteps = e.data.steps || 9;
+  document.querySelectorAll('.card[data-key^="plan-"]').forEach(c => { c.hidden = Number(c.dataset.key.split("-")[1]) > planSteps; });
+});
+// Unsaved Brand kit changes (the frames pick them up themselves)
+const draftShown = () => { let d = null; try { d = localStorage.getItem("ts_kit_draft"); } catch {} $("#draftNote").hidden = !d; };
+addEventListener("storage", e => { if (e.key === "ts_kit_draft") draftShown(); });
+
+// ---- Notes ----
+function drawPins() {
+  document.querySelectorAll(".pins").forEach(p => {
+    const k = p.dataset.key;
+    p.innerHTML = notes.map((n, i) => n.screen === k ? `<span class="pin ${n.done ? "done" : ""}" data-note="${n.id}" style="left:${n.x * 100}%;top:${n.y * 100}%">${i + 1}</span>` : "").join("");
+  });
+  const open = notes.filter(n => !n.done).length;
+  $("#notesMsg").textContent = notes.length ? `${open} open, ${notes.length - open} done. Tap a number to see it.` : "Turn on Add notes and tap a spot on any screen.";
+  const label = k => { for (const [, , list] of GROUPS) for (const [name, l, step] of list) if (key(name, step) === k) return l; return k; };
+  $("#notesList").innerHTML = notes.map(n => `<li class="${n.done ? "done" : ""}"><b>${esc(label(n.screen))}</b>: ${esc(n.text)} <small>${n.by ? "· " + esc(n.by) : ""}</small> <button class="chip" data-note="${n.id}" style="padding:3px 9px;font-size:11.5px">Show</button></li>`).join("");
+  $("#noteMode").textContent = noting ? "Adding notes: tap a screen" : "Add notes";
+}
+async function loadNotes() { try { notes = (await (await fetch("/api/brand?notes=1", { cache: "no-store" })).json()).notes || []; } catch { notes = []; } drawPins(); }
+$("#noteMode").onclick = () => { noting = !noting; document.body.classList.toggle("noting", noting); $("#noteMode").classList.toggle("on", noting); closePop(); drawPins(); };
+function closePop() { const p = $(".pop"); if (p) p.remove(); }
+function pop(x, y, html) {
+  closePop();
+  const p = document.createElement("div"); p.className = "pop"; p.innerHTML = html;
+  p.style.left = Math.max(8, Math.min(innerWidth - 316, x + 12)) + "px"; p.style.top = Math.max(8, Math.min(innerHeight - 260, y - 20)) + "px";
+  document.body.appendChild(p); return p;
+}
+document.addEventListener("click", async e => {
+  const pin = e.target.closest("[data-note]");
+  if (pin) {
+    e.stopPropagation();
+    const n = notes.find(x => x.id === pin.dataset.note); if (!n) return;
+    const card = document.querySelector(`.card[data-key="${n.screen}"]`);
+    if (pin.tagName === "BUTTON" && card) { if (card.closest(".group") == null || card.hidden) { group = "all"; toolbar(); build(); } setTimeout(() => document.querySelector(`.card[data-key="${n.screen}"]`).scrollIntoView({ behavior: "smooth", block: "center" }), 50); return; }
+    const r = pin.getBoundingClientRect();
+    const p = pop(r.right, r.top, `<div>${esc(n.text)}</div><div class="meta">${n.by ? esc(n.by) + " · " : ""}${new Date(n.at).toLocaleString()}</div><div class="acts"><button class="btn ghost" data-act="del">Delete</button><button class="btn" data-act="done">${n.done ? "Reopen" : "Mark done"}</button></div>`);
+    p.onclick = async ev => {
+      const act = ev.target.dataset.act; if (!act) return;
+      try { notes = (await call(act === "del" ? { action: "note", op: "delete", note: { id: n.id } } : { action: "note", op: "update", note: { id: n.id, done: !n.done } })).notes; closePop(); drawPins(); }
+      catch (err) { if (err.status === 401) return gate("That password didn't work."); alert(err.message); }
+    };
+    return;
+  }
+  const layer = e.target.closest(".pins");
+  if (layer && noting) {
+    const r = layer.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+    const p = pop(e.clientX, e.clientY, `<b>${esc(layer.dataset.label)}</b><textarea placeholder="What would you change here?"></textarea><input placeholder="Your name" value="${esc(store.get("scr_name", ""))}"><div class="acts"><button class="btn ghost" data-act="cancel">Cancel</button><button class="btn" data-act="save">Save note</button></div>`);
+    p.querySelector("textarea").focus();
+    p.onclick = async ev => {
+      const act = ev.target.dataset.act; if (!act) return;
+      if (act === "cancel") return closePop();
+      const text = p.querySelector("textarea").value.trim(), by = p.querySelector("input").value.trim(); if (!text) return;
+      store.set("scr_name", by); ev.target.disabled = true;
+      try { notes = (await call({ action: "note", op: "add", note: { screen: layer.dataset.key, x, y, text, by } })).notes; closePop(); drawPins(); }
+      catch (err) { ev.target.disabled = false; if (err.status === 401) return gate("That password didn't work."); alert(err.message); }
+    };
+    return;
+  }
+  if (!e.target.closest(".pop")) closePop();
+});
+// Notes as text to paste into a chat with Claude
+$("#copyNotes").onclick = async () => {
+  const open = notes.filter(n => !n.done);
+  if (!open.length) { $("#copyNotes").textContent = "No open notes"; setTimeout(() => $("#copyNotes").textContent = "Copy notes for Claude", 1500); return; }
+  const [, name, w, h] = dev();
+  const label = k => { for (const [, , list] of GROUPS) for (const [n, l, step] of list) if (key(n, step) === k) return l; return k; };
+  const where = n => `${n.y < .33 ? "top" : n.y < .66 ? "middle" : "bottom"} ${n.x < .33 ? "left" : n.x < .66 ? "center" : "right"}, ${Math.round(n.x * 100)}% across, ${Math.round(n.y * 100)}% down`;
+  const text = `Screen notes from Studio → Screens (${location.host}, viewed on ${name} ${w}×${h}):\n` + open.map((n, i) => `${i + 1}. ${label(n.screen)} (/try/${n.screen.split("-")[0]}), ${where(n)}: ${n.text}${n.by ? " (" + n.by + ")" : ""}`).join("\n");
+  try { await navigator.clipboard.writeText(text); $("#copyNotes").textContent = "Copied"; } catch { prompt("Copy these notes:", text); }
+  setTimeout(() => $("#copyNotes").textContent = "Copy notes for Claude", 1500);
+};
+
+// ---- Sample tree ----
+async function loadSample() {
+  try {
+    const d = await (await fetch("/api/brand?sample=1", { cache: "no-store" })).json();
+    if (d.sample && d.sample.result) {
+      $("#sampleImg").src = d.sample.photo; $("#sampleImg").hidden = false;
+      const r = d.sample.result, style = (d.sample.form || {}).style;
+      $("#sampleTxt").innerHTML = `<b>Sample tree</b>${esc((d.sample.mode === "design" ? "Designed" : "Checked") + (style ? " · " + style : "") + (r.plan ? " · " + r.plan.length + " plan items" : ""))}. Saved ${new Date(d.updated).toLocaleDateString()}.`;
+    } else $("#sampleTxt").innerHTML = `<b>No sample tree yet</b>Run one nice tree through the app on this site, then tap the button. Until then the results, plan and shopping screens are empty (or switch to My last tree).`;
+  } catch { $("#sampleTxt").innerHTML = "<b>Sample tree</b>Couldn't check."; }
+}
+// Read this browser's saved tree (the app keeps it in IndexedDB) and store a copy as the sample
+const idbGet = k => new Promise(ok => { const r = indexedDB.open("treestyle", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onerror = () => ok(null); r.onsuccess = () => { try { const q = r.result.transaction("kv").objectStore("kv").get(k); q.onsuccess = () => ok(q.result || null); q.onerror = () => ok(null); } catch { ok(null); } }; });
+const jpeg = src => new Promise(ok => { const im = new Image(); im.onload = () => { const k = Math.min(1, 1600 / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL("image/jpeg", .9)); }; im.onerror = () => ok(null); im.src = src; });
+$("#useMine").onclick = async () => {
+  const m = $("#sampleMsg"), b = $("#useMine");
+  const st = await idbGet("tree-v1");
+  if (!st || !st.result) { m.className = "msg err"; m.textContent = "No saved tree in this browser yet. Open the app here, run a tree through to the results, then come back."; return; }
+  b.disabled = true; m.className = "msg"; m.textContent = "Saving the sample tree…";
+  try {
+    const up = {}, send = async src => { if (!src || !/^data:image/.test(src)) return src; if (up[src]) return up[src]; const j = await jpeg(src); up[src] = (await call({ action: "kit-file", name: "sample.jpg", data: j, local: true })).url; return up[src]; };
+    const s = JSON.parse(JSON.stringify(st));
+    s.photo = await send(s.photo); s.after = await send(s.after); s.keyPhoto = await send(s.keyPhoto);
+    for (const v of s.versions || []) v.after = await send(v.after);
+    await call({ action: "sample-save", sample: s });
+    m.className = "msg ok"; m.textContent = "Saved. Every screen now uses this tree.";
+    await loadSample(); if (!mine) build();
+  } catch (e) { if (e.status === 401) return gate("That password didn't work."); m.className = "msg err"; m.textContent = e.message; }
+  b.disabled = false;
+};
+
+function gate(err) { $("#app").hidden = true; $("#gate").hidden = false; $("#gateErr").textContent = err || ""; }
+$("#gateForm").onsubmit = e => { e.preventDefault(); password = $("#pw").value.trim(); try { sessionStorage.setItem("ts_pw", password); } catch {} start(); };
+function start() {
+  if (!password) return gate();
+  $("#gate").hidden = true; $("#app").hidden = false;
+  toolbar(); build(); draftShown(); loadSample(); loadNotes();
+}
+start();
+</script>
+</body>
+</html>

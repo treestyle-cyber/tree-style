@@ -130,6 +130,12 @@
     try { localStorage.setItem(KEY, JSON.stringify(kit)); } catch (e) {}
     apply(kit);
   }).catch(function () {});
+  // Studio → Screens: unsaved Brand kit changes (kept on this device by the Brand kit page) show on every screen
+  if (/[?&]screen-preview\b/.test(location.search)) {
+    var useDraft = function () { try { var dk = localStorage.getItem("ts_kit_draft"); if (dk) { draft = true; apply(JSON.parse(dk)); return true; } } catch (e) {} return false; };
+    useDraft();
+    addEventListener("storage", function (e) { if (e.key === "ts_kit_draft" || e.key === KEY) { if (!useDraft()) { draft = false; try { apply(JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (x) {} } } });
+  }
   // A draft from the Studio's Brand kit page (only when this page is inside its preview frame)
   addEventListener("message", function (e) {
     if (e.origin !== location.origin || !e.data || e.data.type !== "ts-kit-draft" || window.parent === window) return;

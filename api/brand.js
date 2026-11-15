@@ -7,6 +7,10 @@
 // GET  /api/brand?kitfile=<path>       -> a file the Brand kit uses (font, logo, texture) when the store is private
 // POST /api/brand { action:"kit-save", kit }              -> { ok }                        (password)
 // POST /api/brand { action:"kit-file", data, name }       -> { url }                       (password)
+// GET  /api/brand?sample=1             -> { sample }   the sample tree the Studio's Screens page shows on every screen
+// POST /api/brand { action:"sample-save", sample }        -> { ok }                        (password)
+// GET  /api/brand?notes=1              -> { notes }    notes left on screens in Studio → Screens
+// POST /api/brand { action:"note", op:"add"|"update"|"delete", note } -> { notes }          (password)
 import { put, list, get } from "@vercel/blob";
 import { blobToken, blobVarNames, blobConnected, IS_PREVIEW, envPath } from "../lib/blob.js";
 const tok = () => (blobToken() ? { token: blobToken() } : {});
@@ -49,7 +53,7 @@ async function previewPicks() {
 }
 
 // ---- Brand kit: one small JSON file (newest wins) plus the files it points to ----
-const KIT_DIR = "brand/kit/settings/", KIT_FILES = "brand/kit/files/";
+const KIT_DIR = "brand/kit/settings/", KIT_FILES = "brand/kit/files/", SAMPLE_DIR = "brand/sample/", NOTES_DIR = "brand/notes/";
 const FILE_TYPES = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/svg+xml": "svg", "font/woff2": "woff2", "font/woff": "woff", "font/otf": "otf", "font/ttf": "ttf", "application/font-woff": "woff", "application/x-font-otf": "otf", "application/x-font-ttf": "ttf", "application/vnd.ms-opentype": "otf", "application/octet-stream": "" };
 async function newestIn(prefix) {
   let best = null, cursor;
@@ -111,15 +115,30 @@ export default async function handler(req, res) {
       return res.status(200).json({ kit: JSON.parse((await readBlob(b)).toString("utf8")), updated: b.uploadedAt });
     } catch (e) { return res.status(200).json({ kit: null, error: String(e.message || e) }); }
   }
+  if (req.method === "GET" && (req.query?.sample || req.query?.notes)) {
+    res.setHeader("cache-control", "no-store");
+    try {
+      if (!blobConnected()) return res.status(200).json({});
+      // The sample tree: a preview copy's own, else the live one. Notes stay with the copy they were left on.
+      const b = req.query.sample ? (IS_PREVIEW && await newestIn("preview/" + SAMPLE_DIR)) || await newestIn(SAMPLE_DIR) : await newestIn(envPath(NOTES_DIR));
+      const data = b ? JSON.parse((await readBlob(b)).toString("utf8")) : null;
+      return res.status(200).json(req.query.sample ? { sample: data, updated: b && b.uploadedAt } : { notes: data || [] });
+    } catch (e) { return res.status(200).json({ error: String(e.message || e) }); }
+  }
   if (req.method === "GET" && req.query?.kitfile) {
     const path = String(req.query.kitfile);
     if (!/^(preview\/)?brand\/kit\/files\/[\w.-]+$/.test(path)) return res.status(400).end();
     const r = await get(path, { ...tok(), access: "private" }).catch(() => null);
-    if (!r || !r.stream) return res.status(404).end();
+    let buf = r && r.stream ? Buffer.from(await new Response(r.stream).arrayBuffer()) : null;
+    if (!buf) {   // a public store: find the file and pass it through, so the page reads it from its own site
+      const hit = (await list({ ...tok(), prefix: path, limit: 1 }).catch(() => ({ blobs: [] }))).blobs[0];
+      if (hit) buf = Buffer.from(await (await fetch(hit.url)).arrayBuffer());
+    }
+    if (!buf) return res.status(404).end();
     res.setHeader("cache-control", "public, max-age=31536000, immutable");
     const ext = path.split(".").pop();
     res.setHeader("content-type", { png: "image/png", jpg: "image/jpeg", webp: "image/webp", svg: "image/svg+xml", woff2: "font/woff2", woff: "font/woff", otf: "font/otf", ttf: "font/ttf" }[ext] || "application/octet-stream");
-    return res.status(200).send(Buffer.from(await new Response(r.stream).arrayBuffer()));
+    return res.status(200).send(buf);
   }
   if (req.method === "GET") {
     const slot = String(req.query?.img || "");
@@ -163,6 +182,29 @@ export default async function handler(req, res) {
     catch (e) { return res.status(502).json({ error: String(e.message || e) }); }
   }
 
+  if (action === "sample-save" || action === "note") {
+    if (!blobConnected()) return res.status(400).json({ error: "Storage isn't connected yet." });
+    try {
+      if (action === "sample-save") {
+        const text = JSON.stringify(req.body.sample || {});
+        if (text.length > 4000000) return res.status(400).json({ error: "The sample tree is too large to save." });
+        await putEither(envPath(`${SAMPLE_DIR}${Date.now()}.json`), Buffer.from(text), "application/json");
+        return res.status(200).json({ ok: true });
+      }
+      // Notes: read the newest list, change it, save it again
+      const b = await newestIn(envPath(NOTES_DIR));
+      let notes = b ? JSON.parse((await readBlob(b)).toString("utf8")) : [];
+      const n = req.body.note || {}, op = req.body.op;
+      const clean = o => ({ id: String(o.id || Date.now().toString(36) + Math.random().toString(36).slice(2, 6)).slice(0, 40), screen: String(o.screen || "").slice(0, 60), x: Math.max(0, Math.min(1, Number(o.x) || 0)), y: Math.max(0, Math.min(1, Number(o.y) || 0)), text: String(o.text || "").slice(0, 2000), by: String(o.by || "").slice(0, 40), done: !!o.done, at: o.at || new Date().toISOString() });
+      if (op === "add") notes.push(clean(n));
+      else if (op === "update") notes = notes.map(x => x.id === n.id ? clean(Object.assign({}, x, n)) : x);
+      else if (op === "delete") notes = notes.filter(x => x.id !== n.id);
+      else return res.status(400).json({ error: "Unknown note change" });
+      await putEither(envPath(`${NOTES_DIR}${Date.now()}.json`), Buffer.from(JSON.stringify(notes)), "application/json");
+      return res.status(200).json({ notes });
+    } catch (e) { return res.status(500).json({ error: String(e.message || e) }); }
+  }
+
   if (action === "kit-save" || action === "kit-file") {
     if (!blobConnected()) return res.status(400).json({ error: "Storage isn't connected yet. In Vercel: Storage → Create → Blob → connect it to this project, then Redeploy." });
     try {
@@ -178,7 +220,8 @@ export default async function handler(req, res) {
       const e = (ext || FILE_TYPES[m[1]] || "bin").toLowerCase().replace("jpeg", "jpg");
       const type = { png: "image/png", jpg: "image/jpeg", webp: "image/webp", svg: "image/svg+xml", woff2: "font/woff2", woff: "font/woff", otf: "font/otf", ttf: "font/ttf" }[e] || "application/octet-stream";
       const b = await putEither(envPath(`${KIT_FILES}${Date.now()}.${e}`), Buffer.from(m[2], "base64"), type);
-      return res.status(200).json({ ok: true, url: fileUrl(b) });
+      // Same-site address when asked (the sample tree's pictures are read back into the app)
+      return res.status(200).json({ ok: true, url: req.body.local ? `/api/brand?kitfile=${encodeURIComponent(b.pathname)}` : fileUrl(b) });
     } catch (e) { return res.status(500).json({ error: String(e.message || e) }); }
   }
 
