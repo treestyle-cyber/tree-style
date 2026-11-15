@@ -15,7 +15,7 @@
       plan: arr(r.plan).slice(0, 14).map(p => (p = obj(p), { element: planEl(p), step: str(p.step, 40), title: str(p.title, 70), how: str(p.how, 320), effort: str(p.effort, 30), shop: str(p.shop, 200) })).filter(p => p.title),
       cone: { apex: pt(cone.apex, [.5, .1]), left: pt(cone.left, [.22, .85]), right: pt(cone.right, [.78, .85]) },
       lights: { add: lights.add !== false && Object.keys(lights).length > 0, kind: oneOf(lights.kind, ["warm", "multicolor", "solid"], "warm"), color: hex(lights.color, "#FFD28A"), density: oneOf(lights.density, ["light", "medium", "heavy"], "medium") },
-      technique: oneOf(m.ribbon_technique === "cascades" ? "cascade" : ["billows", "layered", "bursts", "curls"].includes(m.ribbon_technique) ? "loops" : m.ribbon_technique, ["cascade", "loops"], density === "open" ? "cascade" : "loops"),
+      technique: oneOf(m.ribbon_technique === "waterfall_cascades" ? "cascade" : ["woven_billows", "layered_ribbons", "big_loops", "loop_bursts", "curls"].includes(m.ribbon_technique) ? "loops" : m.ribbon_technique, ["cascade", "loops"], density === "open" ? "cascade" : "loops"),
       ribbons: arr(m.ribbons).slice(0, 3).map((rb, i) => (rb = obj(rb), {
         role: oneOf(rb.role, ["base", "overlay", "accent"], ["base", "overlay", "accent"][i]),
         width_in: clamp(rb.width_in || [6, 4, 2][i], 1, 8), color: hex(rb.color, ["#8E2236", "#C9A048", "#1F4A33"][i]),
