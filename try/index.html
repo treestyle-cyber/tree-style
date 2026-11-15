@@ -22,6 +22,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
+<script src="/brand-kit.js"></script>
 <script>
 // Brand photos chosen in the Studio replace the fabric textures (each spot keeps its texture until then)
 fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); } }).catch(() => {});
@@ -146,8 +147,8 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .orns{display:flex;gap:8px;justify-content:center}
   .orns i{width:38px;height:38px;border-radius:50%;background:var(--line);display:block;position:relative;opacity:0;transform:scale(.4);animation:pop .4s cubic-bezier(.3,1.6,.5,1) forwards}
   .orns i::after{content:"";position:absolute;left:50%;top:-7px;width:11px;height:8px;margin-left:-5.5px;background:var(--brass);border-radius:2px}
-  .orns i.f{background:radial-gradient(circle at 35% 30%,#c98f8a,#6B2E2E 58%,#3E1A1A)}
-  .orns i.h{background:linear-gradient(90deg,#6B2E2E 50%,var(--line) 50%)}
+  .orns i.f{background:radial-gradient(circle at 35% 30%,#c98f8a,var(--winterberry) 58%,#3E1A1A)}
+  .orns i.h{background:linear-gradient(90deg,var(--winterberry) 50%,var(--line) 50%)}
   @keyframes pop{to{opacity:1;transform:none}}
   .ornword{font:600 15px var(--sans);margin-top:12px;color:var(--brass);letter-spacing:.04em}
   .rating{max-width:340px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px 12px;display:grid;gap:14px}
@@ -158,7 +159,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .rating .orns i{width:30px;height:30px}
   .rating .orns i::after{top:-6px;width:9px;height:7px;margin-left:-4.5px}
   /* metallic gold: a bright highlight, a warm middle, a deep rim and a soft reflected light low on the right */
-  .rating .orns i::after{background:linear-gradient(90deg,#7A6034,#E9D39C 45%,#B89C6B 60%,#6E552C)}
+  .rating .orns i::after{background:linear-gradient(90deg,#7A6034,#E9D39C 45%,var(--gold) 60%,#6E552C)}
   .rrow.after .orns i.f,.rrow.after .orns i.h::before{background:radial-gradient(circle at 68% 82%,rgba(255,226,160,.45),rgba(255,226,160,0) 26%),radial-gradient(circle at 32% 26%,#FFF7DE,#F1DDA6 14%,#CFAF6C 40%,#9A7A40 70%,#5A4320);box-shadow:inset 0 0 0 1px rgba(255,236,190,.18)}
   .rrow.after .orns i.h{background:var(--line)}
   .rrow.after .orns i.h::before{content:"";position:absolute;inset:0;border-radius:50%;clip-path:inset(0 50% 0 0)}
@@ -331,7 +332,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .rate button{appearance:none;border:0;background:none;padding:0;cursor:pointer;width:38px;height:42px;position:relative}
   .rate button i{position:absolute;left:3px;bottom:0;width:32px;height:32px;border-radius:50%;background:var(--line);display:block;transition:transform .15s}
   .rate button i::after{content:"";position:absolute;left:50%;top:-6px;width:10px;height:7px;margin-left:-5px;background:var(--brass);border-radius:2px}
-  .rate button.on i{background:radial-gradient(circle at 35% 30%,#c98f8a,#6B2E2E 58%,#3E1A1A)}
+  .rate button.on i{background:radial-gradient(circle at 35% 30%,#c98f8a,var(--winterberry) 58%,#3E1A1A)}
   .rate button:active i{transform:scale(.9)}
   .fb textarea{width:100%;font:16px/1.4 var(--sans);padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper);resize:vertical;color:var(--ink);margin:6px 0 10px}
   .fb input[type=text]{width:100%;border-radius:12px;margin-bottom:12px}
@@ -492,7 +493,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .choice.tile .tlbl{display:flex;align-items:center;gap:14px;padding:16px 20px 18px}
   .choice.tile .tlbl span{flex:1;display:grid;gap:4px}
   .choice.tile b{font:500 32px/1.05 var(--serif);color:var(--ivory)}
-  .choice.tile small{font-size:16px;line-height:1.35;color:#D9CCC0}
+  .choice.tile small{font-size:16px;line-height:1.35;color:var(--oat)}
   .choice.tile i{font-style:normal;font-size:22px;color:var(--gold)}
   @media (min-width:700px){ .tiles{grid-template-columns:1fr 1fr} }
   .tilenote{text-align:center;color:var(--muted);font-size:14px;max-width:26em;margin:20px auto 0}
@@ -518,7 +519,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
     background:linear-gradient(100deg,rgba(20,28,44,.9) 25%,rgba(20,28,44,.35)),var(--img) center/cover;box-shadow:0 16px 28px -18px rgba(0,0,0,.7),inset 0 0 0 1px rgba(184,156,107,.3);transition:transform .18s, box-shadow .18s}
   .src:hover{transform:translateY(-2px);box-shadow:0 20px 32px -18px rgba(0,0,0,.8),inset 0 0 0 1px var(--gold)}
   .src b{font:400 26px/1.05 var(--serif)}
-  .src small{font-size:13px;color:#D9CCC0;max-width:24em}
+  .src small{font-size:13px;color:var(--oat);max-width:24em}
   .ideatxt{width:100%;font:16px/1.5 var(--sans);padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);resize:vertical}
   .roommark{margin-top:14px}
   .changepill{display:flex;justify-content:center;width:100%;max-width:524px;margin:14px auto 0;cursor:pointer}
@@ -568,7 +569,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .choice.tile em{font:600 11px var(--sans);font-style:normal;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
   .choice.tile b{font:500 34px/1 var(--serif);letter-spacing:.005em}
   .choice.tile b::after{content:"";display:block;width:36px;height:1px;background:var(--gold);margin:12px 0 10px}
-  .choice.tile small{font-size:15.5px;line-height:1.4;color:#D9CCC0;max-width:22em}
+  .choice.tile small{font-size:15.5px;line-height:1.4;color:var(--oat);max-width:22em}
   .choice.tile i{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 1.5px rgba(184,156,107,.6);font-size:18px;transition:background .18s,color .18s}
   .choice.tile:hover i{background:var(--gold);color:var(--midnight)}
   /* Style cards: the photo on top, the words on a solid panel below (easy to read, like the home cards) */
@@ -579,7 +580,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .sgrid .scard:first-child .sp{aspect-ratio:auto;height:118px}
   .scard b{display:block;font-size:24px;line-height:1.05;margin:12px 14px 0;color:var(--ivory)}
   .scard b::after{display:none}
-  .scard small{display:block;font:400 16.5px/1.35 var(--sans);color:#D9CCC0;margin:5px 14px 15px;opacity:1}
+  .scard small{display:block;font:400 16.5px/1.35 var(--sans);color:var(--oat);margin:5px 14px 15px;opacity:1}
   .sgrid .scard:first-child span{display:grid;grid-template-columns:42% 1fr;align-items:center}
   .sgrid .scard:first-child .sp{height:100%;min-height:112px}
   .sgrid .scard:first-child b{font-size:28px;margin:0 16px}
@@ -728,7 +729,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   details.buy .bt{flex:1;min-width:0}
   .bic{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:var(--gold);background:radial-gradient(circle at 35% 30%,rgba(230,211,168,.22),rgba(184,156,107,.06) 70%);box-shadow:inset 0 0 0 1px rgba(184,156,107,.55),0 6px 14px -8px rgba(0,0,0,.7)}
   .bic svg{width:28px;height:28px}
-  details.buy[open] .bic{background:radial-gradient(circle at 35% 30%,#E6D3A8,#B89C6B 70%);color:var(--midnight)}
+  details.buy[open] .bic{background:radial-gradient(circle at 35% 30%,#E6D3A8,var(--gold) 70%);color:var(--midnight)}
   details.buy .bt b{display:block;font:500 24px/1.15 var(--serif);color:var(--ivory)}
   details.buy .bt small{display:block;font:600 11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-top:4px}
   .chevc{flex:none;width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(184,156,107,.55);display:grid;place-items:center;transition:transform .25s,background .25s}
@@ -761,10 +762,10 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   #s-home{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:max(30px,calc(env(safe-area-inset-top) + 18px)) 0 calc(var(--tabh) + env(safe-area-inset-bottom) + clamp(36px,8vh,84px))}
   #s-home .hlogo{width:min(53%,208px);height:auto;filter:drop-shadow(0 1px 2px rgba(6,10,20,.9)) drop-shadow(0 3px 10px rgba(6,10,20,.75)) drop-shadow(0 8px 28px rgba(6,10,20,.6))}   /* layered shadow so the thin gold lines stand off any photo */
   #s-home .hfoot{margin-top:auto;width:100%;padding-top:28px}
-  #s-home h1{font:500 clamp(34px,9.9vw,46px)/1.02 var(--serif);color:#E7DFD2;text-align:left;margin:0 0 24px;letter-spacing:-.005em;text-wrap:balance;text-shadow:0 1px 3px rgba(0,0,0,.35),0 2px 18px rgba(0,0,0,.4)}
+  #s-home h1{font:500 clamp(34px,9.9vw,46px)/1.02 var(--serif);color:var(--warmivory);text-align:left;margin:0 0 24px;letter-spacing:-.005em;text-wrap:balance;text-shadow:0 1px 3px rgba(0,0,0,.35),0 2px 18px rgba(0,0,0,.4)}
   #s-home h1::after{display:none}
   .hbtns{display:grid;gap:14px}
-  .hbtn{appearance:none;width:100%;min-height:56px;border-radius:999px;border:1.5px solid #C9AE78;font:500 clamp(21px,6vw,25px)/1 var(--serif);letter-spacing:.005em;cursor:pointer;padding:14px 22px;transition:transform .15s,filter .15s}
+  .hbtn{appearance:none;width:100%;min-height:56px;border-radius:var(--btn-radius);border:1.5px solid #C9AE78;font:500 clamp(21px,6vw,25px)/1 var(--serif);letter-spacing:.005em;cursor:pointer;padding:14px 22px;transition:transform .15s,filter .15s}
   .hbtn:active{transform:scale(.985)}
   .hbtn.dark{background:#0F1828;color:#F6EFE3}
   .hbtn.light{background:#F3ECDF;color:#2B231D}
@@ -800,10 +801,10 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .plist button b{color:var(--gold)}
 
   /* ---------- Create my space ("What would you like to do?"): warm linen, one photo, two pills ---------- */
-  body.linen{background:#F5F0E8 !important}   /* !important: nothing else may paint over the approved ivory */
-  body.linen .appbar,body.linen .appbar.line{background:#F5F0E8}
-  body.linen .appbar button{color:#3A2A21}
-  body.linen #navBack{color:#3A2A21;box-shadow:inset 0 0 0 1px #C5B28F}
+  body.linen{background:var(--cream) !important}   /* !important: nothing else may paint over the approved ivory */
+  body.linen .appbar,body.linen .appbar.line{background:var(--cream)}
+  body.linen .appbar button{color:var(--espresso)}
+  body.linen #navBack{color:var(--espresso);box-shadow:inset 0 0 0 1px var(--champagne)}
   .barword{display:none}
   body.linen .barmono{display:none}
   body.linen .barword{display:block;font:600 13px/1 var(--sans);letter-spacing:.42em;padding-left:.42em;color:#A88B5C}
@@ -814,17 +815,17 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   #s-create .csub{margin:8px auto 0;font:500 clamp(17px,4.9vw,21px)/1.35 var(--serif);color:#8A7D6F}
   #s-create .cphoto{flex:none;margin:clamp(18px,3vh,28px) auto 0;width:100%;aspect-ratio:950/775;max-height:max(200px,calc(100vh - 470px));max-height:max(200px,calc(100dvh - 470px));border-radius:20px;background:var(--photo-create, url(/brand/create-room.jpg)) center/cover;box-shadow:0 16px 36px -24px rgba(58,42,33,.45)}
   #s-create .cbtns{display:grid;gap:12px;margin-top:clamp(18px,3vh,28px)}
-  #s-create .cbtn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:54px;margin:0;padding:12px 24px;border-radius:999px;border:1px solid #C5B28F;font:500 clamp(20px,5.6vw,23px)/1 var(--serif);letter-spacing:.005em;cursor:pointer;transition:filter .15s,transform .15s}
+  #s-create .cbtn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:54px;margin:0;padding:12px 24px;border-radius:var(--btn-radius);border:1px solid var(--champagne);font:500 clamp(20px,5.6vw,23px)/1 var(--serif);letter-spacing:.005em;cursor:pointer;transition:filter .15s,transform .15s}
   #s-create .cbtn svg{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-  #s-create .cbtn.dark{background:#141C2C;color:#F6EFE3}
-  #s-create .cbtn.light{background:#FAF6EF;color:#141C2C}
-  #s-create .cbtn:hover{filter:brightness(1.04);border-color:#C5B28F}
+  #s-create .cbtn.dark{background:var(--midnight);color:#F6EFE3}
+  #s-create .cbtn.light{background:#FAF6EF;color:var(--midnight)}
+  #s-create .cbtn:hover{filter:brightness(1.04);border-color:var(--champagne)}
   #s-create .cbtn:active{transform:scale(.985)}
-  #s-create .cbtn:focus-visible{outline:2px solid #3A2A21;outline-offset:2px}
+  #s-create .cbtn:focus-visible{outline:2px solid var(--espresso);outline-offset:2px}
   #s-create .cnote{margin:18px auto 0;color:#857A6C;font-size:15px;line-height:1.45}
 
   /* ---------- Early access sign-in (designer's approved mockup): ivory, logo, photo with headline, form ---------- */
-  body.passpage{background:#F5F0E8 !important}
+  body.passpage{background:var(--cream) !important}
   body.passpage .appbar{display:none}
   body.passpage main{padding:0 0 max(36px,env(safe-area-inset-bottom));overflow-x:clip}   /* the slide-in of the edge-to-edge photo must not widen the page */
   #s-pass{text-align:center}
@@ -832,20 +833,20 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   #s-pass .pbrand img{width:min(42%,210px);height:auto;margin:0 auto;filter:brightness(.7) saturate(1.3) contrast(1.25) drop-shadow(0 1px 1px rgba(58,42,33,.4)) drop-shadow(0 4px 12px rgba(58,42,33,.28))}   /* pale metallic gold barely shows on ivory: deepen the gold on this screen only (the logo file is unchanged) and add a soft warm shadow */
   #s-pass .phero{position:relative;aspect-ratio:3/2;max-height:68vh;width:100%;background:linear-gradient(20deg,rgba(14,9,6,.72) 0%,rgba(14,9,6,.42) 34%,rgba(14,9,6,0) 60%),var(--photo-pass, url(/brand/pass-room.jpg)) center 70%/cover;text-align:left}   /* portrait photo in a wide frame: center 70% keeps the plum ornament, pinecone and branches in view */
   #s-pass .phl{--pl:clamp(24px,6%,40px);position:absolute;left:var(--pl);right:30%;bottom:clamp(20px,9%,44px);min-width:200px}
-  #s-pass .phl h1{font:500 clamp(27px,7.6vw,38px)/1.08 var(--serif);color:#E7DFD2;margin:16px 0 0;text-align:left;max-width:none;text-shadow:0 1px 14px rgba(0,0,0,.35)}
+  #s-pass .phl h1{font:500 clamp(27px,7.6vw,38px)/1.08 var(--serif);color:var(--warmivory);margin:16px 0 0;text-align:left;max-width:none;text-shadow:0 1px 14px rgba(0,0,0,.35)}
   #s-pass .phl h1::after{display:none}
-  #s-pass .prule{display:block;height:1px;background:#C5B28F;margin-left:calc(-1 * var(--pl));width:calc(var(--pl) + clamp(56px,13vw,140px))}   /* runs in from the photo's left edge, as in the mockup */
+  #s-pass .prule{display:block;height:1px;background:var(--champagne);margin-left:calc(-1 * var(--pl));width:calc(var(--pl) + clamp(56px,13vw,140px))}   /* runs in from the photo's left edge, as in the mockup */
   #s-pass .kicker{margin:30px 0 0;font:600 13px var(--sans);letter-spacing:.24em;color:#A88B5C}
-  #s-pass .ttl{font:500 clamp(28px,7.8vw,38px)/1.1 var(--serif);color:#3A2A21;margin:12px auto 0}
-  #s-pass .ttl::after{width:44px;height:1px;background:#C5B28F;margin:18px auto 0}
+  #s-pass .ttl{font:500 clamp(28px,7.8vw,38px)/1.1 var(--serif);color:var(--espresso);margin:12px auto 0}
+  #s-pass .ttl::after{width:44px;height:1px;background:var(--champagne);margin:18px auto 0}
   #s-pass .sub{color:#857A6C;font-size:16px;margin:18px auto 0;padding:0 20px}
   #s-pass form{display:flex;gap:10px;max-width:440px;margin:24px auto 0;padding:0 20px}
-  #s-pass input{flex:1;min-width:0;height:54px;padding:0 22px;border-radius:999px;border:1px solid #C5B28F;background:#FBF8F2;color:#3A2A21;font:16px var(--sans);caret-color:#3A2A21}
+  #s-pass input{flex:1;min-width:0;height:54px;padding:0 22px;border-radius:999px;border:1px solid var(--champagne);background:#FBF8F2;color:var(--espresso);font:16px var(--sans);caret-color:var(--espresso)}
   #s-pass input::placeholder{color:#A39887}
   #s-pass input:focus{outline:none;border-color:#9A7E50;box-shadow:0 0 0 3px rgba(197,178,143,.35)}
-  #s-pass .btn{flex:none;height:54px;padding:0 26px;border-radius:999px;background:#141C2C;color:#C5B28F;font:600 14px var(--sans);letter-spacing:.24em;box-shadow:none}
+  #s-pass .btn{flex:none;height:54px;padding:0 26px;border-radius:999px;background:var(--midnight);color:var(--champagne);font:600 14px var(--sans);letter-spacing:.24em;box-shadow:none}
   #s-pass .btn:hover{background:#1E2840}
-  #s-pass .btn:focus-visible{outline:2px solid #3A2A21;outline-offset:2px}
+  #s-pass .btn:focus-visible{outline:2px solid var(--espresso);outline-offset:2px}
   #s-pass .err{color:#8E2B2B;margin:14px auto 0;padding:0 20px;min-height:0}
   @media (max-width:359px){ #s-pass form{flex-direction:column} #s-pass .btn{width:100%} }
   @media (min-width:600px){
@@ -854,38 +855,38 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   }
 
   /* ---------- Results screen: ivory cards on the midnight page (designer's mockup). Colors only; scoped to #s-results ---------- */
-  #s-results .act:not(.main){background:#F5F0E8;color:#3A2A21;box-shadow:inset 0 0 0 1px #C5B28F}
-  #s-results .act:not(.main) .ic{color:#A88B5C;box-shadow:inset 0 0 0 1px #C5B28F}
-  #s-results .act:not(.main) small{color:#3A2A21;opacity:1}
-  #s-results .hubfix .fix{background:#F5F0E8;box-shadow:inset 0 0 0 1px #C5B28F}
-  #s-results .hubfix .fix b{color:#3A2A21}
-  #s-results .hubfix .fix p{color:#3A2A21}
+  #s-results .act:not(.main){background:var(--cream);color:var(--espresso);box-shadow:inset 0 0 0 1px var(--champagne)}
+  #s-results .act:not(.main) .ic{color:#A88B5C;box-shadow:inset 0 0 0 1px var(--champagne)}
+  #s-results .act:not(.main) small{color:var(--espresso);opacity:1}
+  #s-results .hubfix .fix{background:var(--cream);box-shadow:inset 0 0 0 1px var(--champagne)}
+  #s-results .hubfix .fix b{color:var(--espresso)}
+  #s-results .hubfix .fix p{color:var(--espresso)}
   #s-results .hubfix .fix .where{color:#8A6D3B}
-  #s-results .scorestrip{background:#F5F0E8;border-color:#C5B28F;color:#3A2A21}
-  #s-results .scorestrip b{color:#3A2A21}
-  #s-results .scorestrip small{color:#3A2A21}
+  #s-results .scorestrip{background:var(--cream);border-color:var(--champagne);color:var(--espresso)}
+  #s-results .scorestrip b{color:var(--espresso)}
+  #s-results .scorestrip small{color:var(--espresso)}
   #s-results .scorestrip .chev{color:#A88B5C}
   #s-results .scorestrip .orns i:not(.f):not(.h){background:#A59C90}
-  #s-results .scorestrip .orns i.h{background:linear-gradient(90deg,#6B2E2E 50%,#A59C90 50%)}
-  #s-results .fb{background:#F5F0E8;border-color:#C5B28F;color:#3A2A21}
-  #s-results .fb h3,#s-results .fb .q2{color:#3A2A21}
-  #s-results .fb p.sub{color:#3A2A21}
+  #s-results .scorestrip .orns i.h{background:linear-gradient(90deg,var(--winterberry) 50%,#A59C90 50%)}
+  #s-results .fb{background:var(--cream);border-color:var(--champagne);color:var(--espresso)}
+  #s-results .fb h3,#s-results .fb .q2{color:var(--espresso)}
+  #s-results .fb p.sub{color:var(--espresso)}
   #s-results .fb .muted{color:#857A6C}
   #s-results .fb .rate button i{background:#A59C90}
-  #s-results .fb .rate button.on i{background:radial-gradient(circle at 35% 30%,#c98f8a,#6B2E2E 58%,#3E1A1A)}
-  #s-results .fb .chip span{background:#FBF8F2;border:1px solid #CFC5B6;color:#3A2A21}
+  #s-results .fb .rate button.on i{background:radial-gradient(circle at 35% 30%,#c98f8a,var(--winterberry) 58%,#3E1A1A)}
+  #s-results .fb .chip span{background:#FBF8F2;border:1px solid #CFC5B6;color:var(--espresso)}
   #s-results .fb .chip input:checked + span{background:var(--gold);border-color:var(--gold);color:var(--midnight)}
-  #s-results .fb textarea,#s-results .fb input[type=text]{background:#FBF8F2;border:1px solid #CFC5B6;color:#3A2A21;caret-color:#3A2A21}
+  #s-results .fb textarea,#s-results .fb input[type=text]{background:#FBF8F2;border:1px solid #CFC5B6;color:var(--espresso);caret-color:var(--espresso)}
   #s-results .fb textarea::placeholder,#s-results .fb input[type=text]::placeholder{color:#8A7F72}
   #s-results .fb textarea:focus,#s-results .fb input[type=text]:focus{border-color:#A88B5C;box-shadow:0 0 0 3px rgba(197,178,143,.3);outline:none}
   #s-results .fb .err{color:#8E2B2B}
-  #s-results .fb .thanks{color:#3A2A21}
+  #s-results .fb .thanks{color:var(--espresso)}
 
   /* Home buttons: premium app controls, matching widths, 54px, 12px apart */
   #s-home .hbtns{gap:12px}
-  #s-home .hbtn{min-height:54px;padding:0 22px;border-width:1px;border-color:#B89C6B;font:500 clamp(18px,5vw,20px)/1 var(--serif);letter-spacing:.01em}
-  #s-home .hbtn.dark{background:#141C2C;color:#F3EEE7}
-  #s-home .hbtn.light{background:#E7DFD2;color:#3C2A20;border-color:rgba(184,156,107,.7)}
+  #s-home .hbtn{min-height:54px;padding:0 22px;border-width:1px;border-color:var(--gold);font:500 clamp(18px,5vw,20px)/1 var(--serif);letter-spacing:.01em}
+  #s-home .hbtn.dark{background:var(--midnight);color:var(--ivory)}
+  #s-home .hbtn.light{background:var(--warmivory);color:#3C2A20;border-color:rgba(184,156,107,.7)}
 </style>
 </head>
 <body>

@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TreeStyle · Studio · Brand kit</title>
+<script src="/env.js"></script>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script src="/brand-kit.js"></script>
+<link rel="icon" type="image/png" href="/brand/favicon.png">
+<style>
+  .wrap{max-width:1240px}
+  header{padding:22px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  header nav{display:flex;gap:18px}
+  header nav a{text-decoration:none}
+  .intro{margin:6px 0 26px;max-width:46em}
+  .intro h1{font-weight:400;font-size:44px;margin:8px 0 10px}
+  .intro p{color:var(--muted);margin:0}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 410px;gap:28px;align-items:start;padding-bottom:120px}
+  @media (max-width:1000px){.layout{grid-template-columns:1fr}.preview{position:static !important}}
+  .sec{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:20px}
+  .sec h2{font-weight:400;font-size:28px}
+  .sec .where{font-size:13.5px;color:var(--muted);margin:4px 0 16px}
+  .sec h3{font:600 11.5px var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--brass);margin:18px 0 10px}
+  .colors{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+  .color{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;background:var(--paper-2);border-radius:12px;padding:10px}
+  .color input[type=color]{width:48px;height:48px;border:0;padding:0;background:none;border-radius:10px;cursor:pointer}
+  .color input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+  .color input[type=color]::-webkit-color-swatch{border:1px solid rgba(255,255,255,.2);border-radius:10px}
+  .color b{display:block;font-size:14px}
+  .color small{display:block;color:var(--muted);font-size:12px;line-height:1.3}
+  .color input[type=text]{width:84px;padding:5px 8px;font:12.5px ui-monospace,Menlo,monospace;border-radius:8px;margin-top:4px}
+  .reset{appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:99px;padding:4px 10px;font:500 12px var(--sans);cursor:pointer}
+  .reset[hidden]{display:none}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{appearance:none;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);border-radius:99px;padding:9px 14px;font:500 13.5px var(--sans);cursor:pointer}
+  .chip.on{border-color:var(--gold);background:rgba(184,156,107,.18);color:var(--gold)}
+  .fontrow{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:start;margin-bottom:16px}
+  @media (max-width:600px){.fontrow{grid-template-columns:1fr}}
+  .fontrow select{width:100%;font:15px var(--sans);padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink)}
+  .sample{margin-top:10px;padding:14px 16px;border-radius:12px;background:var(--paper-2)}
+  .sample .h{font-size:30px;line-height:1.1}
+  .sample .b{font-size:15px;color:var(--muted);margin-top:6px}
+  .btnsample{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+  .tile{background:var(--paper-2);border-radius:12px;padding:12px;display:grid;gap:8px;justify-items:center;text-align:center}
+  .tile .pic{width:100%;height:90px;border-radius:10px;display:grid;place-items:center;background:#F3ECDF;color:var(--walnut)}
+  .tile .pic.dark{background:var(--midnight)}
+  .tile .pic svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .tile .pic img{max-width:86%;max-height:76px;object-fit:contain}
+  .tile b{font-size:14px}
+  .tile small{color:var(--muted);font-size:12px;line-height:1.3}
+  .tile .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+  .up{display:inline-block;cursor:pointer;border:1px solid var(--gold);color:var(--gold);border-radius:99px;padding:5px 12px;font:500 12.5px var(--sans)}
+  .bgrow{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:14px;font-size:14px;color:var(--muted)}
+  .bgrow input[type=range]{width:200px;accent-color:var(--gold)}
+  .ideas{margin:0;padding-left:18px;color:var(--muted);font-size:14px;line-height:1.6}
+  .ideas b{color:var(--ink);font-weight:500}
+  .preview{position:sticky;top:16px}
+  .phone{width:390px;height:760px;max-width:100%;border-radius:34px;overflow:hidden;border:8px solid #0B101B;box-shadow:0 20px 60px -20px rgba(0,0,0,.7);background:#000;margin:10px auto 0}
+  .phone iframe{width:100%;height:100%;border:0;display:block;background:#141C2C}
+  .preview .note{font-size:12.5px;color:var(--muted);text-align:center;margin-top:8px}
+  .bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(14,20,33,.96);border-top:1px solid var(--line);backdrop-filter:blur(8px)}
+  .bar .wrap{display:flex;gap:12px;align-items:center;padding-top:12px;padding-bottom:max(12px,env(safe-area-inset-bottom));flex-wrap:wrap}
+  .bar .msg{flex:1;min-width:200px}
+  .msg{font-size:13.5px;color:var(--muted);min-height:1.2em;margin:0}
+  .msg.err{color:var(--berry)}
+  .msg.ok{color:var(--gold)}
+  #gate{max-width:420px;margin:60px auto;text-align:center}
+  #gate form{display:flex;gap:8px;margin-top:18px}
+  #gate input{flex:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="/"><img class="logoh" src="/brand/logo-horizontal.png" alt="TreeStyle · The art of styling"></a>
+    <nav><a class="eyebrow" href="/studio/kit" style="color:var(--ink)">Brand kit</a><a class="eyebrow" href="/studio/">Photos</a><a class="eyebrow" href="/studio/reels">Reels</a><a class="eyebrow" href="/try/">Open the app →</a></nav>
+  </header>
+
+  <div id="gate" hidden>
+    <div class="eyebrow">Studio</div>
+    <h1 style="font-weight:400;font-size:40px;margin-top:8px">Enter the test password</h1>
+    <form id="gateForm"><input type="password" id="pw" placeholder="Password" autocomplete="current-password"><button class="btn">Enter</button></form>
+    <p class="msg err" id="gateErr"></p>
+  </div>
+
+  <div id="app" hidden>
+    <div class="intro">
+      <div class="eyebrow">Studio</div>
+      <h1>Brand kit</h1>
+      <p>The basic look of everything at once: colors, fonts, buttons, background, icons and logos, used on every screen of the app and the website. Pictures for particular spots live under <a href="/studio/">Photos</a>. Changes show in the preview on the right as you make them; nothing changes for anyone else until you tap <b>Save brand kit</b>.</p>
+    </div>
+
+    <div class="layout">
+      <div>
+        <section class="sec">
+          <h2>Colors</h2>
+          <div class="where">Change a color here and it changes everywhere it is used. Tap a swatch to pick, or type a hex code.</div>
+          <h3>Brand palette</h3><div class="colors" id="core"></div>
+          <h3>Light screens</h3><div class="colors" id="support"></div>
+        </section>
+
+        <section class="sec">
+          <h2>Fonts</h2>
+          <div class="where">Headings are the large editorial type; the app font is everything else (buttons, labels, body text). Upload your own font file (WOFF2, WOFF, OTF or TTF) once it is licensed.</div>
+          <div class="fontrow"><div><b>Headings</b><br><button class="reset" data-reset="heading" hidden>Back to Butler</button></div><div><select id="fHeading"></select><div class="sample"><div class="h" id="sHeading">A more beautiful home starts here.</div></div></div></div>
+          <div class="fontrow"><div><b>App font</b><br><button class="reset" data-reset="body" hidden>Back to Inter</button></div><div><select id="fBody"></select><div class="sample"><div class="b" id="sBody" style="color:var(--ink)">Shape the branches, then add the ribbon in three widths. Check my tree · Design my tree</div></div></div></div>
+          <input type="file" id="fontFile" accept=".woff2,.woff,.otf,.ttf" hidden>
+        </section>
+
+        <section class="sec">
+          <h2>Buttons</h2>
+          <div class="where">The shape and lettering of every button.</div>
+          <h3>Shape</h3><div class="chips" id="bShape"></div>
+          <h3>Lettering</h3><div class="chips" id="bCase"></div>
+          <div class="btnsample"><span class="btn" id="bs1">Create my space</span><span class="btn ghost" id="bs2">Explore inspiration</span></div>
+        </section>
+
+        <section class="sec">
+          <h2>Background</h2>
+          <div class="where">The page behind the dark screens of the app and website. The light ivory screens keep their cream color (change it under Colors → Cream).</div>
+          <div class="chips" id="bgKind"></div>
+          <div class="bgrow" id="bgMore"></div>
+          <input type="file" id="bgFile" accept="image/*" hidden>
+        </section>
+
+        <section class="sec">
+          <h2>Icons</h2>
+          <div class="where">The tab bar at the bottom of the app. Upload an SVG line drawing for each; any color is fine, because the app colors it (Midnight when selected, Walnut when not, from Colors). Draw them on the same square canvas with the same line weight so they read as one set.</div>
+          <div class="tiles" id="icons"></div>
+          <input type="file" id="iconFile" accept=".svg,image/svg+xml" hidden>
+        </section>
+
+        <section class="sec">
+          <h2>Logos</h2>
+          <div class="where">Replace a logo everywhere it appears. A transparent PNG or SVG works best.</div>
+          <div class="tiles" id="logos"></div>
+          <input type="file" id="logoFile" accept="image/png,image/svg+xml,image/webp" hidden>
+        </section>
+
+        <section class="sec">
+          <h2>Could come here next</h2>
+          <ul class="ideas">
+            <li><b>Shopping list and step icons</b>: the small gold drawings beside each section.</li>
+            <li><b>Score ornaments</b>: the colors of the rating ornaments.</li>
+            <li><b>Corner roundness</b> of cards and photos.</li>
+            <li><b>Social image template</b>: colors and logo of the Before &amp; after image.</li>
+            <li><b>Words</b>: the tagline and the main headlines, edited in one place.</li>
+          </ul>
+        </section>
+      </div>
+
+      <aside class="preview">
+        <div class="chips" id="pv" style="justify-content:center"></div>
+        <div class="phone"><iframe id="frame" title="Preview of the app with these brand settings"></iframe></div>
+        <p class="note">This is the real app, showing your unsaved changes. Tap through it to see other screens.</p>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<div class="bar" id="bar" hidden><div class="wrap">
+  <p class="msg" id="msg">No changes yet.</p>
+  <button class="btn ghost" id="discard" disabled>Discard changes</button>
+  <button class="btn" id="save" disabled>Save brand kit</button>
+</div></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const clone = o => JSON.parse(JSON.stringify(o || {}));
+const IS_LIVE = location.hostname === "tree-style.vercel.app";
+
+const CORE = [
+  ["midnight", "Midnight", "#141C2C", "Page backgrounds, dark buttons, the selected tab"],
+  ["ivory", "Ivory", "#F3EEE7", "Text on the dark screens"],
+  ["gold", "Antique Gold", "#B89C6B", "Buttons, accents, highlights"],
+  ["winterberry", "Winter Berry", "#6B2E2E", "Berry accents"],
+  ["evergreen", "Evergreen", "#2C3E2E", "Green accents"],
+  ["walnut", "Walnut", "#4A3620", "Tab bar icons when not selected"],
+  ["oat", "Oat", "#D9CCC0", "Soft neutral details"],
+];
+const SUPPORT = [
+  ["cream", "Cream", "#F5F0E8", "Light screens and ivory cards"],
+  ["espresso", "Espresso", "#3A2A21", "Text on the light screens"],
+  ["champagne", "Champagne", "#C5B28F", "Thin rules and borders"],
+  ["warmivory", "Warm ivory", "#E7DFD2", "Headlines over photos"],
+];
+const HEADING_FONTS = [["", "Butler (current)"], ["Cormorant Garamond", "Cormorant Garamond"], ["Playfair Display", "Playfair Display"], ["EB Garamond", "EB Garamond"], ["Libre Caslon Display", "Libre Caslon Display"], ["DM Serif Display", "DM Serif Display"], ["Bodoni Moda", "Bodoni Moda"], ["Gilda Display", "Gilda Display"]];
+const BODY_FONTS = [["", "Inter (current)"], ["DM Sans", "DM Sans"], ["Work Sans", "Work Sans"], ["Montserrat", "Montserrat"], ["Jost", "Jost"], ["Lato", "Lato"], ["Manrope", "Manrope"]];
+const SHAPES = [["", "Pill (current)"], ["rounded", "Rounded"], ["square", "Square"]];
+const CASES = [["", "UPPERCASE (current)"], ["none", "Normal"]];
+const BG = [["", "Midnight velvet (current)"], ["berry", "Winter Berry velvet"], ["color", "Plain color"], ["image", "Your own texture"]];
+const TABS = [["home", "Home", "s-home"], ["trees", "Trees", "s-trees"], ["shop", "Shop", "s-bag"], ["profile", "Profile", "s-profile"]];
+const LOGOS = [["stacked", "Stacked logo", "/brand/logo-stacked.png", "Sign-in screen"], ["open", "Home logo", "/brand/logo-stacked-open.png", "App home screen (no arch)"], ["horizontal", "Horizontal logo", "/brand/logo-horizontal.png", "Website and Studio header"], ["icon", "Emblem", "/brand/logo-icon.png", "Small marks and dividers"], ["favicon", "Browser icon", "/brand/favicon.png", "Browser tab and home-screen icon"]];
+
+let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
+let saved = {}, draft = {}, origIcons = {}, pending = null;
+const call = async body => {
+  const r = await fetch("/api/brand", { method: "POST", headers: { "content-type": "application/json", "x-test-password": password }, body: JSON.stringify(body) });
+  let d = {}; try { d = await r.json(); } catch { d = { error: "Server error " + r.status }; }
+  if (!r.ok) { const e = new Error(d.error || "Error " + r.status); e.status = r.status; throw e; }
+  return d;
+};
+const readAs = (file, how) => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r[how](file); });
+const say = (t, cls = "") => { const m = $("#msg"); m.textContent = t; m.className = "msg " + cls; };
+
+// ---- Draft changes ----
+function set(path, value) {
+  const keys = path.split("."), last = keys.pop();
+  let o = draft; for (const k of keys) o = o[k] = o[k] || {};
+  if (value === "" || value == null) delete o[last]; else o[last] = value;
+  // tidy empty sections
+  for (const k of ["colors", "fonts", "buttons", "background", "icons", "logos"]) if (draft[k] && !Object.keys(draft[k]).length) delete draft[k];
+  changed();
+}
+function changed() {
+  const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
+  $("#save").disabled = !dirty; $("#discard").disabled = !dirty;
+  say(dirty ? "Unsaved changes, showing in the preview." + (IS_LIVE ? " Saving changes the live site." : " Saving changes this preview copy only.") : "No changes yet.");
+  send(); render();
+}
+function send() { try { $("#frame").contentWindow.postMessage({ type: "ts-kit-draft", kit: draft }, location.origin); } catch {} }
+
+// ---- Render each section from the draft ----
+function render() {
+  const c = draft.colors || {};
+  const sw = ([k, name, def, where]) => `<div class="color"><input type="color" data-c="${k}" value="${esc(c[k] || def)}"><div><b>${name}</b><small>${where}</small><input type="text" data-ct="${k}" value="${esc((c[k] || def).toUpperCase())}" maxlength="7" spellcheck="false"></div><button class="reset" data-cr="${k}" ${c[k] ? "" : "hidden"} title="Back to ${def}">↺</button></div>`;
+  // Build the swatches once, then only update them, so typing in one is never interrupted
+  if (!$("#core").children.length) { $("#core").innerHTML = CORE.map(sw).join(""); $("#support").innerHTML = SUPPORT.map(sw).join(""); }
+  for (const [k, , def] of CORE.concat(SUPPORT)) {
+    const v = (c[k] || def).toUpperCase(), p = document.querySelector(`[data-c=${k}]`), tx = document.querySelector(`[data-ct=${k}]`);
+    if (p !== document.activeElement && p.value.toUpperCase() !== v) p.value = v;
+    if (tx !== document.activeElement && tx.value.toUpperCase() !== v) tx.value = v;
+    document.querySelector(`[data-cr=${k}]`).hidden = !c[k];
+  }
+
+  const f = draft.fonts || {};
+  const fontSel = (sel, list, cur) => { const opts = list.map(([v, l]) => `<option value="${esc(v)}" ${(cur && !cur.url && cur.family === v) || (!cur && !v) ? "selected" : ""}>${esc(l)}</option>`); if (cur && cur.url) opts.push(`<option value="__own" selected>${esc(cur.family)} (your file)</option>`); opts.push(`<option value="__upload">Upload my own font…</option>`); $(sel).innerHTML = opts.join(""); };
+  fontSel("#fHeading", HEADING_FONTS, f.heading); fontSel("#fBody", BODY_FONTS, f.body);
+  $("[data-reset=heading]").hidden = !f.heading; $("[data-reset=body]").hidden = !f.body;
+  sampleFont("#sHeading", f.heading, "Butler, Georgia, serif"); sampleFont("#sBody", f.body, "Inter, system-ui, sans-serif");
+
+  const b = draft.buttons || {};
+  const chips = (sel, list, cur, path) => { $(sel).innerHTML = list.map(([v, l]) => `<button class="chip ${(cur || "") === v ? "on" : ""}" data-set="${path}" data-v="${v}">${l}</button>`).join(""); };
+  chips("#bShape", SHAPES, b.shape, "buttons.shape"); chips("#bCase", CASES, b.case, "buttons.case");
+  const rad = { rounded: "12px", square: "3px" }[b.shape] || "999px", tc = b.case === "none" ? "none" : "uppercase";
+  for (const id of ["#bs1", "#bs2"]) { $(id).style.borderRadius = rad; $(id).style.textTransform = tc; $(id).style.fontFamily = f.body ? `"${f.body.family}", sans-serif` : ""; }
+
+  const g = draft.background || {};
+  chips("#bgKind", BG, g.kind, "background.kind");
+  const shade = typeof g.shade === "number" ? g.shade : .9;
+  $("#bgMore").innerHTML = (g.kind === "color" ? `<label>Color <input type="color" id="bgColor" value="${esc(g.color || c.midnight || "#141C2C")}"></label>` : "")
+    + (g.kind === "image" ? `<label class="up">${g.image ? "Change texture" : "Upload a texture"}<input type="file" accept="image/*" hidden data-file="bg"></label>` : "")
+    + (g.kind && g.kind !== "color" ? `<label>Darkness <input type="range" id="bgShade" min="0" max="1" step=".02" value="${shade}"> <span id="bgShadeV">${Math.round(shade * 100)}%</span></label>` : "")
+    + (g.kind ? "" : `<span>The original velvet. Pick another to change it.</span>`);
+
+  const ic = draft.icons || {};
+  $("#icons").innerHTML = TABS.map(([k, name]) => { const o = ic[k] || origIcons[k] || {}; return `<div class="tile"><div class="pic"><svg viewBox="${esc(o.viewBox || "0 0 28 28")}" style="${o.weight ? "stroke-width:" + esc(o.weight) : ""}">${o.body ? TSKit.clean(o.body) : ""}</svg></div><b>${name}</b><small>${ic[k] ? "Your icon" : "Current icon"}</small><div class="acts"><label class="up">Upload SVG<input type="file" accept=".svg,image/svg+xml" hidden data-file="icon" data-k="${k}"></label><button class="reset" data-ir="${k}" ${ic[k] ? "" : "hidden"}>↺</button></div></div>`; }).join("");
+
+  const lg = draft.logos || {};
+  $("#logos").innerHTML = LOGOS.map(([k, name, def, where]) => `<div class="tile"><div class="pic dark"><img src="${esc(lg[k] || def)}" alt=""></div><b>${name}</b><small>${where}</small><div class="acts"><label class="up">Upload<input type="file" accept="image/png,image/svg+xml,image/webp" hidden data-file="logo" data-k="${k}"></label><button class="reset" data-lr="${k}" ${lg[k] ? "" : "hidden"}>↺</button></div></div>`).join("");
+}
+// Show each font sample in its own font (loading Google fonts here too)
+function sampleFont(sel, o, fallback) {
+  if (o && o.url) { const name = "Sample " + sel; if (!document.getElementById("ff" + sel)) { const st = document.createElement("style"); st.id = "ff" + sel; document.head.appendChild(st); } document.getElementById("ff" + sel).textContent = `@font-face{font-family:"${name}";src:url("${o.url}")}`; $(sel).style.fontFamily = `"${name}", ${fallback}`; return; }
+  if (o && o.google) { const id = "gf-" + o.family.replace(/\W/g, ""); if (!document.getElementById(id)) { const l = document.createElement("link"); l.id = id; l.rel = "stylesheet"; l.href = `https://fonts.googleapis.com/css2?family=${o.family.replace(/ /g, "+")}:wght@300;400;500;600&display=swap`; document.head.appendChild(l); } $(sel).style.fontFamily = `"${o.family}", ${fallback}`; return; }
+  $(sel).style.fontFamily = fallback;
+}
+
+// ---- Inputs ----
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset.c) { set("colors." + t.dataset.c, t.value.toUpperCase()); const tx = document.querySelector(`[data-ct=${t.dataset.c}]`); if (tx) tx.value = t.value.toUpperCase(); }
+  if (t.dataset.ct && /^#[0-9a-f]{6}$/i.test(t.value)) { set("colors." + t.dataset.ct, t.value.toUpperCase()); const p = document.querySelector(`[data-c=${t.dataset.ct}]`); if (p) p.value = t.value; }
+  if (t.id === "bgShade") { $("#bgShadeV").textContent = Math.round(t.value * 100) + "%"; set("background.shade", Number(t.value)); }
+  if (t.id === "bgColor") set("background.color", t.value.toUpperCase());
+});
+document.addEventListener("change", async e => {
+  const t = e.target;
+  if (t.id === "fHeading" || t.id === "fBody") {
+    const which = t.id === "fHeading" ? "heading" : "body";
+    if (t.value === "__upload") { pending = which; $("#fontFile").value = ""; $("#fontFile").click(); render(); return; }
+    if (t.value === "__own") return;
+    set("fonts." + which, t.value ? { family: t.value, google: true } : "");
+  }
+  if (t.id === "fontFile" && t.files[0]) {
+    const file = t.files[0], family = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").replace(/[^\w ]/g, "").trim() || "Brand font";
+    await upload(file, url => set("fonts." + pending, { family, url }));
+  }
+  if (t.dataset.file === "logo" && t.files[0]) { const k = t.dataset.k; await upload(t.files[0], url => set("logos." + k, url)); }
+  if (t.dataset.file === "bg" && t.files[0]) await upload(t.files[0], url => { set("background.image", url); });
+  if (t.dataset.file === "icon" && t.files[0]) {
+    const k = t.dataset.k, text = await t.files[0].text();
+    const icon = parseIcon(text);
+    if (!icon) return say("That file doesn't look like an SVG drawing.", "err");
+    set("icons." + k, icon);
+  }
+});
+document.addEventListener("click", e => {
+  const t = e.target.closest("button"); if (!t) return;
+  if (t.dataset.set) { set(t.dataset.set, t.dataset.v); if (t.dataset.set === "background.kind" && !t.dataset.v) set("background", ""); }
+  if (t.dataset.cr) set("colors." + t.dataset.cr, "");
+  if (t.dataset.reset) set("fonts." + t.dataset.reset, "");
+  if (t.dataset.ir) set("icons." + t.dataset.ir, "");
+  if (t.dataset.lr) set("logos." + t.dataset.lr, "");
+  if (t.dataset.pv) { $("#frame").src = t.dataset.pv; $("#pv").querySelectorAll(".chip").forEach(c => c.classList.toggle("on", c === t)); }
+});
+
+// An uploaded SVG becomes plain shapes that take the tab's color
+function parseIcon(text) {
+  const doc = new DOMParser().parseFromString(text, "image/svg+xml"), svg = doc.querySelector("svg");
+  if (!svg || doc.querySelector("parsererror")) return null;
+  let body = TSKit.clean(svg.innerHTML);
+  if (!body) return null;
+  body = body.replace(/(stroke|fill)="(?!none|currentColor)[^"]*"/g, '$1="currentColor"');
+  const w = svg.getAttribute("width"), h = svg.getAttribute("height");
+  const viewBox = svg.getAttribute("viewBox") || (w && h ? `0 0 ${parseFloat(w)} ${parseFloat(h)}` : "0 0 24 24");
+  const sw = (/stroke-width="([\d.]+)"/.exec(body) || [])[1] || svg.getAttribute("stroke-width") || "";
+  return { viewBox, body, weight: sw };
+}
+async function upload(file, done) {
+  if (file.size > 3 * 1024 * 1024) return say("That file is over 3 MB; please use a smaller one.", "err");
+  say("Uploading " + file.name + "…");
+  try { const d = await call({ action: "kit-file", name: file.name, data: await readAs(file, "readAsDataURL") }); done(d.url); }
+  catch (e) { if (e.status === 401) return gate("That password didn't work."); say(e.message, "err"); render(); }
+}
+
+$("#save").onclick = async () => {
+  $("#save").disabled = true; say("Saving…");
+  try { await call({ action: "kit-save", kit: draft }); saved = clone(draft); try { localStorage.setItem("ts_kit", JSON.stringify(saved)); } catch {} TSKit.apply(saved); changed(); say(IS_LIVE ? "Saved. The live app and website use it now (allow up to a minute)." : "Saved to this preview copy. Open the live Studio and tap Use them on the live site to make it live.", "ok"); }
+  catch (e) { if (e.status === 401) return gate("That password didn't work."); say(e.message, "err"); $("#save").disabled = false; }
+};
+$("#discard").onclick = () => { draft = clone(saved); changed(); };
+
+// The tab bar's current icons, read from the app itself
+async function loadOrigIcons() {
+  try {
+    const html = await (await fetch("/try/")).text(), doc = new DOMParser().parseFromString(html, "text/html");
+    for (const [k, , id] of TABS) { const s = doc.querySelector(`#tabbar button[data-tab=${id}] svg`); if (s) origIcons[k] = { viewBox: s.getAttribute("viewBox"), body: s.innerHTML, weight: (/stroke-width:\s*([\d.]+)/.exec(s.getAttribute("style") || "") || [])[1] || "" }; }
+  } catch {}
+}
+
+function gate(err) { $("#app").hidden = true; $("#bar").hidden = true; $("#gate").hidden = false; $("#gateErr").textContent = err || ""; }
+$("#gateForm").onsubmit = e => { e.preventDefault(); password = $("#pw").value.trim(); try { sessionStorage.setItem("ts_pw", password); } catch {} start(); };
+window.addEventListener("beforeunload", e => { if (!$("#save").disabled) { e.preventDefault(); e.returnValue = ""; } });
+
+async function start() {
+  if (!password) return gate();
+  $("#gate").hidden = true; $("#app").hidden = false; $("#bar").hidden = false;
+  try { const d = await (await fetch("/api/brand?kit=1", { cache: "no-store" })).json(); saved = d.kit || {}; } catch { saved = {}; }
+  draft = clone(saved);
+  await loadOrigIcons();
+  $("#pv").innerHTML = [["/try/", "App"], ["/", "Website"]].map(([u, l], i) => `<button class="chip ${i ? "" : "on"}" data-pv="${u}">${l}</button>`).join("");
+  $("#frame").addEventListener("load", send);
+  $("#frame").src = "/try/";
+  changed();
+}
+start();
+</script>
+</body>
+</html>

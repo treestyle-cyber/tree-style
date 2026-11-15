@@ -3,6 +3,10 @@
 // GET  /api/brand?img=<slot>           -> the chosen image itself (used when the store is private)
 // POST /api/brand { action:"generate", prompt, aspect }   -> { image: dataURL }            (password)
 // POST /api/brand { action:"use", slot, image }           -> { url }                       (password)
+// GET  /api/brand?kit=1                -> { kit, updated }   the Brand kit (colors, fonts, buttons, background, icons, logos)
+// GET  /api/brand?kitfile=<path>       -> a file the Brand kit uses (font, logo, texture) when the store is private
+// POST /api/brand { action:"kit-save", kit }              -> { ok }                        (password)
+// POST /api/brand { action:"kit-file", data, name }       -> { url }                       (password)
 import { put, list, get } from "@vercel/blob";
 import { blobToken, blobVarNames, blobConnected, IS_PREVIEW, envPath } from "../lib/blob.js";
 const tok = () => (blobToken() ? { token: blobToken() } : {});
@@ -44,6 +48,34 @@ async function previewPicks() {
   return Object.values(prev).filter(b => { const slot = b.pathname.split("/")[3]; return !live[slot] || t(b) > t(live[slot]); });
 }
 
+// ---- Brand kit: one small JSON file (newest wins) plus the files it points to ----
+const KIT_DIR = "brand/kit/settings/", KIT_FILES = "brand/kit/files/";
+const FILE_TYPES = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/svg+xml": "svg", "font/woff2": "woff2", "font/woff": "woff", "font/otf": "otf", "font/ttf": "ttf", "application/font-woff": "woff", "application/x-font-otf": "otf", "application/x-font-ttf": "ttf", "application/vnd.ms-opentype": "otf", "application/octet-stream": "" };
+async function newestIn(prefix) {
+  let best = null, cursor;
+  do {
+    const page = await list({ ...tok(), prefix, cursor, limit: 1000 });
+    for (const b of page.blobs) if (!best || t(b) > t(best)) best = b;
+    cursor = page.hasMore ? page.cursor : null;
+  } while (cursor);
+  return best;
+}
+async function readBlob(b) {
+  const r = await get(b.pathname, { ...tok(), access: "private" }).catch(() => null);
+  if (r && r.stream) return Buffer.from(await new Response(r.stream).arrayBuffer());
+  return Buffer.from(await (await fetch(b.url)).arrayBuffer());
+}
+// A preview copy uses its own kit once it has saved one, otherwise the live kit
+async function kitBlob() {
+  if (!blobConnected()) return null;
+  return (IS_PREVIEW && await newestIn("preview/" + KIT_DIR)) || await newestIn(KIT_DIR);
+}
+async function putEither(path, buf, contentType) {
+  try { return await put(path, buf, { ...tok(), access: "public", contentType }); }
+  catch (e) { return await put(path, buf, { ...tok(), access: "private", contentType }); }
+}
+const fileUrl = b => /\.public\.blob\.vercel-storage\.com/.test(b.url) ? b.url : `/api/brand?kitfile=${encodeURIComponent(b.pathname)}`;
+
 async function generate(prompt, aspect, base, map) {
   const ref = await ribbonRef();
   let lastErr = "";
@@ -71,6 +103,24 @@ async function generate(prompt, aspect, base, map) {
 }
 
 export default async function handler(req, res) {
+  if (req.method === "GET" && req.query?.kit) {
+    res.setHeader("cache-control", "public, max-age=30");
+    try {
+      const b = await kitBlob();
+      if (!b) return res.status(200).json({ kit: null });
+      return res.status(200).json({ kit: JSON.parse((await readBlob(b)).toString("utf8")), updated: b.uploadedAt });
+    } catch (e) { return res.status(200).json({ kit: null, error: String(e.message || e) }); }
+  }
+  if (req.method === "GET" && req.query?.kitfile) {
+    const path = String(req.query.kitfile);
+    if (!/^(preview\/)?brand\/kit\/files\/[\w.-]+$/.test(path)) return res.status(400).end();
+    const r = await get(path, { ...tok(), access: "private" }).catch(() => null);
+    if (!r || !r.stream) return res.status(404).end();
+    res.setHeader("cache-control", "public, max-age=31536000, immutable");
+    const ext = path.split(".").pop();
+    res.setHeader("content-type", { png: "image/png", jpg: "image/jpeg", webp: "image/webp", svg: "image/svg+xml", woff2: "font/woff2", woff: "font/woff", otf: "font/otf", ttf: "font/ttf" }[ext] || "application/octet-stream");
+    return res.status(200).send(Buffer.from(await new Response(r.stream).arrayBuffer()));
+  }
   if (req.method === "GET") {
     const slot = String(req.query?.img || "");
     try {
@@ -113,13 +163,36 @@ export default async function handler(req, res) {
     catch (e) { return res.status(502).json({ error: String(e.message || e) }); }
   }
 
+  if (action === "kit-save" || action === "kit-file") {
+    if (!blobConnected()) return res.status(400).json({ error: "Storage isn't connected yet. In Vercel: Storage → Create → Blob → connect it to this project, then Redeploy." });
+    try {
+      if (action === "kit-save") {
+        const text = JSON.stringify(req.body.kit || {});
+        if (text.length > 400000) return res.status(400).json({ error: "The brand kit is too large to save (icons should be simple SVG line drawings)." });
+        await putEither(envPath(`${KIT_DIR}${Date.now()}.json`), Buffer.from(text), "application/json");
+        return res.status(200).json({ ok: true });
+      }
+      const m = /^data:([\w.+\/-]*);base64,(.+)$/.exec(String(req.body.data || ""));
+      const ext = (String(req.body.name || "").match(/\.(png|jpe?g|webp|svg|woff2?|otf|ttf)$/i) || [])[1];
+      if (!m || !(m[1] in FILE_TYPES || ext)) return res.status(400).json({ error: "That file type isn't supported. Use PNG, JPG, WebP or SVG for pictures, and WOFF2, WOFF, OTF or TTF for fonts." });
+      const e = (ext || FILE_TYPES[m[1]] || "bin").toLowerCase().replace("jpeg", "jpg");
+      const type = { png: "image/png", jpg: "image/jpeg", webp: "image/webp", svg: "image/svg+xml", woff2: "font/woff2", woff: "font/woff", otf: "font/otf", ttf: "font/ttf" }[e] || "application/octet-stream";
+      const b = await putEither(envPath(`${KIT_FILES}${Date.now()}.${e}`), Buffer.from(m[2], "base64"), type);
+      return res.status(200).json({ ok: true, url: fileUrl(b) });
+    } catch (e) { return res.status(500).json({ error: String(e.message || e) }); }
+  }
+
   if (action === "adopt-preview") {
     // Live Studio only: copy the photos picked in the preview Studio onto the live site
     if (IS_PREVIEW) return res.status(400).json({ error: "Open the live Studio to do this." });
     if (!blobConnected()) return res.status(400).json({ error: "Storage isn't connected." });
     try {
       const picks = await previewPicks(), slots = picks.map(b => b.pathname.split("/")[3]);
+      const pk = await newestIn("preview/" + KIT_DIR), lk = await newestIn(KIT_DIR);
+      const kitNewer = !!pk && (!lk || t(pk) > t(lk));
+      if (kitNewer) slots.push("brand kit");
       if (req.body.dry) return res.status(200).json({ slots });
+      if (kitNewer) await putEither(`${KIT_DIR}${Date.now()}.json`, await readBlob(pk), "application/json");
       for (const b of picks) {
         const slot = b.pathname.split("/")[3];
         let buf;

@@ -21,6 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
+<script src="/brand-kit.js"></script>
 <script>
 // Brand photos chosen in the Studio replace the fabric textures (each spot keeps its texture until then)
 fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); } }).catch(() => {});
@@ -73,8 +74,8 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .gets h3{color:var(--ivory);font-size:26px;margin-bottom:6px}
   .gets p{margin:0;color:#B9B2A6}
   .orns{display:inline-flex;gap:4px;vertical-align:middle;margin-left:6px}
-  .orns i{width:14px;height:14px;border-radius:50%;background:#B89C6B;display:block}
-  .orns i.h{background:linear-gradient(90deg,#B89C6B 50%,rgba(255,255,255,.2) 50%)}
+  .orns i{width:14px;height:14px;border-radius:50%;background:var(--gold);display:block}
+  .orns i.h{background:linear-gradient(90deg,var(--gold) 50%,rgba(255,255,255,.2) 50%)}
 
   section.close{padding:72px 0 56px;text-align:center}
   section.close h2{font-size:clamp(34px,4.5vw,52px);margin:12px auto 14px;max-width:16em}
@@ -103,9 +104,9 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   .hero input::placeholder{color:#7A7368}
   .hero .compare{box-shadow:0 30px 70px -20px rgba(0,0,0,.7),0 0 0 1px rgba(184,156,107,.45)}
   /* Gold divider between the hero and How it works: two hairlines and the arched tree emblem */
-  .divider{background:#141C2C;padding:30px 0}
+  .divider{background:var(--midnight);padding:30px 0}
   .divider .wrap{display:flex;align-items:center;gap:18px}
-  .divider span{flex:1;height:1px;background:#C5B28F}
+  .divider span{flex:1;height:1px;background:var(--champagne)}
   .divider img{width:34px;height:auto;flex:none}
   .steps .card{border-top:2px solid var(--gold)}
   .steps .n{font-weight:400}
@@ -170,13 +171,13 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   }
 
   /* ---------- What you get: warm linen editorial page (designer's approved design) ---------- */
-  section.get{background:#DAD1C4;color:#3A2A21;padding:76px 0 84px}
+  section.get{background:#DAD1C4;color:var(--espresso);padding:76px 0 84px}
   section.get .eyebrow{color:#9E7B45;font-weight:600;font-size:15px;letter-spacing:.24em}
-  section.get h2{color:#3A2A21;font:500 clamp(40px,5.2vw,66px)/1.04 var(--serif);letter-spacing:-.01em;margin:16px 0 50px;max-width:none}
+  section.get h2{color:var(--espresso);font:500 clamp(40px,5.2vw,66px)/1.04 var(--serif);letter-spacing:-.01em;margin:16px 0 50px;max-width:none}
   .gets{gap:0 72px}
-  .gets div{padding:34px 0 46px;border-top:1px solid #C5B28F}
-  .gets h3{color:#3A2A21;font:500 clamp(27px,2.6vw,34px)/1.12 var(--serif);margin:0 0 14px}
-  .gets p{color:#3A2A21;font-size:19px;line-height:1.6;max-width:30em}
+  .gets div{padding:34px 0 46px;border-top:1px solid var(--champagne)}
+  .gets h3{color:var(--espresso);font:500 clamp(27px,2.6vw,34px)/1.12 var(--serif);margin:0 0 14px}
+  .gets p{color:var(--espresso);font-size:19px;line-height:1.6;max-width:30em}
   section.get .orns{gap:6px;margin-left:12px;vertical-align:.08em}
   section.get .orns i{width:17px;height:17px;background:#B08A4A}
   section.get .orns i.h{background:linear-gradient(90deg,#B08A4A 50%,#C9BEAE 50%)}
@@ -199,19 +200,19 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; f
   }
 
   /* ---------- Brand palette only (no purple anywhere): navy sections and footer, ivory form fields ---------- */
-  html{background:#141C2C}
+  html{background:var(--midnight)}
   body{min-height:100vh;display:flex;flex-direction:column}
-  section.how{background:#141C2C}
-  footer{background:#141C2C;flex:1 0 auto}   /* fills any leftover height so the page ends on the footer, with no empty band below */
-  form.signup input,.hero form.signup input,section.close form.signup input{background:#F5F0E8;color:#3A2A21;caret-color:#3A2A21;border:1px solid #C5B28F}
+  section.how{background:var(--midnight)}
+  footer{background:var(--midnight);flex:1 0 auto}   /* fills any leftover height so the page ends on the footer, with no empty band below */
+  form.signup input,.hero form.signup input,section.close form.signup input{background:var(--cream);color:var(--espresso);caret-color:var(--espresso);border:1px solid var(--champagne)}
   form.signup input::placeholder{color:#8A7F72}
   form.signup input:focus{border-color:#9A7E50;box-shadow:0 0 0 3px rgba(197,178,143,.35);outline:none}
 
   /* ---------- How it works: ivory cards on the midnight section (matches the Results screen cards) ---------- */
-  .steps .card{background:#F5F0E8;border:1px solid #C5B28F;color:#3A2A21}
-  .steps .n{color:#C5B28F}
-  .steps h3{color:#3A2A21}
-  .steps p{color:#3A2A21}
+  .steps .card{background:var(--cream);border:1px solid var(--champagne);color:var(--espresso)}
+  .steps .n{color:var(--champagne)}
+  .steps h3{color:var(--espresso)}
+  .steps p{color:var(--espresso)}
 </style>
 </head>
 <body>
