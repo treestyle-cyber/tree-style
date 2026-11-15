@@ -56,7 +56,9 @@ function factsLine(f) {
   if (!f) return "Tree facts: work them out from the photo: real or artificial, open or dense, snowy (flocked) or not, and the height (estimate it from the room; ceilings are usually 8-9 ft).";
   const kind = f.kind === "natural" ? "real" : f.kind === "artificial" ? "artificial" : "real or artificial: decide from the photo";
   const height = Number(f.height) ? `${f.height} ft` : "height not given (estimate it from the room)";
-  const density = f.density === "open" ? "open, with natural gaps" : f.density === "dense" ? "full and dense (count this toward Fullness)" : "density not sure (decide from the photo)";
+  const density = f.density === "open" ? "a slim or sparse style: the gaps between its branches are part of how it was made and part of its look. Shaping it only opens each branch the way it was made; it never fills the gaps. Design with the gaps rather than against them (ribbon and ornaments set back toward the trunk show off beautifully on a sparse tree), and don't count the gaps against Fullness: score Fullness on whether its branches are opened as made"
+    : f.density === "unshaped" ? "not shaped yet: its branches are still folded from the box, so the plan includes shaping the branches"
+    : f.density === "dense" ? "full and dense (count this toward Fullness)" : "density not sure (decide from the photo)";
   const notes = [f.kind === "natural" ? "A real tree is never shaped like an artificial one: no \"fluff\" plan item." : "", f.kind !== "natural" && f.prelit === "yes" ? "It is an artificial, pre-lit tree (lights built in): don't add lights, set lights.add to false and give no \"lights\" plan item." : ""].filter(Boolean).join(" ");
   return `Tree (confirmed by the homeowner; trust these over the photo): ${f.kind !== "natural" && f.prelit === "yes" ? "artificial, pre-lit" : kind}, ${height}, ${density}. Work out whether it's snowy (flocked) from the photo.${notes ? " " + notes : ""}`;
 }
@@ -119,10 +121,10 @@ const PLAN_PART = `
 
 YOUR PART: the scores and first impression are being written separately at the same time. You write only the plan, ideas, mockup and render brief.`;
 
-function revisePrompt(rv, hasExtra) {
+function revisePrompt(rv, hasExtra, inspoN) {
   const t = rv.tree || {}, mode = rv.mode === "design" ? "design" : "check";
   const history = (rv.history || []).slice(-6).map(h => `${h.role === "user" ? "Homeowner" : "You"}: ${String(h.text).slice(0, 400)}`).join("\n");
-  return `You are an expert Christmas tree designer acting as a design partner for someone who loves Christmas but isn't a designer. You already made the plan below. Revise it based on their request. Image 1 is their tree as it is now (the original photo).${hasExtra ? " Image 2 shows pieces they own: design around them and give them the best spots." : ""}
+  return `You are an expert Christmas tree designer acting as a design partner for someone who loves Christmas but isn't a designer. You already made the plan below. Revise it based on their request. Image 1 is their tree as it is now (the original photo).${hasExtra ? " Image 2 shows pieces they own (it may be a board of several photos; every piece in it is theirs): design around them and give them the best spots." : ""}${inspoN ? ` Image ${inspoN} is the inspiration photo the design was built from: keep drawing on it as before (what they love in it, its colors in their proportions, never its background). When they ask for something general like "jewel tones" or "more color", read it through this photo's own colors rather than generic ones.` : ""}
 
 ${GUIDE}
 
@@ -232,12 +234,13 @@ export default async function handler(req, res) {
     if (details) {
       ({ json: result, usage } = await callClaude([img], detailsPrompt(details), 8000, DETAILS_SCHEMA));
     } else if (revise) {
-      const ex = parseDataUrl(extra);
-      ({ json: result, usage } = await callClaude(ex ? [img, ex] : [img], revisePrompt(revise, !!ex), 16000, REVISE_SCHEMA));
+      const ex = parseDataUrl(extra), ins = revise.mode === "design" ? parseDataUrl(inspo) : null;   // the inspiration photo stays in view for changes (Eric: a stained-glass design lost its amber and green)
+      const imgs = [img, ...(ex ? [ex] : []), ...(ins ? [ins] : [])];
+      ({ json: result, usage } = await callClaude(imgs, revisePrompt(revise, !!ex, ins ? imgs.length : 0), 16000, REVISE_SCHEMA));
     } else {
       const imgs = [img], notes = ["Image 1 is their tree" + (mode === "design" ? " before decorating (bare, or with just lights)." : ".")];
       const pc = parseDataUrl(pieces), ins = mode === "design" ? parseDataUrl(inspo) : null;
-      if (pc) { imgs.push(pc); notes.push(`Image ${imgs.length} shows special pieces they own (ornaments, heirlooms or found objects): design around them, give them the best spots, and let them set the theme and colors if they fit the style.`); }
+      if (pc) { imgs.push(pc); notes.push(`Image ${imgs.length} shows special pieces they own (ornaments, heirlooms or found objects; it may be a board of several photos, and every piece in it is theirs): design around them, give them the best spots, and let them set the theme and colors if they fit the style.`); }
       if (ins) { imgs.push(ins); notes.push(`Image ${imgs.length} is an inspiration photo (art, a room, fabric, an object). First decide what in the photo is the inspiration and what is just background: use their own words (if they say they love the fabric on a chair, the inspiration is the fabric, not the chair, its frame or the room; brass sconces photographed on a towel are about the sconces, not the towel), and otherwise the clear subject. Draw only from that, never from the surroundings, surface or setting. Usually the inspiration is a reference, so nothing in the photo goes on the tree literally; but if their words say the pieces themselves go on the tree (e.g. "build a tree around this set of vintage ornaments"), they own them: put those very pieces on the tree in the best spots and build everything else around them. Design the tree the way a top designer would around it: read more than its colors. Notice what is actually in it (its hero subject, its flowers and plants by kind, its objects and patterns, its materials, its cultural or period style) and translate those into real decor. Echo its hero subject in a figural piece or two; carry its flowers in as matching floral stems in the same kinds and colors; find ornaments shaped like or patterned after its objects (glass flowers, figural or patterned pieces), not only round ornaments, and repeat a signature object in a few sizes through the tree; let its pattern or style show in the ribbon choice, and small bows in one of its accent colors can carry that color through the tree; the base can echo it too, in a way that suits the tree's overall feel (an elegant design gets a tree skirt in its colors or fabric; a collar or basket suits a rustic or casual one), with its colors drawn from the image. Keep it to a considered handful of these motifs woven through the whole tree, and follow the guide for placement, ribbon and balance. Name these pieces specifically in the plan and the brief so the preview shows them.${INSPO_MORE}`); }
       ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" "), part, variant }), part === "look" ? 4000 : 16000, part === "look" ? LOOK_SCHEMA : part === "plan" ? PLAN_SCHEMA : EVAL_SCHEMA));
       // Weighted overall score, 0-100

@@ -48,6 +48,16 @@
   .mk-row .sw{width:24px;height:24px;border-radius:50%;border:2px solid transparent;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
   .mk-row .sw.on{border-color:var(--gold)}
   .mk-row .mk-clear,.mk-row .mk-suggest{appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:99px;padding:4px 10px;font:500 12px var(--sans);cursor:pointer}
+  .essed{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+  .essed .frame{width:104px;height:104px;flex:none}
+  .essed .frame img{width:100%;height:100%;object-fit:cover}
+  .essed .f{flex:1;display:grid;gap:6px;min-width:0}
+  .essed input,.essed select{width:100%;font:14px var(--sans);padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper-2);color:var(--ink)}
+  .essed .acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .essed .acts > *{line-height:1.2}
+  .essed .mini{appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:99px;padding:5px 11px;font:500 12px var(--sans);cursor:pointer}
+  .essed .mini:disabled{opacity:.5}
+  .essed .mini.rm{color:var(--muted)}
   .refcard{margin-bottom:22px;background:var(--paper);border:1px solid var(--gold);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
   .refcard h2{font-weight:400;font-size:26px}
   .refcard .where{font-size:12.5px;color:var(--muted);margin-top:-6px}
@@ -84,7 +94,7 @@
     <div class="intro">
       <div class="eyebrow">Studio</div>
       <h1>Brand photography</h1>
-      <p>Each slot is a photo the app and site use. Generate one (adjust the wording if you like) or <b>Upload</b> your own, then tap <b>Use this</b> on the one you love. It appears in the app right away. Until you choose one, that spot keeps its fabric texture.</p>
+      <p>Each slot is a photo the app and site use. Generate, adjust the wording if you like, and tap <b>Use this</b> on the one you love. It appears in the app right away. Until you choose one, that spot keeps its fabric texture.</p>
     </div>
     <div class="banner" id="setup" hidden><b>One step first:</b> photos you choose are saved in Vercel Blob storage, which isn't connected yet. In Vercel, open the tree-style project → <b>Storage</b> → <b>Create</b> → <b>Blob</b> → connect it to this project → then <b>Redeploy</b>. You can still generate and preview images in the meantime.</div>
     <div class="refcard" id="refCard">
@@ -108,6 +118,13 @@
       <div class="row" style="max-width:520px"><button class="btn ghost" id="baMake" disabled>Make the after with the app</button><button class="btn" id="baUse" disabled>Use this pair</button></div>
       <p class="msg" id="baMsg"></p>
     </div>
+    <div class="refcard" id="essCard">
+      <h2>Stylist's essentials</h2>
+      <div class="where">The small tools shown on the results screen, in the steps and at the end of the shopping list. Paste the Amazon link of the exact product you recommend (TreeStyle's tag is added for you), or leave it empty to open a store search. <b>Show in step</b> puts the card under "You'll want" in that step. Use your own photo of the product, or make one. Tap <b>Save the list</b> when you're done.</div>
+      <div id="essList"></div>
+      <div class="row"><button class="btn ghost" id="essAdd">Add a card</button><button class="btn" id="essSave">Save the list</button></div>
+      <p class="msg" id="essMsg"></p>
+    </div>
     <div class="grid" id="grid"></div>
   </div>
 </div>
@@ -116,10 +133,12 @@
 <script src="/try/guide.js"></script>
 <script>
 const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const LOOK = "Editorial interior photograph for a luxury holiday brand. Moody, candlelit, warm low light with soft glowing Christmas lights; deep midnight navy, winter berry red, evergreen and antique gold tones; rich textures like velvet ribbon, brass and walnut. Shot on a full-frame camera, shallow depth of field, magazine quality, photorealistic. No people, no text, no logos, no watermarks.";
 const STYLED = "How the tree is styled: wide wired ribbon weaves in and out of the tree: it emerges from deep inside the branches in soft billows and short drops at about seven separate spots, staggered left and right at different heights, then disappears back into the greenery, so green branches show between each appearance. There are no bows anywhere on the tree. Ornaments are scattered and staggered at different heights and depths, the largest set back toward the trunk, with balanced visual weight left and right.";
 const BARE = "The tree itself is completely bare and undecorated: only warm white lights glowing within fully shaped branches. Nothing hangs on it or is tucked into it: no ornaments, no ribbon, no bows, no flowers, no picks, no garland, no topper.";
 const TEXLOOK = "Ultra-detailed close-up photograph of real fabric filling the entire frame edge to edge, as a seamless background texture. Soft directional studio light, rich deep tones, crisp fibre detail and natural sheen, photorealistic, sharp focus throughout. No objects, no people, no text, no logos, no borders.";
+const PRODLOOK = "Square product photograph for a luxury holiday brand's shopping list: the single item alone, centered and filling most of the frame, on a deep midnight navy velvet surface (#141C2C) with a softly blurred background of warm glowing Christmas lights and evergreen. Soft warm light from one side, gentle highlights, rich shadows, crisp detail, photorealistic. No packaging, no brand names, no labels, no text, no logos, no people, no hands.";
 const SLOTS = [
   { id: "velvet", texture: true, name: "Midnight velvet", where: "Background of every app screen, the welcome, the loading screen and the website", aspect: "1:1",
     prompt: "Deep midnight navy blue silk velvet (#141C2C), softly draped in a few broad diagonal folds, with subtle cool highlights catching along the crests of the folds and very dark shadows in the troughs. Luxurious, quiet, elegant." },
@@ -127,12 +146,6 @@ const SLOTS = [
     prompt: "Deep winter berry red silk velvet (#6B2E2E), softly draped in a few broad diagonal folds, with warm highlights along the crests of the folds and rich dark shadows. Luxurious, quiet, elegant." },
   { id: "hero", name: "Welcome", where: "Top of the app's welcome screen and the website hero", aspect: "3:4",
     prompt: "A breathtaking, professionally styled 8 ft Christmas tree in an elegant living room at dusk: velvet ribbon billowing out of the branches and tucking back in, oversized antique gold and winter berry ornaments, frosted greenery stems and magnolias, a full, lush crown with a refined topper of stems and ornaments. Candles and a fireplace glow softly nearby. The tree is the hero of the frame, slightly off-center." },
-  { id: "home", name: "App home screen", where: "Full-screen photo behind the app's home screen on phones (logo at the top, headline and buttons at the bottom)", aspect: "9:16",
-    prompt: "Tall portrait photo for a phone screen: a warm, cinematic heritage living room at night, Ralph Lauren Home feeling. A full, beautifully decorated Christmas tree stands in the center of the room, in the middle of the frame, with red and antique gold glass ornaments and warm white lights. Paneled walls, an oil painting in a gilded frame, brass table lamps glowing, a linen sofa with a velvet pillow on the right. Leave quiet, darker space above the tree for a logo and a calm floor area in the lower third for a headline. No text anywhere in the picture." },
-  { id: "pass", name: "Early access sign-in", where: "The wide photo on the app's tester sign-in screen, under the logo; the headline sits over its lower left, so keep that area calm and darker", aspect: "3:2",
-    prompt: "Cinematic close photograph of a beautifully decorated Christmas tree on the right of the frame: deep burgundy velvet ribbon and bows, antique gold ornaments, frosted evergreen branches and red berries, warm white lights. On the left, softly out of focus, a glowing fireplace and candles on a wooden mantel in a warm heritage room. Authentic, warm, art-directed, not oversaturated. No text anywhere in the picture." },
-  { id: "create", name: "What would you like to do?", where: "The one photo on the app's Create my space screen, above the Check My Tree and Design My Tree buttons", aspect: "4:5",
-    prompt: "Editorial interiors-magazine photograph of a professionally decorated Christmas tree, centered and fully in frame from tip to skirt: wide velvet ribbon billowing out of the branches and tucking back in, antique gold and winter berry glass ornaments, frosted greenery stems, warm white lights glowing deep in the branches, a refined topper. Soft, warm natural light in a quiet heritage room with linen and walnut tones. Calm, understated, luxurious. No text anywhere in the picture." },
   { id: "check", name: "Check my tree", where: "Home screen card (wide photo above the words)", aspect: "16:9",
     prompt: "Wide banner photo, framed so it reads at a glance on a phone: a close, intimate view of a beautifully decorated Christmas tree: velvet ribbon billowing out of the branches and tucking back in, glass ornaments in winter berry and antique gold, glowing warm white lights deep in the branches. No cards, tags, signs or writing anywhere in the picture." },
   { id: "design", bare: true, name: "Design my tree", where: "Home screen card (wide photo above the words)", aspect: "16:9",
@@ -150,7 +163,19 @@ const SLOTS = [
   { id: "playful", name: "Playful", where: "Style card", aspect: "4:5",
     prompt: "A playful, joyful Christmas tree: candy-striped ribbon billowing out of the branches and tucking back in, whimsical ornaments, oversized candy canes, pops of bright color balanced with gold, still beautifully composed and high-end, warm cozy light." },
   { id: "themed", name: "Themed", where: "Style card", aspect: "4:5",
-    prompt: "A themed Christmas tree with a winter woodland story: frosted branches, birds and feathers, pinecones, deep evergreen velvet ribbon billowing out of the branches and tucking back in, small glowing lanterns, cohesive and enchanting." }
+    prompt: "A themed Christmas tree with a winter woodland story: frosted branches, birds and feathers, pinecones, deep evergreen velvet ribbon billowing out of the branches and tucking back in, small glowing lanterns, cohesive and enchanting." },
+  { id: "ess_hooks", product: true, name: "Essentials: ornament hooks", where: "Stylist's essentials, end of the shopping list", aspect: "1:1",
+    prompt: "A small loose heap of thin antique gold wire ornament hooks, a few lying apart so their S shape is clear, one hooking a small winter berry glass ornament by its cap." },
+  { id: "ess_wire", product: true, name: "Essentials: floral paddle wire", where: "Stylist's essentials, end of the shopping list", aspect: "1:1",
+    prompt: "A paddle of dark green floral wire on a flat wooden paddle, a loose end curling away, beside a sprig of evergreen and a fold of wide velvet ribbon." },
+  { id: "ess_ties", product: true, name: "Essentials: green twist ties", where: "Stylist's essentials, end of the shopping list", aspect: "1:1",
+    prompt: "A neat bundle of dark green garden twist ties, a few loose ones curled, one twisted around a small evergreen sprig." },
+  { id: "ess_remote", product: true, name: "Essentials: remote control outlet", where: "Stylist's essentials, end of the shopping list", aspect: "1:1",
+    prompt: "A small plain white plug-in remote control outlet with its slim white remote beside it, no markings, a glowing strand of warm white lights plugged into it." },
+  { id: "ess_cord", product: true, name: "Essentials: green extension cord", where: "Stylist's essentials, end of the shopping list", aspect: "1:1",
+    prompt: "A loosely coiled dark green indoor extension cord with its outlet end in front, blending into a few evergreen branches." },
+  { id: "ess_scissors", product: true, name: "Essentials: fabric scissors", where: "Stylist's essentials, end of the shopping list", aspect: "1:1",
+    prompt: "A pair of elegant fabric shears with brass handles, resting open beside a length of wide wired velvet ribbon whose tail is cut on a clean angle." }
 ];
 
 let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
@@ -173,7 +198,7 @@ const shrink = (src, max = 1600) => new Promise(res => {
 const wide = a => { const [w, h] = String(a).split(":").map(Number); return w > h; };
 function build(current) {
   const ar = a => a.replace(":", " / ");
-  $("#grid").innerHTML = SLOTS.map(s => `
+  $("#grid").innerHTML = SLOTS.filter(s => !s.product).map(s => `
     <div class="slot${s.texture ? " tex" : ""}${wide(s.aspect) ? " wide" : ""}" data-id="${s.id}">
       <h2>${s.name}</h2><div class="where">${s.where}</div>
       <div class="frames">
@@ -182,8 +207,8 @@ function build(current) {
       </div>
       ${current[s.id] ? `<button class="fromcur" style="align-self:flex-start;appearance:none;background:none;border:1px solid var(--line);color:var(--gold);border-radius:99px;padding:5px 12px;font:500 12.5px var(--sans);cursor:pointer">Start from the photo in use</button>` : ""}
       <textarea>${s.prompt}</textarea>
-      <div class="row"><button class="btn ghost gen">Generate</button><label class="btn ghost up" style="cursor:pointer">Upload<input type="file" accept="image/*" hidden></label><button class="btn use" disabled>Use this</button></div>
-      <details class="fixbox"><summary>Fix the tree in the new photo</summary>
+      <div class="row"><button class="btn ghost gen">Generate</button>${s.product ? `<label class="btn ghost" style="cursor:pointer">Upload your photo<input type="file" class="upl" accept="image/*" hidden></label>` : ""}<button class="btn use" disabled>Use this</button></div>
+      <details class="fixbox"${s.product ? " hidden" : ""}><summary>Fix the tree in the new photo</summary>
         <div class="fixstep"><b>1 · Clear the streams</b><textarea class="fixtxt rm">Remove every length of ribbon that runs down or across the tree, and any long ribbon tails hanging from the topper; fill those areas with natural green branches and lights. Move ornaments so none line up in a column, row or diagonal: scatter and stagger them, keep the largest set back toward the trunk, and keep the visual weight balanced left and right.</textarea><button class="btn ghost fix" data-k="rm" disabled>Clear the streams</button></div>
         <div class="fixstep"><b>2 · Tuck in the ribbon</b>
           <div class="mk-help">Tap the photo where the ribbon should peek out of the tree. We've suggested seven staggered spots; tap <i>Clear</i> to place your own.</div>
@@ -203,25 +228,13 @@ function build(current) {
       genB.disabled = true; useB.disabled = true; msg.className = "msg"; msg.textContent = "Creating… about 20 seconds";
       nf.innerHTML = '<span class="lbl">New</span><div class="spin"></div>';
       try {
-        const d = await call({ action: "generate", prompt: el.querySelector("textarea").value.trim() + "\n\n" + (s.texture ? TEXLOOK : LOOK + " " + (s.bare ? BARE : STYLED)), aspect: s.aspect });
+        const d = await call({ action: "generate", prompt: el.querySelector("textarea").value.trim() + "\n\n" + (s.texture ? TEXLOOK : s.product ? PRODLOOK : LOOK + " " + (s.bare ? BARE : STYLED)), aspect: s.aspect });
         img = await shrink(d.image);
         nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; el.dispatchEvent(new Event("ts-img")); msg.textContent = s.texture ? "Like it? Tap Use this." : "Like it? Tap Use this. If the tree breaks a rule, open Fix the tree below."; useB.disabled = false; fixBs.forEach(b => b.disabled = false); genB.textContent = "Generate again";
       } catch (e) {
         if (e.status === 401) return gate("That password didn't work.");
         nf.innerHTML = '<span class="lbl">New</span>Try again'; msg.className = "msg err"; msg.textContent = e.message;
       } finally { genB.disabled = false; }
-    };
-    // Your own photo: shown as New, then Use this saves it like a generated one
-    el.querySelector(".up input").onchange = async e => {
-      const f = e.target.files[0]; e.target.value = ""; if (!f) return;
-      msg.className = "msg"; msg.textContent = "Loading your photo…";
-      try {
-        const src = await new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = no; fr.readAsDataURL(f); });
-        img = await shrink(src);
-        nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; el.dispatchEvent(new Event("ts-img"));
-        useB.disabled = false; fixBs.forEach(b => b.disabled = false);
-        msg.textContent = "Like it? Tap Use this. The app fills the card with it, so the edges may be trimmed.";
-      } catch (err) { msg.className = "msg err"; msg.textContent = "That photo couldn't be opened. Try a JPG or PNG."; }
     };
     const fromCur = el.querySelector(".fromcur");
     if (fromCur) fromCur.onclick = async () => {
@@ -269,6 +282,14 @@ function build(current) {
       } catch (e) { msg.className = "msg err"; msg.textContent = e.message; }
       finally { all.forEach(b => b.disabled = false); }
     });
+    // Essentials: your own photo of the product (square, cropped to the middle)
+    const upl = el.querySelector(".upl");
+    if (upl) upl.onchange = async () => {
+      const f = upl.files[0]; if (!f) return;
+      const src = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); });
+      img = await new Promise(res => { const im = new Image(); im.onload = () => { const n = Math.min(im.width, im.height), k = Math.min(1, 1200 / n), c = document.createElement("canvas"); c.width = c.height = Math.round(n * k); c.getContext("2d").drawImage(im, (im.width - n) / 2, (im.height - n) / 2, n, n, 0, 0, c.width, c.height); res(c.toDataURL("image/jpeg", .88)); }; im.src = src; });
+      nf.innerHTML = `<span class="lbl">New</span><img src="${img}" alt="">`; useB.disabled = false; msg.className = "msg"; msg.textContent = "Like it? Tap Use this.";
+    };
     useB.onclick = async () => {
       if (!img) return;
       useB.disabled = true; msg.className = "msg"; msg.textContent = "Saving…";
@@ -358,14 +379,78 @@ async function start() {
     } catch (err) { $("#refMsg").className = "msg err"; $("#refMsg").textContent = err.message; }
   };
   build(info.photos || {});
+  setupEss(info);
   offerPreviewPicks();
+}
+// ---- Stylist's essentials editor (same defaults as the app until a list is saved) ----
+const ESS_DEFAULT = [
+  { id: "hooks", label: "Ornament hooks", qty: "Enough for every ornament, with extra to spare", q: "gold ornament hooks", step: "statement" },
+  { id: "wire", label: "Green floral paddle wire", qty: "Holds ribbon loops and cascades exactly where you want them", q: "green floral paddle wire", step: "ribbon" },
+  { id: "ties", label: "Green twist ties", qty: "Fasten stems and picks to the branches, out of sight", q: "green garden twist ties", step: "primary_picks" },
+  { id: "remote", label: "Remote control outlet", qty: "Lights on and off without reaching behind the tree", q: "remote control outlet for christmas lights", step: "lights" },
+  { id: "cord", label: "Green extension cord", qty: "Disappears into the branches", q: "green extension cord indoor", step: "lights" },
+  { id: "scissors", label: "Fabric scissors", qty: "Crisp, clean ribbon tails", q: "fabric scissors", step: "ribbon" },
+];
+const ESS_STEPS = [["", "Not in a step"], ["lights", "Lights"], ["primary_picks", "Filler"], ["ribbon", "Ribbon"], ["florals", "Flowers"], ["statement", "Extra-large & large ornaments"], ["medium", "Medium & small ornaments"], ["crown", "The crown & base"]];
+let essList = [], essPhotos = {};
+const essRead = () => [...document.querySelectorAll(".essed")].map(el => ({ id: el.dataset.id, label: el.querySelector(".nm").value.trim(), qty: el.querySelector(".ln").value.trim(), link: el.querySelector(".lk").value.trim(), q: el.querySelector(".sq").value.trim(), step: el.querySelector(".st").value }));
+function essDraw() {
+  $("#essList").innerHTML = essList.map((b, i) => `<div class="essed" data-id="${b.id}">
+    <div class="frame">${essPhotos["ess_" + b.id] ? `<img src="${essPhotos["ess_" + b.id]}" alt="">` : "No photo yet"}</div>
+    <div class="f">
+      <input class="nm" placeholder="Name, e.g. Ornament hooks" value="${esc(b.label)}">
+      <input class="ln" placeholder="What it's for, one short line" value="${esc(b.qty)}">
+      <input class="lk" placeholder="Amazon product link (optional)" value="${esc(b.link || "")}">
+      <input class="sq" placeholder="Store search words, used when there's no link" value="${esc(b.q || "")}">
+      <select class="st">${ESS_STEPS.map(([v, t]) => `<option value="${v}"${b.step === v ? " selected" : ""}>Show in step: ${t}</option>`).join("")}</select>
+      <div class="acts"><label class="mini" style="cursor:pointer">Upload photo<input type="file" class="up" accept="image/*" hidden></label><button class="mini emk">Make a photo</button><button class="mini usep" hidden>Use this photo</button>
+        <button class="mini mv" data-d="-1"${i ? "" : " disabled"}>Move up</button><button class="mini mv" data-d="1"${i < essList.length - 1 ? "" : " disabled"}>Move down</button><button class="mini rm">Remove</button></div>
+      <p class="msg"></p>
+    </div></div>`).join("");
+  document.querySelectorAll(".essed").forEach((el, i) => {
+    const id = el.dataset.id, fr = el.querySelector(".frame"), msg = el.querySelector(".msg"), useP = el.querySelector(".usep");
+    let pending = null;
+    const save = async img => { msg.className = "msg"; msg.textContent = "Saving the photo…"; await call({ action: "use", slot: "ess_" + id, image: img }); essPhotos["ess_" + id] = img; fr.innerHTML = `<img src="${img}" alt="">`; msg.className = "msg ok"; msg.textContent = "Photo saved."; };
+    el.querySelector(".up").onchange = async e => {
+      const f = e.target.files[0]; if (!f) return;
+      try {
+        const src = await new Promise(r => { const rd = new FileReader(); rd.onload = () => r(rd.result); rd.readAsDataURL(f); });
+        const img = await new Promise(res => { const im = new Image(); im.onload = () => { const n = Math.min(im.width, im.height), k = Math.min(1, 1200 / n), c = document.createElement("canvas"); c.width = c.height = Math.round(n * k); c.getContext("2d").drawImage(im, (im.width - n) / 2, (im.height - n) / 2, n, n, 0, 0, c.width, c.height); res(c.toDataURL("image/jpeg", .88)); }; im.src = src; });
+        await save(img);
+      } catch (err) { msg.className = "msg err"; msg.textContent = err.message; }
+    };
+    el.querySelector(".emk").onclick = async e => {
+      const name = el.querySelector(".nm").value.trim(); if (!name) { msg.className = "msg err"; msg.textContent = "Add a name first."; return; }
+      e.target.disabled = true; msg.className = "msg"; msg.textContent = "Making a photo… about 20 seconds";
+      try { const d = await call({ action: "generate", prompt: `${name}. ${el.querySelector(".ln").value.trim()}\n\n${PRODLOOK}`, aspect: "1:1" }); pending = await shrink(d.image, 1200); fr.innerHTML = `<img src="${pending}" alt="">`; useP.hidden = false; msg.textContent = "Like it? Tap Use this photo, or Make a photo again."; }
+      catch (err) { msg.className = "msg err"; msg.textContent = err.message; }
+      finally { e.target.disabled = false; e.target.textContent = "Make a photo"; }
+    };
+    useP.onclick = async () => { if (!pending) return; try { await save(pending); useP.hidden = true; } catch (err) { msg.className = "msg err"; msg.textContent = err.message; } };
+    el.querySelectorAll(".mv").forEach(b => b.onclick = () => { essList = essRead(); const j = i + +b.dataset.d; [essList[i], essList[j]] = [essList[j], essList[i]]; essDraw(); });
+    el.querySelector(".rm").onclick = () => { essList = essRead(); essList.splice(i, 1); essDraw(); };
+  });
+}
+function setupEss(info) {
+  essPhotos = info.photos || {};
+  essList = (info.essentials && info.essentials.length ? info.essentials : ESS_DEFAULT).map(x => ({ ...x }));
+  essDraw();
+  $("#essAdd").onclick = () => { essList = essRead(); essList.push({ id: "c" + Date.now().toString(36), label: "", qty: "", link: "", q: "", step: "" }); essDraw(); document.querySelector(".essed:last-child .nm").focus(); };
+  $("#essSave").onclick = async () => {
+    const items = essRead().filter(x => x.label);
+    const bad = items.find(x => x.link && !/^https:\/\/(www\.)?(amazon\.com|amzn\.to|a\.co)\//.test(x.link));
+    if (bad) { $("#essMsg").className = "msg err"; $("#essMsg").textContent = `The link for "${bad.label}" isn't an Amazon link.`; return; }
+    $("#essMsg").className = "msg"; $("#essMsg").textContent = "Saving…";
+    try { const d = await call({ action: "essentials", items }); essList = d.items; essDraw(); $("#essMsg").className = "msg ok"; $("#essMsg").textContent = "Saved. The app shows the new list within a minute."; }
+    catch (err) { $("#essMsg").className = "msg err"; $("#essMsg").textContent = err.message; }
+  };
 }
 // On the live Studio: photos picked in the preview Studio, ready to bring over in one tap
 async function offerPreviewPicks() {
   if (!/^tree-style\.vercel\.app$/.test(location.host)) return;
   let d; try { d = await call({ action: "adopt-preview", dry: true }); } catch { return; }
   if (!d.slots || !d.slots.length) return;
-  const names = d.slots.map(id => id === "brand kit" ? "Brand kit" : (SLOTS.find(x => x.id === id) || { name: id }).name);
+  const names = d.slots.map(id => id === "brand kit" ? "Brand kit" : id === "essentials" ? "Stylist's essentials list" : /^ess_/.test(id) ? "an Essentials photo" : (SLOTS.find(x => x.id === id) || { name: id }).name);
   const box = document.createElement("div"); box.className = "adopt";
   box.innerHTML = `<b>${d.slots.length} change${d.slots.length === 1 ? "" : "s"} made in the preview Studio</b><span>${names.join(", ")}</span><button class="btn">Use them on the live site</button><p class="msg"></p>`;
   $("#studio").prepend(box);

@@ -63,7 +63,7 @@
   ],
   "rewrites": [
     {
-      "source": "/try/:screen(home|start|idea|photo|details|style|reveal|results|fixes|plan|partner|score|shop|pass|create|inspo|trees|bag|profile)",
+      "source": "/try/:screen(home|start|idea|photo|details|style|reveal|results|fixes|plan|partner|score|shop|pass)",
       "destination": "/try/"
     }
   ]

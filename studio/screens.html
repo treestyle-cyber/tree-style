@@ -125,11 +125,11 @@ const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ==
 
 const DEVICES = [["se", "iPhone SE", 375, 667], ["i15", "iPhone 15", 393, 852], ["max", "iPhone 15 Pro Max", 430, 932], ["s23", "Galaxy S23", 360, 780], ["ipad", "iPad", 820, 1180]];
 const GROUPS = [
-  ["start", "Getting started", [["pass", "Sign-in"], ["home", "Home"], ["create", "What would you like to do?"], ["inspo", "Inspiration"], ["start", "Design my tree"], ["idea", "Your idea"], ["photo", "Your photo"], ["details", "About your tree"], ["style", "Style"]]],
+  ["start", "Getting started", [["pass", "Sign-in"], ["intro", "Opening screen"], ["home", "Home"], ["start", "Design my tree"], ["idea", "Your idea"], ["photo", "Your photo"], ["details", "About your tree"], ["style", "Style"]]],
   ["wait", "While it works", [["loading", "Looking at your tree"], ["reveal", "Your results"]]],
   ["results", "Results", [["results", "Results"], ["fixes", "Quick fixes"], ["score", "How it scored"], ["partner", "Design partner"]]],
   ["plan", "Step by step", Array.from({ length: 9 }, (_, i) => ["plan", "Step " + (i + 1), i + 1])],
-  ["shop", "Shopping and tabs", [["shop", "Shopping list"], ["trees", "Your trees"], ["bag", "Shop tab"], ["profile", "Profile"]]],
+  ["shop", "Shopping list", [["shop", "Shopping list"]]],
 ];
 let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
 let device = store.get("scr_device", "i15"), zoom = store.get("scr_zoom", 0.4), group = store.get("scr_group", "all"), mine = store.get("scr_mine", false);
