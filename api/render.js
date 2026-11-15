@@ -112,7 +112,11 @@ export default async function handler(req, res) {
   const refUsed = styleRef ? rs.slot : rref ? "ribbonref" : "none";
   const refNote = rs ? `Reference photo showing the ribbon style to use, "${rs.name}". Do not copy its room, tree, colors, ribbon or ornaments; copy only HOW the ribbon is placed on the tree. Paint the ribbons the instructions describe, used this way.` : undefined;
   const shapeText = rs ? `\n\nRIBBON STYLE (most important): ${rs.name}. ${rs.paint}` : RIBBON_SHAPE;
-  const prompt = editPrompt(brief, revision, !!shape && !revision, variant === "shape2") + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + shapeText;
+  // Lab "ribbon6": the old ribbon comes off first, and the new ribbon has to be plainly visible (Eric: a diagonal plaid
+  // ribbon stayed on and the chosen Layered ribbons never appeared)
+  const clearOld = rs && !revision ? `FIRST, BEFORE ANYTHING ELSE: remove every ribbon, garland, bead strand or mesh that is already in the photo and runs in a line across, around, down or diagonally over the tree. Take it off completely and show the tree's own branches where it was. The only ribbon on the finished tree is the new ribbon described below.\n\n` : "";
+  const showNew = rs ? ` Make the new ribbon plainly visible from across the room: 6 to 10 separate ribbon spots spread over the whole tree, top to bottom and left to right, in the ribbon colors and widths the instructions name.` : "";
+  const prompt = clearOld + editPrompt(brief, revision, !!shape && !revision, variant === "shape2") + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + shapeText + showNew;
   if (generic) retried = true;
   for (const model of models) {
     let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rref, variant === "map2", refNote);
