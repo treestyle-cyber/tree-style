@@ -46,6 +46,15 @@
   .fw iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0;background:#141C2C}
   .fw .pins{position:absolute;inset:0;pointer-events:none}
   body.noting .fw .pins{pointer-events:auto;cursor:crosshair;background:rgba(184,156,107,.06)}
+  .spots{position:absolute;inset:0;pointer-events:none;display:none}
+  body.photos .spots{display:block}
+  .spot{position:absolute;border:2px dashed var(--gold);border-radius:8px;background:rgba(184,156,107,.12);pointer-events:auto;cursor:pointer;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px}
+  .spot:hover{background:rgba(184,156,107,.28)}
+  .spot span{background:var(--gold);color:var(--midnight);border-radius:99px;padding:3px 8px 3px 6px;font:600 10.5px var(--sans);display:inline-flex;gap:4px;align-items:center;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+  .spot svg{width:12px;height:12px;flex:none}
+  .pop .cur{width:100%;max-height:170px;object-fit:cover;border-radius:10px;background:var(--paper-2)}
+  .pop .up{display:block;text-align:center;cursor:pointer}
+  .chip.photo.on{background:var(--gold);color:var(--midnight)}
   .pin{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:var(--gold);color:var(--midnight);font:700 12px/26px var(--sans);text-align:center;box-shadow:0 0 0 2px rgba(20,28,44,.9),0 4px 10px rgba(0,0,0,.5);cursor:pointer;pointer-events:auto}
   .pin.done{background:#6E7A68;color:#fff;opacity:.75}
   .pop{position:fixed;z-index:60;width:300px;background:var(--paper);border:1px solid var(--gold);border-radius:14px;padding:14px;box-shadow:0 20px 50px -10px rgba(0,0,0,.8);display:grid;gap:8px;font-size:14px}
@@ -86,7 +95,7 @@
     <div class="intro">
       <div class="eyebrow">Studio</div>
       <h1>Screens</h1>
-      <p>Every screen of the app at once, in the order people move through it. Each one is the real app, so you can scroll and tap inside it. Turn on <b>Add notes</b> and tap any spot to leave a note there. Unsaved changes in the <a href="/studio/kit">Brand kit</a> show here too.</p>
+      <p>Every screen of the app at once, in the order people move through it. Each one is the real app, so you can scroll and tap inside it. Turn on <b>Change photos</b> to see every photo spot outlined and replace a photo right there, or <b>Add notes</b> to leave a note on any spot. Unsaved changes in the <a href="/studio/kit">Brand kit</a> show here too.</p>
     </div>
 
     <div class="samplecard">
@@ -103,6 +112,7 @@
       <span class="chips" id="groups"></span>
       <span class="sp"></span>
       <span class="draftnote" id="draftNote" hidden>Showing unsaved Brand kit changes</span>
+      <button class="chip photo" id="photoMode">Change photos</button>
       <button class="chip note" id="noteMode">Add notes</button>
       <button class="chip" id="copyNotes">Copy notes for Claude</button>
       <button class="chip" id="reload">Reload all</button>
@@ -152,6 +162,7 @@ function build() {
       <div class="lbl"><b title="${esc(label)}">${label}</b><a href="${url(name, step)}" target="_blank" rel="noopener">Open ↗</a></div>
       <div class="fw" style="width:${Math.round(w * zoom)}px;height:${Math.round(h * zoom)}px">
         <iframe data-src="${url(name, step)}" title="${esc(label)}" style="width:${w}px;height:${h}px;transform:scale(${zoom})" loading="lazy"></iframe>
+        <div class="spots" data-key="${key(name, step)}"></div>
         <div class="pins" data-key="${key(name, step)}" data-label="${esc(label)}"></div>
       </div></div>`).join("")}</div></section>`).join("");
   // Load each phone when it comes into view (two dozen copies of the app at once would be slow)
@@ -188,6 +199,41 @@ addEventListener("message", e => {
 const draftShown = () => { let d = null; try { d = localStorage.getItem("ts_kit_draft"); } catch {} $("#draftNote").hidden = !d; };
 addEventListener("storage", e => { if (e.key === "ts_kit_draft") draftShown(); });
 
+// ---- Photos: each phone reports where its Studio photo spots are; tap one to replace the photo ----
+const PHOTO_SPOTS = {
+  velvet: ["Midnight velvet", "Background of every screen, the loading screen and the website", "1:1"], velvetberry: ["Winter Berry velvet", "The website's What you get section", "1:1"],
+  hero: ["Welcome", "The opening screen and the website hero", "3:4"], check: ["Check my tree", "Home screen card", "16:9"], design: ["Design my tree", "Home screen card", "16:9"],
+  keep: ["Keep my style", "Style card", "4:5"], classic: ["Traditional", "Style card", "4:5"], rustic: ["Rustic", "Style card", "4:5"], modern: ["Modern", "Style card", "4:5"],
+  elegant: ["Elegant", "Style card", "4:5"], playful: ["Playful", "Style card", "4:5"], themed: ["Themed", "Style card", "4:5"],
+};
+const spotName = id => (PHOTO_SPOTS[id] || [/^ess_/.test(id) ? "Essentials: " + id.slice(4).replace(/_/g, " ") : id])[0];
+let photoMode = false, brandPhotos = {};
+const CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+addEventListener("message", e => {
+  if (e.origin !== location.origin || !e.data || e.data.type !== "ts-photo-spots") return;
+  const f = [...document.querySelectorAll("#grid iframe")].find(x => x.contentWindow === e.source); if (!f) return;
+  f.parentElement.querySelector(".spots").innerHTML = (e.data.spots || []).map(sp => `<div class="spot" data-slot="${esc(sp.slot)}" style="left:${sp.x * 100}%;top:${sp.y * 100}%;width:${sp.w * 100}%;height:${sp.h * 100}%"><span>${CAM}${esc(spotName(sp.slot))}</span></div>`).join("");
+});
+$("#photoMode").onclick = () => { photoMode = !photoMode; if (photoMode && noting) $("#noteMode").click(); document.body.classList.toggle("photos", photoMode); $("#photoMode").classList.toggle("on", photoMode); $("#photoMode").textContent = photoMode ? "Changing photos: tap an outline" : "Change photos"; closePop(); };
+const loadPhotos = async () => { try { brandPhotos = (await (await fetch("/api/brand?fresh=" + Date.now())).json()).photos || {}; } catch {} };
+const shrinkPhoto = (file, max = 1600) => new Promise((ok, no) => { const im = new Image(); im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL("image/jpeg", .86)); URL.revokeObjectURL(im.src); }; im.onerror = () => no(new Error("That file isn't a photo this browser can open. Try a JPG or PNG.")); im.src = URL.createObjectURL(file); });
+document.addEventListener("click", async e => {
+  const sp = e.target.closest(".spot"); if (!sp || !photoMode) return;
+  e.stopPropagation();
+  const slot = sp.dataset.slot, info = PHOTO_SPOTS[slot] || [spotName(slot), "", ""], cur = brandPhotos[slot];
+  const r = sp.getBoundingClientRect();
+  const p = pop(r.right, r.top, `<b>${esc(info[0])}</b><div class="meta">${esc(info[1])}${info[2] ? " · shown about " + info[2] + ", so leave room at the edges" : ""}</div>${cur ? `<img class="cur" src="${esc(cur)}" alt="">` : `<div class="meta">Using the built-in texture until a photo is chosen.</div>`}<label class="btn up">Upload a photo<input type="file" accept="image/*" hidden></label><div class="acts"><a class="btn ghost" href="/studio/" target="_blank" rel="noopener">More in Photos ↗</a></div><p class="msg"></p>`);
+  p.querySelector("input").onchange = async ev => {
+    const file = ev.target.files[0], m = p.querySelector(".msg"); if (!file) return;
+    m.className = "msg"; m.textContent = "Saving…";
+    try {
+      await call({ action: "use", slot, image: await shrinkPhoto(file) });
+      m.className = "msg ok"; m.textContent = "Saved. Updating the screens…";
+      await loadPhotos(); setTimeout(() => { closePop(); build(); }, 600);
+    } catch (err) { if (err.status === 401) return gate("That password didn't work."); m.className = "msg err"; m.textContent = err.message; }
+  };
+}, true);
+
 // ---- Notes ----
 function drawPins() {
   document.querySelectorAll(".pins").forEach(p => {
@@ -201,7 +247,7 @@ function drawPins() {
   $("#noteMode").textContent = noting ? "Adding notes: tap a screen" : "Add notes";
 }
 async function loadNotes() { try { notes = (await (await fetch("/api/brand?notes=1", { cache: "no-store" })).json()).notes || []; } catch { notes = []; } drawPins(); }
-$("#noteMode").onclick = () => { noting = !noting; document.body.classList.toggle("noting", noting); $("#noteMode").classList.toggle("on", noting); closePop(); drawPins(); };
+$("#noteMode").onclick = () => { if (!noting && photoMode) $("#photoMode").click(); noting = !noting; document.body.classList.toggle("noting", noting); $("#noteMode").classList.toggle("on", noting); closePop(); drawPins(); };
 function closePop() { const p = $(".pop"); if (p) p.remove(); }
 function pop(x, y, html) {
   closePop();
@@ -290,7 +336,7 @@ $("#gateForm").onsubmit = e => { e.preventDefault(); password = $("#pw").value.t
 function start() {
   if (!password) return gate();
   $("#gate").hidden = true; $("#app").hidden = false;
-  toolbar(); build(); draftShown(); loadSample(); loadNotes();
+  toolbar(); build(); draftShown(); loadSample(); loadNotes(); loadPhotos();
 }
 start();
 </script>

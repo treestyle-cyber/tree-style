@@ -39,6 +39,10 @@
   .chips{display:flex;gap:8px;flex-wrap:wrap}
   .chip{appearance:none;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);border-radius:99px;padding:9px 14px;font:500 13.5px var(--sans);cursor:pointer}
   .chip.on{border-color:var(--gold);background:rgba(184,156,107,.18);color:var(--gold)}
+  .cardsample{margin-top:14px;border-radius:14px;padding:16px 18px;border:1px solid;display:grid;gap:12px;max-width:420px}
+  .cardsample b{display:block;font:500 26px/1.1 var(--serif);margin:4px 0}
+  .cardsample span{font-size:14px;color:var(--muted)}
+  .cs-panel{border-radius:10px;padding:10px 12px;font-size:13px;color:var(--muted)}
   .role{background:var(--paper-2);border-radius:14px;padding:14px 16px;margin-bottom:12px}
   .rhead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
   .rhead b{font-size:16px}
@@ -49,6 +53,8 @@
   .rctl input[type=range]{width:100%;accent-color:var(--gold)}
   .rctl .val{color:var(--ink)}
   .rctl .chips .chip{padding:6px 11px;font-size:12.5px}
+  .rctl .chips .chip svg{display:block}
+  .rctl .chips{flex-wrap:nowrap}
   .rsample{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--paper);color:var(--ink);line-height:1.2;overflow-wrap:anywhere}
   .fontrow{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:start;margin-bottom:16px}
   @media (max-width:600px){.fontrow{grid-template-columns:1fr}}
@@ -117,8 +123,16 @@
         </section>
 
         <section class="sec">
+          <h2>Cards</h2>
+          <div class="where">The boxes that hold content: the home choices, style cards, results, plan steps and shopping list sections. Left alone, they are a shade lighter than Midnight with a thin gold border.</div>
+          <div class="colors" id="cardColors"></div>
+          <div class="bgrow"><label>Border strength <input type="range" id="cardStrength" min="0" max="1" step=".02"> <span id="cardStrengthV"></span></label><button class="reset" id="cardReset" hidden>Back to design</button></div>
+          <div class="cardsample" id="cardSample"><div class="cs-in"><div class="eyebrow">Already decorating?</div><b>Check my tree</b><span>A designer's rating and the fixes that matter most</span></div><div class="cs-panel">Inner panel</div></div>
+        </section>
+
+        <section class="sec">
           <h2>Fonts</h2>
-          <div class="where">Five roles, the same on the app and the website. For each, choose the font, weight, size, letter spacing and capitals. Anything you leave alone stays as designed. Subheadlines follow the headline font, and labels and buttons follow the body font, unless you give them their own. Upload your own font file (WOFF2, WOFF, OTF or TTF) once it is licensed.</div>
+          <div class="where">Five roles, the same on the app and the website. For each, choose the font, weight, size, letter spacing, capitals and alignment. Anything you leave alone stays as designed. Subheadlines follow the headline font, and labels and buttons follow the body font, unless you give them their own. Upload your own font file (WOFF2, WOFF, OTF or TTF) once it is licensed.</div>
           <div id="roles"></div>
           <input type="file" id="fontFile" accept=".woff2,.woff,.otf,.ttf" hidden>
         </section>
@@ -200,6 +214,7 @@ const SUPPORT = [
   ["champagne", "Champagne", "#C5B28F", "Thin rules and borders"],
   ["warmivory", "Warm ivory", "#E7DFD2", "Headlines over photos"],
 ];
+const CARD_COLORS = [["bg", "Card background", "Each card's fill"], ["panel", "Inner panels", "Fields and boxes inside cards"], ["border", "Card border", "The thin line around each card"]];
 const SERIF_FONTS = ["Cormorant Garamond", "Playfair Display", "EB Garamond", "Libre Caslon Display", "DM Serif Display", "Bodoni Moda", "Gilda Display", "Lora", "Cinzel"];
 const SANS_FONTS = ["Inter", "DM Sans", "Work Sans", "Montserrat", "Jost", "Lato", "Manrope", "Josefin Sans", "Raleway"];
 // Each font role: what it covers, how it looks as designed, and a sample line
@@ -210,6 +225,8 @@ const ROLES = [
   { k: "label", name: "Labels", where: "Small spaced words such as EARLY ACCESS, STUDIO and step labels, and the tab bar names", font: "", design: "Same as Body copy", stack: "", w: 500, px: 12, ls: .22, caps: true, text: "Early access · Step 2 of 8" },
   { k: "button", name: "Buttons", where: "Every gold button and outline button", font: "", design: "Same as Body copy", stack: "", w: 600, px: 13, ls: .14, caps: true, text: "See my tree's potential" },
 ];
+const ALIGN_ICON = lines => `<svg viewBox="0 0 20 14" width="18" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">${lines.map(([a, b], i) => `<path d="M${a} ${2 + i * 5}H${b}"/>`).join("")}</svg>`;
+const ALIGNS = [["", "As designed"], ["left", "Left", ALIGN_ICON([[2, 18], [2, 12], [2, 15]])], ["center", "Center", ALIGN_ICON([[2, 18], [5, 15], [3.5, 16.5]])], ["right", "Right", ALIGN_ICON([[2, 18], [8, 18], [5, 18]])]];
 const WEIGHTS = [["", "As designed"], ["300", "Light"], ["400", "Regular"], ["500", "Medium"], ["600", "Semibold"], ["700", "Bold"]];
 const SHAPES = [["", "Pill (current)"], ["rounded", "Rounded"], ["square", "Square"]];
 const CASES = [["", "UPPERCASE (current)"], ["none", "Normal"]];
@@ -235,7 +252,7 @@ function set(path, value) {
   if (value === "" || value == null) delete o[last]; else o[last] = value;
   // tidy empty font roles and sections
   if (draft.fonts) for (const r of Object.keys(draft.fonts)) if (draft.fonts[r] && typeof draft.fonts[r] === "object" && !Object.keys(draft.fonts[r]).length) delete draft.fonts[r];
-  for (const k of ["colors", "fonts", "buttons", "background", "icons", "logos"]) if (draft[k] && !Object.keys(draft[k]).length) delete draft[k];
+  for (const k of ["colors", "cards", "fonts", "buttons", "background", "icons", "logos"]) if (draft[k] && !Object.keys(draft[k]).length) delete draft[k];
   changed();
 }
 // Change a role's font (several fields at once, one update)
@@ -266,6 +283,7 @@ function render() {
     document.querySelector(`[data-cr=${k}]`).hidden = !c[k];
   }
 
+  renderCards(c);
   const f = draft.fonts || {};
   renderRoles(f);
 
@@ -289,6 +307,25 @@ function render() {
   const lg = draft.logos || {};
   $("#logos").innerHTML = LOGOS.map(([k, name, def, where]) => `<div class="tile"><div class="pic dark"><img src="${esc(lg[k] || def)}" alt=""></div><b>${name}</b><small>${where}</small><div class="acts"><label class="up">Upload<input type="file" accept="image/png,image/svg+xml,image/webp" hidden data-file="logo" data-k="${k}"></label><button class="reset" data-lr="${k}" ${lg[k] ? "" : "hidden"}>↺</button></div></div>`).join("");
 }
+// Cards: built once, then updated in place
+function renderCards(c) {
+  const cd = draft.cards || {}, mid = c.midnight || "#141C2C", gold = c.gold || "#B89C6B";
+  const mix = (h, k) => "#" + [1, 3, 5].map(i => Math.round(parseInt(h.substr(i, 2), 16) + (255 - parseInt(h.substr(i, 2), 16)) * k).toString(16).padStart(2, "0")).join("").toUpperCase();
+  const def = { bg: mix(mid, .05), panel: mix(mid, .1), border: gold.toUpperCase() };
+  if (!$("#cardColors").children.length) $("#cardColors").innerHTML = CARD_COLORS.map(([k, name, where]) => `<div class="color"><input type="color" data-cc="${k}"><div><b>${name}</b><small>${where}</small><input type="text" data-cct="${k}" maxlength="7" spellcheck="false"></div><button class="reset" data-ccr="${k}" hidden>↺</button></div>`).join("");
+  for (const [k] of CARD_COLORS) {
+    const v = (cd[k] || def[k]).toUpperCase(), p = document.querySelector(`[data-cc=${k}]`), tx = document.querySelector(`[data-cct=${k}]`);
+    if (p !== document.activeElement) p.value = v; if (tx !== document.activeElement) tx.value = v;
+    document.querySelector(`[data-ccr=${k}]`).hidden = !cd[k];
+  }
+  const st = typeof cd.strength === "number" ? cd.strength : .26, sl = $("#cardStrength");
+  if (sl !== document.activeElement) sl.value = st;
+  $("#cardStrengthV").textContent = Math.round(st * 100) + "%";
+  $("#cardReset").hidden = !draft.cards;
+  const b = cd.border || def.border, rgb = [1, 3, 5].map(i => parseInt(b.substr(i, 2), 16)).join(",");
+  const smp = $("#cardSample"); smp.style.background = cd.bg || def.bg; smp.style.borderColor = `rgba(${rgb},${st})`; smp.style.color = c.ivory || "#F3EEE7";
+  smp.querySelector(".cs-panel").style.background = cd.panel || def.panel;
+}
 // Font roles: built once, then updated in place so sliders keep moving smoothly
 function renderRoles(f) {
   if (!$("#roles").children.length) $("#roles").innerHTML = ROLES.map(r => `<div class="role" data-role="${r.k}">
@@ -299,6 +336,7 @@ function renderRoles(f) {
       <label>Size <span class="val" data-rsv="${r.k}"></span><input type="range" data-rs="${r.k}" min="70" max="140" step="5"></label>
       <label>Letter spacing <span class="val" data-rlv="${r.k}"></span><input type="range" data-rl="${r.k}" min="-0.05" max="0.4" step="0.01"></label>
       <label>Capitals<span class="chips">${[["", "As designed"], ["upper", "ABC"], ["none", "Abc"]].map(([v, l]) => `<button class="chip" data-rc="${r.k}" data-v="${v}">${l}</button>`).join("")}</span></label>
+      <label>Alignment<span class="chips">${ALIGNS.map(([v, l, icon]) => `<button class="chip" data-ra="${r.k}" data-v="${v}" title="${l}" aria-label="${l}">${icon || l}</button>`).join("")}</span></label>
     </div>
     <div class="rsample" data-rsample="${r.k}">${esc(r.text)}</div></div>`).join("");
   const famOf = k => { const o = f[k] || {}; if (o.family) return o; if (k === "subheadline") return famOf("headline"); if (k === "label" || k === "button") return famOf("body"); return null; };
@@ -318,6 +356,7 @@ function renderRoles(f) {
     if (rl !== document.activeElement) rl.value = ls == null ? r.ls : ls;
     document.querySelector(`[data-rlv=${r.k}]`).textContent = ls == null ? "as designed" : ls.toFixed(2) + " em";
     document.querySelectorAll(`[data-rc=${r.k}]`).forEach(c => c.classList.toggle("on", (o.caps || "") === c.dataset.v));
+    document.querySelectorAll(`[data-ra=${r.k}]`).forEach(c => c.classList.toggle("on", (o.align || "") === c.dataset.v));
     document.querySelector(`[data-rr=${r.k}]`).hidden = !f[r.k];
     // Sample line in this role's look
     const fam = famOf(r.k), smp = document.querySelector(`[data-rsample=${r.k}]`);
@@ -325,6 +364,7 @@ function renderRoles(f) {
     smp.style.fontWeight = o.weight || r.w;
     smp.style.fontSize = (r.px * size / 100) + "px";
     smp.style.letterSpacing = (ls == null ? r.ls : ls) + "em";
+    smp.style.textAlign = o.align || "";
     smp.style.textTransform = o.caps === "upper" || (r.caps && o.caps !== "none") ? "uppercase" : "none";
   }
 }
@@ -341,6 +381,9 @@ document.addEventListener("input", e => {
   const t = e.target;
   if (t.dataset.c) { set("colors." + t.dataset.c, t.value.toUpperCase()); const tx = document.querySelector(`[data-ct=${t.dataset.c}]`); if (tx) tx.value = t.value.toUpperCase(); }
   if (t.dataset.ct && /^#[0-9a-f]{6}$/i.test(t.value)) { set("colors." + t.dataset.ct, t.value.toUpperCase()); const p = document.querySelector(`[data-c=${t.dataset.ct}]`); if (p) p.value = t.value; }
+  if (t.dataset.cc) set("cards." + t.dataset.cc, t.value.toUpperCase());
+  if (t.dataset.cct && /^#[0-9a-f]{6}$/i.test(t.value)) set("cards." + t.dataset.cct, t.value.toUpperCase());
+  if (t.id === "cardStrength") set("cards.strength", Number(t.value));
   if (t.dataset.rs) set(`fonts.${t.dataset.rs}.size`, Number(t.value) === 100 ? "" : Number(t.value));
   if (t.dataset.rl) set(`fonts.${t.dataset.rl}.spacing`, Number(t.value));
   if (t.id === "bgShade") { $("#bgShadeV").textContent = Math.round(t.value * 100) + "%"; set("background.shade", Number(t.value)); }
@@ -373,7 +416,10 @@ document.addEventListener("click", e => {
   if (t.dataset.set) { set(t.dataset.set, t.dataset.v); if (t.dataset.set === "background.kind" && !t.dataset.v) set("background", ""); }
   if (t.dataset.cr) set("colors." + t.dataset.cr, "");
   if (t.dataset.rr) set("fonts." + t.dataset.rr, "");
+  if (t.dataset.ccr) set("cards." + t.dataset.ccr, "");
+  if (t.id === "cardReset") set("cards", "");
   if (t.dataset.rc) set(`fonts.${t.dataset.rc}.caps`, t.dataset.v);
+  if (t.dataset.ra) set(`fonts.${t.dataset.ra}.align`, t.dataset.v);
   if (t.dataset.ir) set("icons." + t.dataset.ir, "");
   if (t.dataset.lr) set("logos." + t.dataset.lr, "");
   if (t.dataset.pv) { $("#frame").src = t.dataset.pv; $("#pv").querySelectorAll(".chip").forEach(c => c.classList.toggle("on", c === t)); }

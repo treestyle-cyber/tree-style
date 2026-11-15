@@ -37,6 +37,11 @@
     // Shades that are worked out from the main colors
     if (hex(c.midnight)) vars.push("--paper:" + mix(c.midnight, "#ffffff", .05), "--paper-2:" + mix(c.midnight, "#ffffff", .1));
     if (hex(c.gold)) vars.push("--line:" + rgba(c.gold, .26), "--green-2:" + mix(c.gold, "#ffffff", .2), "--brass:" + mix(c.gold, "#ffffff", .12));
+    // Cards: their own background, inner panels and border (these win over the shades worked out above)
+    var cd = kit.cards || {};
+    if (hex(cd.bg)) vars.push("--paper:" + cd.bg);
+    if (hex(cd.panel)) vars.push("--paper-2:" + cd.panel);
+    if (hex(cd.border) || typeof cd.strength === "number") vars.push("--line:" + rgba(hex(cd.border) ? cd.border : (hex(c.gold) ? c.gold : "#B89C6B"), typeof cd.strength === "number" ? Math.max(0, Math.min(1, cd.strength)) : .26));
 
     // Fonts by role: headline, subheadline, body copy, labels, buttons. Each can set its font, weight,
     // size (a percentage of the designed size), letter spacing and capitals; anything left unset keeps the design.
@@ -56,6 +61,7 @@
       if (/^[1-9]00$/.test(o.weight)) rules.push(sel + "{font-weight:" + o.weight + " !important}");
       if (typeof o.size === "number" && o.size > 0) vars.push("--s-" + role + ":" + Math.max(.5, Math.min(2, o.size / 100)));
       if (typeof o.spacing === "number") rules.push(sel + "{letter-spacing:" + o.spacing + "em !important}");
+      if (/^(left|center|right)$/.test(o.align)) rules.push(sel + "{text-align:" + o.align + " !important}");
       if (o.caps === "upper" || o.caps === "none") rules.push(sel + "{text-transform:" + (o.caps === "upper" ? "uppercase" : "none") + " !important}");
     });
     var gl = document.getElementById("kit-gfonts");

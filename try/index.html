@@ -25,7 +25,7 @@
 <script src="/brand-kit.js"></script>
 <script>
 // Brand photos chosen in the Studio replace the fabric textures (each spot keeps its texture until then)
-fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; window.__PH = ph; if (Array.isArray(d.essentials) && d.essentials.length) window.__ESS = d.essentials; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); } }).catch(() => {});
+fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" + Date.now() : "")).then(r => r.json()).then(d => { const ph = d.photos || {}; window.__PH = ph; if (Array.isArray(d.essentials) && d.essentials.length) window.__ESS = d.essentials; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); } }).catch(() => {});
 </script>
 <link rel="icon" type="image/png" href="/brand/favicon.png">
 <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
@@ -3508,8 +3508,8 @@ async function sampleStart() {
   badge.textContent = "Sample";
   badge.style.cssText = "position:fixed;right:8px;top:8px;z-index:300;font:600 10px Inter,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;background:rgba(20,28,44,.85);color:#C5B28F;padding:4px 8px;border-radius:99px;pointer-events:none";
   document.body.appendChild(badge);
-  if (name === "pass") { show("s-pass", []); return true; }
-  if (name === "intro") { show("s-home", []); $("#splash").hidden = false; return true; }   // the opening screen, held still
+  if (name === "pass") { show("s-pass", []); reportPhotoSpots(); return true; }
+  if (name === "intro") { show("s-home", []); $("#splash").hidden = false; reportPhotoSpots(); return true; }   // the opening screen, held still
   // The tree: the Studio's sample (its pictures fetched back into the page), or this browser's own
   let st = null;
   try {
@@ -3534,8 +3534,31 @@ async function sampleStart() {
   if (!treeScreens.includes(id)) show(id, id === "s-home" ? [] : ["s-home"]);
   else if (!st || !st.result) { badge.textContent = "No sample tree yet"; show(id, ["s-home"]); }
   if (name === "loading") startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree", mode === "design" ? DESIGN_STEPS : CHECK_STEPS, 600, photo);
+  reportPhotoSpots();
   if (id === "s-plan") { for (let i = 0; i < 40 && !guide; i++) await new Promise(r => setTimeout(r, 100)); if (guide) parent.postMessage({ type: "ts-screen-steps", steps: guide.steps.length }, location.origin); }
   return true;
+}
+
+// Screen preview: tell the Studio where the Studio photo spots are on this screen (so they can be replaced right there).
+// A spot is any element whose own style or stylesheet rule uses a --photo-<spot> variable.
+function reportPhotoSpots() {
+  const found = [];
+  const add = (el, slot) => { if (el && el !== document.body && el !== document.documentElement && !found.some(f => f.el === el)) found.push({ el: el.querySelector(":scope > .tpic") || el, slot }); };
+  for (const sh of document.styleSheets) { let rules; try { rules = sh.cssRules; } catch (e) { continue; }
+    for (const r of rules || []) { const m = r.selectorText && /--photo-([a-z0-9_]+)/.exec(r.cssText); if (!m) continue; try { document.querySelectorAll(r.selectorText).forEach(el => add(el, m[1])); } catch (e) {} } }
+  document.querySelectorAll("[style*='--photo-']").forEach(el => add(el, /--photo-([a-z0-9_]+)/.exec(el.getAttribute("style"))[1]));
+  const send = () => {
+    const W = innerWidth, H = innerHeight, spots = [];
+    for (const f of found) { const r = f.el.getBoundingClientRect(); if (r.width < 24 || r.height < 24 || r.bottom < 0 || r.top > H || r.right < 0 || r.left > W || !f.el.offsetParent && getComputedStyle(f.el).position !== "fixed") continue;
+      // only spots that can be seen (not covered by the opening screen, a sheet or another layer)
+      const top = document.elementFromPoint(Math.min(W - 1, Math.max(0, r.left + r.width / 2)), Math.min(H - 1, Math.max(0, r.top + Math.min(r.height / 2, (H - Math.max(0, r.top)) / 2))));
+      if (top && !(f.el.contains(top) || top.contains(f.el) || f.el.parentElement && f.el.parentElement.contains(top))) continue;
+      spots.push({ slot: f.slot, x: Math.max(0, r.left) / W, y: Math.max(0, r.top) / H, w: (Math.min(W, r.right) - Math.max(0, r.left)) / W, h: (Math.min(H, r.bottom) - Math.max(0, r.top)) / H }); }
+    parent.postMessage({ type: "ts-photo-spots", spots }, location.origin);
+  };
+  let t = 0; const soon = () => { clearTimeout(t); t = setTimeout(send, 120); };
+  addEventListener("scroll", soon, { passive: true }); addEventListener("resize", soon);
+  setTimeout(send, 400); setTimeout(send, 1500);
 }
 
 /* ---------------- start ---------------- */
