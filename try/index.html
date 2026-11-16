@@ -1290,7 +1290,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const AMAZON_TAG = "ericmichael04-20"; // Eric's Amazon Associates tracking ID
+const AMAZON_TAG = "treestyle00-20"; // TreeStyle's Amazon Associates tracking ID (new account, Nov 15 2026)
 // Searches read the way a shopper types: no "picks" or "christmas tree" tacked on
 const shopQ = q => String(q).replace(/\bchristmas tree\b/gi, "").replace(/\bpicks?\b/gi, "").replace(/\s+/g, " ").trim();
 const shopUrl = q => "https://www.amazon.com/s?k=" + encodeURIComponent(shopQ(q)) + (AMAZON_TAG ? "&tag=" + encodeURIComponent(AMAZON_TAG) : "");
