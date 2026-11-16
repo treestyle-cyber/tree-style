@@ -12,6 +12,8 @@
   // Which styles belong to each font role (worked out from the app's and website's styles; body copy is everything else)
   var ROLES = ["headline", "subheadline", "body", "label", "button"];
   var SEL = {"headline":["#loading h2","#s-reveal::before","#splash h1",".appbar .title",".choice.tile b",".detline",".hero .hl h1",".lockup b",".sheetbox h3",".stephead h2",".steptabs button.on","h1","h2","h3"],"subheadline":["#bigReveal p","#loading .tipcard p","#s-reveal #summary",".act b",".buyrow strong",".esshead b",".fb .thanks",".fix b",".navlist b",".planitem h4",".potline",".progress b",".ptips b",".rating .rword b",".resline",".resume b",".rword b",".scard b",".scorestrip b",".sheetmore button",".shophead b",".src b",".steps .n",".stylegrid b",".tipcard p",".welcome .wl","details.buy .bt b","label.drop strong"],"label":["#s-details .q .lbl",".ba div span",".bafield",".brand b",".brand small",".buyh",".buyrow em",".choice.tile em",".compare .tag",".esscard em",".esschip em",".esshead small",".eyebrow",".hero .eyebrow",".hubk",".kicker",".lockup small",".msg .vtag",".ptipk",".rlbl",".rmhint",".scorestrip .chev",".sheetk",".stepcard .k",".stephead .k",".tag",".tipk","details.buy .bt small","header.top a.join","section.get .eyebrow"],"button":[".btn",".btn.ghost",".finish .btn",".foot .btn",".hero .btn",".qarow .btn",".resumebtns .btn",".shophead .btn",".stepnav .btn",".tellcard .btn",".tools .btn"]};
+  // Cards and boxes: the home choices, style cards, results tiles, plan steps, shopping list sections, pop-up panels
+  var CARDS = ".card,.tile,.scard,.src,.fix,.act:not(.main),details.buy,.planitem,.sheetbox,.tipsbox,.tipcard,.guidebox,.esscard,.stepcard,.stylegrid2 button";
   var BODY_SEL = "body,p,li,td,label,input,textarea,small";
   // Kits saved before the roles existed had "heading" and "body" fonts only
   function fontsOf(kit) { var f = kit.fonts || {}; if (f.heading && !f.headline) { f = JSON.parse(JSON.stringify(f)); f.headline = f.heading; delete f.heading; } return f; }
@@ -62,6 +64,8 @@
       if (typeof o.size === "number" && o.size > 0) vars.push("--s-" + role + ":" + Math.max(.5, Math.min(2, o.size / 100)));
       if (typeof o.spacing === "number") rules.push(sel + "{letter-spacing:" + o.spacing + "em !important}");
       if (hex(o.color)) rules.push(sel + "{color:" + o.color + " !important}");
+      // The same kind of text inside cards and boxes can have its own color (light text on dark cards, dark on a light page)
+      if (hex(o.cardColor)) rules.push(":is(" + CARDS + ") :is(" + sel + "),:is(" + CARDS + "):is(" + sel + "){color:" + o.cardColor + " !important}");
       if (o.italic === "italic" || o.italic === "normal") rules.push(sel + "{font-style:" + o.italic + " !important}");
       if (/^(left|center|right)$/.test(o.align)) rules.push(sel + "{text-align:" + o.align + " !important}");
       if (o.caps === "upper" || o.caps === "none") rules.push(sel + "{text-transform:" + (o.caps === "upper" ? "uppercase" : "none") + " !important}");

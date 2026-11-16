@@ -136,7 +136,7 @@
 
         <section class="sec">
           <h2>Fonts</h2>
-          <div class="where">Five roles, the same on the app and the website. For each, choose the font, weight, size, letter spacing, capitals, color, italic and alignment. Anything you leave alone stays as designed. Subheadlines follow the headline font, and labels and buttons follow the body font, unless you give them their own. Upload your own font file (WOFF2, WOFF, OTF or TTF) once it is licensed.</div>
+          <div class="where">Five roles, the same on the app and the website. For each, choose the font, weight, size, letter spacing, capitals, color (on the page, and separately inside cards), italic and alignment. Anything you leave alone stays as designed. Subheadlines follow the headline font, and labels and buttons follow the body font, unless you give them their own. Upload your own font file (WOFF2, WOFF, OTF or TTF) once it is licensed.</div>
           <div id="roles"></div>
           <input type="file" id="fontFile" accept=".woff2,.woff,.otf,.ttf" hidden>
         </section>
@@ -348,7 +348,8 @@ function renderRoles(f) {
       <label>Size <span class="val" data-rsv="${r.k}"></span><input type="range" data-rs="${r.k}" min="70" max="140" step="5"></label>
       <label>Letter spacing <span class="val" data-rlv="${r.k}"></span><input type="range" data-rl="${r.k}" min="-0.05" max="0.4" step="0.01"></label>
       <label>Capitals<span class="chips">${[["", "As designed"], ["upper", "ABC"], ["none", "Abc"]].map(([v, l]) => `<button class="chip" data-rc="${r.k}" data-v="${v}">${l}</button>`).join("")}</span></label>
-      <label>Color<span class="chips"><input type="color" class="rcol" data-rcol="${r.k}" aria-label="${r.name} color"><button class="chip" data-rcolr="${r.k}">As designed</button></span></label>
+      <label>Color on the page<span class="chips"><input type="color" class="rcol" data-rcol="${r.k}" aria-label="${r.name} color"><button class="chip" data-rcolr="${r.k}">As designed</button></span></label>
+      <label>Color on cards<span class="chips"><input type="color" class="rcol" data-rcc="${r.k}" aria-label="${r.name} color on cards"><button class="chip" data-rccr="${r.k}">Same as above</button></span></label>
       <label>Style<span class="chips">${[["", "As designed"], ["italic", "<i>Italic</i>"], ["normal", "Upright"]].map(([v, l]) => `<button class="chip" data-ri="${r.k}" data-v="${v}">${l}</button>`).join("")}</span></label>
       <label>Alignment<span class="chips">${ALIGNS.map(([v, l, icon]) => `<button class="chip" data-ra="${r.k}" data-v="${v}" title="${l}" aria-label="${l}">${icon || l}</button>`).join("")}</span></label>
     </div>
@@ -372,6 +373,8 @@ function renderRoles(f) {
     document.querySelectorAll(`[data-rc=${r.k}]`).forEach(c => c.classList.toggle("on", (o.caps || "") === c.dataset.v));
     const col = document.querySelector(`[data-rcol=${r.k}]`); if (col !== document.activeElement) col.value = o.color || r.color;
     col.classList.toggle("set", !!o.color); document.querySelector(`[data-rcolr=${r.k}]`).classList.toggle("on", !o.color);
+    const cc = document.querySelector(`[data-rcc=${r.k}]`); if (cc !== document.activeElement) cc.value = o.cardColor || o.color || r.color;
+    cc.classList.toggle("set", !!o.cardColor); document.querySelector(`[data-rccr=${r.k}]`).classList.toggle("on", !o.cardColor);
     document.querySelectorAll(`[data-ri=${r.k}]`).forEach(c => c.classList.toggle("on", (o.italic || "") === c.dataset.v));
     document.querySelectorAll(`[data-ra=${r.k}]`).forEach(c => c.classList.toggle("on", (o.align || "") === c.dataset.v));
     document.querySelector(`[data-rr=${r.k}]`).hidden = !f[r.k];
@@ -403,6 +406,7 @@ document.addEventListener("input", e => {
   if (t.dataset.cc) set("cards." + t.dataset.cc, t.value.toUpperCase());
   if (t.dataset.cct && /^#[0-9a-f]{6}$/i.test(t.value)) set("cards." + t.dataset.cct, t.value.toUpperCase());
   if (t.id === "cardStrength") set("cards.strength", Number(t.value));
+  if (t.dataset.rcc) set(`fonts.${t.dataset.rcc}.cardColor`, t.value.toUpperCase());
   if (t.dataset.rcol) set(`fonts.${t.dataset.rcol}.color`, t.value.toUpperCase());
   if (t.dataset.rs) set(`fonts.${t.dataset.rs}.size`, Number(t.value) === 100 ? "" : Number(t.value));
   if (t.dataset.rl) set(`fonts.${t.dataset.rl}.spacing`, Number(t.value));
@@ -440,6 +444,7 @@ document.addEventListener("click", e => {
   if (t.dataset.ccr) set("cards." + t.dataset.ccr, "");
   if (t.id === "cardReset") set("cards", "");
   if (t.dataset.rc) set(`fonts.${t.dataset.rc}.caps`, t.dataset.v);
+  if (t.dataset.rccr) set(`fonts.${t.dataset.rccr}.cardColor`, "");
   if (t.dataset.rcolr) set(`fonts.${t.dataset.rcolr}.color`, "");
   if (t.dataset.ri) set(`fonts.${t.dataset.ri}.italic`, t.dataset.v);
   if (t.dataset.ra) set(`fonts.${t.dataset.ra}.align`, t.dataset.v);
