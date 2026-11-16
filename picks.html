@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Shopping Picks · TreeStyle</title>
-<meta name="description" content="Designer-chosen luxe ribbon for your Christmas tree, by color: green, red, gold and silver, plus the ornament hooks every stylist keeps on hand.">
+<meta name="description" content="Designer-chosen pieces for your Christmas tree: luxe ribbon by color, statement ornaments, greenery, flowers, toppers, skirts and stylist's essentials.">
 <meta property="og:title" content="TreeStyle Shopping Picks">
-<meta property="og:description" content="Designer-chosen luxe ribbon by color, plus the stylist's essentials.">
+<meta property="og:description" content="Designer-chosen ribbon, ornaments, greenery, flowers, toppers and more.">
 <meta property="og:image" content="/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,7 +31,7 @@
   section.set > p{color:var(--muted);margin:0 0 16px;line-height:1.55}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px}
   .card{display:flex;flex-direction:column;border:1px solid rgba(201,169,97,.22);border-radius:16px;overflow:hidden;background:rgba(255,255,255,.035)}
-  .swatch{height:84px;position:relative;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 120% at 50% 0%,rgba(255,255,255,.06),transparent 70%)}
+  .swatch{height:88px;position:relative;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 120% at 50% 0%,rgba(255,255,255,.06),transparent 70%)}
   .band{width:78%;border-radius:3px;position:relative;box-shadow:0 6px 16px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.18),inset 0 -1px 0 rgba(0,0,0,.25)}
   .band::after{content:"";position:absolute;inset:0;border-radius:inherit;background:repeating-linear-gradient(100deg,rgba(255,255,255,.07) 0 2px,transparent 2px 7px)}
   .band.glint::after{background:radial-gradient(circle at 20% 40%,rgba(255,255,255,.55) 0 1px,transparent 2px) 0 0/14px 11px,radial-gradient(circle at 70% 70%,rgba(255,240,200,.45) 0 1px,transparent 2px) 0 0/19px 13px}
@@ -53,14 +53,14 @@
 <main class="picks">
   <div class="intro">
     <div class="eyebrow">Early access · Shopping picks</div>
-    <h1>The ribbon we reach for</h1>
-    <p>Luxe wired ribbon chosen by a Christmas tree designer, sorted by color. Pick your color, mix two or three widths, and let the widest one lead.</p>
+    <h1>The pieces we reach for</h1>
+    <p>Chosen by a Christmas tree designer: luxe ribbon by color, statement ornaments, greenery, flowers, toppers and the tools every stylist keeps on hand.</p>
   </div>
 
   <nav class="colors" aria-label="Jump to a color" id="nav"></nav>
   <div id="sets"></div>
 
-  <p class="disclose">As an Amazon Associate, TreeStyle earns from qualifying purchases. Prices and availability are set by Amazon and can change. Photos are not Amazon's; each card shows the ribbon's colors, and the product page has the details. <a href="/privacy">Privacy</a></p>
+  <p class="disclose">As an Amazon Associate, TreeStyle earns from qualifying purchases. Prices and availability are set by Amazon and can change. Drawings show each piece's colors; the product page has photos and details. <a href="/privacy">Privacy</a></p>
 </main>
 
 <script>
@@ -69,63 +69,150 @@ const AMAZON_TAG = "treestyle00-20";
 const dp = asin => "https://www.amazon.com/dp/" + asin + "?tag=" + AMAZON_TAG;
 const search = q => "https://www.amazon.com/s?k=" + encodeURIComponent(q) + "&tag=" + AMAZON_TAG;
 
-// Colors used to draw each ribbon (a band in its colors; the second color shows as an edge or backing)
-const HEX = { green:"#2F5A3C", moss:"#55623A", red:"#A3202C", wine:"#6E1A2A", gold:"#C9A961", champagne:"#D8C39A",
-  white:"#F1ECE2", ivory:"#EDE4D0", silver:"#C4C8CC", navy:"#1F2E4D", gray:"#8C8F94", lime:"#8DB33A" };
+// Colors used to draw each piece
+const HEX = { green:"#2F5A3C", moss:"#55623A", sage:"#8FA07E", red:"#A3202C", burgundy:"#6E1A2A", gold:"#C9A961", champagne:"#D8C39A",
+  white:"#F1ECE2", ivory:"#EDE4D0", silver:"#C4C8CC", clear:"#DDE6EC", navy:"#1F2E4D", blue:"#6F8FB0", gray:"#8C8F94",
+  brown:"#6B4A33", pink:"#D9A0A8", wicker:"#A9814F", pine:"#3F6B47" };
 
-// Picks from the stylist's list (lib/picks.js), chosen for each color. [ASIN, name, width, colors to draw, finish tags, look]
-const SETS = [
-  { id:"green", name:"Green", dot:HEX.green, blurb:"Deep forest and moss velvets with a gold touch, for Traditional and Elegant trees.", items:[
+// Stylist's choice from the picks (lib/picks.js): five per category, mixed palettes so every story has range.
+// Ribbon items: [ASIN, name, width, colors, tags, look]. Other items: [ASIN, name, detail, colors, tags].
+const RIBBON = [
+  { id:"green", name:"Green", items:[
     ["B0FHW8F896","Green crushed velvet with gold diamonds","4 in",["green","gold"],["Velvet","Gold diamond"],"glint"],
     ["B0FJ7JCHF4","Moss green luxury velvet, diamond glitter","2.5 in",["moss","gold"],["Velvet","Glitter"],"glint"],
     ["B0FHW4SPGD","Green crushed velvet, champagne gold back","4 in",["green","champagne"],["Velvet","Reversible"],""],
     ["B0DD7GVPJ4","Red and green frayed floral velvet","4 in",["green","red"],["Velvet","Floral"],""],
     ["B0HHJ2W8VW","Green velvet statement ribbon","6 in",["green"],["Velvet","Statement width"],""] ]},
-  { id:"red", name:"Red", dot:HEX.red, blurb:"Jeweled, gold-threaded and glittered reds, the heart of a classic tree.", items:[
+  { id:"red", name:"Red", items:[
     ["B0BD95MLYL","Red and gold jeweled ribbon","4 in",["red","gold"],["Jeweled"],"glint"],
     ["B0DYCRC6WP","Reversible red and gold jewelry velvet","2.5 in",["red","gold"],["Velvet","Jeweled"],"glint"],
     ["B0DYD9KFWV","Red velvet with red and gold thread","2.5 in",["red","gold"],["Velvet","Gold thread"],""],
     ["B0CKLXD2X6","Red velvet with gold glitter","4 in",["red","gold"],["Velvet","Glitter"],"glint"],
     ["B0DD7GR27X","Red and white snowy floral velvet","4 in",["red","white"],["Velvet","Floral"],""] ]},
-  { id:"gold", name:"Gold", dot:HEX.gold, blurb:"Embroidered, filigree and metallic golds that warm any palette.", items:[
+  { id:"gold", name:"Gold", items:[
     ["B0D83G93FM","Gold luxe velvet embroidery","2.5 in",["gold","champagne"],["Velvet","Embroidered"],"glint"],
     ["B0CW4F3CHT","Filigree embroidery velvet, white and gold","4 in",["ivory","gold"],["Velvet","Embroidered"],"glint"],
     ["B0C9XZYRLK","Champagne gold crushed velvet","4 in",["champagne"],["Velvet"],""],
     ["B077P6WZ4S","Harlequin metallic gold","2.5 in",["gold","champagne"],["Metallic","Harlequin"],"metal"],
     ["B0FHPZDPHC","Ivory velvet with a gold stripe","4 in",["ivory","gold"],["Velvet","Stripe"],""] ]},
-  { id:"silver", name:"Silver", dot:HEX.silver, blurb:"Cool metallics and frosted tones for winter white and blue trees.", items:[
+  { id:"silver", name:"Silver", items:[
     ["B0DHLSCND4","Metallic floral silver","4 in",["silver","white"],["Metallic","Floral"],"metal"],
     ["B0B189R4CB","Silver swirl satin","2.5 in",["silver","white"],["Satin","Swirl"],"metal"],
     ["B0B449DH59","Glittered checkerboard, navy and silver","4 in",["navy","silver"],["Glitter","Check"],"glint"],
     ["B0CFXQXNB4","Gray velvet with gold backing","4 in",["gray","gold"],["Velvet","Reversible"],""] ]},
 ];
-// The hooks card follows Eric's Essentials editor (Studio) when it has a product link; otherwise a store search
-const HOOKS = { id:"hooks", name:"Ornament hooks", dot:"#B8954F", blurb:"Every stylist keeps these on hand: enough for every ornament, with extra to spare." };
+const CATS = [
+  { id:"statement", name:"Statement ornaments", kind:"drop", blurb:"The big pieces that anchor the design. Set them back toward the trunk, where they add depth.", items:[
+    ["B0FHGX77ZK","Clear glass icicle drops","11 in",["clear"],["Glass"]],
+    ["B09338P4DZ","Champagne and silver mercury glass finials","Finial drops",["champagne","silver"],["Mercury glass","Vintage"]],
+    ["B0HBN6FNP9","Large silver mercury glass finials","Finial drops",["silver"],["Mercury glass"]],
+    ["B0HDCCGL6J","Gold glitter glass pinecones","6 in",["gold"],["Glass","Glitter"]],
+    ["B0CC245JCR","Extra large red ornaments","6 in",["red"],["Shatterproof"]] ]},
+  { id:"ornaments", name:"Ornaments", kind:"ball", blurb:"The everyday ornaments, in finishes that layer well: velvet, mercury glass and matte with shine.", items:[
+    ["B0FB3GVXJD","Champagne gold etched mercury glass","3.15 in",["champagne","gold"],["Mercury glass"]],
+    ["B0H4R1DP4J","Sage green rhinestone velvet","Set",["sage"],["Velvet","Rhinestone"]],
+    ["B0GY15WKDY","Red velvet flocked ornaments","4 in",["red"],["Velvet"]],
+    ["B0CHJFS2RN","Blue and white porcelain chinoiserie","Set",["blue","white"],["Porcelain"]],
+    ["B0H29NZS9S","Gold glass ornaments, matte and shiny","4 in",["gold"],["Glass"]] ]},
+  { id:"greenery", name:"Greenery & sprays", kind:"sprig", blurb:"Tucked between the branches, they make an everyday tree look lush and layered.", items:[
+    ["B0FB946TVL","Extra full cedar pine stems","39 in",["pine"],["Natural green"]],
+    ["B0D47GGJHW","Norfolk pine stems","30 in",["pine"],["Natural green"]],
+    ["B0B1DMGDVH","Gold glitter bay leaf sprays","24 in",["gold"],["Glitter"]],
+    ["B0FR599415","Clear crystal icicle branch picks","19.7 in",["clear"],["Crystal","Glitter"]],
+    ["B0H32X9B4P","Champagne gold curly ting ting branches","Sprays",["champagne","gold"],["Metallic"]] ]},
+  { id:"flowers", name:"Flowers", kind:"flower", blurb:"Oversized blooms bring softness. Wind them back and forth down the tree, fuller low.", items:[
+    ["B09ZL85RV1","Large glitter magnolia flowers","10 in",["ivory","gold"],["Glitter"]],
+    ["B0GJCKXF42","Champagne poinsettias and glitter picks","Set",["champagne"],["Glitter"]],
+    ["B07Z65X159","Gold poinsettias, three sizes","Set",["gold"],["Metallic"]],
+    ["B0932C4J6N","Oversize pink velvet magnolias","Large",["pink"],["Velvet"]],
+    ["B0FJ6VKJ46","Southern magnolia branches","28 in",["green","brown"],["Natural"]] ]},
+  { id:"berries", name:"Berries & picks", kind:"berries", blurb:"The finishing details. Tuck them in last, after the ornaments.", items:[
+    ["B0BB29B487","Snowy cedar picks with red berries","Picks",["red","white"],["Frosted"]],
+    ["B0CCCXH6CJ","Champagne glitter bay leaf with berries","16 in",["champagne"],["Glitter"]],
+    ["B08HS6J34G","Red berry, holly and pinecone sprays","Sprays",["red","brown"],["Rustic"]],
+    ["B0FZTR3KK9","Gold ornament cluster picks","Picks",["gold"],["Shatterproof"]],
+    ["B0HBZGY8RM","Blue cluster berry spray","27 in",["blue","brown"],["Natural stem"]] ]},
+  { id:"bows", name:"Velvet bows", kind:"bow", blurb:"For a topper or a wreath, or when a tree calls for a bow.", items:[
+    ["B0FDGQHYTK","Large burgundy velvet bows","32 x 24 in",["burgundy"],["Velvet"]],
+    ["B0G11VDJ2X","Red vintage luxury velvet bows","Set",["red"],["Velvet","Vintage"]],
+    ["B0D91GXRB9","Khaki velvet tree bows","Set",["champagne"],["Velvet"]],
+    ["B0FMY9CMJN","Champagne gold glitter bows","Set",["champagne","gold"],["Glitter"]],
+    ["B0FR3ZZ1JZ","Navy blue velvet tree bows","Set",["navy"],["Velvet"]] ]},
+  { id:"toppers", name:"Toppers", kind:"star", blurb:"The crown of the tree. Choose one that fits the style and reuses its ribbon or flowers.", items:[
+    ["B0H1HWNNTK","Extra large red velvet bow topper","XL",["red"],["Velvet"]],
+    ["B0H5C7B9B2","Giant gold bow topper","20 in",["gold"],["Metallic"]],
+    ["B0H5K989WP","Vintage gold metal angel","7.9 in",["gold"],["Vintage"]],
+    ["B0H8SMY1RV","Green velvet star","9.8 in",["green"],["Velvet"]],
+    ["B0FK4XZ74V","Silver glitter star","8 in",["silver"],["Glitter"]] ]},
+  { id:"bases", name:"Skirts & collars", kind:"skirt", blurb:"Every finished tree needs a base. A collar keeps it tailored; a skirt softens it.", items:[
+    ["B0HCCL6552","Natural wicker woven tree collar","36 in",["wicker"],["Woven"]],
+    ["B0FHNZSPXY","Natural rattan wicker tree skirt","36 in",["wicker"],["Woven"]],
+    ["B0153AZ0HO","Ivory faux fur tree skirt","Balsam Hill",["ivory"],["Faux fur"]],
+    ["B0153AZ45M","Brown faux fur tree skirt","Balsam Hill",["brown"],["Faux fur"]],
+    ["B0FPCY92BR","Blue velvet fur scallop tree skirt","48 in",["blue"],["Velvet"]] ]},
+];
+// Stylist's essentials follow the Studio's Essentials editor (same list as the app); these are the defaults
+const ESSENTIALS = [
+  { id:"hooks", label:"Ornament hooks", qty:"Enough for every ornament, with extra to spare", q:"gold ornament hooks" },
+  { id:"wire", label:"Green floral paddle wire", qty:"Holds ribbon cascades exactly where you want them", q:"green floral paddle wire" },
+  { id:"ties", label:"Green twist ties", qty:"Fasten stems and picks to the branches, out of sight", q:"green garden twist ties" },
+  { id:"remote", label:"Remote control outlet", qty:"Lights on and off without reaching behind the tree", q:"remote control outlet for christmas lights" },
+  { id:"cord", label:"Green extension cord", qty:"Disappears into the branches", q:"green extension cord indoor" },
+  { id:"scissors", label:"Fabric scissors", qty:"Crisp, clean ribbon tails", q:"fabric scissors" },
+];
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const col = (cols, i) => HEX[cols[Math.min(i, cols.length - 1)]] || cols[0];
 const band = (cols, w, look) => {
   const c = cols.map(k => HEX[k] || k), h = Math.round(14 + parseFloat(w) * 7);
   const bg = c.length > 1 ? `linear-gradient(180deg,${c[1]} 0 12%,${c[0]} 12% 88%,${c[1]} 88%)` : c[0];
   return `<div class="band ${look}" style="height:${h}px;background-color:${c[0]};background:${bg}"></div>`;
 };
-const card = ([asin, name, w, cols, tags, look]) => `<article class="card"><div class="swatch">${band(cols, w, look)}</div>
-  <div class="body"><b>${esc(name)}</b><div class="tags"><span>${esc(w)} wide</span>${tags.map(t => `<span>${esc(t)}</span>`).join("")}</div>
-  <a class="shop" href="${dp(asin)}" target="_blank" rel="noopener sponsored">Shop</a></div></article>`;
+// Small drawings of each kind of piece, in its colors
+const shine = `<ellipse cx="-6" cy="-7" rx="4" ry="6" fill="#fff" opacity=".28" transform="rotate(30)"/>`;
+const DRAW = {
+  ball: c => `<g><circle cx="-14" cy="6" r="15" fill="${col(c,0)}"/><rect x="-18" y="-13" width="8" height="5" rx="1" fill="#C9A961"/><g transform="translate(-14 6)">${shine}</g>
+    <circle cx="16" cy="9" r="12" fill="${col(c,1)}"/><rect x="13" y="-7" width="6" height="4" rx="1" fill="#C9A961"/><g transform="translate(16 9) scale(.8)">${shine}</g></g>`,
+  drop: c => `<g><path d="M0 -26 C12 -10 16 6 0 30 C-16 6 -12 -10 0 -26Z" fill="${col(c,0)}"/><path d="M0 -26 C5 -12 6 4 0 22" stroke="${col(c,1)}" stroke-width="3" fill="none" opacity=".7"/><rect x="-4" y="-31" width="8" height="5" rx="1" fill="#C9A961"/></g>`,
+  sprig: c => `<g stroke="${col(c,0)}" stroke-width="3" stroke-linecap="round" fill="none"><path d="M0 30 C2 10 -2 -10 4 -30"/>${[-20,-10,0,10,20].map(y=>`<path d="M${1+y/12} ${y} l-15 -7 M${1+y/12} ${y} l15 -9"/>`).join("")}</g>`,
+  flower: c => `<g>${[0,72,144,216,288].map(a=>`<ellipse cx="0" cy="-14" rx="10" ry="15" fill="${col(c,0)}" transform="rotate(${a})" opacity=".95"/>`).join("")}<circle r="7" fill="${col(c,1)}"/></g>`,
+  berries: c => `<g><path d="M-18 26 C-8 8 6 -2 20 -22" stroke="${HEX.brown}" stroke-width="2.5" fill="none"/>${[[-10,10],[-3,3],[5,-6],[12,-14],[-14,2],[2,-12],[10,4]].map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="5.5" fill="${col(c,i%2)}"/>`).join("")}</g>`,
+  bow: c => `<g fill="${col(c,0)}"><path d="M0 0 C-14 -18 -30 -14 -26 0 C-30 14 -14 18 0 0Z"/><path d="M0 0 C14 -18 30 -14 26 0 C30 14 14 18 0 0Z"/><path d="M-3 2 L-14 30 L-7 27 L-3 32Z M3 2 L14 30 L7 27 L3 32Z"/><circle r="6" fill="${col(c,1)}" stroke="rgba(0,0,0,.2)"/></g>`,
+  star: c => `<path d="M0 -28 L8 -9 L28 -9 L12 3 L18 23 L0 11 L-18 23 L-12 3 L-28 -9 L-8 -9Z" fill="${col(c,0)}"/>`,
+  skirt: c => `<g><path d="M-34 22 C-30 4 -14 -4 0 -4 C14 -4 30 4 34 22 Z" fill="${col(c,0)}"/><path d="M-34 22 C-20 28 20 28 34 22" stroke="rgba(0,0,0,.25)" stroke-width="2" fill="none"/><rect x="-3" y="-28" width="6" height="26" fill="${HEX.brown}"/></g>`,
+};
+const svg = (kind, c) => `<svg width="96" height="72" viewBox="-40 -34 80 68" aria-hidden="true">${DRAW[kind](c)}</svg>`;
+const tagsHtml = tags => `<div class="tags">${tags.map(t => `<span>${esc(t)}</span>`).join("")}</div>`;
+const shopBtn = href => `<a class="shop" href="${esc(href)}" target="_blank" rel="noopener sponsored">Shop</a>`;
+const ribbonCard = ([asin, name, w, cols, tags, look]) => `<article class="card"><div class="swatch">${band(cols, w, look)}</div>
+  <div class="body"><b>${esc(name)}</b>${tagsHtml([w + " wide", ...tags])}${shopBtn(dp(asin))}</div></article>`;
+const itemCard = kind => ([asin, name, detail, cols, tags]) => `<article class="card"><div class="swatch">${svg(/\bbow\b/i.test(name) ? "bow" : kind, cols)}</div>
+  <div class="body"><b>${esc(name)}</b>${tagsHtml([detail, ...tags])}${shopBtn(dp(asin))}</div></article>`;
 
-document.getElementById("nav").innerHTML = [...SETS, HOOKS].map(s => `<a href="#${s.id}"><i style="background:${s.dot}"></i>${s.name}</a>`).join("");
-document.getElementById("sets").innerHTML = SETS.map(s => `<section class="set" id="${s.id}"><h2>${s.name} ribbon</h2><p>${esc(s.blurb)}</p><div class="grid">${s.items.map(card).join("")}</div></section>`).join("")
-  + `<section class="set" id="hooks"><h2>${HOOKS.name}</h2><p>${esc(HOOKS.blurb)}</p><div class="grid" id="hookGrid"></div></section>`;
+const essUrl = e => {
+  const asin = (String(e.link || "").match(/\/(?:dp|gp\/product|gp\/aw\/d)\/([A-Z0-9]{10})/i) || [])[1];
+  return asin ? dp(asin.toUpperCase()) : search(e.q || e.label);   // an amzn.to link would carry the old tag, so it falls back to a search
+};
+const essIcon = `<svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="#C9A961" stroke-width="2.5" stroke-linecap="round"><path d="M32 8v6M32 14c-7 0-7 9 0 9s7 9 0 12-9 9-1 13"/><circle cx="32" cy="7" r="3"/></svg>`;
+const essCard = (e, photos) => { const pic = photos && photos["ess_" + e.id];
+  return `<article class="card"><div class="swatch">${pic ? `<img class="hookpic" src="${esc(pic)}" alt="">` : essIcon}</div>
+  <div class="body"><b>${esc(e.label)}</b>${e.qty ? `<p class="note">${esc(e.qty)}</p>` : ""}${shopBtn(essUrl(e))}</div></article>`; };
 
-const hookCard = (link, pic) => `<article class="card"><div class="swatch">${pic ? `<img class="hookpic" src="${esc(pic)}" alt="">` : `<svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="#C9A961" stroke-width="2.5" stroke-linecap="round"><path d="M32 8v6M32 14c-7 0-7 9 0 9s7 9 0 12-9 9-1 13"/><circle cx="32" cy="7" r="3"/></svg>`}</div>
-  <div class="body"><b>Gold ornament hooks</b><p class="note">Hang the large ornaments set back toward the trunk, where they add depth.</p>
-  <a class="shop" href="${esc(link)}" target="_blank" rel="noopener sponsored">Shop</a></div></article>`;
-const grid = document.getElementById("hookGrid");
-grid.innerHTML = hookCard(search("gold ornament hooks"));
+const NAV = [...RIBBON.map(r => ({ id:r.id, name:r.name + " ribbon", dot:HEX[r.id] })),
+  ...CATS.map(c => ({ id:c.id, name:c.name, dot:col(c.items[0][3], 0) })), { id:"essentials", name:"Essentials", dot:"#B8954F" }];
+document.getElementById("nav").innerHTML = NAV.map(s => `<a href="#${s.id}"><i style="background:${s.dot}"></i>${esc(s.name)}</a>`).join("");
+document.getElementById("sets").innerHTML =
+  RIBBON.map(s => `<section class="set" id="${s.id}"><h2>${s.name} ribbon</h2><p>Luxe wired ribbon. Mix two or three widths and let the widest lead.</p><div class="grid">${s.items.map(ribbonCard).join("")}</div></section>`).join("")
+  + CATS.map(c => `<section class="set" id="${c.id}"><h2>${esc(c.name)}</h2><p>${esc(c.blurb)}</p><div class="grid">${c.items.map(itemCard(c.kind)).join("")}</div></section>`).join("")
+  + `<section class="set" id="essentials"><h2>Stylist's essentials</h2><p>Every stylist keeps these on hand.</p><div class="grid" id="essGrid"></div></section>`;
+// Old links to #hooks land on the essentials
+if (location.hash === "#hooks") location.replace("#essentials");
+
+const essGrid = document.getElementById("essGrid");
+essGrid.innerHTML = ESSENTIALS.map(e => essCard(e)).join("");
 fetch("/api/brand").then(r => r.json()).then(d => {
-  const h = (d.essentials || []).find(e => e.id === "hooks" || /hook/i.test(e.label || ""));
-  const asin = h && (String(h.link || "").match(/\/(?:dp|gp\/product|gp\/aw\/d)\/([A-Z0-9]{10})/i) || [])[1];
-  const pic = d.photos && h && d.photos["ess_" + h.id];
-  grid.innerHTML = hookCard(asin ? dp(asin.toUpperCase()) : search((h && h.q) || "gold ornament hooks"), pic);
+  const list = Array.isArray(d.essentials) && d.essentials.length ? d.essentials : ESSENTIALS;
+  essGrid.innerHTML = list.map(e => essCard(e, d.photos)).join("");
 }).catch(() => {});
 </script>
 </body>
