@@ -48,6 +48,8 @@ ${rs ? `\nRIBBON STYLE: ${rs.name}. ${rs.paint}\n` : ""}
 ${PICTURE_LIMITS}`;
 }
 
+const STRIP = `Edit this photo and change only one thing: take every decoration off the Christmas tree. Remove all ornaments, ribbon, garland, bead strands, flowers, picks and stems, the topper, and the tree skirt or collar, leaving the bare tree with its own lights on. Where each decoration was, show the tree's own branches and needles, matching the rest of the tree. Keep exactly the same tree (its height, width, outline and every branch), the same lights, the same room, framing and lighting, and everything around the tree (gifts, furniture) as it is. Do not add anything. The result is an ordinary photograph of the same bare tree in the same room.`;
+
 function editPrompt(brief, revision, shape, shape2) {
   if (revision) return `EDIT this exact photo; do not redraw it. It shows a decorated Christmas tree that the homeowner has already seen and wants to build on. The result must be recognizably the same picture with one change made: someone comparing them side by side should see the same tree, the same room and the same decorations in the same places, plus the change below. Make ONLY that change and keep everything else exactly as it is: same room, camera angle, framing and lighting, and every ornament, ribbon, flower and stem not mentioned stays exactly where it is, at the same size and color. Do not restyle, rearrange or re-render anything the change doesn't name. Make the change photorealistic, at true real-world scale, tucked into the branches, and clearly visible. The tree itself never changes: its height, outline, top tip and every branch stay exactly as they are. Removing a decoration only takes that decoration off and shows the branches that were behind it; a new topper sits on the tree's existing tip, with the upper branches still full around it. If a topper doesn't fit between the tree's tip and the top of the photo, let it run off the top edge of the frame; never shorten, cut, flatten or shrink the tree to make room for it.
 
@@ -108,6 +110,19 @@ export default async function handler(req, res) {
   const { image, brief, aspect, pieces, map, revision, shape, variant, generic, ribbonStyle, removeFirst } = req.body || {};
   const pc = parseDataUrl(pieces), mp = parseDataUrl(map);
   let img = parseDataUrl(image);
+  // Lab test "strip" (Eric, Nov 15): a new style starts from their own tree with every decoration taken off in one edit
+  if (req.body?.strip && img) {
+    const t0 = Date.now();
+    for (const model of MODELS) {
+      const out = await callGemini(model, img, STRIP, ASPECTS.includes(aspect) ? aspect : null, null, null, null, false);
+      if (!out.ok && (out.status === 404 || out.status === 429)) continue;
+      const p = (out.body?.candidates?.[0]?.content?.parts || []).find(x => x.inlineData || x.inline_data);
+      if (!out.ok || !p) return res.status(502).json({ error: out.body?.error?.message || "No bare tree came back", model });
+      const d = p.inlineData || p.inline_data;
+      return res.status(200).json({ image: `data:${d.mimeType || d.mime_type || "image/png"};base64,${d.data}`, _meta: { model, seconds: Math.round((Date.now() - t0) / 100) / 10 } });
+    }
+    return res.status(502).json({ error: "No image model available" });
+  }
   if (!img || !brief) return res.status(400).json({ error: "Missing photo or brief" });
   const ar = ASPECTS.includes(aspect) ? aspect : null;
 

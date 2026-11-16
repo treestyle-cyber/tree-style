@@ -165,13 +165,13 @@ $("#file").onchange = async e => { for (const f of [...e.target.files].slice(0, 
 const RSLOT = { woven_billows: "ribbon_billows", waterfall_cascades: "ribbon_cascades", layered_ribbons: "ribbon_layered", big_loops: "ribbon_loops", loop_bursts: "ribbon_bursts", curls: "ribbon_curls" };
 const RSTYLE = { woven_billows: "Woven billows", waterfall_cascades: "Waterfall cascades", layered_ribbons: "Layered ribbons", big_loops: "Big loops", loop_bursts: "Loop bursts", curls: "Curls" };
 const TESTS = {
-  simple: { title: "Test: your designer's brief (simpler rules)", variant: "simple" },
+  strip: { title: "Test: take everything off, then design the new style", variant: "strip" },
   ribbon6: { title: "Test: six ribbon styles, the plan picks one", variant: "ribbon6" },
   shape2: { title: "Test: shaping opens branches, adds none", variant: "shape2", samePlan: true },
   map2: { title: "Test: flower spots without the yellow center", variant: "map2", samePlan: true },
 };
-const DESC = { simple: "Testing your designer's brief: the left column follows the simpler rules (four steps, six ribbon styles, generous where the tree needs it, shaping that adds no branches, the eight hard limits). The right column is the live app. Run as Check my tree with Keep my style.", ribbon6: "Testing ribbon styles: the left column's plan picks one of your six ribbon styles and the picture copies that style's photo (shown above each test picture). The right column is the live app with your single ribbon photo.", shape2: "Testing branch shaping: both columns paint the same plan; the left opens the branches without adding any.", map2: "Testing flower spots: both columns paint the same plan; the left draws flower spots without the yellow center." };
-const COLS = [TESTS[new URLSearchParams(location.search).get("test")] || TESTS.simple, { title: "Live app", variant: undefined }];
+const DESC = { strip: "Testing a new look for a decorated tree: pick the new style above. The left column takes every decoration off their own tree in one step, then designs the new style on that bare tree. The right column is the live app checking the photo in that style. (The simpler-rules test was retired Nov 15: the live rules won.)", simple: "Testing your designer's brief: the left column follows the simpler rules (four steps, six ribbon styles, generous where the tree needs it, shaping that adds no branches, the eight hard limits). The right column is the live app. Run as Check my tree with Keep my style.", ribbon6: "Testing ribbon styles: the left column's plan picks one of your six ribbon styles and the picture copies that style's photo (shown above each test picture). The right column is the live app with your single ribbon photo.", shape2: "Testing branch shaping: both columns paint the same plan; the left opens the branches without adding any.", map2: "Testing flower spots: both columns paint the same plan; the left draws flower spots without the yellow center." };
+const COLS = [TESTS[new URLSearchParams(location.search).get("test")] || TESTS.strip, { title: "Live app", variant: undefined }];
 const ALL_STYLES = [["classic", "Traditional"], ["rustic", "Rustic"], ["modern", "Modern"], ["elegant", "Elegant"], ["playful", "Playful"], ["keep", "Keep my style"]];
 async function runOne(src, idx, mode, style, extra = {}, label = "") {
   const row = document.createElement("div");
@@ -186,6 +186,7 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
   const one = async (variant, id) => {
     const t0 = Date.now();
     try {
+      if (variant === "strip") return await stripOne(id, t0);
       const plan = COLS[0].samePlan ? await (shared ||= api("/api/evaluate", { image: src, mode, style, part: "plan", ...extra })) : await api("/api/evaluate", { image: src, mode, style, part: "plan", variant, ...extra });
       const result = Object.assign({}, look, plan);
       $(`#${id}-brief`).textContent = result.render_brief || "";
@@ -211,6 +212,19 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
       $(`#${id}-pic`).querySelector("button").onclick = () => { $(`#${id}-pic`).innerHTML = '<div class="spin"></div>'; one(variant, id); };
     }
   };
+  // Strip test: their tree with every decoration taken off in one edit, then designed in the new style on that bare tree
+  async function stripOne(id, t0) {
+    const bare = await api("/api/render", { image: src, strip: true, aspect });
+    $(`#${id}-badge`).innerHTML = `<div style="padding:10px 12px;border:1px solid var(--gold);border-radius:10px;background:rgba(184,156,107,.12)"><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Step 1 · everything taken off</div><img src="${bare.image}" alt="" style="width:100%;border-radius:8px"></div>`;
+    const plan = await api("/api/evaluate", { image: bare.image, mode: "design", style, part: "plan", ...extra });
+    const result = Object.assign({}, look, plan);
+    $(`#${id}-brief`).textContent = result.render_brief || "";
+    const map = await mapFor(bare.image, result, "design");
+    if (map) $(`#${id}-map`).innerHTML = `<img src="${map}" style="width:100%;border-radius:8px;margin-top:6px" alt="">`;
+    const out = await api("/api/render", { image: bare.image, brief: result.render_brief, aspect, map });
+    $(`#${id}-pic`).innerHTML = `<img src="${out.image}" alt="">`;
+    $(`#${id}-meta`).innerHTML = esc(`${Math.round((Date.now() - t0) / 1000)}s in all (taking everything off: ${bare._meta?.seconds || "?"}s) · ${(result.render_brief || "").split(/\s+/).length} words of instructions · ${out._meta?.model || ""}`);
+  }
   await Promise.all(COLS.map((c, k) => one(c.variant, (k ? "p" : "c") + idx)));
 }
 $("#go").onclick = async () => {
@@ -249,7 +263,7 @@ $("#big").onclick = () => $("#big").hidden = true;
 
 function gate() { $("#lab").hidden = true; $("#gate").hidden = false; }
 $("#gateForm").onsubmit = e => { e.preventDefault(); password = $("#pw").value.trim(); try { sessionStorage.setItem("ts_pw", password); } catch {} start(); };
-function start() { const tk = new URLSearchParams(location.search).get("test"); $("#testDesc").textContent = DESC[TESTS[tk] ? tk : "simple"]; if (!TESTS[tk] || tk === "simple") { $("#mode").value = "check"; $("#style").value = "keep"; } if (!password) return gate(); $("#gate").hidden = true; $("#lab").hidden = false; drawPhotos(); drawInspo(); syncMode(); }
+function start() { const tk = new URLSearchParams(location.search).get("test"); $("#testDesc").textContent = DESC[TESTS[tk] ? tk : "strip"]; if (!TESTS[tk] || tk === "strip") { $("#mode").value = "check"; $("#style").value = "rustic"; } if (!password) return gate(); $("#gate").hidden = true; $("#lab").hidden = false; drawPhotos(); drawInspo(); syncMode(); }
 start();
 </script>
 </body>
