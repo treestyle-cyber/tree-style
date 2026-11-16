@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="/style.css">
 <link rel="icon" type="image/png" href="/brand/favicon.png">
 <script src="/env.js"></script>
+<script src="/picks-looks.js"></script>
 <style>
   header.top{padding:18px 0}
   header.top .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -43,6 +44,23 @@
   .note{color:var(--muted);font-size:14px;line-height:1.5;margin:0}
   .shop{margin-top:auto;display:block;text-align:center;font:600 12px/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;color:#141C2C;background:var(--gold);border-radius:999px;padding:12px 10px}
   .hookpic{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+  .look{scroll-margin-top:72px;margin:18px 0 26px;border:1px solid rgba(201,169,97,.25);border-radius:20px;overflow:hidden;background:rgba(255,255,255,.03)}
+  .lookpic{position:relative;aspect-ratio:4/5;background:radial-gradient(90% 70% at 50% 40%,rgba(201,169,97,.12),transparent 70%),rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center}
+  .lookpic img{width:100%;height:100%;object-fit:cover;display:block}
+  .lookpic .ai{position:absolute;left:12px;bottom:12px;font:600 10px/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#F4EEE3;background:rgba(20,28,44,.72);border:1px solid rgba(201,169,97,.4);border-radius:999px;padding:7px 10px}
+  .lookpic .soon{color:var(--muted);font-size:14px;text-align:center;padding:0 30px}
+  .lookbody{padding:18px 16px 8px}
+  .lookbody h3{font:600 30px/1.05 var(--serif);margin:2px 0 6px}
+  .lookbody > p{color:var(--muted);line-height:1.55;margin:0 0 10px}
+  .plist{list-style:none;margin:0;padding:0}
+  .plist li{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid rgba(201,169,97,.14)}
+  .plist li svg{flex:none}
+  .plist .pn{flex:1;min-width:0}
+  .plist .pn small{display:block;font:600 10px/1.2 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:3px}
+  .plist .pn span{font-size:15px;line-height:1.3}
+  .plist .shop{flex:none;margin:0;padding:10px 14px}
+  .lookshare{display:block;text-align:center;font:600 12px/1 Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);text-decoration:none;padding:14px 0 16px}
+  .divider{margin:34px 0 0;padding-top:8px;border-top:1px solid rgba(201,169,97,.2)}
   .disclose{margin:40px 0 0;padding-top:20px;border-top:1px solid rgba(201,169,97,.2);color:var(--muted);font-size:13px;line-height:1.6}
   .disclose a{color:var(--gold)}
 </style>
@@ -54,13 +72,13 @@
   <div class="intro">
     <div class="eyebrow">Early access · Shopping picks</div>
     <h1>The pieces we reach for</h1>
-    <p>Chosen by a Christmas tree designer: luxe ribbon by color, statement ornaments, greenery, flowers, toppers and the tools every stylist keeps on hand.</p>
+    <p>Chosen by a Christmas tree designer: complete looks styled by TreeStyle, luxe ribbon by color, statement ornaments, greenery, flowers, toppers and the tools every stylist keeps on hand.</p>
   </div>
 
   <nav class="colors" aria-label="Jump to a color" id="nav"></nav>
   <div id="sets"></div>
 
-  <p class="disclose">As an Amazon Associate, TreeStyle earns from qualifying purchases. Prices and availability are set by Amazon and can change. Drawings show each piece's colors; the product page has photos and details. <a href="/privacy">Privacy</a></p>
+  <p class="disclose">As an Amazon Associate, TreeStyle earns from qualifying purchases. Prices and availability are set by Amazon and can change. Drawings show each piece's colors; the product page has photos and details. Look photos are AI previews made with TreeStyle; the real products may differ in detail. <a href="/privacy">Privacy</a></p>
 </main>
 
 <script>
@@ -178,6 +196,8 @@ const DRAW = {
   flower: c => `<g>${[0,72,144,216,288].map(a=>`<ellipse cx="0" cy="-14" rx="10" ry="15" fill="${col(c,0)}" transform="rotate(${a})" opacity=".95"/>`).join("")}<circle r="7" fill="${col(c,1)}"/></g>`,
   berries: c => `<g><path d="M-18 26 C-8 8 6 -2 20 -22" stroke="${HEX.brown}" stroke-width="2.5" fill="none"/>${[[-10,10],[-3,3],[5,-6],[12,-14],[-14,2],[2,-12],[10,4]].map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="5.5" fill="${col(c,i%2)}"/>`).join("")}</g>`,
   bow: c => `<g fill="${col(c,0)}"><path d="M0 0 C-14 -18 -30 -14 -26 0 C-30 14 -14 18 0 0Z"/><path d="M0 0 C14 -18 30 -14 26 0 C30 14 14 18 0 0Z"/><path d="M-3 2 L-14 30 L-7 27 L-3 32Z M3 2 L14 30 L7 27 L3 32Z"/><circle r="6" fill="${col(c,1)}" stroke="rgba(0,0,0,.2)"/></g>`,
+  ribbon: c => `<g><rect x="-26" y="-14" width="52" height="28" rx="4" fill="${col(c,0)}"/><rect x="-26" y="-14" width="52" height="5" fill="${col(c,1)}"/><rect x="-26" y="9" width="52" height="5" fill="${col(c,1)}"/><path d="M14 14 l10 18 l4 -8 l8 4 l-10 -14z" fill="${col(c,0)}"/></g>`,
+  horn: c => `<g fill="none" stroke="${col(c,0)}" stroke-width="5" stroke-linecap="round"><path d="M-24 6 C-24 -14 10 -14 10 0 C10 12 -14 12 -14 0"/><path d="M10 0 L26 -16" /><path d="M20 -22 L32 -10" stroke-width="7"/></g>`,
   star: c => `<path d="M0 -28 L8 -9 L28 -9 L12 3 L18 23 L0 11 L-18 23 L-12 3 L-28 -9 L-8 -9Z" fill="${col(c,0)}"/>`,
   skirt: c => `<g><path d="M-34 22 C-30 4 -14 -4 0 -4 C14 -4 30 4 34 22 Z" fill="${col(c,0)}"/><path d="M-34 22 C-20 28 20 28 34 22" stroke="rgba(0,0,0,.25)" stroke-width="2" fill="none"/><rect x="-3" y="-28" width="6" height="26" fill="${HEX.brown}"/></g>`,
 };
@@ -198,21 +218,34 @@ const essCard = (e, photos) => { const pic = photos && photos["ess_" + e.id];
   return `<article class="card"><div class="swatch">${pic ? `<img class="hookpic" src="${esc(pic)}" alt="">` : essIcon}</div>
   <div class="body"><b>${esc(e.label)}</b>${e.qty ? `<p class="note">${esc(e.qty)}</p>` : ""}${shopBtn(essUrl(e))}</div></article>`; };
 
-const NAV = [...RIBBON.map(r => ({ id:r.id, name:r.name + " ribbon", dot:HEX[r.id] })),
+const lookPiece = ([asin, role, name, cols, kind]) => `<li>${svg(kind, cols).replace('width="96" height="72"', 'width="48" height="36"')}<div class="pn"><small>${esc(role)}</small><span>${esc(name)}</span></div>${shopBtn(dp(asin))}</li>`;
+const lookHtml = L => `<article class="look" id="look-${L.id}"><div class="lookpic" data-look="${L.id}"><p class="soon">TreeStyle is styling this tree.</p></div>
+  <div class="lookbody"><div class="eyebrow">Shop the look</div><h3>${esc(L.name)}</h3><p>${esc(L.blurb)}</p><ul class="plist">${L.pieces.map(lookPiece).join("")}</ul></div></article>`;
+const LOOKS = window.LOOKS || [];
+const NAV = [...LOOKS.map(L => ({ id:"look-" + L.id, name:L.name, dot:col(L.pieces[0][3], 0) })),...RIBBON.map(r => ({ id:r.id, name:r.name + " ribbon", dot:HEX[r.id] })),
   ...CATS.map(c => ({ id:c.id, name:c.name, dot:col(c.items[0][3], 0) })), { id:"essentials", name:"Essentials", dot:"#B8954F" }];
 document.getElementById("nav").innerHTML = NAV.map(s => `<a href="#${s.id}"><i style="background:${s.dot}"></i>${esc(s.name)}</a>`).join("");
 document.getElementById("sets").innerHTML =
-  RIBBON.map(s => `<section class="set" id="${s.id}"><h2>${s.name} ribbon</h2><p>Luxe wired ribbon. Mix two or three widths and let the widest lead.</p><div class="grid">${s.items.map(ribbonCard).join("")}</div></section>`).join("")
+  (LOOKS.length ? `<section class="set" id="looks"><h2>Shop the look</h2><p>Complete trees, styled by TreeStyle, with every piece to recreate them.</p>${LOOKS.map(lookHtml).join("")}</section><div class="divider"></div><section class="set" id="categories" style="padding-bottom:0"><h2 style="font-size:clamp(32px,6vw,44px)">Shop by category</h2></section>` : "")
+  +  RIBBON.map(s => `<section class="set" id="${s.id}"><h2>${s.name} ribbon</h2><p>Luxe wired ribbon. Mix two or three widths and let the widest lead.</p><div class="grid">${s.items.map(ribbonCard).join("")}</div></section>`).join("")
   + CATS.map(c => `<section class="set" id="${c.id}"><h2>${esc(c.name)}</h2><p>${esc(c.blurb)}</p><div class="grid">${c.items.map(itemCard(c.kind)).join("")}</div></section>`).join("")
   + `<section class="set" id="essentials"><h2>Stylist's essentials</h2><p>Every stylist keeps these on hand.</p><div class="grid" id="essGrid"></div></section>`;
 // Old links to #hooks land on the essentials
 if (location.hash === "#hooks") location.replace("#essentials");
 
+// Each look's photo: the TreeStyle design Eric picked in the Studio (/studio/looks), saved to the photo spot look_<id>
+function showLooks(photos) {
+  document.querySelectorAll(".lookpic[data-look]").forEach(el => {
+    const u = photos["look_" + el.dataset.look];
+    if (u) el.innerHTML = `<img src="${esc(u)}" alt="${esc((LOOKS.find(L => L.id === el.dataset.look) || {}).name || "")} Christmas tree, styled by TreeStyle"><span class="ai">AI preview by TreeStyle</span>`;
+  });
+}
 const essGrid = document.getElementById("essGrid");
 essGrid.innerHTML = ESSENTIALS.map(e => essCard(e)).join("");
 fetch("/api/brand").then(r => r.json()).then(d => {
   const list = Array.isArray(d.essentials) && d.essentials.length ? d.essentials : ESSENTIALS;
   essGrid.innerHTML = list.map(e => essCard(e, d.photos)).join("");
+  showLooks(d.photos || {});
 }).catch(() => {});
 </script>
 </body>

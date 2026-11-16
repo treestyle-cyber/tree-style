@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TreeStyle · Studio · Looks</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" type="image/png" href="/brand/favicon.png">
+<script src="/env.js"></script>
+<script src="/picks-looks.js"></script>
+<script src="/try/engine.js?v=202610180545"></script>
+<script src="/try/guide.js?v=202610180545"></script>
+<style>
+  .wrap{max-width:1000px}
+  header{padding:22px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  nav a{margin-left:16px;text-decoration:none}
+  .intro{text-align:center;margin:6px auto 26px;max-width:42em}
+  .intro h1{font-weight:400;font-size:44px;margin:8px 0 12px}
+  .intro p{color:var(--muted);margin:0 0 8px}
+  .panel{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:22px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .lk h2{font-weight:400;font-size:30px;margin:0 0 4px}
+  .lk .theme{color:var(--muted);font-size:14px;line-height:1.5;margin:0 0 12px}
+  .shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:12px}
+  .shot{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:rgba(0,0,0,.15)}
+  .shot img{width:100%;display:block;aspect-ratio:4/5;object-fit:cover;cursor:zoom-in}
+  .shot .bar{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px}
+  .shot.chosen{outline:2px solid var(--gold)}
+  .cur{width:120px;border-radius:10px;border:1px solid var(--line);display:block}
+  .msg{font-size:14px;color:var(--muted);min-height:1.2em;margin:8px 0 0}
+  .msg.err{color:#E6A0A0}
+  .btn.small{padding:9px 14px;font-size:11px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="/"><img class="logoh" src="/brand/logo-horizontal.png" alt="TreeStyle · The art of styling"></a>
+    <nav><a class="eyebrow" href="/studio/">Photos</a><a class="eyebrow" href="/studio/reels">Reels</a><a class="eyebrow" href="/studio/looks" style="color:var(--ink)">Looks</a></nav>
+  </header>
+
+  <div id="gate" hidden>
+    <div class="eyebrow">Studio</div>
+    <h1 style="font-weight:400;font-size:40px;margin-top:8px">Enter the test password</h1>
+    <form id="gateForm"><input type="password" id="pw" placeholder="Password" autocomplete="current-password"><button class="btn">Enter</button></form>
+    <p class="msg err" id="gateErr"></p>
+  </div>
+
+  <div id="app" hidden>
+    <div class="intro">
+      <div class="eyebrow">Studio</div>
+      <h1>Shop the Look</h1>
+      <p>Each look on the Shopping Picks page is designed by TreeStyle itself: it imagines a bare tree in a room that suits the look, writes the plan in that style around the look's pieces, and paints the preview. Make one or more, then pick the photo for the page.</p>
+      <p><a href="/picks#looks" style="color:var(--gold)">See the Shopping Picks page</a></p>
+    </div>
+    <div id="looks"></div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
+const api = async (path, body) => {
+  const r = await fetch(path, { method: "POST", headers: { "content-type": "application/json", "x-test-password": password }, body: JSON.stringify(body) });
+  let d = {}; try { d = await r.json(); } catch { d = { error: r.status === 504 ? "That took too long and timed out. Try again." : "Server error " + r.status }; }
+  if (!r.ok) { const e = new Error(d.error || "Error " + r.status); e.status = r.status; throw e; }
+  return d;
+};
+const loadImg = src => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
+const shrink = async (src, max, q = .9) => { const im = await loadImg(src), k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas");
+  c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", q); };
+const ASPECTS = [["1:1", 1], ["2:3", 2 / 3], ["3:4", .75], ["4:5", .8], ["3:2", 1.5], ["4:3", 4 / 3], ["9:16", 9 / 16]];
+const aspectOf = async src => { const im = await loadImg(src), r = im.width / im.height; return ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0]; };
+
+// The same tree for every look: an 8 ft pre-lit artificial tree, so no lights step
+const FACTS = { kind: "artificial", prelit: "yes", height: 8, density: "", stage: "" };
+let photos = {};
+const shots = {};   // look id -> [{ image, at }]
+
+// TreeStyle's own design flow, as in the app: bare tree from an idea, scores + plan (in parallel), placement map, preview
+async function design(L, say) {
+  say("Imagining the bare tree in its room…");
+  const base = await api("/api/base", { kind: "idea", idea: L.idea, facts: FACTS });
+  const photo = await shrink(base.image, 1536), aspect = await aspectOf(photo);
+  say("Designing the tree in the " + L.style + " style around the look's pieces…");
+  const evalBody = { image: photo, mode: "design", style: L.style, theme: L.theme, facts: FACTS };
+  const [look, plan] = await Promise.all([api("/api/evaluate", { ...evalBody, part: "look" }), api("/api/evaluate", { ...evalBody, part: "plan" })]);
+  const result = Object.assign(look, plan);
+  say("Painting the preview…");
+  let map;
+  try { const cv = document.createElement("canvas"); TreeGuide.create(await loadImg(photo), cv, result, "design").drawMap(); map = await shrink(cv.toDataURL("image/jpeg", .85), 1024, .8); } catch (e) { console.error(e); }
+  const shape = (result.plan || []).some(p => p.element === "fluff") || undefined;
+  const out = await api("/api/render", { image: photo, brief: result.render_brief, aspect, map, shape, generic: !!result.branded_theme || undefined });
+  return out.image;
+}
+
+function card(L) {
+  const cur = photos["look_" + L.id];
+  return `<section class="panel lk" id="lk-${L.id}"><div class="row" style="justify-content:space-between;align-items:flex-start">
+    <div style="flex:1;min-width:240px"><div class="eyebrow">${esc(L.style)} style</div><h2>${esc(L.name)}</h2><p class="theme">${esc(L.theme)}</p>
+      <div class="row"><button class="btn small" data-go="${L.id}">Design it with TreeStyle</button></div><p class="msg" id="msg-${L.id}"></p></div>
+    <div>${cur ? `<img class="cur" src="${esc(cur)}" alt=""><div class="eyebrow" style="margin-top:6px">On the page now</div>` : `<div class="eyebrow">No photo yet</div>`}</div></div>
+    <div class="shots" id="shots-${L.id}"></div></section>`;
+}
+function drawShots(id) {
+  $("#shots-" + id).innerHTML = (shots[id] || []).map((s, i) => `<div class="shot${s.used ? " chosen" : ""}"><img src="${s.image}" alt="" data-open="${id}:${i}">
+    <div class="bar"><span class="eyebrow">${s.used ? "On the page" : "Design " + (i + 1)}</span><button class="btn small" data-use="${id}:${i}"${s.used ? " disabled" : ""}>Use on the page</button></div></div>`).join("");
+}
+function render() {
+  $("#looks").innerHTML = (window.LOOKS || []).map(card).join("");
+  (window.LOOKS || []).forEach(L => drawShots(L.id));
+}
+document.addEventListener("click", async e => {
+  const go = e.target.closest("[data-go]"), use = e.target.closest("[data-use]"), open = e.target.closest("[data-open]");
+  if (open) { const [id, i] = open.dataset.open.split(":"); const w = window.open(); if (w) w.document.write(`<img src="${shots[id][+i].image}" style="max-width:100%">`); return; }
+  if (go) {
+    const L = LOOKS.find(l => l.id === go.dataset.go), m = $("#msg-" + L.id), say = (t, k) => { m.className = "msg" + (k ? " " + k : ""); m.textContent = t; };
+    go.disabled = true;
+    try { const img = await design(L, say); (shots[L.id] ||= []).unshift({ image: img }); drawShots(L.id); say("Done. Make another, or use this one on the page."); }
+    catch (err) { if (err.status === 401) return gate("That password didn't work."); say("That didn't work: " + err.message, "err"); }
+    go.disabled = false; go.textContent = "Design another";
+  }
+  if (use) {
+    const [id, i] = use.dataset.use.split(":"), s = shots[id][+i], m = $("#msg-" + id);
+    use.disabled = true; m.className = "msg"; m.textContent = "Saving…";
+    try {
+      const out = await api("/api/brand", { action: "use", slot: "look_" + id, image: await shrink(s.image, 1600, .9) });
+      photos["look_" + id] = out.url; shots[id].forEach(x => x.used = false); s.used = true;
+      const keep = shots[id]; render(); shots[id] = keep; LOOKS.forEach(L => drawShots(L.id));
+      $("#msg-" + id).textContent = "On the Shopping Picks page now" + (/-git-|preview/.test(location.hostname) ? " (this preview copy; the live Studio's Use them on the live site brings it over)." : ".");
+    } catch (err) { m.className = "msg err"; m.textContent = "Couldn't save: " + err.message; use.disabled = false; }
+  }
+});
+
+function gate(err) { $("#app").hidden = true; $("#gate").hidden = false; $("#gateErr").textContent = err || ""; }
+$("#gateForm").onsubmit = e => { e.preventDefault(); password = $("#pw").value.trim(); try { sessionStorage.setItem("ts_pw", password); } catch {} start(); };
+async function start() {
+  if (!password) return gate();
+  $("#gate").hidden = true; $("#app").hidden = false;
+  try { photos = (await (await fetch("/api/brand")).json()).photos || {}; } catch {}
+  render();
+}
+start();
+</script>
+</body>
+</html>
