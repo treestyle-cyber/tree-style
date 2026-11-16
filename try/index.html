@@ -1043,6 +1043,19 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   html.theme-ivory #splash{background:radial-gradient(70% 45% at 50% 46%,rgba(4,10,6,.5),transparent 75%),linear-gradient(rgba(0,0,0,.32),rgba(0,0,0,.32)),var(--photo-splash, url(/brand/splash-bg.jpg)) center/cover}   /* a slight black overlay darkens the photo */
   html.theme-ivory #splash .splogo{width:min(320px,82vw);filter:drop-shadow(0 6px 10px rgba(0,0,0,.85)) drop-shadow(0 16px 34px rgba(0,0,0,.7))}   /* larger, with a deep drop shadow */
   html.theme-ivory #splash .sphl{display:none}   /* the logo has its own gold rule, as in the mockup */
+
+  /* Ivory look, "How would you like to start?" (Kylie's mockup): light cards with a photo and a round icon on the left,
+     the title and line, a chevron; a pine garland along the bottom of the screen */
+  html.theme-ivory .src{display:grid;grid-template-columns:104px 1fr 16px;grid-template-rows:1fr auto auto 1fr;column-gap:14px;align-items:center;min-height:0;padding:10px 14px 10px 10px;position:relative;background:rgba(255,252,247,.95);color:var(--ink);box-shadow:0 12px 28px -20px rgba(44,33,24,.5),inset 0 0 0 1px var(--line)}
+  html.theme-ivory .src::before{content:"";grid-column:1;grid-row:1 / 5;width:104px;height:110px;border-radius:12px;background:var(--img) center/cover}
+  html.theme-ivory .src[data-src=idea]::before{background:var(--photo-start_idea, url(/brand/tile-design.jpg)) center/cover}
+  html.theme-ivory .src[data-src=tree]::before{background:var(--photo-design, url(/brand/scan-bg.jpg)) center 38%/cover}
+  html.theme-ivory .src[data-src=room]::before{background:var(--photo-start_room, url(/brand/home-bg.jpg)) 88% 96%/260% auto}
+  html.theme-ivory .src::after{content:"›";grid-column:3;grid-row:1 / 5;font:300 30px/1 var(--sans);color:var(--ink)}
+  html.theme-ivory .src b{grid-column:2;grid-row:2;color:var(--ink) !important;font-size:calc(22px * var(--s-subheadline,1));white-space:nowrap}
+  html.theme-ivory .src small{grid-column:2;grid-row:3;color:var(--muted) !important;font-size:calc(14.5px * var(--s-body,1));margin-top:4px}
+  html.theme-ivory .src .tic{position:absolute;left:34px;top:50%;margin-top:-28px}
+  html.theme-ivory body:has(#s-start:not([hidden]))::after{content:"";position:fixed;left:0;right:0;bottom:0;height:calc(min(100vw,600px) * .41);z-index:-1;pointer-events:none;background:linear-gradient(180deg,var(--bg),rgba(244,238,229,0) 35%),url(/brand/start-garland.jpg) center bottom/cover no-repeat}
 </style>
 </head>
 <body>
@@ -1097,9 +1110,9 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   <section class="screen" id="s-start" data-title="Design my tree" hidden>
     <h1>How would you like to start?</h1>
     <p class="sub">No tree up yet? No problem. Start from your room, or just an idea.</p>
-    <button class="src" data-src="idea" style="--img:url(/brand/pattern-damask.jpg)"><b>Start from an idea</b><small>Describe the look, and add a photo of anything that inspires you</small></button>
-    <button class="src" data-src="room" style="--img:var(--photo-velvet, url(/brand/velvet-midnight.jpg))"><b>The room it'll go in</b><small>Photograph the space, then tap where the tree will stand</small></button>
-    <button class="src" data-src="tree" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><b>My bare tree</b><small>It's up, with or without lights</small></button>
+    <button class="src" data-src="idea" style="--img:url(/brand/pattern-damask.jpg)"><span class="tic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M11.6 3.1C11.6 8.2 8.4 11.4 3.3 11.4c5.1 0 8.3 3.2 8.3 8.3 0-5.1 3.2-8.3 8.3-8.3-5.1 0-8.3-3.2-8.3-8.3Z"/><path d="M19.4 2.2c0 1.6-1 2.6-2.6 2.6 1.6 0 2.6 1 2.6 2.6 0-1.6 1-2.6 2.6-2.6-1.6 0-2.6-1-2.6-2.6Z" fill="currentColor" stroke="none"/></svg></span><b>Start from an idea</b><small>Describe the look, and add a photo of anything that inspires you</small></button>
+    <button class="src" data-src="room" style="--img:var(--photo-velvet, url(/brand/velvet-midnight.jpg))"><span class="tic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"/><path d="M3.5 11.5a1.5 1.5 0 0 1 3 0V14h11v-2.5a1.5 1.5 0 0 1 3 0V17H3.5z"/><path d="M5.5 17v1.5M18.5 17v1.5"/></svg></span><b>The room it'll go in</b><small>Photograph the space, then tap where the tree will stand</small></button>
+    <button class="src" data-src="tree" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><span class="tic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3 7.5 9.5h2.8L6 15h3.5L5 20.5h14L14.5 15H18l-4.3-5.5h2.8z"/><path d="M12 20.5v1.5"/></svg></span><b>My bare tree</b><small>It's up, with or without lights</small></button>
   </section>
 
   <!-- Design: from an idea -->
