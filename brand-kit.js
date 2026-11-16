@@ -61,6 +61,8 @@
       if (/^[1-9]00$/.test(o.weight)) rules.push(sel + "{font-weight:" + o.weight + " !important}");
       if (typeof o.size === "number" && o.size > 0) vars.push("--s-" + role + ":" + Math.max(.5, Math.min(2, o.size / 100)));
       if (typeof o.spacing === "number") rules.push(sel + "{letter-spacing:" + o.spacing + "em !important}");
+      if (hex(o.color)) rules.push(sel + "{color:" + o.color + " !important}");
+      if (o.italic === "italic" || o.italic === "normal") rules.push(sel + "{font-style:" + o.italic + " !important}");
       if (/^(left|center|right)$/.test(o.align)) rules.push(sel + "{text-align:" + o.align + " !important}");
       if (o.caps === "upper" || o.caps === "none") rules.push(sel + "{text-transform:" + (o.caps === "upper" ? "uppercase" : "none") + " !important}");
     });
