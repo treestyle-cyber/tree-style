@@ -3508,7 +3508,7 @@ async function sampleStart() {
   badge.textContent = "Sample";
   badge.style.cssText = "position:fixed;right:8px;top:8px;z-index:300;font:600 10px Inter,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;background:rgba(20,28,44,.85);color:#C5B28F;padding:4px 8px;border-radius:99px;pointer-events:none";
   document.body.appendChild(badge);
-  if (name === "pass") { show("s-pass", []); if (q.get("v") === "wrong") $("#passErr").textContent = "That password didn't work."; reportPhotoSpots(); return true; }
+  if (name === "pass") { show("s-pass", []); if (q.get("v") === "wrong") { $("#passErr").textContent = "That password didn't work."; setTimeout(() => $("#passErr").scrollIntoView({ block: "center" }), 300); } reportPhotoSpots(); return true; }
   if (name === "intro") { show("s-home", []); $("#splash").hidden = false; reportPhotoSpots(); return true; }   // the opening screen, held still
   // The tree: the Studio's sample (its pictures fetched back into the page), or this browser's own
   let st = null;
@@ -3550,7 +3550,7 @@ async function sampleStart() {
     if (v === "withroom" && pic) { roomPhoto = pic; roomMark = [.5, .8]; $("#ideaRoomThumb").style.backgroundImage = `url(${pic})`; $("#ideaRoomThumb").textContent = ""; $("#ideaRoomLbl").firstChild.textContent = "Change"; $("#ideaRoomClear").hidden = false; $("#ideaRmImg").src = pic; $("#ideaRoomMark").hidden = false; drawRoomDot(); }
     if (id === "s-home") setTimeout(() => { if (v !== "resume") $("#resume").hidden = true; }, 400);
     if (v === "wrong") $("#passErr").textContent = "That password didn't work.";
-    if (v === "error") $("#startErr").textContent = $("#detailsErr").textContent = "Something went wrong: the design service is busy right now. Please try again.";
+    if (v === "error") { $("#startErr").textContent = $("#detailsErr").textContent = "Something went wrong: the design service is busy right now. Please try again."; setTimeout(() => $("#startErr").scrollIntoView({ block: "center" }), 300); }
     if (v === "tips") { $("#tipsH").textContent = "Before you take the photo"; $("#tipsList").innerHTML = tipGrid(); openSheet("#tipsSheet"); }
   }
   else if (!st || !st.result) { badge.textContent = "No sample tree yet"; show(id, ["s-home"]); }
