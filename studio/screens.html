@@ -134,12 +134,19 @@ const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&am
 const store = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 
 const DEVICES = [["se", "iPhone SE", 375, 667], ["i15", "iPhone 15", 393, 852], ["max", "iPhone 15 Pro Max", 430, 932], ["s23", "Galaxy S23", 360, 780], ["ipad", "iPad", 820, 1180]];
+// Every screen of the app and each version of it. The third item is a plan step (a number) or a version (v=…)
 const GROUPS = [
-  ["start", "Getting started", [["pass", "Sign-in"], ["intro", "Opening screen"], ["home", "Home"], ["start", "Design my tree"], ["idea", "Your idea"], ["photo", "Your photo"], ["details", "About your tree"], ["style", "Style"]]],
-  ["wait", "While it works", [["loading", "Looking at your tree"], ["reveal", "Your results"]]],
-  ["results", "Results", [["results", "Results"], ["fixes", "Quick fixes"], ["score", "How it scored"], ["partner", "Design partner"]]],
+  ["start", "Getting started", [["pass", "Sign-in"], ["intro", "Opening screen"], ["home", "Home"],
+    ["photo", "Check: your photo"], ["photo", "Photo tips pop-up", "tips"], ["photo", "Photo added", "filled"],
+    ["details", "About your tree"], ["style", "Check: style"]]],
+  ["design", "Design my tree", [["start", "How would you like to start?"], ["idea", "Start from an idea"], ["photo", "The room it'll go in", "room"],
+    ["photo", "My bare tree", "bare"], ["style", "Design: pick a style", "design"]]],
+  ["wait", "While it works", [["loading", "Looking at your tree"], ["loading", "Designing your tree", "design"], ["reveal", "Your results"], ["loading", "Updating your tree", "update"]]],
+  ["results", "Results", [["results", "Results"], ["results", "Change something", "change"], ["results", "Try another style", "styles"], ["results", "Before & after image", "ba"],
+    ["results", "About your preview", "brand"], ["results", "Zoomed picture", "zoom"], ["fixes", "Quick fixes"], ["score", "How it scored"], ["partner", "Design partner"], ["details", "Fine-tune your tree", "results"]]],
   ["plan", "Step by step", Array.from({ length: 9 }, (_, i) => ["plan", "Step " + (i + 1), i + 1])],
   ["shop", "Shopping list", [["shop", "Shopping list"]]],
+  ["web", "Website", [["web", "Waitlist page"]]],
 ];
 let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
 let device = store.get("scr_device", "i15"), zoom = store.get("scr_zoom", 0.4), group = store.get("scr_group", "all"), mine = store.get("scr_mine", false);
@@ -152,7 +159,7 @@ const call = async body => {
 };
 const key = (name, step) => name + (step ? "-" + step : "");
 const dev = () => DEVICES.find(d => d[0] === device) || DEVICES[1];
-const url = (name, step) => `/try/?screen-preview${mine ? "=mine" : ""}&s=${name}${step ? "&step=" + step : ""}`;
+const url = (name, step) => name === "web" ? "/?screen-preview" : `/try/?screen-preview${mine ? "=mine" : ""}&s=${name}${typeof step === "number" ? "&step=" + step : step ? "&v=" + step : ""}`;
 
 // ---- The grid of phones ----
 function build() {

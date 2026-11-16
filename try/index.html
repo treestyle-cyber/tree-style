@@ -3531,9 +3531,33 @@ async function sampleStart() {
     if (q.has("step")) st.stepIdx = Math.max(0, parseInt(q.get("step"), 10) - 1 || 0);
     if (!(await restoreSaved(Object.assign({}, st, { screen: treeScreens.includes(id) ? id : "s-results" })))) st = null;
   }
-  if (!treeScreens.includes(id)) show(id, id === "s-home" ? [] : ["s-home"]);
+  const v = q.get("v") || "";
+  const tap = sel => { const b = document.querySelector(sel); if (b) b.click(); };
+  if (!treeScreens.includes(id)) {
+    // Start screens are reached the way a person reaches them, so each shows its real wording for that path
+    const design = v === "design" || v === "room" || v === "bare" || id === "s-start" || id === "s-idea";
+    if (id !== "s-home" && !(v === "filled" || v === "results")) tap(`.choice[data-mode="${design ? "design" : "check"}"]`);
+    if (id === "s-idea") tap('.src[data-src="idea"]');
+    if (v === "room") tap('.src[data-src="room"]');
+    if (v === "bare") tap('.src[data-src="tree"]');
+    if (v === "results" && st && st.result) $("#navDetails").click();
+    else show(id, id === "s-home" ? [] : ["s-home"]);
+    if (v === "tips") { $("#tipsH").textContent = "Before you take the photo"; $("#tipsList").innerHTML = tipGrid(); openSheet("#tipsSheet"); }
+  }
   else if (!st || !st.result) { badge.textContent = "No sample tree yet"; show(id, ["s-home"]); }
-  if (name === "loading") startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree", mode === "design" ? DESIGN_STEPS : CHECK_STEPS, 600, photo);
+  // Pop-ups on the results screen
+  if (id === "s-results" && st && st.result) {
+    if (v === "change") openRestyle();
+    if (v === "styles") $("#again").click();
+    if (v === "ba" && after) $("#baBtn").click();
+    if (v === "brand") { $("#brandH").textContent = "About your preview"; $("#brandP").innerHTML = "Image tools can't draw trademarked characters, logos or emblems, so this preview shows your theme with look-alike pieces in its colors and spirit."; $("#brandP2").innerHTML = "Your plan and shopping list can still include the licensed ornaments and decor you'd buy."; openSheet("#brandSheet"); }
+    if (v === "zoom" && after) openZoom([{ label: "Before", src: photo }, { label: "After", src: after }], 1);
+  }
+  if (name === "loading") {
+    if (v === "update") startLoading("Updating your tree", ["Reading your request", "Reworking the plan", "Adjusting ribbon, stems and ornaments", "Creating a preview of the new version"], 600, after || photo);
+    else if (v === "design") startLoading("Designing your tree", DESIGN_STEPS, 600, photo);
+    else startLoading("Looking at your tree", CHECK_STEPS, 600, photo);
+  }
   reportPhotoSpots();
   if (id === "s-plan") { for (let i = 0; i < 40 && !guide; i++) await new Promise(r => setTimeout(r, 100)); if (guide) parent.postMessage({ type: "ts-screen-steps", steps: guide.steps.length }, location.origin); }
   return true;
