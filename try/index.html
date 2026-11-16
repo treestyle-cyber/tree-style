@@ -958,6 +958,8 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .lookitems{display:grid;gap:10px}
   .lookitems .lookitem{display:grid;grid-template-columns:96px 1fr auto;gap:14px;align-items:center;padding:8px 12px 8px 8px;margin:0;min-height:0;text-align:left;overflow:hidden}
   .lookpic{width:96px;height:78px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(rgba(20,16,10,.25),rgba(20,16,10,.25)),url(/brand/start-garland.jpg) 30% 60%/240% auto;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+  .lookpic.photo{overflow:hidden;background:#1C2B20}
+  .lookpic img{width:100%;height:100%;object-fit:cover;display:block}
   .lookpic svg{width:64px;height:64px;filter:drop-shadow(0 5px 8px rgba(0,0,0,.5))}
   .lookname{display:block;font:500 calc(17px * var(--s-subheadline,1))/1.2 var(--serif);color:var(--ink)}
   .lookhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
@@ -1389,7 +1391,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     <p class="sub">Curated selections for every style, chosen by the designers we follow.</p>
     <div class="lookchips" id="lookChips"></div>
     <div id="lookList"></div>
-    <p class="looknote">Links go to Amazon. TreeStyle may earn a commission.</p>
+    <p class="looknote">Ribbon photos show the color and texture, not the exact product. Links go to Amazon. TreeStyle may earn a commission.</p>
   </section>
 </main>
 
@@ -3868,6 +3870,18 @@ let lookStyle = "classic";
 // Eric's 10 qualifying sales); until then the box shows the app's drawing of the piece in its colors.
 const LOOK_PIC = { ribbon: "ribbon", ribbon_bows: "ribbon", statement: "statement", medium: "medium", small: "medium", primary_picks: "primary_picks", small_picks: "small_picks", florals: "florals", crown: "crown", base: "base" };
 let lookAll = {};
+// Ribbon photos (from Kylie's mockup, plus recolors of its red velvet): the closest color and texture for each ribbon.
+// They show the look of the ribbon, not the exact product.
+function ribbonPhoto(p) {
+  const c = p.colors, n = p.name.toLowerCase(), f = p.fin;
+  if (/plaid|tartan|check/.test(f + " " + n)) return "plaid-green";
+  if (/candy|peppermint/.test(n) || /stripe/.test(f) && /white/.test(c)) return "";   // candy cane stripes: no photo looks like them
+  if (/burgundy|wine/.test(c)) return "burgundy-gold";
+  if (/(^|,)red/.test(c)) return ["red", "red-2", "red-3"][parseInt(p.asin.slice(-2), 36) % 3];
+  if (/sage|olive|moss|dusty green/.test(c + " " + n)) return "sage";
+  const first = c.split(",")[0];
+  return { green: "emerald", navy: "navy", blue: "blue", "dusty blue": "blue", gold: "gold", champagne: "champagne", ivory: "ivory", white: "ivory", cream: "ivory", silver: "silver", gray: "silver", brown: "brown", pink: "pink", "rose gold": "pink", copper: "copper" }[first] || "";
+}
 function drawLook() {
   $("#lookChips").innerHTML = LOOK_STYLES.map(([k, n]) => `<button data-look="${k}" class="${k === lookStyle ? "on" : ""}">${n}</button>`).join("");
   const all = PICKS.map(r => ({ asin: r[0], step: r[1], name: r[2], colors: r[3] || "", fin: r[4] || "" })).filter(p => !/black/.test(p.colors));
@@ -3877,8 +3891,9 @@ function drawLook() {
     const every = mine.filter(p => re.test(p.step)); if (!every.length) return "";
     const open = lookAll[lookStyle + title], items = open ? every : every.slice(0, 6);
     return `<div class="looksec"><div class="lookhead"><h3>${title}</h3>${every.length > 6 ? `<button data-all="${esc(title)}">${open ? "Show fewer" : `View all ${every.length}`} <span>→</span></button>` : ""}</div><div class="lookitems">${items.map(p => {
-      const cols = p.colors.split(",").filter(c => DOT[c]), pic = itemPic({ color: DOT[cols[0]] || "#C9B48A", label: p.name }, LOOK_PIC[p.step] || "medium");
-      return `<div class="card lookitem"><span class="lookpic">${pic}</span><div><span class="lookname">${esc(p.name)}</span><div class="dots">${cols.map(c => `<i style="background:${DOT[c]}" title="${esc(c)}"></i>`).join("")}</div></div><a href="https://www.amazon.com/dp/${p.asin}${tag}" target="_blank" rel="noopener sponsored">Shop</a></div>`;
+      const cols = p.colors.split(",").filter(c => DOT[c]), rp = /^ribbon/.test(p.step) ? ribbonPhoto(p) : "";
+      const pic = rp ? `<img src="/brand/ribbons/${rp}.jpg" alt="" loading="lazy">` : itemPic({ color: DOT[cols[0]] || "#C9B48A", label: p.name }, LOOK_PIC[p.step] || "medium");
+      return `<div class="card lookitem"><span class="lookpic${rp ? " photo" : ""}">${pic}</span><div><span class="lookname">${esc(p.name)}</span><div class="dots">${cols.map(c => `<i style="background:${DOT[c]}" title="${esc(c)}"></i>`).join("")}</div></div><a href="https://www.amazon.com/dp/${p.asin}${tag}" target="_blank" rel="noopener sponsored">Shop</a></div>`;
     }).join("")}</div></div>`;
   }).join("");
 }
