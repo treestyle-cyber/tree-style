@@ -19,7 +19,7 @@ const tok = () => (blobToken() ? { token: blobToken() } : {});
 import { ribbonRef, RIBBON_REF_NOTE } from "../lib/ribbonref.js";
 import { checkPassword, parseDataUrl } from "../lib/util.js";
 
-const SLOTS = ["before", "after", "ribbonref", "ribbon_billows", "ribbon_cascades", "ribbon_layered", "ribbon_loops", "ribbon_bursts", "ribbon_curls", "velvet", "velvetberry", "hero", "homebg", "check", "design", "keep", "classic", "rustic", "modern", "elegant", "playful", "themed", "ess_hooks", "ess_wire", "ess_ties", "ess_remote", "ess_cord", "ess_scissors"];
+const SLOTS = ["before", "after", "ribbonref", "ribbon_billows", "ribbon_cascades", "ribbon_layered", "ribbon_loops", "ribbon_bursts", "ribbon_curls", "velvet", "velvetberry", "hero", "homebg", "scan", "check", "design", "keep", "classic", "rustic", "modern", "elegant", "playful", "themed", "ess_hooks", "ess_wire", "ess_ties", "ess_remote", "ess_cord", "ess_scissors"];
 // Stylist's essentials cards each have a photo spot named ess_<card id>, so cards added in the Studio get one too
 const isSlot = s => SLOTS.includes(s) || /^ess_[a-z0-9]{1,24}$/.test(s);
 const MODELS = [process.env.GEMINI_IMAGE_MODEL, "gemini-3.1-flash-image-preview", "gemini-2.5-flash-image"].filter(Boolean);
