@@ -165,7 +165,6 @@ $("#file").onchange = async e => { for (const f of [...e.target.files].slice(0, 
 const RSLOT = { woven_billows: "ribbon_billows", waterfall_cascades: "ribbon_cascades", layered_ribbons: "ribbon_layered", big_loops: "ribbon_loops", loop_bursts: "ribbon_bursts", curls: "ribbon_curls" };
 const RSTYLE = { woven_billows: "Woven billows", waterfall_cascades: "Waterfall cascades", layered_ribbons: "Layered ribbons", big_loops: "Big loops", loop_bursts: "Loop bursts", curls: "Curls" };
 const TESTS = {
-  clarify: { title: "Test: live rules, clarified wording", variant: "clarify" },
   strip: { title: "Test: take everything off, then design the new style", variant: "strip" },
   ribbon6: { title: "Test: six ribbon styles, the plan picks one", variant: "ribbon6" },
   shape2: { title: "Test: shaping opens branches, adds none", variant: "shape2", samePlan: true },
@@ -267,7 +266,7 @@ $("#big").onclick = () => $("#big").hidden = true;
 
 function gate() { $("#lab").hidden = true; $("#gate").hidden = false; }
 $("#gateForm").onsubmit = e => { e.preventDefault(); password = $("#pw").value.trim(); try { sessionStorage.setItem("ts_pw", password); } catch {} start(); };
-function start() { const tk = new URLSearchParams(location.search).get("test"); $("#testDesc").textContent = DESC[TESTS[tk] ? tk : "strip"]; if (tk === "clarify") { $("#mode").value = "check"; $("#style").value = "keep"; } else if (!TESTS[tk] || tk === "strip") { $("#mode").value = "check"; $("#style").value = "rustic"; } if (!password) return gate(); $("#gate").hidden = true; $("#lab").hidden = false; drawPhotos(); drawInspo(); syncMode(); }
+function start() { const tk = new URLSearchParams(location.search).get("test"); $("#testDesc").textContent = DESC[TESTS[tk] ? tk : "strip"]; if (!TESTS[tk] || tk === "strip") { $("#mode").value = "check"; $("#style").value = "rustic"; } if (!password) return gate(); $("#gate").hidden = true; $("#lab").hidden = false; drawPhotos(); drawInspo(); syncMode(); }
 start();
 </script>
 </body>
