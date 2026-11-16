@@ -182,7 +182,10 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
   $("#out").appendChild(row);
   const im = await loadImg(src), r = im.width / im.height, aspect = ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0];
   let look = {};
-  try { look = await api("/api/evaluate", { image: src, mode, style, part: "look", ...extra }); } catch (e) { if (e.status === 401) return gate(); }
+  try { look = await api("/api/evaluate", { image: src, mode, style, part: "look", readStyle: true, ...extra }); } catch (e) { if (e.status === 401) return gate(); }
+  // What style the analysis reads this tree as (Eric, Nov 15), under the photo
+  if (look.style_read) { const sr = look.style_read, SN = { traditional: "Traditional", rustic: "Rustic", modern: "Modern", elegant: "Elegant", playful: "Playful", themed: "Themed", none: "No clear style" }, CL = { clear: "clear", mixed: "mixed", none: "no clear direction" };
+    row.querySelector(".col").insertAdjacentHTML("beforeend", `<div class="meta" style="margin-top:8px;padding:10px 12px;border:1px solid rgba(184,156,107,.5);border-radius:10px"><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)">Reads as</span><div style="font:500 20px var(--serif);color:var(--ivory)">${esc(SN[sr.style] || sr.style)} <span style="font:13px var(--sans);opacity:.75">· ${esc(CL[sr.clarity] || sr.clarity)}</span></div>${sr.from ? `<div style="margin-top:4px">From: ${esc(sr.from)}</div>` : ""}</div>`); }
   let shared = null;
   const one = async (variant, id) => {
     const t0 = Date.now();

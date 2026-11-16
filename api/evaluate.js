@@ -6,7 +6,7 @@
 import { GUIDE, GUIDE_OLD_STYLES, CATS, STYLES } from "../lib/guide.js";
 import { checkPassword, parseDataUrl, extractJson } from "../lib/util.js";
 import { picksRule } from "../lib/picks.js";
-import { EVAL_SCHEMA, LOOK_SCHEMA, PLAN_SCHEMA, PLAN_SCHEMA_R6, REVISE_SCHEMA, DETAILS_SCHEMA } from "../lib/schema.js";
+import { EVAL_SCHEMA, LOOK_SCHEMA, LOOK_SCHEMA_READ, PLAN_SCHEMA, PLAN_SCHEMA_R6, REVISE_SCHEMA, DETAILS_SCHEMA } from "../lib/schema.js";
 import { RIBBON6_RULE, ribbonStyleKey } from "../lib/ribbonstyles.js";
 import { SIMPLE_GUIDE, PROCESS, HARD_LIMITS } from "../lib/simple.js";
 import { CLARIFY_GUIDE, clarifyBrief } from "../lib/clarify.js";
@@ -93,7 +93,7 @@ function factsLine(f) {
   return `Tree (confirmed by the homeowner; trust these over the photo): ${f.kind !== "natural" && f.prelit === "yes" ? "artificial, pre-lit" : kind}, ${height}, ${density}. Work out whether it's snowy (flocked) from the photo.${notes ? " " + notes : ""}`;
 }
 
-function evalPrompt({ mode, style, theme, facts, imgNotes, part, variant }) {
+function evalPrompt({ mode, style, theme, facts, imgNotes, part, variant, readStyle }) {
   const stage = facts && ["partial", "finished"].includes(facts.stage) ? facts.stage : null;
   const task = mode === "design"
     ? `TASK: DESIGN this tree. They are starting fresh (the photo may show a bare or just-lit tree). Do not score it. Plan the whole tree following the order of work, and make the mockup a complete, finished design.`
@@ -120,7 +120,7 @@ ${factsLine(facts)}
 Style: ${variant === "old" && style === "classic" ? "Classic" : styleLine(style, theme)}
 ${scoring}
 ${COORDS}
-${part === "look" ? LOOK_PART : briefRules(mode, variant)}${part === "plan" ? PLAN_PART : ""}
+${part === "look" ? LOOK_PART + (readStyle && mode === "check" ? STYLE_READ_NOTE : "") : briefRules(mode, variant)}${part === "plan" ? PLAN_PART : ""}
 
 Reply with this JSON:
 {
@@ -131,7 +131,8 @@ ${[
  "summary": "<2 short sentences${mode === "check" ? ": start with where the eye lands first, then the biggest opportunity" : ""}>",
  "categories": ${mode === "check" ? `[\n${cats}\n ]` : "[]"},
  "potential": ${mode === "check" ? '{"after_quick_fixes":<0-100>,"after_full_plan":<0-100>}' : '{"after_quick_fixes":0,"after_full_plan":0}'},
- "cone": {"apex":[x,y],"left":[x,y],"right":[x,y]}`,
+ "cone": {"apex":[x,y],"left":[x,y],"right":[x,y]}${readStyle && mode === "check" ? `,
+ "style_read": {"style":"traditional|rustic|modern|elegant|playful|themed|none","clarity":"clear|mixed|none","from":"<the pieces you read it from, plainly, e.g. buffalo check ribbon, cotton stems, woven collar>"}` : ""}`,
   part !== "look" && ` ${planShape(mode, variant)}`
 ].filter(Boolean).join(",\n")}
 }
@@ -146,6 +147,7 @@ const VARIETY = `VARIETY AND DETAIL: what makes a designer tree is variety, so t
 const LAB_RULE = ``;   // nothing under test in the guide right now
 // Drawing more from an inspiration photo (won in the Lab, Oct 22)
 const INSPO_MORE = ` Draw more fully from it: beyond its two or three main colors, bring in a few of its supporting colors as accents, including its warmer or bolder ones (they give the tree life), so the tree carries the image's range (distinct colors, not near-matches of each other). Keep its proportions: the colors that fill most of the inspiration lead the tree (the widest ribbon, the most ornaments, the skirt), and a color that appears only in small amounts stays a small accent on the tree too, however strong or dark it is. Lines, stripes and outlines (a tiger's stripes, a pattern's outlines, a dark background showing between motifs) are part of the drawing, not a main color: bring them in through a few small accents, never as the skirt, the extra-large ornaments or the widest ribbon. To echo a motif in ribbon, a ribbon printed with the motif itself is often the strongest choice (a tiger print for a tiger, a chinoiserie or floral print for those). Layering solid ribbons in its colors can be lovely too when they complement the other pieces (blue and white ribbons beside blue and white ginger-jar ornaments); just notice what a color pairing reads as on its own, since some read as another holiday (orange and black looks like Halloween). Keep everything shoppable: they'll be buying at stores like Michaels, Hobby Lobby, HomeGoods or Amazon, so translate the inspiration into things those stores really carry (a tiger-print or leopard ribbon, a blue and white chinoiserie ribbon, a solid velvet skirt in one of its colors), not a custom ribbon or skirt reproducing the exact pattern in the photo, which no one could find. If it features flowers, bring in two or three different kinds from it, not just one.`;
+const STYLE_READ_NOTE = ` STYLE READ: name the style this tree reads as today, the way a designer would on walking up to it, from the kinds of pieces on it (see STYLE), not its colors: style_read.style, how clear it is (clear: one style comes through; mixed: two styles pull against each other; none: no point of view, a collection of pieces with no direction), and in style_read.from the pieces you read it from. A bare or nearly bare tree is "none".`;
 const LOOK_PART = `YOUR PART: you only write the first impression and the scores. The plan, mockup and preview brief are being written separately at the same time, so don't plan anything here. Be quick and specific.`;
 const PLAN_PART = `
 
@@ -254,7 +256,7 @@ export default async function handler(req, res) {
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
   if (!process.env.ANTHROPIC_API_KEY) return res.status(500).json({ error: "ANTHROPIC_API_KEY is not set in Vercel" });
 
-  const { image, mode = "check", style = "keep", theme = "", revise, extra, facts, pieces, inspo, details, part, variant } = req.body || {};
+  const { image, mode = "check", style = "keep", theme = "", revise, extra, facts, pieces, inspo, details, part, variant, readStyle } = req.body || {};
   const img = parseDataUrl(image);
   if (!img) return res.status(400).json({ error: "Missing photo" });
 
@@ -272,7 +274,7 @@ export default async function handler(req, res) {
       const pc = parseDataUrl(pieces), ins = mode === "design" ? parseDataUrl(inspo) : null;
       if (pc) { imgs.push(pc); notes.push(`Image ${imgs.length} shows special pieces they own (ornaments, heirlooms or found objects; it may be a board of several photos, and every piece in it is theirs): design around them, give them the best spots, and let them set the theme and colors if they fit the style.`); }
       if (ins) { imgs.push(ins); notes.push(`Image ${imgs.length} is an inspiration photo (art, a room, fabric, an object). First decide what in the photo is the inspiration and what is just background: use their own words (if they say they love the fabric on a chair, the inspiration is the fabric, not the chair, its frame or the room; brass sconces photographed on a towel are about the sconces, not the towel), and otherwise the clear subject. Draw only from that, never from the surroundings, surface or setting. Usually the inspiration is a reference, so nothing in the photo goes on the tree literally; but if their words say the pieces themselves go on the tree (e.g. "build a tree around this set of vintage ornaments"), they own them: put those very pieces on the tree in the best spots and build everything else around them. Design the tree the way a top designer would around it: read more than its colors. Notice what is actually in it (its hero subject, its flowers and plants by kind, its objects and patterns, its materials, its cultural or period style) and translate those into real decor. Echo its hero subject in a figural piece or two; carry its flowers in as matching floral stems in the same kinds and colors; find ornaments shaped like or patterned after its objects (glass flowers, figural or patterned pieces), not only round ornaments, and repeat a signature object in a few sizes through the tree; let its pattern or style show in the ribbon choice, and small bows in one of its accent colors can carry that color through the tree; the base can echo it too, in a way that suits the tree's overall feel (an elegant design gets a tree skirt in its colors or fabric; a collar or basket suits a rustic or casual one), with its colors drawn from the image. Keep it to a considered handful of these motifs woven through the whole tree, and follow the guide for placement, ribbon and balance. Name these pieces specifically in the plan and the brief so the preview shows them.${INSPO_MORE}`); }
-      ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" "), part, variant }), part === "look" ? 4000 : 16000, part === "look" ? LOOK_SCHEMA : part === "plan" ? (variant === "ribbon6" || variant === "simple" ? PLAN_SCHEMA_R6 : PLAN_SCHEMA) : EVAL_SCHEMA));
+      ({ json: result, usage } = await callClaude(imgs, evalPrompt({ mode, style, theme, facts, imgNotes: notes.join(" "), part, variant, readStyle: !!readStyle }), part === "look" ? 4000 : 16000, part === "look" ? (readStyle && mode === "check" ? LOOK_SCHEMA_READ : LOOK_SCHEMA) : part === "plan" ? (variant === "ribbon6" || variant === "simple" ? PLAN_SCHEMA_R6 : PLAN_SCHEMA) : EVAL_SCHEMA));
       // Lab "ribbon6": make sure the ribbon style is one of the six names, whatever wording came back
       if ((variant === "ribbon6" || variant === "simple") && result.mockup) result.mockup.ribbon_technique = ribbonStyleKey(result.mockup.ribbon_technique, result.render_brief);
       // ...and if the plan wrote its removal only into the picture instructions ("Remove first: the navy ribbon swagged across..."), use that
