@@ -998,7 +998,10 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   html.theme-ivory .choice.tile small{display:block;color:var(--muted);font-size:calc(14px * var(--s-body,1));margin-top:6px}
   html.theme-ivory .choice.tile i{width:auto;height:auto;box-shadow:none;background:none !important;color:var(--ink);font-size:0}
   html.theme-ivory .choice.tile i::before{content:"›";font:300 30px/1 var(--sans)}
-  html.theme-ivory body.onhome::after{content:"";position:fixed;left:0;right:0;bottom:0;height:48vh;z-index:-1;pointer-events:none;background:linear-gradient(180deg,var(--bg),rgba(244,238,229,0) 38%),var(--photo-homebg, var(--photo-hero, none)) center bottom/cover}
+  /* The whole photo across the width, its bottom edge just above the bottom bar when the bar is on */
+  html.theme-ivory body.onhome::after{content:"";position:fixed;left:0;right:0;bottom:0;height:calc(100vw * .495);max-height:300px;z-index:-1;pointer-events:none;background:linear-gradient(180deg,var(--bg),rgba(244,238,229,.6) 18%,rgba(244,238,229,0) 42%),var(--photo-homebg, url(/brand/home-bg.jpg)) center bottom/cover no-repeat}
+  html.theme-ivory.has-nav body.onhome::after{bottom:calc(70px + env(safe-area-inset-bottom))}
+  html.theme-ivory.has-nav body.onhome .lookbar{bottom:calc(84px + env(safe-area-inset-bottom) + 4px)}
   /* Light surfaces where the dark look used dark glass */
   html.theme-ivory #loading{background:var(--bg) !important;color:var(--ink)}
   html.theme-ivory .sheetbox{background:var(--paper);border-color:var(--line)}
