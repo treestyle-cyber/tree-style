@@ -88,6 +88,9 @@
   .bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(14,20,33,.96);border-top:1px solid var(--line);backdrop-filter:blur(8px)}
   .bar .wrap{display:flex;gap:12px;align-items:center;padding-top:12px;padding-bottom:max(12px,env(safe-area-inset-bottom));flex-wrap:wrap}
   .bar .msg{flex:1;min-width:200px}
+  .hist{appearance:none;display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--line);color:var(--gold);border-radius:99px;padding:10px 14px;font:500 13px var(--sans);cursor:pointer}
+  .hist:disabled{opacity:.35;cursor:default}
+  .hist:not(:disabled):hover{background:rgba(184,156,107,.12)}
   .msg{font-size:13.5px;color:var(--muted);min-height:1.2em;margin:0}
   .msg.err{color:var(--berry)}
   .msg.ok{color:var(--gold)}
@@ -199,6 +202,8 @@
 
 <div class="bar" id="bar" hidden><div class="wrap">
   <p class="msg" id="msg">No changes yet.</p>
+  <button class="hist" id="undo" disabled title="Undo (Ctrl or ⌘ + Z)"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>Undo</button>
+  <button class="hist" id="redo" disabled title="Redo (Ctrl or ⌘ + Shift + Z)"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>Redo</button>
   <button class="btn ghost" id="discard" disabled>Discard changes</button>
   <button class="btn" id="save" disabled>Save brand kit</button>
 </div></div>
@@ -256,7 +261,23 @@ const readAs = (file, how) => new Promise((ok, no) => { const r = new FileReader
 const say = (t, cls = "") => { const m = $("#msg"); m.textContent = t; m.className = "msg " + cls; };
 
 // ---- Draft changes ----
-function set(path, value) {
+// Undo and redo: every change is a step (a drag or typing on one control counts as one step)
+const past = [], future = [];
+let lastMark = { path: "", t: 0 };
+function remember(path) {
+  const now = Date.now();
+  if (path === lastMark.path && now - lastMark.t < 900) { lastMark.t = now; return; }
+  past.push(JSON.stringify(draft)); if (past.length > 200) past.shift();
+  future.length = 0; lastMark = { path, t: now };
+}
+function stepTo(from, to) {
+  if (!from.length) return;
+  to.push(JSON.stringify(draft)); draft = JSON.parse(from.pop()); lastMark = { path: "", t: 0 };
+  changed();
+}
+const undo = () => stepTo(past, future), redo = () => stepTo(future, past);
+function set(path, value, marked) {
+  if (!marked) remember(path);
   const keys = path.split("."), last = keys.pop();
   let o = draft; for (const k of keys) o = o[k] = o[k] || {};
   if (value === "" || value == null) delete o[last]; else o[last] = value;
@@ -267,12 +288,14 @@ function set(path, value) {
 }
 // Change a role's font (several fields at once, one update)
 function setFont(k, fields) {
+  remember("fonts." + k + ".font");   // before anything changes, so Undo returns exactly to this
   draft.fonts = draft.fonts || {}; const o = draft.fonts[k] = draft.fonts[k] || {};
   for (const [key, v] of Object.entries(fields)) { if (v === "" || v == null) delete o[key]; else o[key] = v; }
-  set("fonts." + k + "._", "");
+  set("fonts." + k + "._", "", true);
 }
 function changed() {
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
+  $("#undo").disabled = !past.length; $("#redo").disabled = !future.length;
   $("#save").disabled = !dirty; $("#discard").disabled = !dirty;
   try { if (dirty) localStorage.setItem("ts_kit_draft", JSON.stringify(draft)); else localStorage.removeItem("ts_kit_draft"); } catch {}   // Studio → Screens shows it too
   say(dirty ? "Unsaved changes, showing in the preview." + (IS_LIVE ? " Saving changes the live site." : " Saving changes this preview copy only.") : "No changes yet.");
@@ -477,7 +500,15 @@ $("#save").onclick = async () => {
   try { await call({ action: "kit-save", kit: draft }); saved = clone(draft); try { localStorage.setItem("ts_kit", JSON.stringify(saved)); } catch {} TSKit.apply(saved); changed(); say(IS_LIVE ? "Saved. The live app and website use it now (allow up to a minute)." : "Saved to this preview copy. Open the live Studio and tap Use them on the live site to make it live.", "ok"); }
   catch (e) { if (e.status === 401) return gate("That password didn't work."); say(e.message, "err"); $("#save").disabled = false; }
 };
-$("#discard").onclick = () => { draft = clone(saved); changed(); };
+$("#discard").onclick = () => { remember("discard"); draft = clone(saved); changed(); };   // Undo brings the changes back
+$("#undo").onclick = undo; $("#redo").onclick = redo;
+document.addEventListener("keydown", e => {
+  if (!(e.metaKey || e.ctrlKey) || e.altKey) return;
+  if (e.target.matches("input[type=text],textarea")) return;   // typing keeps the field's own undo
+  const k = e.key.toLowerCase();
+  if (k === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
+  else if ((k === "z" && e.shiftKey) || k === "y") { e.preventDefault(); redo(); }
+});
 
 // The tab bar's current icons, read from the app itself
 async function loadOrigIcons() {
