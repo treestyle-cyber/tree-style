@@ -1023,7 +1023,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
      viewfinder corners, "Snap or Upload a Photo of Your Tree" and a round shutter that opens the camera or library */
   .snapcam{display:none}
   html.theme-ivory #s-photo:not(.has):not(.room):not(.roompath){animation:none}   /* the slide-in would trap the full-screen photo */
-  html.theme-ivory body:has(#s-photo:not([hidden]):not(.has):not(.room):not(.roompath)) .snapcam{display:block;position:fixed;inset:0;z-index:3;background:linear-gradient(180deg,rgba(20,14,10,.45),rgba(20,14,10,.1) 30%,rgba(20,14,10,.15) 60%,rgba(20,14,10,.7)),var(--photo-scan, var(--photo-hero, url(/brand/tile-check.jpg))) center/cover}
+  html.theme-ivory body:has(#s-photo:not([hidden]):not(.has):not(.room):not(.roompath)) .snapcam{display:block;position:fixed;inset:0;z-index:3;background:linear-gradient(180deg,rgba(20,14,10,.45),rgba(20,14,10,.1) 30%,rgba(20,14,10,.15) 60%,rgba(20,14,10,.7)),var(--photo-scan, url(/brand/scan-bg.jpg)) center/cover}
   html.theme-ivory #s-photo:not(.has):not(.room):not(.roompath) > :not(#photoErr){display:none}
   html.theme-ivory #s-photo:not(.has):not(.room):not(.roompath) > #photoErr{position:fixed;left:16px;right:16px;bottom:calc(10% + 92px + env(safe-area-inset-bottom));z-index:5;text-align:center;color:#FFE3DC;text-shadow:0 1px 8px rgba(0,0,0,.7)}
   html.theme-ivory body:has(#s-photo:not([hidden]):not(.has):not(.room):not(.roompath)) .foot{display:none !important}
