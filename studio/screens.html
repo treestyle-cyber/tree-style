@@ -136,15 +136,15 @@ const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ==
 const DEVICES = [["se", "iPhone SE", 375, 667], ["i15", "iPhone 15", 393, 852], ["max", "iPhone 15 Pro Max", 430, 932], ["s23", "Galaxy S23", 360, 780], ["ipad", "iPad", 820, 1180]];
 // Every screen of the app and each version of it. The third item is a plan step (a number) or a version (v=…)
 const GROUPS = [
-  ["start", "Getting started", [["pass", "Sign-in"], ["intro", "Opening screen"], ["home", "Home"],
+  ["start", "Getting started", [["pass", "Sign-in"], ["pass", "Sign-in: wrong password", "wrong"], ["intro", "Opening screen"], ["home", "Home"], ["home", "Home: pick up where you left off", "resume"],
     ["photo", "Check: your photo"], ["photo", "Photo tips pop-up", "tips"], ["photo", "Photo added", "filled"],
-    ["details", "About your tree"], ["style", "Check: style"]]],
-  ["design", "Design my tree", [["start", "How would you like to start?"], ["idea", "Start from an idea"], ["photo", "The room it'll go in", "room"],
+    ["details", "About your tree"], ["style", "Check: style"], ["style", "Style: something went wrong", "error"]]],
+  ["design", "Design my tree", [["start", "How would you like to start?"], ["idea", "Start from an idea"], ["idea", "Idea with a room photo", "withroom"], ["photo", "The room it'll go in", "room"], ["photo", "Room photo: tap where the tree stands", "roomfilled"],
     ["photo", "My bare tree", "bare"], ["style", "Design: pick a style", "design"]]],
-  ["wait", "While it works", [["loading", "Looking at your tree"], ["loading", "Designing your tree", "design"], ["reveal", "Your results"], ["loading", "Updating your tree", "update"]]],
+  ["wait", "While it works", [["loading", "Looking at your tree"], ["loading", "Designing your tree", "design"], ["reveal", "Your results"], ["reveal", "Plan still designing", "working"], ["reveal", "Picture still painting", "painting"], ["loading", "Updating your tree", "update"]]],
   ["results", "Results", [["results", "Results"], ["results", "Change something", "change"], ["results", "Try another style", "styles"], ["results", "Before & after image", "ba"],
-    ["results", "About your preview", "brand"], ["results", "Zoomed picture", "zoom"], ["fixes", "Quick fixes"], ["score", "How it scored"], ["partner", "Design partner"], ["details", "Fine-tune your tree", "results"]]],
-  ["plan", "Step by step", Array.from({ length: 9 }, (_, i) => ["plan", "Step " + (i + 1), i + 1])],
+    ["results", "About your preview", "brand"], ["results", "Zoomed picture", "zoom"], ["results", "Preview didn't come back", "failed"], ["fixes", "Quick fixes"], ["score", "How it scored"], ["partner", "Design partner"], ["details", "Fine-tune your tree", "results"]]],
+  ["plan", "Step by step", Array.from({ length: 9 }, (_, i) => ["plan", "Step " + (i + 1), i + 1]).concat([["plan", "Step 1: branches already full", "step=1&v=full"], ["plan", "Step 1: branches need shaping", "step=1&v=shape"]])],
   ["shop", "Shopping list", [["shop", "Shopping list"]]],
   ["web", "Website", [["web", "Waitlist page"]]],
 ];
@@ -157,9 +157,9 @@ const call = async body => {
   if (!r.ok) { const e = new Error(d.error || "Error " + r.status); e.status = r.status; throw e; }
   return d;
 };
-const key = (name, step) => name + (step ? "-" + step : "");
+const key = (name, step) => name + (step ? "-" + String(step).replace(/step=|v=|&/g, "") : "");
 const dev = () => DEVICES.find(d => d[0] === device) || DEVICES[1];
-const url = (name, step) => name === "web" ? "/?screen-preview" : `/try/?screen-preview${mine ? "=mine" : ""}&s=${name}${typeof step === "number" ? "&step=" + step : step ? "&v=" + step : ""}`;
+const url = (name, step) => name === "web" ? "/?screen-preview" : `/try/?screen-preview${mine ? "=mine" : ""}&s=${name}${typeof step === "number" ? "&step=" + step : step && step.includes("=") ? "&" + step : step ? "&v=" + step : ""}`;
 
 // ---- The grid of phones ----
 function build() {

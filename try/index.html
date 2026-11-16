@@ -3508,7 +3508,7 @@ async function sampleStart() {
   badge.textContent = "Sample";
   badge.style.cssText = "position:fixed;right:8px;top:8px;z-index:300;font:600 10px Inter,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;background:rgba(20,28,44,.85);color:#C5B28F;padding:4px 8px;border-radius:99px;pointer-events:none";
   document.body.appendChild(badge);
-  if (name === "pass") { show("s-pass", []); reportPhotoSpots(); return true; }
+  if (name === "pass") { show("s-pass", []); if (q.get("v") === "wrong") $("#passErr").textContent = "That password didn't work."; reportPhotoSpots(); return true; }
   if (name === "intro") { show("s-home", []); $("#splash").hidden = false; reportPhotoSpots(); return true; }   // the opening screen, held still
   // The tree: the Studio's sample (its pictures fetched back into the page), or this browser's own
   let st = null;
@@ -3527,24 +3527,43 @@ async function sampleStart() {
   const id = "s-" + (name === "loading" ? "results" : name);
   if (!document.getElementById(id)) return false;
   const treeScreens = SAVE_SCREENS.concat(["s-plan"]);
+  const v = q.get("v") || "";
+  // Step 1 both ways: branches already full (8+, "Already looking great") or needing shaping
+  if (st && st.result && (v === "full" || v === "shape")) (st.result.categories || []).forEach(c => { if (/full/i.test(c.name)) c.score = v === "full" ? 9 : 5; });
   if (st && st.result) {
     if (q.has("step")) st.stepIdx = Math.max(0, parseInt(q.get("step"), 10) - 1 || 0);
     if (!(await restoreSaved(Object.assign({}, st, { screen: treeScreens.includes(id) ? id : "s-results" })))) st = null;
   }
-  const v = q.get("v") || "";
+  const pic = st && (st.after || st.photo);
   const tap = sel => { const b = document.querySelector(sel); if (b) b.click(); };
   if (!treeScreens.includes(id)) {
     // Start screens are reached the way a person reaches them, so each shows its real wording for that path
-    const design = v === "design" || v === "room" || v === "bare" || id === "s-start" || id === "s-idea";
+    const design = v === "design" || v === "room" || v === "roomfilled" || v === "bare" || id === "s-start" || id === "s-idea";
     if (id !== "s-home" && !(v === "filled" || v === "results")) tap(`.choice[data-mode="${design ? "design" : "check"}"]`);
     if (id === "s-idea") tap('.src[data-src="idea"]');
-    if (v === "room") tap('.src[data-src="room"]');
+    if (v === "room" || v === "roomfilled") tap('.src[data-src="room"]');
     if (v === "bare") tap('.src[data-src="tree"]');
     if (v === "results" && st && st.result) $("#navDetails").click();
     else show(id, id === "s-home" ? [] : ["s-home"]);
+    // A room photo in, with the tap-where-the-tree-stands dot (the sample's picture stands in for a room)
+    if (v === "roomfilled" && pic) { photo = roomPhoto = pic; roomMark = [.5, .8]; $("#s-photo").classList.add("room"); $("#rmImg").src = pic; $("#roomMark").hidden = false; drawRoomDot(); paint(false); }
+    if (v === "withroom" && pic) { roomPhoto = pic; roomMark = [.5, .8]; $("#ideaRoomThumb").style.backgroundImage = `url(${pic})`; $("#ideaRoomThumb").textContent = ""; $("#ideaRoomLbl").firstChild.textContent = "Change"; $("#ideaRoomClear").hidden = false; $("#ideaRmImg").src = pic; $("#ideaRoomMark").hidden = false; drawRoomDot(); }
+    if (id === "s-home") setTimeout(() => { if (v !== "resume") $("#resume").hidden = true; }, 400);
+    if (v === "wrong") $("#passErr").textContent = "That password didn't work.";
+    if (v === "error") $("#startErr").textContent = $("#detailsErr").textContent = "Something went wrong: the design service is busy right now. Please try again.";
     if (v === "tips") { $("#tipsH").textContent = "Before you take the photo"; $("#tipsList").innerHTML = tipGrid(); openSheet("#tipsSheet"); }
   }
   else if (!st || !st.result) { badge.textContent = "No sample tree yet"; show(id, ["s-home"]); }
+  // The waiting states: plan still designing, or plan ready and the picture still painting
+  if (id === "s-reveal" && st && st.result && (v === "working" || v === "painting")) {
+    if (v === "working") { planState = "wait"; planT0 = Date.now(); previewState = "idle"; } else { previewState = "wait"; }
+    fillReveal(); $("#teaser").hidden = true; setFoot();
+  }
+  if (id === "s-results" && st && st.result && v === "failed") {
+    after = null;
+    $("#viewer").innerHTML = `<div class="renderwait"><img src="${photo}" alt="" style="max-height:220px;margin:0 auto 12px;border-radius:8px;opacity:.6">The preview didn't come through this time.<div class="err" style="font-size:13px">The image service was busy.</div><button class="btn" id="retryPreview" style="margin-top:12px">Paint it again</button></div>`;
+    $("#seg").hidden = $("#hint").hidden = $("#save").hidden = $("#baBtn").hidden = true;
+  }
   // Pop-ups on the results screen
   if (id === "s-results" && st && st.result) {
     if (v === "change") openRestyle();
