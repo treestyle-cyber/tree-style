@@ -9,7 +9,7 @@
 // GET  /api/brand?kitfile=<path>       -> a file the Brand kit uses (font, logo, texture) when the store is private
 // POST /api/brand { action:"kit-save", kit }              -> { ok }                        (password)
 // POST /api/brand { action:"kit-file", data, name }       -> { url }                       (password)
-// GET  /api/brand?sample=1             -> { sample }   the sample tree the Studio's Screens page shows on every screen
+// GET  /api/brand?sample=1[&kind=design] -> { sample }  the sample tree (or design) the Studio's Screens page shows
 // POST /api/brand { action:"sample-save", sample }        -> { ok }                        (password)
 // GET  /api/brand?notes=1              -> { notes }    notes left on screens in Studio → Screens
 // POST /api/brand { action:"note", op:"add"|"update"|"delete", note } -> { notes }          (password)
@@ -83,7 +83,7 @@ function cleanItems(items) {
 }
 
 // ---- Brand kit: one small JSON file (newest wins) plus the files it points to ----
-const KIT_DIR = "brand/kit/settings/", KIT_FILES = "brand/kit/files/", SAMPLE_DIR = "brand/sample/", NOTES_DIR = "brand/notes/";
+const KIT_DIR = "brand/kit/settings/", KIT_FILES = "brand/kit/files/", SAMPLE_DIR = "brand/sample/", SAMPLE_DESIGN_DIR = "brand/sample-design/", NOTES_DIR = "brand/notes/";
 const FILE_TYPES = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/svg+xml": "svg", "font/woff2": "woff2", "font/woff": "woff", "font/otf": "otf", "font/ttf": "ttf", "application/font-woff": "woff", "application/x-font-otf": "otf", "application/x-font-ttf": "ttf", "application/vnd.ms-opentype": "otf", "application/octet-stream": "" };
 async function newestIn(prefix) {
   let best = null, cursor;
@@ -150,7 +150,9 @@ export default async function handler(req, res) {
     try {
       if (!blobConnected()) return res.status(200).json({});
       // The sample tree: a preview copy's own, else the live one. Notes stay with the copy they were left on.
-      const b = req.query.sample ? (IS_PREVIEW && await newestIn("preview/" + SAMPLE_DIR)) || await newestIn(SAMPLE_DIR) : await newestIn(envPath(NOTES_DIR));
+      // Two samples: a checked tree (?sample=1) and a design (?sample=1&kind=design)
+      const dir = req.query.kind === "design" ? SAMPLE_DESIGN_DIR : SAMPLE_DIR;
+      const b = req.query.sample ? (IS_PREVIEW && await newestIn("preview/" + dir)) || await newestIn(dir) : await newestIn(envPath(NOTES_DIR));
       const data = b ? JSON.parse((await readBlob(b)).toString("utf8")) : null;
       return res.status(200).json(req.query.sample ? { sample: data, updated: b && b.uploadedAt } : { notes: data || [] });
     } catch (e) { return res.status(200).json({ error: String(e.message || e) }); }
@@ -229,7 +231,8 @@ export default async function handler(req, res) {
       if (action === "sample-save") {
         const text = JSON.stringify(req.body.sample || {});
         if (text.length > 4000000) return res.status(400).json({ error: "The sample tree is too large to save." });
-        await putEither(envPath(`${SAMPLE_DIR}${Date.now()}.json`), Buffer.from(text), "application/json");
+        const dir = (req.body.sample || {}).mode === "design" ? SAMPLE_DESIGN_DIR : SAMPLE_DIR;   // a design is kept as its own sample
+        await putEither(envPath(`${dir}${Date.now()}.json`), Buffer.from(text), "application/json");
         return res.status(200).json({ ok: true });
       }
       // Notes: read the newest list, change it, save it again

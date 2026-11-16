@@ -3515,7 +3515,7 @@ async function sampleStart() {
   try {
     if (q.get("screen-preview") === "mine") st = await idb.get(SAVE_KEY);
     else {
-      const d = await (await fetch("/api/brand?sample=1")).json();
+      const d = await (await fetch("/api/brand?sample=1" + (q.get("t") === "design" ? "&kind=design" : ""))).json();
       st = d.sample || null;
       if (st) {
         const toData = async u => { if (!u || /^data:/.test(u)) return u; const b = await (await fetch(u)).blob(); return await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); }); };
@@ -3549,6 +3549,8 @@ async function sampleStart() {
     if (v === "roomfilled" && pic) { photo = roomPhoto = pic; roomMark = [.5, .8]; $("#s-photo").classList.add("room"); $("#rmImg").src = pic; $("#roomMark").hidden = false; drawRoomDot(); paint(false); }
     if (v === "withroom" && pic) { roomPhoto = pic; roomMark = [.5, .8]; $("#ideaRoomThumb").style.backgroundImage = `url(${pic})`; $("#ideaRoomThumb").textContent = ""; $("#ideaRoomLbl").firstChild.textContent = "Change"; $("#ideaRoomClear").hidden = false; $("#ideaRmImg").src = pic; $("#ideaRoomMark").hidden = false; drawRoomDot(); }
     if (id === "s-home") setTimeout(() => { if (v !== "resume") $("#resume").hidden = true; }, 400);
+    if (v === "badphoto") $("#photoErr").textContent = "Couldn't read that photo. Try a JPG or PNG.";
+    if (v === "themed") { setRadio("style", "themed"); syncStyle(); $("#theme").value = "A woodland Christmas with foxes and owls"; setTimeout(() => $("#theme").scrollIntoView({ block: "center" }), 300); }
     if (v === "wrong") $("#passErr").textContent = "That password didn't work.";
     if (v === "error") { $("#startErr").textContent = $("#detailsErr").textContent = "Something went wrong: the design service is busy right now. Please try again."; setTimeout(() => $("#startErr").scrollIntoView({ block: "center" }), 300); }
     if (v === "tips") { $("#tipsH").textContent = "Before you take the photo"; $("#tipsList").innerHTML = tipGrid(); openSheet("#tipsSheet"); }
@@ -3564,9 +3566,19 @@ async function sampleStart() {
     $("#viewer").innerHTML = `<div class="renderwait"><img src="${photo}" alt="" style="max-height:220px;margin:0 auto 12px;border-radius:8px;opacity:.6">The preview didn't come through this time.<div class="err" style="font-size:13px">The image service was busy.</div><button class="btn" id="retryPreview" style="margin-top:12px">Paint it again</button></div>`;
     $("#seg").hidden = $("#hint").hidden = $("#save").hidden = $("#baBtn").hidden = true;
   }
+  if (id === "s-partner" && st && st.result && v === "versions") {
+    versions.push({ label: "More gold", result: JSON.parse(JSON.stringify(result)), after }); current = versions.length - 1; renderVersions();
+    setTimeout(() => $("#versions").scrollIntoView({ block: "center" }), 300);
+  }
   // Pop-ups on the results screen
   if (id === "s-results" && st && st.result) {
     if (v === "change") openRestyle();
+    if (v === "versions") {   // a second version, so the sheet shows Earlier versions
+      versions.push({ label: "More gold", result: JSON.parse(JSON.stringify(result)), after }); current = versions.length - 1;
+      renderVersions(); openRestyle(); setTimeout(() => { const el = $("#sheetVersions"); if (el) el.scrollIntoView({ block: "center" }); }, 400);
+    }
+    if (v === "thanks") { $("#fbForm").hidden = true; $("#fbThanks").hidden = false; setTimeout(() => $("#fbThanks").scrollIntoView({ block: "center" }), 300); }
+    if (v === "behind") { const dbg = document.querySelector("details.debug"); dbg.open = true; if (!$("#timing").textContent) $("#timing").textContent = "Scores 12s · Plan 48s · Preview 31s · branches shaped"; setTimeout(() => dbg.scrollIntoView({ block: "start" }), 300); }
     if (v === "styles") $("#again").click();
     if (v === "ba" && after) $("#baBtn").click();
     if (v === "brand") { $("#brandH").textContent = "About your preview"; $("#brandP").innerHTML = "Image tools can't draw trademarked characters, logos or emblems, so this preview shows your theme with look-alike pieces in its colors and spirit."; $("#brandP2").innerHTML = "Your plan and shopping list can still include the licensed ornaments and decor you'd buy."; openSheet("#brandSheet"); }

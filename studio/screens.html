@@ -101,7 +101,7 @@
     <div class="samplecard">
       <img id="sampleImg" alt="" hidden>
       <div class="txt" id="sampleTxt"><b>Sample tree</b>Checking…</div>
-      <button class="btn ghost" id="useMine">Use my last tree as the sample</button>
+      <button class="btn ghost" id="useMine">Use my last tree as a sample</button>
       <p class="msg" id="sampleMsg"></p>
     </div>
 
@@ -137,15 +137,18 @@ const DEVICES = [["se", "iPhone SE", 375, 667], ["i15", "iPhone 15", 393, 852], 
 // Every screen of the app and each version of it. The third item is a plan step (a number) or a version (v=…)
 const GROUPS = [
   ["start", "Getting started", [["pass", "Sign-in"], ["pass", "Sign-in: wrong password", "wrong"], ["intro", "Opening screen"], ["home", "Home"], ["home", "Home: pick up where you left off", "resume"],
-    ["photo", "Check: your photo"], ["photo", "Photo tips pop-up", "tips"], ["photo", "Photo added", "filled"],
-    ["details", "About your tree"], ["style", "Check: style"], ["style", "Style: something went wrong", "error"]]],
+    ["photo", "Check: your photo"], ["photo", "Photo tips pop-up", "tips"], ["photo", "Photo added", "filled"], ["photo", "Photo couldn't be read", "badphoto"],
+    ["details", "About your tree"], ["style", "Check: style"], ["style", "Themed, with its text box", "themed"], ["style", "Style: something went wrong", "error"]]],
   ["design", "Design my tree", [["start", "How would you like to start?"], ["idea", "Start from an idea"], ["idea", "Idea with a room photo", "withroom"], ["photo", "The room it'll go in", "room"], ["photo", "Room photo: tap where the tree stands", "roomfilled"],
     ["photo", "My bare tree", "bare"], ["style", "Design: pick a style", "design"]]],
-  ["wait", "While it works", [["loading", "Looking at your tree"], ["loading", "Designing your tree", "design"], ["reveal", "Your results"], ["reveal", "Plan still designing", "working"], ["reveal", "Picture still painting", "painting"], ["loading", "Updating your tree", "update"]]],
+  ["wait", "While it works", [["loading", "Looking at your tree"], ["loading", "Designing your tree", "v=design&t=design"], ["reveal", "Your results"], ["reveal", "Plan still designing", "working"], ["reveal", "Picture still painting", "painting"], ["loading", "Updating your tree", "update"]]],
   ["results", "Results", [["results", "Results"], ["results", "Change something", "change"], ["results", "Try another style", "styles"], ["results", "Before & after image", "ba"],
-    ["results", "About your preview", "brand"], ["results", "Zoomed picture", "zoom"], ["results", "Preview didn't come back", "failed"], ["fixes", "Quick fixes"], ["score", "How it scored"], ["partner", "Design partner"], ["details", "Fine-tune your tree", "results"]]],
+    ["results", "About your preview", "brand"], ["results", "Zoomed picture", "zoom"], ["results", "Preview didn't come back", "failed"], ["results", "Change something, with earlier versions", "versions"], ["partner", "Design partner, with versions", "versions"],
+    ["results", "Feedback: thank you", "thanks"], ["results", "Behind the scenes (testing)", "behind"], ["fixes", "Quick fixes"], ["score", "How it scored"], ["partner", "Design partner"], ["details", "Fine-tune your tree", "results"]]],
   ["plan", "Step by step", Array.from({ length: 9 }, (_, i) => ["plan", "Step " + (i + 1), i + 1]).concat([["plan", "Step 1: branches already full", "step=1&v=full"], ["plan", "Step 1: branches need shaping", "step=1&v=shape"]])],
   ["shop", "Shopping list", [["shop", "Shopping list"]]],
+  ["designed", "Design results (uses the design sample)", [["reveal", "Your design", "t=design"], ["results", "Results", "t=design"], ["fixes", "Your plan at a glance", "t=design"]]
+    .concat(Array.from({ length: 9 }, (_, i) => ["plan", "Step " + (i + 1), "step=" + (i + 1) + "&t=design"])).concat([["shop", "Shopping list", "t=design"]])],
   ["web", "Website", [["web", "Waitlist page"]]],
 ];
 let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
@@ -157,7 +160,7 @@ const call = async body => {
   if (!r.ok) { const e = new Error(d.error || "Error " + r.status); e.status = r.status; throw e; }
   return d;
 };
-const key = (name, step) => name + (step ? "-" + String(step).replace(/step=|v=|&/g, "") : "");
+const key = (name, step) => name + (step ? "-" + String(step).replace(/step=|v=|t=|&/g, "") : "");
 const dev = () => DEVICES.find(d => d[0] === device) || DEVICES[1];
 const url = (name, step) => name === "web" ? "/?screen-preview" : `/try/?screen-preview${mine ? "=mine" : ""}&s=${name}${typeof step === "number" ? "&step=" + step : step && step.includes("=") ? "&" + step : step ? "&v=" + step : ""}`;
 
@@ -165,7 +168,7 @@ const url = (name, step) => name === "web" ? "/?screen-preview" : `/try/?screen-
 function build() {
   const [, , w, h] = dev();
   $("#grid").innerHTML = GROUPS.filter(g => group === "all" || g[0] === group).map(([gid, gname, list]) => `<section class="group"><h2>${gname}</h2><div class="row">${list.map(([name, label, step]) => `
-    <div class="card" data-key="${key(name, step)}" style="width:${Math.max(120, Math.round(w * zoom))}px" ${name === "plan" && step > planSteps ? "hidden" : ""}>
+    <div class="card" data-key="${key(name, step)}" style="width:${Math.max(120, Math.round(w * zoom))}px" >
       <div class="lbl"><b title="${esc(label)}">${label}</b><a href="${url(name, step)}" target="_blank" rel="noopener">Open ↗</a></div>
       <div class="fw" style="width:${Math.round(w * zoom)}px;height:${Math.round(h * zoom)}px">
         <iframe data-src="${url(name, step)}" title="${esc(label)}" style="width:${w}px;height:${h}px;transform:scale(${zoom})" loading="lazy"></iframe>
@@ -199,8 +202,8 @@ $("#reload").onclick = build;
 // The plan tells us how many steps it has; hide the extra phones
 addEventListener("message", e => {
   if (e.origin !== location.origin || !e.data || e.data.type !== "ts-screen-steps") return;
-  planSteps = e.data.steps || 9;
-  document.querySelectorAll('.card[data-key^="plan-"]').forEach(c => { c.hidden = Number(c.dataset.key.split("-")[1]) > planSteps; });
+  const steps = e.data.steps || 9, f = [...document.querySelectorAll("#grid iframe")].find(x => x.contentWindow === e.source), sec = f && f.closest(".group");
+  if (sec) sec.querySelectorAll('.card[data-key^="plan-"]').forEach(c => { c.hidden = parseInt(c.dataset.key.split("-")[1], 10) > steps; });
 });
 // Unsaved Brand kit changes (the frames pick them up themselves)
 const draftShown = () => { let d = null; try { d = localStorage.getItem("ts_kit_draft"); } catch {} $("#draftNote").hidden = !d; };
@@ -309,14 +312,12 @@ $("#copyNotes").onclick = async () => {
 
 // ---- Sample tree ----
 async function loadSample() {
-  try {
-    const d = await (await fetch("/api/brand?sample=1", { cache: "no-store" })).json();
-    if (d.sample && d.sample.result) {
-      $("#sampleImg").src = d.sample.photo; $("#sampleImg").hidden = false;
-      const r = d.sample.result, style = (d.sample.form || {}).style;
-      $("#sampleTxt").innerHTML = `<b>Sample tree</b>${esc((d.sample.mode === "design" ? "Designed" : "Checked") + (style ? " · " + style : "") + (r.plan ? " · " + r.plan.length + " plan items" : ""))}. Saved ${new Date(d.updated).toLocaleDateString()}.`;
-    } else $("#sampleTxt").innerHTML = `<b>No sample tree yet</b>Run one nice tree through the app on this site, then tap the button. Until then the results, plan and shopping screens are empty (or switch to My last tree).`;
-  } catch { $("#sampleTxt").innerHTML = "<b>Sample tree</b>Couldn't check."; }
+  const one = async kind => { try { return await (await fetch("/api/brand?sample=1" + (kind ? "&kind=design" : ""), { cache: "no-store" })).json(); } catch { return {}; } };
+  const [c, d] = await Promise.all([one(""), one("design")]);
+  const line = (x, what) => x.sample && x.sample.result ? `${what}: ${esc(((x.sample.form || {}).style || "").replace(/^./, m => m.toUpperCase()) || "set")}, saved ${new Date(x.updated).toLocaleDateString()}` : `${what}: none yet`;
+  const pic = (c.sample && c.sample.photo) || (d.sample && d.sample.photo);
+  $("#sampleImg").hidden = !pic; if (pic) $("#sampleImg").src = pic;
+  $("#sampleTxt").innerHTML = `<b>Sample trees</b>${line(c, "Checked tree")} · ${line(d, "Design")}<br>Run a tree through the app on this site, then tap the button: a Check fills the Check screens, a Design fills Design results.`;
 }
 // Read this browser's saved tree (the app keeps it in IndexedDB) and store a copy as the sample
 const idbGet = k => new Promise(ok => { const r = indexedDB.open("treestyle", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onerror = () => ok(null); r.onsuccess = () => { try { const q = r.result.transaction("kv").objectStore("kv").get(k); q.onsuccess = () => ok(q.result || null); q.onerror = () => ok(null); } catch { ok(null); } }; });
@@ -332,7 +333,7 @@ $("#useMine").onclick = async () => {
     s.photo = await send(s.photo); s.after = await send(s.after); s.keyPhoto = await send(s.keyPhoto);
     for (const v of s.versions || []) v.after = await send(v.after);
     await call({ action: "sample-save", sample: s });
-    m.className = "msg ok"; m.textContent = "Saved. Every screen now uses this tree.";
+    m.className = "msg ok"; m.textContent = st.mode === "design" ? "Saved as the design sample. Design results now use it." : "Saved as the checked-tree sample. Every Check screen now uses it.";
     await loadSample(); if (!mine) build();
   } catch (e) { if (e.status === 401) return gate("That password didn't work."); m.className = "msg err"; m.textContent = e.message; }
   b.disabled = false;
