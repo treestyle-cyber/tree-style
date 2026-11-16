@@ -78,6 +78,11 @@
   #sheet .others .lookcard{flex:none;width:120px}
   #sheet .others .lookcard b{font-size:15px;margin:0}
   body.locked{overflow:hidden}
+  h3.kind{font:600 11px/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:18px 0 10px}
+  .row{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;scrollbar-width:none}
+  .row::-webkit-scrollbar{display:none}
+  .row .card{flex:none;width:158px;scroll-snap-align:start}
+  section.set h2 .dot{display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:10px;vertical-align:2px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
   .divider{margin:34px 0 0;padding-top:8px;border-top:1px solid rgba(201,169,97,.2)}
   .disclose{margin:40px 0 0;padding-top:20px;border-top:1px solid rgba(201,169,97,.2);color:var(--muted);font-size:13px;line-height:1.6}
   .disclose a{color:var(--gold)}
@@ -242,14 +247,40 @@ const lookHtml = L => `<article class="look"><div class="lookpic" data-look="${L
 // The gallery: one card per look (photo, name); tapping opens the full look with every piece in a sheet
 const lookCard = (L, small) => `<button class="lookcard" ${small ? "" : `id="look-${L.id}"`} data-open="${L.id}"><div class="lookpic" data-look="${L.id}"><p class="soon">Styling…</p></div><div class="lc"><b>${esc(L.name)}</b>${small ? "" : `<span class="go">Shop this look ›</span>`}</div></button>`;
 const LOOKS = window.LOOKS || [];
-const NAV = [...(LOOKS.length ? [{ id:"looks", name:"Shop the look", dot:"#C9A961" }] : []),...RIBBON.map(r => ({ id:r.id, name:r.name + " ribbon", dot:HEX[r.id] })),
-  ...CATS.map(c => ({ id:c.id, name:c.name, dot:col(c.items[0][3], 0) })), { id:"essentials", name:"Essentials", dot:"#B8954F" }];
+// Shop by color: every pick (the stylist's choice lists above plus every piece used in the looks) grouped by its main color,
+// then by kind of piece in a sideways-scrolling row, so a story can link straight to one color (/picks#red).
+const COLORS = [
+  { id:"red", name:"Red & burgundy", dot:HEX.red, of:["red","burgundy","pink"], blurb:"Scarlet, cherry, wine and garnet: the classic Christmas color, layered in velvet, glass and jewels." },
+  { id:"green", name:"Green", dot:HEX.green, of:["green","moss","sage","pine"], blurb:"Emerald velvet, sage glass and every kind of greenery for a lush, layered tree." },
+  { id:"gold", name:"Gold & champagne", dot:HEX.gold, of:["gold","champagne"], blurb:"Antique gold, brass and champagne: the warm glow that makes a tree feel finished." },
+  { id:"silver", name:"Silver & white", dot:HEX.silver, of:["silver","white","ivory","clear","gray"], blurb:"Frosted, crystal and mercury glass for a quiet, glittering winter white." },
+  { id:"blue", name:"Blue & navy", dot:HEX.navy, of:["blue","navy"], blurb:"Midnight navy and chinoiserie blue, cool and unexpected." },
+  { id:"natural", name:"Natural & wood", dot:HEX.wicker, of:["wicker","brown"], blurb:"Wicker, rattan and warm browns that ground a tree in something real." },
+];
+const TYPES = [["ribbon","Ribbon"],["statement","Statement ornaments"],["ornaments","Ornaments"],["greenery","Greenery & sprays"],["flowers","Flowers"],["berries","Berries & picks"],["bows","Velvet bows"],["toppers","Toppers"],["bases","Skirts & collars"]];
+const ROLE = r => /ribbon/i.test(r) ? "ribbon" : /statement orn|brass/i.test(r) ? "statement" : /orn|pops/i.test(r) ? "ornaments" : /green|spray/i.test(r) ? "greenery"
+  : /flower/i.test(r) ? "flowers" : /berr|fruit/i.test(r) ? "berries" : /bow/i.test(r) ? "bows" : /topper/i.test(r) ? "toppers" : /base/i.test(r) ? "bases" : null;
+const ALL = [], seen = new Set();
+const add = (type, card, asin, cols) => { if (seen.has(asin)) return; seen.add(asin);
+  if (["ivory","white"].includes(cols[0]) && cols.includes("gold")) cols = ["gold"];   // ivory-and-gold reads as gold
+  const c = COLORS.find(g => g.of.includes(cols[0])) || COLORS.find(g => cols.some(k => g.of.includes(k))); if (c) ALL.push({ color:c.id, type, html:card }); };
+RIBBON.forEach(r => r.items.forEach(it => add("ribbon", ribbonCard(it), it[0], it[3])));
+CATS.forEach(c => c.items.forEach(it => add(c.id, itemCard(c.kind)(it), it[0], it[3])));
+LOOKS.forEach(L => L.pieces.forEach(([asin, role, name, cols, kind]) => { const t = ROLE(role); if (!t || asin.startsWith("q:")) return;
+  const w = (name.match(/(\d+(?:\.\d+)?) in\b/) || [])[1];
+  add(t, t === "ribbon" && w ? ribbonCard([asin, name.replace(/,? ?\d+(?:\.\d+)? in\b/, ""), w + " in", cols, ["From " + L.name], ""]) : itemCard(kind)([asin, name, "From " + L.name, cols, []]), asin, cols); }));
+const colorHtml = g => { const rows = TYPES.map(([t, label]) => { const items = ALL.filter(x => x.color === g.id && x.type === t); return items.length ?
+  `<h3 class="kind">${label}</h3><div class="row">${items.map(x => x.html).join("")}</div>` : ""; }).join("");
+  return rows ? `<section class="set" id="${g.id}"><h2><i class="dot" style="background:${g.dot}"></i>${esc(g.name)}</h2><p>${esc(g.blurb)}</p>${rows}</section>` : ""; };
+const NAV = [...(LOOKS.length ? [{ id:"looks", name:"Shop the look", dot:"#C9A961" }] : []), ...COLORS.map(g => ({ id:g.id, name:g.name, dot:g.dot })), { id:"essentials", name:"Essentials", dot:"#B8954F" }];
 document.getElementById("nav").innerHTML = NAV.map(s => `<a href="#${s.id}"><i style="background:${s.dot}"></i>${esc(s.name)}</a>`).join("");
 document.getElementById("sets").innerHTML =
-  (LOOKS.length ? `<section class="set" id="looks"><h2>Shop the look</h2><p>Complete trees, styled by TreeStyle. Tap a tree for every piece to recreate it.</p><div class="lookgrid">${LOOKS.map(L => lookCard(L)).join("")}</div></section><div class="divider"></div><section class="set" id="categories" style="padding-bottom:0"><h2 style="font-size:clamp(32px,6vw,44px)">Shop by category</h2></section>` : "")
-  +  RIBBON.map(s => `<section class="set" id="${s.id}"><h2>${s.name} ribbon</h2><p>Luxe wired ribbon. Mix two or three widths and let the widest lead.</p><div class="grid">${s.items.map(ribbonCard).join("")}</div></section>`).join("")
-  + CATS.map(c => `<section class="set" id="${c.id}"><h2>${esc(c.name)}</h2><p>${esc(c.blurb)}</p><div class="grid">${c.items.map(itemCard(c.kind)).join("")}</div></section>`).join("")
+  (LOOKS.length ? `<section class="set" id="looks"><h2>Shop the look</h2><p>Complete trees, styled by TreeStyle. Tap a tree for every piece to recreate it.</p><div class="lookgrid">${LOOKS.map(L => lookCard(L)).join("")}</div></section><div class="divider"></div>` : "")
+  + `<section class="set" id="colors" style="padding-bottom:0"><h2 style="font-size:clamp(32px,6vw,44px)">Shop by color</h2><p>Ribbon, ornaments, greenery, flowers, toppers and bases, gathered by color so everything you pick goes together.</p></section>`
+  + COLORS.map(colorHtml).join("")
   + `<section class="set" id="essentials"><h2>Stylist's essentials</h2><p>Every stylist keeps these on hand.</p><div class="grid" id="essGrid"></div></section>`;
+// Old category links (#statement, #ornaments...) land on Shop by color
+if (/^#(statement|ornaments|greenery|flowers|berries|bows|toppers|bases|categories)$/.test(location.hash)) location.replace("#colors");
 document.body.insertAdjacentHTML("beforeend", `<div id="sheet" role="dialog" aria-modal="true"><div class="inner"></div></div>`);
 const sheet = document.getElementById("sheet");
 let PHOTOS = {};
