@@ -77,6 +77,8 @@
     if (SHAPES[b.shape]) vars.push("--btn-radius:" + SHAPES[b.shape]);
     if (b.case === "none") vars.push("--btn-case:none");
 
+    // The bottom navigation bar and Shop the Look are off until switched on here (Eric approves first)
+    if (!/[?&]nav=1\b/.test(location.search)) root.classList.toggle("has-nav", !!(kit.nav && kit.nav.bar));
     style("kit-vars", (faces || "") + (vars.length ? ":root{" + vars.join(";") + "}" : "") + rules.join(""));
 
     // Page background (the light editorial screens keep their own)

@@ -914,6 +914,55 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     label.drop img{max-height:max(130px, calc(100dvh - 420px))}
     #photoOk{font-size:calc(13.5px * var(--s-body,1));padding:8px 12px}
   }
+
+  /* Bottom navigation bar and Shop the Look (Kylie's design; off until switched on in the Studio's Brand kit) */
+  .navbar,.lookbar{display:none}
+  html.has-nav body.navroot .navbar{display:grid}
+  html.has-nav body.navroot.onhome .lookbar{display:flex}
+  html.has-nav body.navroot main{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+  html.has-nav body.navroot.onhome main{padding-bottom:calc(178px + env(safe-area-inset-bottom))}
+  .navbar{position:fixed;left:0;right:0;bottom:0;z-index:40;grid-template-columns:repeat(5,1fr);background:var(--cream);border-radius:26px 26px 0 0;box-shadow:0 -12px 30px -14px rgba(0,0,0,.55);padding:8px max(8px,calc(50% - 300px)) max(10px,env(safe-area-inset-bottom))}
+  .navbar button{appearance:none;background:none;border:0;cursor:pointer;display:grid;justify-items:center;align-content:center;gap:5px;padding:8px 0 10px;min-height:62px;color:var(--walnut);position:relative;font:500 calc(11px * var(--s-label,1))/1 var(--sans);letter-spacing:.12em;text-transform:uppercase}
+  .navbar button + button::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:1px;background:rgba(74,54,32,.18)}
+  .navbar svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .navbar button[aria-current=page]{color:var(--midnight)}
+  .navbar button[aria-current=page] svg .fillon{fill:currentColor}
+  .navbar button[aria-current=page]::after{content:"";position:absolute;bottom:2px;left:50%;width:46px;margin-left:-23px;height:2px;border-radius:2px;background:var(--midnight)}
+  .navbar button:focus-visible{outline:2px solid var(--gold);outline-offset:-4px;border-radius:12px}
+  .lookbar > span{min-width:0}
+  .lookbar{position:fixed;left:max(14px,calc(50% - 300px));right:max(14px,calc(50% - 300px));bottom:calc(84px + env(safe-area-inset-bottom));z-index:39;align-items:center;gap:14px;padding:12px 16px 12px 10px;border-radius:14px;background:var(--cream);border:1px solid var(--champagne);color:var(--espresso);cursor:pointer;text-align:left;box-shadow:0 10px 24px -14px rgba(0,0,0,.6);font:inherit}
+  .lookbar .sprig{width:64px;height:48px;flex:none;color:#9C8660}
+  .lookbar b{display:block;font:500 calc(22px * var(--s-subheadline,1))/1.1 var(--serif);color:var(--espresso)}
+  .lookbar small{display:block;margin-top:4px;font:500 calc(9.5px * var(--s-label,1))/1.2 var(--sans);letter-spacing:.12em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase;color:#8C7A60}
+  .lookbar .chev{margin-left:auto;width:20px;height:20px;flex:none;stroke:var(--espresso)}
+  /* Tab pages */
+  .tabpage h1{font-weight:500}
+  .stylegrid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+  .stylegrid2 button{appearance:none;border:1px solid var(--line);background:var(--paper);border-radius:14px;overflow:hidden;padding:0;text-align:left;color:var(--ink);cursor:pointer}
+  .stylegrid2 i{display:block;aspect-ratio:4/5;background:center/cover}
+  .stylegrid2 b{display:block;padding:10px 12px 2px;font:500 calc(20px * var(--s-subheadline,1))/1.1 var(--serif)}
+  .stylegrid2 small{display:block;padding:0 12px 12px;color:var(--muted);font-size:13px}
+  .savedcard{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center;padding:14px;margin-top:16px}
+  .savedcard img{width:96px;height:120px;object-fit:cover;border-radius:10px}
+  .savedcard .resumebtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .savedcard .btn{padding:11px 16px;font-size:12px}
+  .emptynote{margin-top:18px;padding:22px 18px;text-align:center;color:var(--muted)}
+  .emptynote .btn{margin-top:14px}
+  .proflist{display:grid;gap:12px;margin-top:16px}
+  .proflist .card{padding:16px}
+  .proflist b{display:block;font:500 calc(20px * var(--s-subheadline,1))/1.15 var(--serif);margin-bottom:4px}
+  .proflist p{margin:0;color:var(--muted);font-size:14.5px}
+  .lookchips{display:flex;gap:8px;overflow-x:auto;margin:14px -4px 6px;padding:2px 4px 6px;scrollbar-width:none}
+  .lookchips button{flex:none;appearance:none;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:99px;padding:9px 14px;font:500 13.5px var(--sans);cursor:pointer}
+  .lookchips button.on{border-color:var(--gold);background:var(--gold);color:var(--midnight)}
+  .looksec h3{font:600 calc(11.5px * var(--s-label,1)) var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--brass);margin:20px 0 10px}
+  .lookitems{display:grid;gap:10px}
+  .lookitems .lookitem{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 14px;margin:0;min-height:0;text-align:left}
+  .lookitem span{display:block;font-size:14.5px;line-height:1.35}
+  .lookitem .dots{display:flex;gap:4px;margin:6px 0 0;justify-content:flex-start}   /* another .dots style adds a bottom margin */
+  .lookitem .dots i{width:12px;height:12px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+  .lookitem a{font:600 11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);text-decoration:none;border:1px solid var(--gold);border-radius:99px;padding:8px 12px;white-space:nowrap}
+  .looknote{font-size:12.5px;color:var(--muted);margin-top:18px}
 </style>
 </head>
 <body>
@@ -1218,6 +1267,33 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     <div class="card" id="shop"></div>
     <p class="small muted" style="font-size:13px">Links open one of our picks or a store search. As an Amazon Associate, TreeStyle may earn from qualifying purchases.</p>
   </section>
+  <!-- Tab pages (shown by the bottom navigation bar) -->
+  <section class="screen tabpage" id="s-styles" data-title="Styles" hidden>
+    <h1>Find your style</h1>
+    <p class="sub">Tap a style to design your tree in it.</p>
+    <div class="stylegrid2" id="styleCards"></div>
+  </section>
+  <section class="screen tabpage" id="s-saved" data-title="Saved" hidden>
+    <h1>Saved</h1>
+    <p class="sub">Your tree is saved on this device.</p>
+    <div id="savedBox"></div>
+  </section>
+  <section class="screen tabpage" id="s-profile" data-title="Profile" hidden>
+    <h1>Profile</h1>
+    <div class="proflist">
+      <div class="card"><b>Early access</b><p>You're one of the first to try TreeStyle. Thank you for helping shape it.</p></div>
+      <div class="card"><b>Your trees</b><p>Your tree, plan and shopping list are saved on this device only.</p></div>
+      <div class="card"><b>Questions or ideas?</b><p>Tell us under "How did we do?" at the bottom of your results.</p></div>
+      <button class="btn ghost" id="navSignOut">Sign out</button>
+    </div>
+  </section>
+  <section class="screen tabpage" id="s-look" data-title="Shop the Look" hidden>
+    <h1>Shop the Look</h1>
+    <p class="sub">Curated selections for every style, chosen by the designers we follow.</p>
+    <div class="lookchips" id="lookChips"></div>
+    <div id="lookList"></div>
+    <p class="looknote">Links go to Amazon. TreeStyle may earn a commission.</p>
+  </section>
 </main>
 
 <div id="restyleSheet" class="sheet" hidden>
@@ -1291,6 +1367,14 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   </div>
 </div>
 
+<button class="lookbar" id="lookBar" type="button"><svg class="sprig" viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M6 44C18 34 30 24 50 6"/><path d="M14 37c-4-6-3-12 1-15 2 6 2 11-1 15zM22 30c-5-5-5-11-2-15 3 5 4 10 2 15zM30 23c-4-6-3-12 1-15 2 6 2 11-1 15zM38 16c-4-5-4-10-1-13 2 5 3 9 1 13z"/><path d="M15 38c6-1 12 1 15 6-6 1-11-1-15-6zM23 31c6-1 12 1 15 5-6 1-11 0-15-5zM31 24c6-2 12 0 15 4-6 1-11 0-15-4zM39 17c5-2 10-1 13 3-5 1-10 1-13-3z"/></svg><span><b>Shop the Look</b><small>Curated selections for every style</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+<nav class="navbar" id="navbar" aria-label="Main">
+  <button data-nav="s-home"><svg viewBox="0 0 24 24"><path class="fillon" d="M3.5 10.1 12 2.8l8.5 7.3V21h-6.1v-7.1H9.6V21H3.5V10.1Z"/></svg>Home</button>
+  <button data-nav="s-styles"><svg viewBox="0 0 24 24"><path class="fillon" d="M12 3.5c.6 3.9 2.2 5.6 6 6.3-3.8.7-5.4 2.4-6 6.2-.6-3.8-2.2-5.5-6-6.2 3.8-.7 5.4-2.4 6-6.3Z"/><path d="M18.5 15.5c.3 1.6 1 2.3 2.5 2.6-1.5.3-2.2 1-2.5 2.6-.3-1.6-1-2.3-2.5-2.6 1.5-.3 2.2-1 2.5-2.6ZM5 3.5c.2 1 .7 1.5 1.7 1.7-1 .2-1.5.7-1.7 1.7-.2-1-.7-1.5-1.7-1.7 1-.2 1.5-.7 1.7-1.7Z"/></svg>Style</button>
+  <button data-nav="s-saved"><svg viewBox="0 0 24 24"><path class="fillon" d="M6.5 3.5h11v17l-5.5-4-5.5 4z"/></svg>Saved</button>
+  <button data-nav="s-shop"><svg viewBox="0 0 24 24"><path class="fillon" d="M5 8h14l-1 13H6z"/><path d="M9 10V7a3 3 0 0 1 6 0v3"/></svg>Shop</button>
+  <button data-nav="s-profile"><svg viewBox="0 0 24 24"><circle class="fillon" cx="12" cy="8" r="4"/><path d="M4.5 20.5c.8-4.3 3.8-6.6 7.5-6.6s6.7 2.3 7.5 6.6"/></svg>Profile</button>
+</nav>
 <div class="foot" id="foot" hidden><button class="btn" id="footBtn"></button></div>
 
 <div id="zoom" hidden>
@@ -2159,6 +2243,7 @@ function paint(isBack) {
   if (id === "s-plan") drawStep();
   if (id === "s-results") sweep();
   if (id === "s-home") { showResume(); playSplash(); }
+  navPaint(id);
   saveSoon();
   scrollTo(0, 0);
 }
@@ -3504,6 +3589,7 @@ async function startApp() {
 // Screen preview: open the screen in the address with the sample tree, mark it, and tell the Studio how many plan steps there are
 async function sampleStart() {
   const q = new URLSearchParams(location.search), name = q.get("s") || location.pathname.replace(/^\/try\/?/, "").split("/")[0] || "home";
+  if (q.get("nav") === "1") document.documentElement.classList.add("has-nav");   // Screens shows the bar even before it is switched on
   const badge = document.createElement("div");
   badge.textContent = "Sample";
   badge.style.cssText = "position:fixed;right:8px;top:8px;z-index:300;font:600 10px Inter,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;background:rgba(20,28,44,.85);color:#C5B28F;padding:4px 8px;border-radius:99px;pointer-events:none";
@@ -3616,6 +3702,76 @@ function reportPhotoSpots() {
   setTimeout(send, 400); setTimeout(send, 1500);
 }
 
+
+// ---- Bottom navigation bar, Shop the Look and the tab pages (off until the Brand kit switches it on) ----
+const NAV_ROOTS = ["s-home", "s-styles", "s-saved", "s-shop", "s-profile", "s-look"];
+function navPaint(id) {
+  document.body.classList.toggle("navroot", NAV_ROOTS.includes(id));
+  document.body.classList.toggle("onhome", id === "s-home");
+  const tab = id === "s-look" ? "s-shop" : id;
+  document.querySelectorAll("#navbar button").forEach(b => { if (b.dataset.nav === tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  if (id === "s-styles") drawStyleCards();
+  if (id === "s-saved") drawSaved();
+  if (id === "s-look") drawLook();
+}
+document.querySelectorAll("#navbar button").forEach(b => b.onclick = async () => {
+  const t = b.dataset.nav;
+  if (t === "s-home") return show("s-home", []);
+  if (t === "s-shop") {   // with a tree, Shop is its shopping list; without one, Shop the Look
+    if (result) return show("s-shop", ["s-home"]);
+    const st = await idb.get(SAVE_KEY);
+    if (st && st.result && await restoreSaved(Object.assign({}, st, { screen: "s-shop" }))) return;
+    return show("s-look", ["s-home"]);
+  }
+  show(t, ["s-home"]);
+});
+$("#lookBar").onclick = () => show("s-look", ["s-home"]);
+$("#navSignOut").onclick = () => { password = ""; try { sessionStorage.removeItem("ts_pw"); } catch {} show("s-pass", []); };
+function drawStyleCards() {
+  $("#styleCards").innerHTML = STYLE_PICK.concat([["themed", "Themed", "One story, your idea"]]).map(([v, name, sub]) => {
+    const card = document.querySelector(`input[name=style][value=${v}] + span .sp`);
+    return `<button data-style="${v}"><i style="${card ? card.getAttribute("style") : ""}"></i><b>${name}</b><small>${sub}</small></button>`;
+  }).join("");
+}
+$("#styleCards").onclick = e => {
+  const b = e.target.closest("button[data-style]"); if (!b) return;
+  document.querySelector('.choice[data-mode="design"]').click();   // a fresh design, as Design my tree starts
+  setRadio("style", b.dataset.style); syncStyle();
+};
+async function drawSaved() {
+  const st = result ? null : await idb.get(SAVE_KEY);
+  const has = result || (st && st.result);
+  if (!has) { $("#savedBox").innerHTML = `<div class="card emptynote">Nothing saved yet. Check or design a tree and it will wait for you here.<br><button class="btn" data-go-home>Start a tree</button></div>`; return; }
+  const m = result ? mode : st.mode, pic = (result ? after || photo : st.after || st.photo) || "";
+  $("#savedBox").innerHTML = `<div class="card savedcard"><img src="${pic}" alt=""><div><b style="font:500 20px/1.15 var(--serif)">${m === "design" ? "Your tree design" : "Your checked tree"}</b><small class="muted">${st && st.at ? "Saved " + ago(st.at) : "Saved on this device"}</small><div class="resumebtns"><button class="btn" data-open-saved>Open</button><button class="btn ghost" data-go-home>Start a new tree</button></div></div></div>`;
+}
+$("#savedBox").onclick = async e => {
+  if (e.target.closest("[data-go-home]")) return show("s-home", []);
+  if (e.target.closest("[data-open-saved]")) { if (result) return show("s-results", ["s-home"]); const st = await idb.get(SAVE_KEY); if (st) restoreSaved(Object.assign({}, st, { screen: "s-results" })); }
+};
+// Shop the Look: creator picks grouped by style (chosen by color and finish), never black, grouped by kind of piece
+const LOOK_STYLES = [
+  ["classic", "Traditional", p => /red|green|gold|burgundy/.test(p.colors) && !/rustic|burlap/.test(p.fin)],
+  ["rustic", "Rustic", p => /rustic|burlap|plaid/.test(p.fin) || /brown/.test(p.colors) && !/glitter/.test(p.fin)],
+  ["modern", "Modern", p => /white|silver|ivory|gray/.test(p.colors) && !/plaid|vintage|rustic|stripe/.test(p.fin) && !/red|green|burgundy/.test(p.colors)],
+  ["elegant", "Elegant", p => /champagne|gold|ivory|navy/.test(p.colors) && /velvet|satin|glitter|metallic|frosted|shiny/.test(p.fin) && !/plaid|rustic|burlap/.test(p.fin)],
+  ["playful", "Playful", p => /stripe/.test(p.fin) || /pink|candy|peppermint|lollipop|gingerbread/i.test(p.colors + " " + p.name)],
+];
+const LOOK_KINDS = [["Ribbon", /^ribbon/], ["Ornaments", /^(statement|medium|small)$/], ["Filler & flowers", /^(primary_picks|small_picks|florals)$/], ["Toppers & bases", /^(crown|base)$/]];
+const DOT = { red: "#B3262E", green: "#2F5D3A", gold: "#C9A24E", burgundy: "#6B1E2A", brown: "#7A5534", white: "#F4F1EA", champagne: "#E3CFA4", silver: "#C7CBD1", blue: "#3D6AA8", ivory: "#EFE6D2", navy: "#1F2E55", "dusty blue": "#8AA3BE", copper: "#B8733E", sage: "#9CAF94", pink: "#E6A3B4", "rose gold": "#D9A28E", gray: "#9A9A9A" };
+let lookStyle = "classic";
+function drawLook() {
+  $("#lookChips").innerHTML = LOOK_STYLES.map(([k, n]) => `<button data-look="${k}" class="${k === lookStyle ? "on" : ""}">${n}</button>`).join("");
+  const all = PICKS.map(r => ({ asin: r[0], step: r[1], name: r[2], colors: r[3] || "", fin: r[4] || "" })).filter(p => !/black/.test(p.colors));
+  const test = LOOK_STYLES.find(s => s[0] === lookStyle)[2], mine = all.filter(test);
+  const tag = AMAZON_TAG ? "?tag=" + encodeURIComponent(AMAZON_TAG) : "";
+  $("#lookList").innerHTML = LOOK_KINDS.map(([title, re]) => {
+    const items = mine.filter(p => re.test(p.step)).slice(0, 8);
+    if (!items.length) return "";
+    return `<div class="looksec"><h3>${title}</h3><div class="lookitems">${items.map(p => `<div class="card lookitem"><div><span>${esc(p.name)}</span><div class="dots">${p.colors.split(",").filter(c => DOT[c]).map(c => `<i style="background:${DOT[c]}" title="${esc(c)}"></i>`).join("")}</div></div><a href="https://www.amazon.com/dp/${p.asin}${tag}" target="_blank" rel="noopener sponsored">Shop</a></div>`).join("")}</div></div>`;
+  }).join("");
+}
+$("#lookChips").onclick = e => { const b = e.target.closest("[data-look]"); if (!b) return; lookStyle = b.dataset.look; drawLook(); };
 /* ---------------- start ---------------- */
 startApp();
 </script>
