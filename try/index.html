@@ -1040,7 +1040,8 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .snapcam .shutter:active{transform:scale(.95)}
 
   /* Ivory look, opening screen (Kylie's Splash): dark pine branches around the existing logo (its own gold rule), no headline */
-  html.theme-ivory #splash{background:radial-gradient(70% 45% at 50% 46%,rgba(4,10,6,.55),transparent 75%),var(--photo-splash, url(/brand/splash-bg.jpg)) center/cover}
+  html.theme-ivory #splash{background:radial-gradient(70% 45% at 50% 46%,rgba(4,10,6,.5),transparent 75%),linear-gradient(rgba(0,0,0,.32),rgba(0,0,0,.32)),var(--photo-splash, url(/brand/splash-bg.jpg)) center/cover}   /* a slight black overlay darkens the photo */
+  html.theme-ivory #splash .splogo{width:min(320px,82vw);filter:drop-shadow(0 6px 10px rgba(0,0,0,.85)) drop-shadow(0 16px 34px rgba(0,0,0,.7))}   /* larger, with a deep drop shadow */
   html.theme-ivory #splash .sphl{display:none}   /* the logo has its own gold rule, as in the mockup */
 </style>
 </head>
