@@ -1391,7 +1391,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     <p class="sub">Curated selections for every style, chosen by the designers we follow.</p>
     <div class="lookchips" id="lookChips"></div>
     <div id="lookList"></div>
-    <p class="looknote">Ribbon photos show the color and texture, not the exact product. Links go to Amazon. TreeStyle may earn a commission.</p>
+    <p class="looknote">Ribbon and ornament photos show the color and finish, not the exact product. Links go to Amazon. TreeStyle may earn a commission.</p>
   </section>
 </main>
 
@@ -3872,6 +3872,16 @@ const LOOK_PIC = { ribbon: "ribbon", ribbon_bows: "ribbon", statement: "statemen
 let lookAll = {};
 // Ribbon photos (from Kylie's mockup, plus recolors of its red velvet): the closest color and texture for each ribbon.
 // They show the look of the ribbon, not the exact product.
+// Ornament photos (close-ups from Kylie's photo screen tree, plus recolors): the closest color for each ornament
+function ornamentPhoto(p) {
+  const c = p.colors.split(",").filter(Boolean), n = p.name.toLowerCase();
+  if (/finial|drop|icicle|teardrop|snowflake|star|bird|pick|cluster|figure|santa|nutcracker|bell/.test(n)) return "";   // not round ornaments
+  if (/rose gold/.test(c.join(",") + " " + n)) return "rosegold";
+  const map = { red: "red", burgundy: "burgundy", gold: "gold", champagne: "champagne", green: "green", sage: "sage", blue: "blue", "dusty blue": "blue", navy: "navy", silver: "silver", white: "ivory", ivory: "ivory", pink: "pink", copper: "copper", brown: "brown", gray: "silver" };
+  // the main color: the first one named, but a gold or silver second color does not override red, green and so on
+  for (const k of c) if (map[k]) return map[k];
+  return "";
+}
 function ribbonPhoto(p) {
   const c = p.colors, n = p.name.toLowerCase(), f = p.fin;
   if (/plaid|tartan|check/.test(f + " " + n)) return "plaid-green";
@@ -3891,8 +3901,9 @@ function drawLook() {
     const every = mine.filter(p => re.test(p.step)); if (!every.length) return "";
     const open = lookAll[lookStyle + title], items = open ? every : every.slice(0, 6);
     return `<div class="looksec"><div class="lookhead"><h3>${title}</h3>${every.length > 6 ? `<button data-all="${esc(title)}">${open ? "Show fewer" : `View all ${every.length}`} <span>→</span></button>` : ""}</div><div class="lookitems">${items.map(p => {
-      const cols = p.colors.split(",").filter(c => DOT[c]), rp = /^ribbon/.test(p.step) ? ribbonPhoto(p) : "";
-      const pic = rp ? `<img src="/brand/ribbons/${rp}.jpg" alt="" loading="lazy">` : itemPic({ color: DOT[cols[0]] || "#C9B48A", label: p.name }, LOOK_PIC[p.step] || "medium");
+      const cols = p.colors.split(",").filter(c => DOT[c]), rib = /^ribbon/.test(p.step), orn = /^(statement|medium|small)$/.test(p.step);
+      const rp = rib ? ribbonPhoto(p) : orn ? ornamentPhoto(p) : "", dir = rib ? "ribbons" : "ornaments";
+      const pic = rp ? `<img src="/brand/${dir}/${rp}.jpg" alt="" loading="lazy">` : itemPic({ color: DOT[cols[0]] || "#C9B48A", label: p.name }, LOOK_PIC[p.step] || "medium");
       return `<div class="card lookitem"><span class="lookpic${rp ? " photo" : ""}">${pic}</span><div><span class="lookname">${esc(p.name)}</span><div class="dots">${cols.map(c => `<i style="background:${DOT[c]}" title="${esc(c)}"></i>`).join("")}</div></div><a href="https://www.amazon.com/dp/${p.asin}${tag}" target="_blank" rel="noopener sponsored">Shop</a></div>`;
     }).join("")}</div></div>`;
   }).join("");
