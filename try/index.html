@@ -956,8 +956,12 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .lookchips button.on{border-color:var(--gold);background:var(--gold);color:var(--midnight)}
   .looksec h3{font:600 calc(11.5px * var(--s-label,1)) var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--brass);margin:20px 0 10px}
   .lookitems{display:grid;gap:10px}
-  .lookitems .lookitem{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 14px;margin:0;min-height:0;text-align:left}
-  .lookitem span{display:block;font-size:14.5px;line-height:1.35}
+  .lookitems .lookitem{display:grid;grid-template-columns:96px 1fr auto;gap:14px;align-items:center;padding:8px 12px 8px 8px;margin:0;min-height:0;text-align:left;overflow:hidden}
+  .lookpic{width:96px;height:78px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(rgba(20,16,10,.25),rgba(20,16,10,.25)),url(/brand/start-garland.jpg) 30% 60%/240% auto;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+  .lookpic svg{width:64px;height:64px;filter:drop-shadow(0 5px 8px rgba(0,0,0,.5))}
+  .lookname{display:block;font:500 calc(17px * var(--s-subheadline,1))/1.2 var(--serif);color:var(--ink)}
+  .lookhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  .lookhead button{appearance:none;background:none;border:0;padding:4px 0;cursor:pointer;font:500 13px var(--sans);color:var(--brass)}
   .lookitem .dots{display:flex;gap:4px;margin:6px 0 0;justify-content:flex-start}   /* another .dots style adds a bottom margin */
   .lookitem .dots i{width:12px;height:12px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
   .lookitem a{font:600 11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);text-decoration:none;border:1px solid var(--gold);border-radius:99px;padding:8px 12px;white-space:nowrap}
@@ -3860,17 +3864,25 @@ const LOOK_STYLES = [
 const LOOK_KINDS = [["Ribbon", /^ribbon/], ["Ornaments", /^(statement|medium|small)$/], ["Filler & flowers", /^(primary_picks|small_picks|florals)$/], ["Toppers & bases", /^(crown|base)$/]];
 const DOT = { red: "#B3262E", green: "#2F5D3A", gold: "#C9A24E", burgundy: "#6B1E2A", brown: "#7A5534", white: "#F4F1EA", champagne: "#E3CFA4", silver: "#C7CBD1", blue: "#3D6AA8", ivory: "#EFE6D2", navy: "#1F2E55", "dusty blue": "#8AA3BE", copper: "#B8733E", sage: "#9CAF94", pink: "#E6A3B4", "rose gold": "#D9A28E", gray: "#9A9A9A" };
 let lookStyle = "classic";
+// Each product shows in a photo box. Amazon's own product photos are only allowed through its Creators API (opens at
+// Eric's 10 qualifying sales); until then the box shows the app's drawing of the piece in its colors.
+const LOOK_PIC = { ribbon: "ribbon", ribbon_bows: "ribbon", statement: "statement", medium: "medium", small: "medium", primary_picks: "primary_picks", small_picks: "small_picks", florals: "florals", crown: "crown", base: "base" };
+let lookAll = {};
 function drawLook() {
   $("#lookChips").innerHTML = LOOK_STYLES.map(([k, n]) => `<button data-look="${k}" class="${k === lookStyle ? "on" : ""}">${n}</button>`).join("");
   const all = PICKS.map(r => ({ asin: r[0], step: r[1], name: r[2], colors: r[3] || "", fin: r[4] || "" })).filter(p => !/black/.test(p.colors));
   const test = LOOK_STYLES.find(s => s[0] === lookStyle)[2], mine = all.filter(test);
   const tag = AMAZON_TAG ? "?tag=" + encodeURIComponent(AMAZON_TAG) : "";
   $("#lookList").innerHTML = LOOK_KINDS.map(([title, re]) => {
-    const items = mine.filter(p => re.test(p.step)).slice(0, 8);
-    if (!items.length) return "";
-    return `<div class="looksec"><h3>${title}</h3><div class="lookitems">${items.map(p => `<div class="card lookitem"><div><span>${esc(p.name)}</span><div class="dots">${p.colors.split(",").filter(c => DOT[c]).map(c => `<i style="background:${DOT[c]}" title="${esc(c)}"></i>`).join("")}</div></div><a href="https://www.amazon.com/dp/${p.asin}${tag}" target="_blank" rel="noopener sponsored">Shop</a></div>`).join("")}</div></div>`;
+    const every = mine.filter(p => re.test(p.step)); if (!every.length) return "";
+    const open = lookAll[lookStyle + title], items = open ? every : every.slice(0, 6);
+    return `<div class="looksec"><div class="lookhead"><h3>${title}</h3>${every.length > 6 ? `<button data-all="${esc(title)}">${open ? "Show fewer" : `View all ${every.length}`} <span>→</span></button>` : ""}</div><div class="lookitems">${items.map(p => {
+      const cols = p.colors.split(",").filter(c => DOT[c]), pic = itemPic({ color: DOT[cols[0]] || "#C9B48A", label: p.name }, LOOK_PIC[p.step] || "medium");
+      return `<div class="card lookitem"><span class="lookpic">${pic}</span><div><span class="lookname">${esc(p.name)}</span><div class="dots">${cols.map(c => `<i style="background:${DOT[c]}" title="${esc(c)}"></i>`).join("")}</div></div><a href="https://www.amazon.com/dp/${p.asin}${tag}" target="_blank" rel="noopener sponsored">Shop</a></div>`;
+    }).join("")}</div></div>`;
   }).join("");
 }
+$("#lookList").onclick = e => { const b = e.target.closest("[data-all]"); if (!b) return; const k = lookStyle + b.dataset.all; lookAll[k] = !lookAll[k]; drawLook(); };
 $("#lookChips").onclick = e => { const b = e.target.closest("[data-look]"); if (!b) return; lookStyle = b.dataset.look; drawLook(); };
 /* ---------------- start ---------------- */
 startApp();
