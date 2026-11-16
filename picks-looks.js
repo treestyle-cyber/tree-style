@@ -3,7 +3,8 @@
 // is written as a Themed design with `theme` (which names these pieces; `style` is the feel it leans toward, as in the app's
 // idea path, where the description is the style), and the preview is painted. The photo Eric picks is
 // saved to the photo spot look_<id> and shown above the pieces on /picks.
-// Piece: [ASIN, role, name, colors, drawing kind]. ASINs come from the stylist picks (lib/picks.js).
+// Piece: [ASIN, role, name, colors, drawing kind]. ASINs come from the stylist picks (lib/picks.js); "q:words" instead of an
+// ASIN opens a tagged Amazon search for those words (for pieces we have no product ID for yet, like the MacKenzie-Childs clips).
 window.LOOKS = [
   { id: "lodge", name: "Lodge Plaid", style: "classic",
     blurb: "Red and green tartan, burgundy velvet and brass against natural cedar, finished with faux fur. Cozy, heritage and timeless.",
@@ -86,4 +87,58 @@ window.LOOKS = [
       ["B09ZL85RV1", "Flowers", "Large glitter magnolia flowers, 10 in", ["ivory", "gold"], "flower"],
       ["B0FK4XZ74V", "Topper", "Silver glitter star, 8 in", ["silver"], "star"],
       ["B0153AZ0HO", "Base", "Ivory faux fur tree skirt", ["ivory"], "skirt"] ] },
+  { id: "check", name: "Black & White Check", style: "classic",
+    blurb: "Crisp black-and-white check with red and a touch of gold, led by MacKenzie-Childs Courtly Check ribbon. Bold, witty and still classic.",
+    idea: "A bright, classic living room with white walls, a black-and-white checked rug and a red velvet armchair.",
+    theme: "Traditional black and white check tree: one hero pattern, crisp black and white check, used on the widest wired ribbon, with a red velvet ribbon banded in check as the accent; everything else solid and calm: red and gold glass ornaments, a few black and white checked and striped ornaments, clear glass holly leaf ornaments, two large fabric poinsettias in red and check, natural Norfolk pine and red holly berries, a red velvet bow topper, a black and white check tree skirt. Tight palette: black, white, red, a little gold and green. No other patterns",
+    pieces: [
+      ["B009AWRRK0", "Statement ribbon", "MacKenzie-Childs Courtly Check ribbon", ["white", "black"], "ribbon"],
+      ["B0F5JYLXC6", "Second ribbon", "MacKenzie-Childs Courtly Regal ribbon, red, 4 in", ["red", "black"], "ribbon"],
+      ["B0FMD1XX5X", "Statement ornaments", "Black and white glass finials", ["black", "white"], "drop"],
+      ["q:MacKenzie-Childs holly leaf glass ornaments", "Ornaments", "MacKenzie-Childs holly leaf glass ornaments", ["clear", "green"], "ball"],
+      ["B096Y8NSDB", "Ornaments", "MacKenzie-Childs metal wreath ornament", ["green", "red"], "ball"],
+      ["B0H2HDYM5R", "Ornaments", "Red glass ornaments, matte and shiny", ["red"], "ball"],
+      ["B0H2HHHSQ1", "Small ornaments", "Gold glass ornaments, 3.15 in", ["gold"], "ball"],
+      ["q:MacKenzie-Childs Courtly Noel poinsettia clip", "Flowers", "MacKenzie-Childs Courtly Noel poinsettia clip", ["red", "gold"], "flower"],
+      ["q:MacKenzie-Childs Check It Out poinsettia clip", "Flowers", "MacKenzie-Childs Check It Out poinsettia clip", ["red", "white"], "flower"],
+      ["B0D47GGJHW", "Greenery", "Norfolk pine stems, 30 in", ["pine"], "sprig"],
+      ["B0C99JNHPN", "Berries", "Red holly berry stems", ["red"], "berries"],
+      ["B0H1HWNNTK", "Topper", "Extra large red velvet bow topper", ["red", "gold"], "bow"],
+      ["q:black and white check christmas tree skirt", "Base", "Black and white check tree skirt", ["black", "white"], "skirt"] ] },
+  { id: "fruit", name: "Fruit & Berries", style: "classic",
+    blurb: "Pomegranates, pears and clementines tucked among cedar, berries and vintage glass. Warm, heritage and a little Williamsburg.",
+    idea: "A colonial-style living room with painted wood paneling, a brick fireplace and candlelight, warm and historic.",
+    theme: "Traditional fruit and berries tree in the Williamsburg style: natural cedar and droopy pine greenery, clusters of artificial pomegranates, pears and clementines tucked into the branches as the statement pieces, burgundy and red berries, pinecones, vintage hand blown glass ornaments in burgundy, amber and green, red velvet and camel velvet wired ribbon, a vintage glass finial topper, a natural wicker tree collar. Warm and heritage, no glitter",
+    pieces: [
+      ["B0FHJT7M7H", "Statement ribbon", "Red luxury velvet ribbon, 2.5 in", ["red"], "ribbon"],
+      ["B0D4DFC8C3", "Second ribbon", "Camel velvet dupioni ribbon, 2.5 in", ["brown", "champagne"], "ribbon"],
+      ["q:artificial pomegranate picks christmas", "Statement fruit", "Pomegranate picks", ["burgundy", "red"], "berries"],
+      ["q:artificial pear picks christmas", "Fruit", "Pear picks", ["sage", "gold"], "ball"],
+      ["q:artificial clementine orange picks christmas", "Fruit", "Clementine picks", ["champagne", "red"], "ball"],
+      ["B0H7SGW2L5", "Ornaments", "Burgundy glass ornaments, vintage", ["burgundy"], "ball"],
+      ["B0H7S8KJQK", "Ornaments", "Amber glass ornaments, vintage", ["brown"], "ball"],
+      ["B0H7SC7K1G", "Small ornaments", "Green hand blown glass ornaments, 3 in", ["green"], "ball"],
+      ["B0FB946TVL", "Greenery", "Extra full cedar pine stems, 39 in", ["pine"], "sprig"],
+      ["B0FNCG994F", "Berries", "Burgundy holly berries", ["burgundy"], "berries"],
+      ["B08HS6J34G", "Berries", "Red berry, holly and pinecone sprays", ["red", "brown"], "berries"],
+      ["B0H6W9C4WT", "Topper", "Vintage glass finial topper, 13 in", ["gold", "red"], "drop"],
+      ["B0HCCL6552", "Base", "Natural wicker tree collar, 36 in", ["wicker"], "skirt"] ] },
+  { id: "black", name: "The Black Tree", style: "elegant",
+    blurb: "A black tree as the backdrop for deep reds, antique gold and dark green velvet. Dramatic, moody and unexpected.",
+    idea: "A black artificial Christmas tree (black branches, not green) in a moody, elegant living room with deep green walls, a dark wood floor, brass lamps and a velvet sofa, evening light.",
+    theme: "Elegant black Christmas tree: the tree itself is a black artificial tree with warm white lights, styled with burgundy crushed velvet and gold ribbon, deep red velvet ribbon with gold edges, burgundy vintage glass finials and large antique gold ornaments, burgundy velvet, brass gold and green mercury glass ornaments, gold magnolia leaf branches and burgundy velvet leaves, burgundy holly berries, a vintage gold angel topper, a burgundy velvet tree skirt. Black is the tree only, never the ornaments",
+    pieces: [
+      ["q:black artificial christmas tree pre lit 7.5 ft", "The tree", "Black pre-lit artificial tree", ["black"], "sprig"],
+      ["B0FHWFGFMB", "Statement ribbon", "Burgundy crushed velvet, gold diamonds, 4 in", ["burgundy", "gold"], "ribbon"],
+      ["B0B5YTGBWR", "Second ribbon", "Red velvet, gold metallic edge, 2.5 in", ["red", "gold"], "ribbon"],
+      ["B0HBNFT166", "Statement ornaments", "Burgundy glass finials, vintage", ["burgundy"], "drop"],
+      ["B0CZ3TBDJ2", "Statement ornaments", "Large gold ornaments, 10 in", ["gold"], "ball"],
+      ["B0C5J3JZT6", "Ornaments", "Burgundy velvet flocked ornaments", ["burgundy"], "ball"],
+      ["B0FHB1VHV1", "Ornaments", "Brass gold vintage metallic ornaments", ["gold"], "ball"],
+      ["B0FJM1FC13", "Ornaments", "Green mercury glass velvet ornaments, 4 in", ["green", "silver"], "ball"],
+      ["B0F1MRGKZ1", "Greenery", "Gold magnolia leaf branches, 28.7 in", ["gold"], "sprig"],
+      ["B0HGDG5XBN", "Greenery", "Burgundy velvet magnolia leaf stems", ["burgundy"], "sprig"],
+      ["B0FNCG994F", "Berries", "Burgundy holly berries", ["burgundy"], "berries"],
+      ["B0H5K989WP", "Topper", "Vintage gold metal angel, 7.9 in", ["gold"], "star"],
+      ["q:burgundy velvet christmas tree skirt", "Base", "Burgundy velvet tree skirt", ["burgundy"], "skirt"] ] },
 ];

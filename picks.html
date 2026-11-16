@@ -218,7 +218,7 @@ const essCard = (e, photos) => { const pic = photos && photos["ess_" + e.id];
   return `<article class="card"><div class="swatch">${pic ? `<img class="hookpic" src="${esc(pic)}" alt="">` : essIcon}</div>
   <div class="body"><b>${esc(e.label)}</b>${e.qty ? `<p class="note">${esc(e.qty)}</p>` : ""}${shopBtn(essUrl(e))}</div></article>`; };
 
-const lookPiece = ([asin, role, name, cols, kind]) => `<li>${svg(kind, cols).replace('width="96" height="72"', 'width="48" height="36"')}<div class="pn"><small>${esc(role)}</small><span>${esc(name)}</span></div>${shopBtn(dp(asin))}</li>`;
+const lookPiece = ([asin, role, name, cols, kind]) => `<li>${svg(kind, cols).replace('width="96" height="72"', 'width="48" height="36"')}<div class="pn"><small>${esc(role)}</small><span>${esc(name)}</span></div>${shopBtn(asin.startsWith("q:") ? search(asin.slice(2)) : dp(asin))}</li>`;   // "q:words": a tagged store search
 const lookHtml = L => `<article class="look" id="look-${L.id}"><div class="lookpic" data-look="${L.id}"><p class="soon">TreeStyle is styling this tree.</p></div>
   <div class="lookbody"><div class="eyebrow">Shop the look</div><h3>${esc(L.name)}</h3><p>${esc(L.blurb)}</p><ul class="plist">${L.pieces.map(lookPiece).join("")}</ul></div></article>`;
 const LOOKS = window.LOOKS || [];
