@@ -37,7 +37,7 @@
     var vars = [], c = kit.colors || {};
     COLOR_KEYS.forEach(function (k) { if (hex(c[k])) vars.push("--" + k + ":" + c[k]); });
     // Shades that are worked out from the main colors
-    if (hex(c.midnight)) vars.push("--paper:" + mix(c.midnight, "#ffffff", .05), "--paper-2:" + mix(c.midnight, "#ffffff", .1));
+    if (hex(c.midnight) && kit.look !== "ivory") vars.push("--paper:" + mix(c.midnight, "#ffffff", .05), "--paper-2:" + mix(c.midnight, "#ffffff", .1));
     if (hex(c.gold)) vars.push("--line:" + rgba(c.gold, .26), "--green-2:" + mix(c.gold, "#ffffff", .2), "--brass:" + mix(c.gold, "#ffffff", .12));
     // Cards: their own background, inner panels and border (these win over the shades worked out above)
     var cd = kit.cards || {};
@@ -83,17 +83,19 @@
 
     // The bottom navigation bar and Shop the Look are off until switched on here (Eric approves first)
     if (!/[?&]nav=1\b/.test(location.search)) root.classList.toggle("has-nav", !!(kit.nav && kit.nav.bar));
-    style("kit-vars", (faces || "") + (vars.length ? ":root{" + vars.join(";") + "}" : "") + rules.join(""));
+    // The overall Look: the dark velvet (as designed) or Ivory editorial (Kylie's mockup)
+    root.classList.toggle("theme-ivory", kit.look === "ivory");
+    style("kit-vars", (faces || "") + (vars.length ? ":root:root:root{" + vars.join(";") + "}" : "") + rules.join(""));
 
     // Page background (the light editorial screens keep their own)
     var bg = kit.background || {}, base = hex(c.midnight) ? c.midnight : "#141C2C", css = "";
     // A changed Midnight also tints the velvet behind every page (the original velvet keeps its texture)
-    if (!bg.kind && hex(c.midnight)) bg = { kind: "velvet" };
+    if (!bg.kind && hex(c.midnight) && kit.look !== "ivory") bg = { kind: "velvet" };
     if (bg.kind) {
       var shade = typeof bg.shade === "number" ? Math.max(0, Math.min(1, bg.shade)) : .9;
       var tex = bg.kind === "berry" ? "url(/brand/velvet-berry.jpg)" : bg.kind === "image" && bg.image ? "url(\"" + bg.image + "\")" : bg.kind === "velvet" ? "var(--photo-velvet, url(/brand/velvet-midnight.jpg))" : "";
       var col = bg.kind === "color" && hex(bg.color) ? bg.color : base;
-      css = "html body{background:" + (tex ? "linear-gradient(" + rgba(col, shade) + "," + rgba(col, Math.min(1, shade + .06)) + ")," + tex + " center top/cover fixed," : "") + col + "}";
+      css = "html:root:root body{background:" + (tex ? "linear-gradient(" + rgba(col, shade) + "," + rgba(col, Math.min(1, shade + .06)) + ")," + tex + " center top/cover fixed," : "") + col + "}";
     }
     style("kit-bg", css);
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { dom(kit); }); else dom(kit);

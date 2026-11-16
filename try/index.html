@@ -962,6 +962,43 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .lookitem .dots i{width:12px;height:12px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
   .lookitem a{font:600 11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);text-decoration:none;border:1px solid var(--gold);border-radius:99px;padding:8px 12px;white-space:nowrap}
   .looknote{font-size:12.5px;color:var(--muted);margin-top:18px}
+
+  /* ===== Ivory editorial look (Kylie's mockup). On only when the Brand kit's Look is "Ivory editorial" (html.theme-ivory).
+     Cream pages, espresso serif type, light cards with fine borders, photo cards with the title over the picture,
+     deep bronze buttons, and the bottom bar. Brand kit colors and fonts still apply on top. ===== */
+  html.theme-ivory{--bg:#F4EEE5;--paper:#FFFCF7;--paper-2:#EFE6DA;--ink:#2C2118;--ivory:#2C2118;--muted:#7B6A57;--oat:#6E5D4B;--line:rgba(74,54,32,.16);
+    --brass:#8A6B3E;--green:#5B3E26;--green-2:#714E31;--on-accent:#F7F1E8;--midnight:#2C2118;color-scheme:light}
+  html.theme-ivory body{background:var(--bg);color:var(--ink)}
+  html.theme-ivory .appbar{background:var(--bg)}
+  html.theme-ivory .appbar .barmono{filter:brightness(.55) saturate(1.3) contrast(1.2)}   /* the pale gold logo reads on cream */
+  html.theme-ivory .appbar button,html.theme-ivory #navBack{color:var(--ink)}
+  html.theme-ivory #s-home .hero .lockup::before,html.theme-ivory #s-pass .hero .lockup::before{display:none}
+  html.theme-ivory .btn.ghost{color:var(--green);box-shadow:inset 0 0 0 1.5px var(--green)}
+  html.theme-ivory .eyebrow,html.theme-ivory .kicker{color:var(--brass)}
+  /* Text that sits on a photo stays light */
+  html.theme-ivory .src,html.theme-ivory .src b,html.theme-ivory .src small,html.theme-ivory #splash h1,html.theme-ivory .hero .hl h1,html.theme-ivory .hero .lockup b,
+  html.theme-ivory .welcome .lockup b,html.theme-ivory .restyle,html.theme-ivory .peek{color:#F7F1E8}
+  html.theme-ivory .src small{color:#E9DFCF}
+  /* Home choices: photo card with the title laid over the picture */
+  html.theme-ivory .choice.tile{position:relative;display:block;background:#1d1611;box-shadow:0 14px 30px -18px rgba(44,33,24,.55)}
+  html.theme-ivory .choice.tile .tpic{aspect-ratio:4/3;height:auto;min-height:150px}
+  html.theme-ivory .choice.tile .tlbl{position:absolute;left:0;right:0;bottom:0;padding:44px 18px 16px;background:linear-gradient(180deg,rgba(29,22,17,0),rgba(29,22,17,.82) 55%)}
+  html.theme-ivory .choice.tile b{color:#F7F1E8}
+  html.theme-ivory .choice.tile small{color:#E9DFCF}
+  html.theme-ivory .choice.tile em{color:#E2C98F}
+  html.theme-ivory .choice.tile i{color:#F7F1E8;box-shadow:inset 0 0 0 1.5px rgba(247,241,232,.6)}
+  /* Light surfaces where the dark look used dark glass */
+  html.theme-ivory #loading{background:var(--bg) !important;color:var(--ink)}
+  html.theme-ivory .sheetbox{background:var(--paper);border-color:var(--line)}
+  html.theme-ivory .rating,html.theme-ivory .buyrow,html.theme-ivory .ptips li,html.theme-ivory .esscard{background:var(--paper)}
+  html.theme-ivory .tellcard{background:var(--paper)}
+  html.theme-ivory .seg,html.theme-ivory .hwheel,html.theme-ivory .foot .btn:disabled{background:var(--paper-2)}
+  html.theme-ivory .tipcard{background:var(--paper)}
+  html.theme-ivory .welcome .wl{color:var(--muted)}
+  html.theme-ivory .card,html.theme-ivory .act,html.theme-ivory .fix,html.theme-ivory details.buy,html.theme-ivory .scard span{box-shadow:0 1px 0 rgba(44,33,24,.04),inset 0 0 0 1px var(--line)}
+  /* The bottom bar on a cream page: a fine line instead of a heavy shadow */
+  html.theme-ivory .navbar{background:#FBF7F1;border-top:1px solid var(--line);box-shadow:0 -6px 18px -12px rgba(44,33,24,.25)}
+  html.theme-ivory .lookbar{background:#FBF7F1}
 </style>
 </head>
 <body>

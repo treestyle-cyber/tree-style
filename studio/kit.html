@@ -43,6 +43,13 @@
   .cardsample b{display:block;font:500 26px/1.1 var(--serif);margin:4px 0}
   .cardsample span{font-size:14px;color:var(--muted)}
   .cs-panel{border-radius:10px;padding:10px 12px;font-size:13px;color:var(--muted)}
+  .looks{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+  .lookopt{appearance:none;text-align:left;border:1.5px solid var(--line);border-radius:14px;padding:0;overflow:hidden;cursor:pointer;background:var(--paper-2);color:var(--ink);font:inherit}
+  .lookopt.on{border-color:var(--gold);box-shadow:0 0 0 2px rgba(184,156,107,.35)}
+  .lookopt .sw{display:flex;height:64px}
+  .lookopt .sw i{flex:1}
+  .lookopt b{display:block;padding:10px 14px 2px;font-size:15px}
+  .lookopt small{display:block;padding:0 14px 12px;color:var(--muted);font-size:12.5px;line-height:1.35}
   .role{background:var(--paper-2);border-radius:14px;padding:14px 16px;margin-bottom:12px}
   .rhead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
   .rhead b{font-size:16px}
@@ -122,6 +129,12 @@
 
     <div class="layout">
       <div>
+        <section class="sec">
+          <h2>Look</h2>
+          <div class="where">The overall style of the app. Pick one as a starting point, then adjust anything below. The website keeps its own look.</div>
+          <div class="looks" id="looks"></div>
+        </section>
+
         <section class="sec">
           <h2>Colors</h2>
           <div class="where">Change a color here and it changes everywhere it is used. Tap a swatch to pick, or type a hex code.</div>
@@ -334,6 +347,9 @@ function render() {
     + (g.kind && g.kind !== "color" ? `<label>Darkness <input type="range" id="bgShade" min="0" max="1" step=".02" value="${shade}"> <span id="bgShadeV">${Math.round(shade * 100)}%</span></label>` : "")
     + (g.kind ? "" : `<span>The original velvet. Pick another to change it.</span>`);
 
+  const LOOKS = [["", "Dark velvet (as designed)", "Midnight velvet, ivory type, gold buttons. Eric's current app.", ["#141C2C", "#1C2538", "#B89C6B", "#F3EEE7"]],
+    ["ivory", "Ivory editorial (Kylie's mockup)", "Cream pages, espresso serif type, photo cards with titles over the picture, bronze buttons and the bottom bar.", ["#F4EEE5", "#FFFCF7", "#5B3E26", "#2C2118"]]];
+  $("#looks").innerHTML = LOOKS.map(([v, n, d, sw]) => `<button class="lookopt ${(draft.look || "") === v ? "on" : ""}" data-look="${v}"><span class="sw">${sw.map(c => `<i style="background:${c}"></i>`).join("")}</span><b>${n}</b><small>${d}</small></button>`).join("");
   const nv = draft.nav || {};
   $("#navChips").innerHTML = [["", "Off (as now)"], ["on", "On"]].map(([v, l]) => `<button class="chip ${(nv.bar ? "on" : "") === v ? "on" : ""}" data-navbar="${v}">${l}</button>`).join("");
   const ic = draft.icons || {};
@@ -462,6 +478,10 @@ document.addEventListener("click", e => {
   const t = e.target.closest("button"); if (!t) return;
   if (t.dataset.set) { set(t.dataset.set, t.dataset.v); if (t.dataset.set === "background.kind" && !t.dataset.v) set("background", ""); }
   if (t.dataset.cr) set("colors." + t.dataset.cr, "");
+  if (t.dataset.look !== undefined) {   // Ivory editorial brings the bottom bar with it, as in the mockup
+    remember("look"); if (t.dataset.look) { draft.look = t.dataset.look; draft.nav = { bar: true }; } else { delete draft.look; delete draft.nav; }
+    set("_", "", true);
+  }
   if (t.dataset.navbar !== undefined) set("nav", t.dataset.navbar ? { bar: true } : "");
   if (t.dataset.rr) set("fonts." + t.dataset.rr, "");
   if (t.dataset.ccr) set("cards." + t.dataset.ccr, "");
