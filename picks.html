@@ -95,7 +95,7 @@
   <div class="intro">
     <div class="eyebrow">Early access · Shopping picks</div>
     <h1>The pieces we reach for</h1>
-    <p>Chosen by a Christmas tree designer: complete looks styled by TreeStyle, luxe ribbon by color, statement ornaments, greenery, flowers, toppers and the tools every stylist keeps on hand.</p>
+    <p>Chosen by a Christmas tree designer: complete trees styled by TreeStyle, with every piece to recreate them, and the tools every stylist keeps on hand.</p>
   </div>
 
   <nav class="colors" aria-label="Jump to a color" id="nav"></nav>
@@ -272,15 +272,16 @@ LOOKS.forEach(L => L.pieces.forEach(([asin, role, name, cols, kind]) => { const 
 const colorHtml = g => { const rows = TYPES.map(([t, label]) => { const items = ALL.filter(x => x.color === g.id && x.type === t); return items.length ?
   `<h3 class="kind">${label}</h3><div class="row">${items.map(x => x.html).join("")}</div>` : ""; }).join("");
   return rows ? `<section class="set" id="${g.id}"><h2><i class="dot" style="background:${g.dot}"></i>${esc(g.name)}</h2><p>${esc(g.blurb)}</p>${rows}</section>` : ""; };
-const NAV = [...(LOOKS.length ? [{ id:"looks", name:"Shop the look", dot:"#C9A961" }] : []), ...COLORS.map(g => ({ id:g.id, name:g.name, dot:g.dot })), { id:"essentials", name:"Essentials", dot:"#B8954F" }];
+const NAV = [...(LOOKS.length ? [{ id:"looks", name:"Shop the look", dot:"#C9A961" }] : []), { id:"essentials", name:"Stylist's essentials", dot:"#B8954F" }];
 document.getElementById("nav").innerHTML = NAV.map(s => `<a href="#${s.id}"><i style="background:${s.dot}"></i>${esc(s.name)}</a>`).join("");
 document.getElementById("sets").innerHTML =
   (LOOKS.length ? `<section class="set" id="looks"><h2>Shop the look</h2><p>Complete trees, styled by TreeStyle. Tap a tree for every piece to recreate it.</p><div class="lookgrid">${LOOKS.map(L => lookCard(L)).join("")}</div></section><div class="divider"></div>` : "")
-  + `<section class="set" id="colors" style="padding-bottom:0"><h2 style="font-size:clamp(32px,6vw,44px)">Shop by color</h2><p>Ribbon, ornaments, greenery, flowers, toppers and bases, gathered by color so everything you pick goes together.</p></section>`
-  + COLORS.map(colorHtml).join("")
   + `<section class="set" id="essentials"><h2>Stylist's essentials</h2><p>Every stylist keeps these on hand.</p><div class="grid" id="essGrid"></div></section>`;
-// Old category links (#statement, #ornaments...) land on Shop by color
-if (/^#(statement|ornaments|greenery|flowers|berries|bows|toppers|bases|categories)$/.test(location.hash)) location.replace("#colors");
+// The looks now cover each color, so older color and category links open the matching look (or the gallery)
+{ const OLD = { red:"look-red", green:"look-green", gold:"look-gold", silver:"look-winter", blue:"look-lodge" };
+  const h = location.hash.slice(1);
+  if (OLD[h]) history.replaceState(null, "", "#" + OLD[h]);
+  else if (/^(colors|natural|statement|ornaments|greenery|flowers|berries|bows|toppers|bases|categories)$/.test(h)) { history.replaceState(null, "", "#looks"); document.getElementById("looks")?.scrollIntoView(); } }
 document.body.insertAdjacentHTML("beforeend", `<div id="sheet" role="dialog" aria-modal="true"><div class="inner"></div></div>`);
 const sheet = document.getElementById("sheet");
 let PHOTOS = {};
