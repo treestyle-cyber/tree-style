@@ -13,6 +13,7 @@ const LAB_MODEL = "gemini-3-pro-image-preview";
 import { ribbonRef } from "../lib/ribbonref.js";
 import { RIBBON_STYLES } from "../lib/ribbonstyles.js";
 import { PICTURE_LIMITS } from "../lib/simple.js";
+import { clarifyPicture } from "../lib/clarify.js";
 // Ribbon (won in the Lab, Nov 12): previews kept coming back with bows instead of cascades. Every preview gets the designer's
 // own ribbon photo (Studio → Ribbon technique reference), and the ribbon is described as what it physically is.
 const RIBBON_SHAPE = `
@@ -144,7 +145,10 @@ export default async function handler(req, res) {
   // ribbon stayed on and the chosen Layered ribbons never appeared)
   const clearOld = ""; // the separate removal edit (remove_first) does this now; a blanket "remove every ribbon" also took off ribbon the plan kept
   const showNew = rs && !simple ? ` Make the new ribbon plainly visible from across the room: 6 to 10 separate ribbon spots spread over the whole tree, top to bottom and left to right, in the ribbon colors and widths the instructions name, never one continuous band. Place the ornaments, flowers and picks exactly as the instructions and map describe; the ribbon style changes only the ribbon.` : "";
-  const prompt = simple ? simplePrompt(brief, !!shape, rs) + (generic ? GENERIC : "") : clearOld + editPrompt(brief, revision, !!shape && !revision, variant === "shape2") + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + shapeText + showNew;
+  const clarify = variant === "clarify" && !revision;
+  const basePrompt = simple ? simplePrompt(brief, !!shape, rs) + (generic ? GENERIC : "") : clearOld + editPrompt(brief, revision, !!shape && !revision, variant === "shape2") + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + shapeText + showNew;
+  // Lab "clarify": the live picture instructions with the clarified wording, and shaping that opens branches but adds none
+  const prompt = clarify ? clarifyPicture(editPrompt(brief, revision, !!shape, true) + (generic ? GENERIC : "") + shapeText) : basePrompt;
   if (generic) retried = true;
   // Lab "ribbon6": when the plan says old ribbon or garland runs across the tree, take it off in its own small edit first
   // (Eric, Nov 14: asked inside the full decorating instructions, the model kept leaving it on), then decorate that picture.

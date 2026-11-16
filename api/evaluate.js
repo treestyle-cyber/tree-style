@@ -9,6 +9,7 @@ import { picksRule } from "../lib/picks.js";
 import { EVAL_SCHEMA, LOOK_SCHEMA, PLAN_SCHEMA, PLAN_SCHEMA_R6, REVISE_SCHEMA, DETAILS_SCHEMA } from "../lib/schema.js";
 import { RIBBON6_RULE, ribbonStyleKey } from "../lib/ribbonstyles.js";
 import { SIMPLE_GUIDE, PROCESS, HARD_LIMITS } from "../lib/simple.js";
+import { CLARIFY_GUIDE, clarifyBrief } from "../lib/clarify.js";
 
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
 
@@ -56,6 +57,7 @@ mockup.picks.small: small accents are not only berries: small flowers, crystal o
 
 // Lab test "simple": the same brief and plan notes with the pieces Eric's brief changed (ribbon style, ornament count, depth)
 function briefRules(mode, variant) {
+  if (variant === "clarify") return clarifyBrief(BRIEF_RULES(mode, variant));
   if (variant !== "simple") return BRIEF_RULES(mode, variant);
   let b = BRIEF_RULES(mode, "ribbon6");
   for (const [a, z] of [["describe the extra-large ones as set back toward the trunk, partly hidden by the branches in front of them", "describe the extra-large ones as set partway in toward the trunk, still clearly visible"],
@@ -109,7 +111,7 @@ ${CATS.map(c => `- ${c[0]}: ${c[2]}`).join("\n")}
 
   return `You are an expert Christmas tree designer helping someone who loves Christmas but is not a designer.
 
-${variant === "simple" ? SIMPLE_GUIDE + "\n\n" + PROCESS + "\n\n" + HARD_LIMITS : variant === "old" ? GUIDE_OLD_STYLES : GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) && variant !== "ribbon6" && variant !== "simple" ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}${(variant === "ribbon6" || variant === "simple") && part !== "look" ? "\n\n" + RIBBON6_RULE : ""}${variant === "picks" && part !== "look" ? "\n\n" + picksRule() : ""}
+${variant === "simple" ? SIMPLE_GUIDE + "\n\n" + PROCESS + "\n\n" + HARD_LIMITS : variant === "clarify" ? CLARIFY_GUIDE : variant === "old" ? GUIDE_OLD_STYLES : GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) && variant !== "ribbon6" && variant !== "simple" ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}${(variant === "ribbon6" || variant === "simple") && part !== "look" ? "\n\n" + RIBBON6_RULE : ""}${variant === "picks" && part !== "look" ? "\n\n" + picksRule() : ""}
 
 ${task}
 
