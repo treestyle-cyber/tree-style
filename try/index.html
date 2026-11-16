@@ -979,14 +979,26 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   html.theme-ivory .src,html.theme-ivory .src b,html.theme-ivory .src small,html.theme-ivory #splash h1,html.theme-ivory .hero .hl h1,html.theme-ivory .hero .lockup b,
   html.theme-ivory .welcome .lockup b,html.theme-ivory .restyle,html.theme-ivory .peek{color:#F7F1E8}
   html.theme-ivory .src small{color:#E9DFCF}
-  /* Home choices: photo card with the title laid over the picture */
-  html.theme-ivory .choice.tile{position:relative;display:block;background:#1d1611;box-shadow:0 14px 30px -18px rgba(44,33,24,.55)}
-  html.theme-ivory .choice.tile .tpic{aspect-ratio:4/3;height:auto;min-height:150px}
-  html.theme-ivory .choice.tile .tlbl{position:absolute;left:0;right:0;bottom:0;padding:44px 18px 16px;background:linear-gradient(180deg,rgba(29,22,17,0),rgba(29,22,17,.82) 55%)}
-  html.theme-ivory .choice.tile b{color:#F7F1E8}
-  html.theme-ivory .choice.tile small{color:#E9DFCF}
-  html.theme-ivory .choice.tile em{color:#E2C98F}
-  html.theme-ivory .choice.tile i{color:#F7F1E8;box-shadow:inset 0 0 0 1.5px rgba(247,241,232,.6)}
+  /* Ivory-only words and pieces (the dark look keeps its own) */
+  .iv,.tic{display:none !important}
+  html.theme-ivory .iv{display:inline !important}
+  html.theme-ivory .dk{display:none !important}
+  /* Home: the existing logo, "What can we help with?", side-by-side choice cards, a room photo fading in below */
+  html.theme-ivory #s-home .ttl{font-size:calc(34px * var(--s-headline,1));text-align:left;margin-top:10px}
+  html.theme-ivory #s-home .ttl::after{display:none}
+  html.theme-ivory #s-home .promise{text-align:left;margin-top:6px}
+  html.theme-ivory .choice.tile{display:grid;grid-template-columns:100px 1fr;gap:0;align-items:center;padding:10px;border-radius:16px;background:rgba(255,252,247,.94);box-shadow:0 12px 28px -20px rgba(44,33,24,.55),inset 0 0 0 1px var(--line)}
+  html.theme-ivory .choice.tile .tpic{width:100px;height:116px !important;aspect-ratio:auto;min-height:0;border-radius:11px;display:grid;place-items:center}
+  html.theme-ivory .tic{display:grid !important;place-items:center;width:56px;height:56px;border-radius:50%;background:rgba(255,252,247,.93);color:var(--ink);box-shadow:0 4px 12px rgba(0,0,0,.25)}
+  html.theme-ivory .tic svg{width:26px;height:26px}
+  html.theme-ivory .choice.tile .tlbl{position:static;padding:2px 2px 2px 14px;gap:6px;background:none;align-items:center}
+  html.theme-ivory .choice.tile em{display:none}
+  html.theme-ivory .choice.tile b{color:var(--ink);font-size:calc(24px * var(--s-headline,1));white-space:nowrap}
+  html.theme-ivory .choice.tile b::after{display:none}
+  html.theme-ivory .choice.tile small{display:block;color:var(--muted);font-size:calc(14px * var(--s-body,1));margin-top:6px}
+  html.theme-ivory .choice.tile i{width:auto;height:auto;box-shadow:none;background:none !important;color:var(--ink);font-size:0}
+  html.theme-ivory .choice.tile i::before{content:"›";font:300 30px/1 var(--sans)}
+  html.theme-ivory body.onhome::after{content:"";position:fixed;left:0;right:0;bottom:0;height:48vh;z-index:-1;pointer-events:none;background:linear-gradient(180deg,var(--bg),rgba(244,238,229,0) 38%),var(--photo-homebg, var(--photo-hero, none)) center bottom/cover}
   /* Light surfaces where the dark look used dark glass */
   html.theme-ivory #loading{background:var(--bg) !important;color:var(--ink)}
   html.theme-ivory .sheetbox{background:var(--paper);border-color:var(--line)}
@@ -1033,11 +1045,11 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
         <div class="resumebtns"><button class="btn" id="resumeBtn">Pick up where you left off</button><button class="btn ghost" id="resumeNew">Start a new tree</button></div>
       </div>
     </div>
-    <h2 class="ttl">What would you like to do?</h2>
-    <p class="promise">A designer's rating, a step-by-step plan, a shopping list and a picture of your finished tree.</p>
+    <h2 class="ttl"><span class="dk">What would you like to do?</span><span class="iv">What can we help with?</span></h2>
+    <p class="promise"><span class="dk">A designer's rating, a step-by-step plan, a shopping list and a picture of your finished tree.</span><span class="iv">A designer's eye for your Christmas tree.</span></p>
     <div class="tiles">
-      <button class="choice tile" data-mode="check" style="--img:var(--photo-check, url(/brand/velvet-berry.jpg))"><div class="tpic"></div><div class="tlbl"><span><em>Already decorating?</em><b>Check my tree</b><small>A designer's rating and the fixes that matter most</small></span><i>→</i></div></button>
-      <button class="choice tile" data-mode="design" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><div class="tpic"></div><div class="tlbl"><span><em>Starting fresh?</em><b>Design my tree</b><small>A complete design, even before your tree is up</small></span><i>→</i></div></button>
+      <button class="choice tile" data-mode="check" style="--img:var(--photo-check, url(/brand/velvet-berry.jpg))"><div class="tpic"><span class="tic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span></div><div class="tlbl"><span><em>Already decorating?</em><b>Check my tree</b><small><span class="dk">A designer's rating and the fixes that matter most</span><span class="iv">It's decorated, or partway there. Rate it and show me what would make it better.</span></small></span><i>→</i></div></button>
+      <button class="choice tile" data-mode="design" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><div class="tpic"><span class="tic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3.5 4.5 19h15z"/><path d="M12 19v2"/></svg></span></div><div class="tlbl"><span><em>Starting fresh?</em><b>Design my tree</b><small><span class="dk">A complete design, even before your tree is up</span><span class="iv">Starting fresh. Plan the whole tree and show me the finished look.</span></small></span><i>→</i></div></button>
     </div>
   </section>
 
