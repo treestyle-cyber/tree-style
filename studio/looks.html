@@ -87,8 +87,8 @@ async function design(L, say) {
   say("Imagining the bare tree in its room…");
   const base = await api("/api/base", { kind: "idea", idea: L.idea, facts: FACTS });
   const photo = await shrink(base.image, 1536), aspect = await aspectOf(photo);
-  say("Designing the tree in the " + L.style + " style around the look's pieces…");
-  const evalBody = { image: photo, mode: "design", style: L.style, theme: L.theme, facts: FACTS };
+  say("Designing the tree around the look's pieces…");
+  const evalBody = { image: photo, mode: "design", style: "themed", theme: L.theme, facts: FACTS };   // as in the app's idea path: the description is the style
   const [look, plan] = await Promise.all([api("/api/evaluate", { ...evalBody, part: "look" }), api("/api/evaluate", { ...evalBody, part: "plan" })]);
   const result = Object.assign(look, plan);
   say("Painting the preview…");

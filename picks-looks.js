@@ -1,13 +1,14 @@
 // Shop the Look (Shopping Picks page, /picks): one complete tree per look, a stylist's pick for every part of it.
 // Each look is designed by TreeStyle itself in the Studio (/studio/looks): a bare tree is imagined from `idea`, the plan
-// is written for `style` with `theme` (which names these pieces), and the preview is painted. The photo Eric picks is
+// is written as a Themed design with `theme` (which names these pieces; `style` is the feel it leans toward, as in the app's
+// idea path, where the description is the style), and the preview is painted. The photo Eric picks is
 // saved to the photo spot look_<id> and shown above the pieces on /picks.
 // Piece: [ASIN, role, name, colors, drawing kind]. ASINs come from the stylist picks (lib/picks.js).
 window.LOOKS = [
   { id: "lodge", name: "Lodge Plaid", style: "classic",
     blurb: "Red and green tartan, burgundy velvet and brass against natural cedar, finished with faux fur. Cozy, heritage and timeless.",
     idea: "A warm, wood-paneled living room with a leather armchair and a stone fireplace, classic and cozy.",
-    theme: "Lodge plaid: red and green tartan with burgundy velvet, antique brass and gold, natural cedar greenery, red berries and pinecones, a brown faux fur skirt",
+    theme: "Traditional lodge plaid tree: red and green tartan with burgundy velvet, antique brass and gold, natural cedar greenery, red berries and pinecones, a brown faux fur skirt",
     pieces: [
       ["B0FMYT3JQR", "Statement ribbon", "Red crushed velvet and tartan, reversible", ["red", "green"], "ribbon"],
       ["B0H5K3K8V1", "Second ribbon", "Red and green tartan velvet, 2.5 in", ["green", "red"], "ribbon"],
@@ -22,7 +23,7 @@ window.LOOKS = [
   { id: "red", name: "The Red Tree", style: "classic",
     blurb: "Every shade of red in velvet, glass and jewels, layered for depth, with an ivory fur skirt to let it glow.",
     idea: "A bright, classic living room with white walls, a white fireplace mantel and a soft neutral sofa.",
-    theme: "An all-red tree: red and gold jeweled ribbon with red velvet ribbon, extra large red ornaments and burgundy red glass finials, red velvet and red glass ornaments, Norfolk pine greenery, red glitter berries, a red velvet bow topper, an ivory faux fur skirt",
+    theme: "Traditional all-red tree, every piece red or red and gold: red and gold jeweled ribbon with red velvet ribbon, extra large red ornaments and burgundy red glass finials, red velvet and red glass ornaments, Norfolk pine greenery, red glitter berries, a red velvet bow topper, an ivory faux fur skirt",
     pieces: [
       ["B0BD95MLYL", "Statement ribbon", "Red and gold jeweled ribbon, 4 in", ["red", "gold"], "ribbon"],
       ["B0D1FTRCWT", "Second ribbon", "Red velvet ribbon, satin back, 2.5 in", ["red"], "ribbon"],
@@ -38,7 +39,7 @@ window.LOOKS = [
   { id: "green", name: "The Green Tree", style: "elegant",
     blurb: "Tone-on-tone greens: emerald velvet, sage glass and vintage finials, softened by magnolia and champagne berries.",
     idea: "A calm living room with warm oak floors, cream walls and a linen sofa, natural light.",
-    theme: "A tone-on-tone green tree: wide green velvet ribbon with green crushed velvet and gold diamond ribbon, green glass finials, sage rhinestone velvet and green mercury glass ornaments, small clear and gold ornaments, magnolia branches and cedar, champagne glitter berry twigs, a green velvet star topper, a natural rattan skirt",
+    theme: "Elegant tone-on-tone green tree, every piece green, sage or emerald with only small gold and clear accents: wide green velvet ribbon with green crushed velvet and gold diamond ribbon, green glass finials, sage rhinestone velvet and green mercury glass ornaments, small clear and gold ornaments, magnolia branches and cedar, champagne glitter berry twigs, a green velvet star topper, a natural rattan skirt",
     pieces: [
       ["B0HHJ2W8VW", "Statement ribbon", "Green velvet ribbon, 6 in", ["green"], "ribbon"],
       ["B0FHW8F896", "Second ribbon", "Green crushed velvet, gold diamonds, 4 in", ["green", "gold"], "ribbon"],
@@ -54,7 +55,7 @@ window.LOOKS = [
   { id: "gold", name: "Gold & Champagne", style: "elegant",
     blurb: "Embroidered gold, champagne velvet and mercury glass, with glittered bay leaves and poinsettias. Warm, glowing and elegant.",
     idea: "An elegant living room with ivory walls, a marble fireplace, brass lamps and a velvet sofa.",
-    theme: "Gold and champagne: gold embroidered velvet ribbon, champagne gold crushed velvet ribbon and white and gold filigree ribbon, champagne and silver mercury glass finials, extra large champagne ornaments, champagne gold etched mercury glass ornaments, small champagne gold ornaments, gold glitter bay leaf sprays and champagne curly branches, champagne poinsettias, a giant gold bow topper, an ivory faux fur skirt",
+    theme: "Elegant gold and champagne tree, every piece gold, champagne or ivory: gold embroidered velvet ribbon, champagne gold crushed velvet ribbon and white and gold filigree ribbon, champagne and silver mercury glass finials, extra large champagne ornaments, champagne gold etched mercury glass ornaments, small champagne gold ornaments, gold glitter bay leaf sprays and champagne curly branches, champagne poinsettias, a giant gold bow topper, an ivory faux fur skirt",
     pieces: [
       ["B0D83G93FM", "Statement ribbon", "Gold luxe velvet embroidery, 2.5 in", ["gold", "champagne"], "ribbon"],
       ["B0C9XZYRLK", "Second ribbon", "Champagne gold crushed velvet, 4 in", ["champagne"], "ribbon"],
@@ -71,7 +72,7 @@ window.LOOKS = [
   { id: "winter", name: "Silver & White Winter", style: "elegant",
     blurb: "Frosted pine, crystal icicles and silver mercury glass. A quiet, glittering winter white.",
     idea: "A bright, airy living room in soft whites and pale gray, with a white fireplace and sheer curtains, wintry daylight.",
-    theme: "Silver and white winter: metallic floral silver ribbon with silver swirl satin ribbon, clear glass icicle drops and large silver mercury glass finials, white and silver mercury glass ornaments, small clear ornaments, snowy frosted pine branches and clear crystal icicle picks, white holly berry stems, ivory glitter magnolias, a silver glitter star topper, an ivory faux fur skirt",
+    theme: "Elegant silver and white winter tree, every piece silver, white, clear or frosted: metallic floral silver ribbon with silver swirl satin ribbon, clear glass icicle drops and large silver mercury glass finials, white and silver mercury glass ornaments, small clear ornaments, snowy frosted pine branches and clear crystal icicle picks, white holly berry stems, ivory glitter magnolias, a silver glitter star topper, an ivory faux fur skirt",
     pieces: [
       ["B0DHLSCND4", "Statement ribbon", "Metallic floral silver ribbon, 4 in", ["silver", "white"], "ribbon"],
       ["B0B189R4CB", "Second ribbon", "Silver swirl satin ribbon, 2.5 in", ["silver", "white"], "ribbon"],
