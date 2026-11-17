@@ -615,7 +615,8 @@
       if (RB.base) ribbonPlan.marks.forEach(([x, y]) => mark(x, y, RB.base.color, `${colorName(RB.base.color)} ribbon`));
       if (RB.accent) (S.accentLoops || []).forEach((Lp, i) => { if (i % 2) return; mark(Lp.x, Lp.y, RB.accent.color, "accent ribbon"); });
       if (data.picks.floral.kind !== "none") S.all.filter(m => m.floral).forEach(m => mark(m.x + RW.base * .9, m.y + RW.base * .3, data.picks.floral.color, `${colorName(data.picks.floral.color)} ${data.picks.floral.kind}`));
-      data.ornaments.forEach(b => mark(b.x * W, b.y * H, b.color, `${colorName(b.color)} ${sizes[b.size]}" ornament`));
+      // The biggest ornaments say where they sit, since a cross reads as a point on the surface (Eric: the large ones weren't tucked)
+      data.ornaments.forEach(b => mark(b.x * W, b.y * H, b.color, `${colorName(b.color)} ${sizes[b.size]}" ornament${sizes[b.size] >= 6 ? ", set in" : ""}`));
     }
     function drawMap(o, opts = {}) {
       if (opts.diagram) return drawDiagram(o);
