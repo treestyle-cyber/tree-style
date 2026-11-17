@@ -109,7 +109,9 @@ export default async function handler(req, res) {
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
 
   const { image, brief, aspect, pieces, map, revision, shape, variant, generic, ribbonStyle, removeFirst } = req.body || {};
-  const pc = parseDataUrl(pieces), mp = parseDataUrl(map);
+  // Lab test "nomap" (Eric, Nov 17: flat red circles on a preview, flat green discs on the Evergreen with Envy photo): the
+  // image model sometimes paints the placement map's round ornament spots as flat discs, so the test sends no map at all
+  const pc = parseDataUrl(pieces), mp = variant === "nomap" ? null : parseDataUrl(map);
   let img = parseDataUrl(image);
   // Lab test "strip" (Eric, Nov 15): a new style starts from their own tree with every decoration taken off in one edit
   if (req.body?.strip && img) {
