@@ -1,9 +1,9 @@
 // Which copy of the site is this? The preview copy says so (tab title, plum background) and every
 // working page has a small switch to its live or preview counterpart. Testers on the live app never see it.
 (function () {
-  var LIVE = "tree-style.vercel.app";
+  var LIVE = "treestyle.net";   // the live site's address (tree-style.vercel.app and www.treestyle.net lead here too)
   var PREVIEW = "tree-style-git-ux-review-tree-style.vercel.app";   // the preview copy being reviewed now
-  var h = location.hostname, isLive = h === LIVE, isPrev = h !== LIVE && /^tree-style-.+-tree-style\.vercel\.app$/.test(h);   // branch links and one-build links alike
+  var h = location.hostname, isLive = h === LIVE || h === "www.treestyle.net" || h === "tree-style.vercel.app", isPrev = !isLive && /^tree-style-.+-tree-style\.vercel\.app$/.test(h);   // branch links and one-build links alike
   // Preview copies need no password (the server lets them through), so skip the password screen there
   if (isPrev && !/-git-main-/.test(h)) try { if (!sessionStorage.getItem("ts_pw")) sessionStorage.setItem("ts_pw", "preview"); } catch (e) {}
   if (!isLive && !isPrev) return;
