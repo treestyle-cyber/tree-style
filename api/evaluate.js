@@ -10,6 +10,7 @@ import { EVAL_SCHEMA, LOOK_SCHEMA, LOOK_SCHEMA_READ, PLAN_SCHEMA, PLAN_SCHEMA_R6
 import { RIBBON6_RULE, ribbonStyleKey } from "../lib/ribbonstyles.js";
 import { SIMPLE_GUIDE, PROCESS, HARD_LIMITS } from "../lib/simple.js";
 import { CLARIFY_GUIDE, clarifyBrief } from "../lib/clarify.js";
+import { CROWN_RULE, CROWN_TOPPER_NOTE, CROWN_BRIEF } from "../lib/crown.js";
 
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
 
@@ -58,6 +59,7 @@ mockup.picks.small: small accents are not only berries: small flowers, crystal o
 // Lab test "simple": the same brief and plan notes with the pieces Eric's brief changed (ribbon style, ornament count, depth)
 function briefRules(mode, variant) {
   if (variant === "clarify") return clarifyBrief(BRIEF_RULES(mode, variant));
+  if (variant === "crown") return BRIEF_RULES(mode, variant) + CROWN_BRIEF;
   if (variant !== "simple") return BRIEF_RULES(mode, variant);
   let b = BRIEF_RULES(mode, "ribbon6");
   for (const [a, z] of [["describe the extra-large ones as set back toward the trunk, partly hidden by the branches in front of them", "describe the extra-large ones as set partway in toward the trunk, still clearly visible"],
@@ -66,6 +68,11 @@ function briefRules(mode, variant) {
 }
 function planNotes(mode, variant) {
   let n = PLAN_NOTES(mode, true);
+  if (variant === "crown") {
+    const old = n.slice(n.indexOf("mockup.topper.style:"), n.indexOf("\n", n.indexOf("mockup.topper.style:")));
+    if (!old.startsWith("mockup.topper.style:")) throw new Error("crown: topper note not found");
+    return n.replace(old, CROWN_TOPPER_NOTE);
+  }
   if (variant !== "simple") return n;
   for (const [a, z] of [["mockup.ribbon_technique: cascade for OPEN trees, loops for DENSE. ", "mockup.ribbon_technique: one of the six ribbon styles (see RIBBON STYLE). "],
     ["mockup.ornaments: 12-26 NEW ornaments: a few xl in gaps, then l, mostly m and s.", "mockup.ornaments: as many NEW ornaments as this tree truly needs, which on a strong tree may be few or none ([]); when it needs many, a few xl in gaps, then l, mostly m and s."]]) { if (!n.includes(a)) throw new Error("planNotes: " + a.slice(0, 40)); n = n.replace(a, z); }
@@ -111,7 +118,7 @@ ${CATS.map(c => `- ${c[0]}: ${c[2]}`).join("\n")}
 
   return `You are an expert Christmas tree designer helping someone who loves Christmas but is not a designer.
 
-${variant === "simple" ? SIMPLE_GUIDE + "\n\n" + PROCESS + "\n\n" + HARD_LIMITS : variant === "clarify" ? CLARIFY_GUIDE : variant === "old" ? GUIDE_OLD_STYLES : GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) && variant !== "ribbon6" && variant !== "simple" ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}${(variant === "ribbon6" || variant === "simple") && part !== "look" ? "\n\n" + RIBBON6_RULE : ""}${variant === "picks" && part !== "look" ? "\n\n" + picksRule() : ""}
+${variant === "simple" ? SIMPLE_GUIDE + "\n\n" + PROCESS + "\n\n" + HARD_LIMITS : variant === "clarify" ? CLARIFY_GUIDE : variant === "crown" ? GUIDE + "\n\n" + CROWN_RULE : variant === "old" ? GUIDE_OLD_STYLES : GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) && variant !== "ribbon6" && variant !== "simple" ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}${(variant === "ribbon6" || variant === "simple") && part !== "look" ? "\n\n" + RIBBON6_RULE : ""}${variant === "picks" && part !== "look" ? "\n\n" + picksRule() : ""}
 
 ${task}
 
