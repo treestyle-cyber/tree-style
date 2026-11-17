@@ -7,11 +7,13 @@
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 <link rel="icon" type="image/png" href="/brand/favicon.png">
 <script src="/env.js"></script>
 <script src="/picks-looks.js"></script>
+<script src="/picks-draw.js"></script>
+<script src="/studio/story.js"></script>
 <script src="/try/engine.js?v=202610180545"></script>
 <script src="/try/guide.js?v=202610180545"></script>
 <style>
@@ -34,6 +36,15 @@
   .msg{font-size:14px;color:var(--muted);min-height:1.2em;margin:8px 0 0}
   .msg.err{color:#E6A0A0}
   .btn.small{padding:9px 14px;font-size:11px}
+  .story{margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+  .slides{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+  .slides img{width:150px;aspect-ratio:9/16;border-radius:10px;border:1px solid var(--line);flex:none;cursor:zoom-in}
+  .spotwrap{position:relative;display:inline-block;max-width:260px}
+  .spotwrap img{width:100%;display:block;border-radius:10px;cursor:crosshair}
+  .spot{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:var(--gold);color:#141C2C;font:600 14px/30px Inter,sans-serif;text-align:center;pointer-events:none;box-shadow:0 0 0 3px rgba(20,28,44,.6)}
+  .spot.on{outline:3px solid #fff}
+  .labels label{display:flex;gap:8px;align-items:center;margin:6px 0;cursor:pointer}
+  .labels input[type=text]{flex:1;min-width:0}
 </style>
 </head>
 <body>
@@ -103,9 +114,9 @@ function card(L) {
   const cur = photos["look_" + L.id];
   return `<section class="panel lk" id="lk-${L.id}"><div class="row" style="justify-content:space-between;align-items:flex-start">
     <div style="flex:1;min-width:240px"><div class="eyebrow">${esc(L.style)} style</div><h2>${esc(L.name)}</h2><p class="theme">${esc(L.theme)}</p>
-      <div class="row"><button class="btn small" data-go="${L.id}">Design it with TreeStyle</button></div><p class="msg" id="msg-${L.id}"></p></div>
+      <div class="row"><button class="btn small" data-go="${L.id}">Design it with TreeStyle</button>${cur ? `<button class="btn small ghost" data-story="${L.id}">Make story</button>` : ""}</div><p class="msg" id="msg-${L.id}"></p></div>
     <div>${cur ? `<img class="cur" src="${esc(cur)}" alt=""><div class="eyebrow" style="margin-top:6px">On the page now</div>` : `<div class="eyebrow">No photo yet</div>`}</div></div>
-    <div class="shots" id="shots-${L.id}"></div></section>`;
+    <div class="shots" id="shots-${L.id}"></div><div class="story" id="story-${L.id}" hidden></div></section>`;
 }
 function drawShots(id) {
   $("#shots-" + id).innerHTML = (shots[id] || []).map((s, i) => `<div class="shot${s.used ? " chosen" : ""}"><img src="${s.image}" alt="" data-open="${id}:${i}">
@@ -135,6 +146,46 @@ document.addEventListener("click", async e => {
       $("#msg-" + id).textContent = "On the Shopping Picks page now" + (/-git-|preview/.test(location.hostname) ? " (this preview copy; the live Studio's Use them on the live site brings it over)." : ".");
     } catch (err) { m.className = "msg err"; m.textContent = "Couldn't save: " + err.message; use.disabled = false; }
   }
+});
+
+// ---- Story slides (studio/story.js): the reveal, the details, the pieces, and Shop it, at 1080 × 1920
+const stories = {};   // look id -> { spots, pick, files }
+function storyPanel(id) {
+  const L = LOOKS.find(l => l.id === id), st = stories[id], el = $("#story-" + id), cur = photos["look_" + id];
+  el.hidden = false;
+  el.innerHTML = `<div class="eyebrow">Instagram story · 4 slides</div><div class="slides" id="slides-${id}"><p class="msg">Drawing the slides…</p></div>
+    <div class="row" style="align-items:flex-start;margin-top:12px;gap:18px">
+      <div class="spotwrap"><img src="${esc(cur)}" alt="" data-spotimg="${id}">${st.spots.map(([, x, y], i) => `<span class="spot${st.pick === i ? " on" : ""}" style="left:${x * 100}%;top:${y * 100}%">${i + 1}</span>`).join("")}</div>
+      <div class="labels" style="flex:1;min-width:240px"><p class="msg" style="margin-top:0">The details slide: pick a number, then tap the tree where that close-up should be. Edit the notes as you like.</p>
+        ${st.spots.map(([t], i) => `<label><input type="radio" name="pick-${id}" data-pick="${id}:${i}"${st.pick === i ? " checked" : ""}> ${i + 1} <input type="text" value="${esc(t)}" data-label="${id}:${i}"></label>`).join("")}
+        <div class="row" style="margin-top:10px"><button class="btn small" data-save="${id}">Save the 4 slides</button><button class="btn small ghost" data-redraw="${id}">Redraw</button></div>
+        <p class="msg">On your phone, Save opens the share sheet: choose Save Images. Add the link sticker on slide 4 in Instagram, linking to <span style="color:var(--gold)">/picks#look-${id}</span>.</p></div></div>`;
+  drawStory(id);
+}
+async function drawStory(id) {
+  const L = LOOKS.find(l => l.id === id), st = stories[id], box = $("#slides-" + id);
+  try {
+    const canvases = await TreeStory.make(L, photos["look_" + id], st.spots);
+    st.files = await Promise.all(canvases.map((c, i) => new Promise(ok => c.toBlob(b => ok(new File([b], `treestyle-${id}-story-${i + 1}.jpg`, { type: "image/jpeg" })), "image/jpeg", .92))));
+    box.innerHTML = canvases.map((c, i) => `<img src="${c.toDataURL("image/jpeg", .85)}" alt="Slide ${i + 1}" data-slide="${id}:${i}">`).join("");
+  } catch (e) { console.error(e); box.innerHTML = `<p class="msg err">Couldn't draw the slides: ${esc(e.message)}</p>`; }
+}
+document.addEventListener("click", async e => {
+  const mk = e.target.closest("[data-story]"), sv = e.target.closest("[data-save]"), rd = e.target.closest("[data-redraw]"), si = e.target.closest("[data-spotimg]"), sl = e.target.closest("[data-slide]");
+  if (mk) { const id = mk.dataset.story; stories[id] ||= { spots: TreeStory.spotsFor(LOOKS.find(l => l.id === id)), pick: 0 }; storyPanel(id); }
+  if (rd) drawStory(rd.dataset.redraw);
+  if (sl) { const [id, i] = sl.dataset.slide.split(":"); const w = window.open(); if (w) w.document.write(`<body style="margin:0;background:#000"><img src="${sl.src}" style="max-height:100vh;display:block;margin:auto"></body>`); }
+  if (si) { const id = si.dataset.spotimg, st = stories[id], r = si.getBoundingClientRect();
+    st.spots[st.pick][1] = (e.clientX - r.left) / r.width; st.spots[st.pick][2] = (e.clientY - r.top) / r.height;
+    storyPanel(id); }
+  if (sv) { const files = stories[sv.dataset.save].files || [];
+    if (navigator.canShare && navigator.canShare({ files })) { try { await navigator.share({ files }); } catch {} return; }
+    files.forEach(f => { const a = document.createElement("a"); a.href = URL.createObjectURL(f); a.download = f.name; document.body.appendChild(a); a.click(); a.remove(); }); }
+});
+document.addEventListener("change", e => {
+  const pk = e.target.closest("[data-pick]"), lb = e.target.closest("[data-label]");
+  if (pk) { const [id, i] = pk.dataset.pick.split(":"); stories[id].pick = +i; storyPanel(id); }
+  if (lb) { const [id, i] = lb.dataset.label.split(":"); stories[id].spots[+i][0] = lb.value; drawStory(id); }
 });
 
 function gate(err) { $("#app").hidden = true; $("#gate").hidden = false; $("#gateErr").textContent = err || ""; }
