@@ -66,5 +66,18 @@
       "source": "/try/:screen(home|start|idea|photo|details|style|reveal|results|fixes|plan|partner|score|shop|pass)",
       "destination": "/try/"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "tree-style.vercel.app"
+        }
+      ],
+      "destination": "https://treestyle.net/$1",
+      "permanent": false
+    }
   ]
 }
