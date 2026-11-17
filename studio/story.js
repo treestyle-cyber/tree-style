@@ -38,13 +38,17 @@
   }
   const firstSentence = s => (String(s).match(/^[^.!?]*[.!?]/) || [s])[0];
 
-  // 1 · The reveal: the whole tree, its name and one line
+  // 1 \u00B7 The reveal: the whole tree, its name and one line
   async function reveal(L, p) {
     const [c, g] = await base();
     const top = 80 + await logo(g, 80, 340) + 36;
     const ph = Math.min(1240, 960 * p.height / p.width), pw = ph * p.width / p.height;
     photoIn(g, p, (W - pw) / 2, top, pw, ph);
-    text(g, "AI PREVIEW BY TREESTYLE", W / 2, top + ph - 30, { font: `600 22px ${SANS}`, color: "rgba(244,238,227,.85)", track: 4 });
+    { let fs = 22; g.font = `600 ${fs}px ${SANS}`; while (fs > 14 && g.measureText("AI PREVIEW \u00B7 DESIGNED WITH THE TREESTYLE APP").width * 1.25 > pw - 60) { fs--; g.font = `600 ${fs}px ${SANS}`; }
+      text(g, "AI PREVIEW \u00B7 DESIGNED WITH THE TREESTYLE APP", W / 2, top + ph - 30, { font: `600 ${fs}px ${SANS}`, color: "rgba(244,238,227,.85)", track: 3 }); }
+    // the sneak-peek ribbon across the top of the photo
+    g.fillStyle = GOLD; rr(g, W / 2 - 190, top - 26, 380, 52, 26); g.fill();
+    text(g, "SNEAK PEEK", W / 2, top + 10, { font: `600 26px ${SANS}`, color: MID, track: 8 });
     let y = top + ph + 116;
     for (const line of wrap(g, L.name, 960, `500 104px ${SERIF}`)) { text(g, line, W / 2, y, { font: `500 104px ${SERIF}` }); y += 100; }
     y += 6;
@@ -54,10 +58,10 @@
     return c;
   }
 
-  // 2 · The details: three close crops of the photo, each with a short designer's note
+  // 2 \u00B7 The details: three close crops of the photo, each with a short designer's note
   async function details(L, p, spots) {
     const [c, g] = await base();
-    text(g, "THE DETAILS", W / 2, 150, { font: `600 28px ${SANS}`, color: GOLD, track: 8 });
+    text(g, "SNEAK PEEK \u00B7 THE DETAILS", W / 2, 150, { font: `600 28px ${SANS}`, color: GOLD, track: 8 });
     text(g, L.name, W / 2, 230, { font: `500 64px ${SERIF}` });
     const fw = 960, fh = 500, gap = 40, top = 290;
     spots.slice(0, 3).forEach(([label, fx, fy], i) => {
@@ -73,10 +77,10 @@
     return c;
   }
 
-  // 3 · The pieces: the look's key pieces, drawn in their colors
+  // 3 \u00B7 The pieces: the look's key pieces, drawn in their colors
   async function pieces(L) {
     const [c, g] = await base();
-    text(g, "THE PIECES", W / 2, 170, { font: `600 28px ${SANS}`, color: GOLD, track: 8 });
+    text(g, "SHOP IT EARLY", W / 2, 170, { font: `600 28px ${SANS}`, color: GOLD, track: 8 });
     text(g, L.name, W / 2, 260, { font: `500 76px ${SERIF}` });
     const list = L.pieces.filter(p => !/the tree/i.test(p[1])).slice(0, 6);
     const rowH = 220, top = 360;
@@ -92,22 +96,25 @@
       let ly = y + 136;
       for (const line of wrap(g, name, 620, `400 40px ${SANS}`).slice(0, 2)) { text(g, line, 370, ly, { font: `400 40px ${SANS}`, align: "left" }); ly += 50; }
     }
-    text(g, "Every piece is on the shop list", W / 2, top + list.length * rowH + 90, { font: `italic 500 46px ${SERIF}`, color: MUTED });
+    text(g, "Every piece, ready to shop now", W / 2, top + list.length * rowH + 90, { font: `italic 500 46px ${SERIF}`, color: MUTED });
     return c;
   }
 
-  // 4 · Shop it: room for Instagram's link sticker, and the disclosure
+  // 4 \u00B7 Shop it: room for Instagram's link sticker, and the disclosure
   async function shop(L, p) {
     const [c, g] = await base();
     const top = 110 + await logo(g, 110, 340) + 50;
     const pw = 540, ph = pw * p.height / p.width;
     photoIn(g, p, (W - pw) / 2, top, pw, ph, 22);
     let y = top + ph + 140;
-    text(g, "Tap to shop", W / 2, y, { font: `500 96px ${SERIF}` });
-    text(g, "every piece", W / 2, y + 96, { font: `italic 500 96px ${SERIF}`, color: GOLD });
+    text(g, "Shop it early", W / 2, y, { font: `500 96px ${SERIF}` });
+    text(g, "before the app launches", W / 2, y + 86, { font: `italic 500 64px ${SERIF}`, color: GOLD });
     // the link sticker goes here, added in Instagram (a soft frame shows where)
-    const sy = y + 170;
+    const sy = y + 150;
     g.setLineDash([14, 12]); g.strokeStyle = "rgba(201,169,97,.35)"; g.lineWidth = 2; rr(g, (W - 640) / 2, sy, 640, 150, 75); g.stroke(); g.setLineDash([]);
+    const ly = Math.min(sy + 260, H - 270);
+    text(g, "TreeStyle designs your tree from a photo.", W / 2, ly, { font: `400 34px ${SANS}`, color: MUTED });
+    text(g, "Coming soon. Early access on our page.", W / 2, ly + 50, { font: `400 34px ${SANS}`, color: MUTED });
     text(g, "As an Amazon Associate, TreeStyle earns from qualifying purchases.", W / 2, H - 120, { font: `400 26px ${SANS}`, color: "rgba(244,238,227,.6)" });
     return c;
   }

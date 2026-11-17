@@ -84,6 +84,9 @@
   .row::-webkit-scrollbar{display:none}
   .row .card{flex:none;width:158px;scroll-snap-align:start}
   section.set h2 .dot{display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:10px;vertical-align:2px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
+  .early{display:block;margin:4px 16px 0;padding:16px 18px;border:1px solid rgba(201,169,97,.45);border-radius:16px;background:rgba(201,169,97,.08);text-decoration:none;color:inherit}
+  .early b{display:block;font:600 22px/1.15 var(--serif);margin-bottom:4px}
+  .early span{font-size:14px;color:var(--gold)}
   .divider{margin:34px 0 0;padding-top:8px;border-top:1px solid rgba(201,169,97,.2)}
   .disclose{margin:40px 0 0;padding-top:20px;border-top:1px solid rgba(201,169,97,.2);color:var(--muted);font-size:13px;line-height:1.6}
   .disclose a{color:var(--gold)}
@@ -94,9 +97,9 @@
 
 <main class="picks">
   <div class="intro">
-    <div class="eyebrow">Early access · Shopping picks</div>
-    <h1>The pieces we reach for</h1>
-    <p>Chosen by a Christmas tree designer: complete trees styled by TreeStyle, with every piece to recreate them, and the tools every stylist keeps on hand.</p>
+    <div class="eyebrow">Sneak peek · Coming soon</div>
+    <h1>Trees designed by the TreeStyle app</h1>
+    <p>A first look before launch: complete trees designed by TreeStyle, the app that styles your tree from a photo. Shop every piece early, while the best ribbon and ornaments are in stock, and get early access to the app.</p>
   </div>
 
   <nav class="colors" aria-label="Jump to a color" id="nav"></nav>
@@ -222,7 +225,7 @@ const essCard = (e, photos) => { const pic = photos && photos["ess_" + e.id];
 
 const lookPiece = ([asin, role, name, cols, kind]) => `<li>${svg(kind, cols).replace('width="96" height="72"', 'width="48" height="36"')}<div class="pn"><small>${esc(role)}</small><span>${esc(name)}</span></div>${shopBtn(asin.startsWith("q:") ? search(asin.slice(2)) : dp(asin))}</li>`;   // "q:words": a tagged store search
 const lookHtml = L => `<article class="look"><div class="lookpic" data-look="${L.id}"><p class="soon">TreeStyle is styling this tree.</p></div>
-  <div class="lookbody"><div class="eyebrow">Shop the look · ${L.pieces.length} pieces</div><h3>${esc(L.name)}</h3><p>${esc(L.blurb)}</p><ul class="plist">${L.pieces.map(lookPiece).join("")}</ul></div></article>`;
+  <div class="lookbody"><div class="eyebrow">Sneak peek · ${L.pieces.length} pieces to shop early</div><h3>${esc(L.name)}</h3><p>${esc(L.blurb)}</p><ul class="plist">${L.pieces.map(lookPiece).join("")}</ul></div></article>`;
 // The gallery: one card per look (photo, name); tapping opens the full look with every piece in a sheet
 const lookCard = (L, small) => `<button class="lookcard" ${small ? "" : `id="look-${L.id}"`} data-open="${L.id}"><div class="lookpic" data-look="${L.id}"><p class="soon">Styling…</p></div><div class="lc"><b>${esc(L.name)}</b>${small ? "" : `<span class="go">Shop this look ›</span>`}</div></button>`;
 const LOOKS = window.LOOKS || [];
@@ -254,7 +257,7 @@ const colorHtml = g => { const rows = TYPES.map(([t, label]) => { const items = 
 const NAV = [...(LOOKS.length ? [{ id:"looks", name:"Shop the look", dot:"#C9A961" }] : []), { id:"essentials", name:"Stylist's essentials", dot:"#B8954F" }];
 document.getElementById("nav").innerHTML = NAV.map(s => `<a href="#${s.id}"><i style="background:${s.dot}"></i>${esc(s.name)}</a>`).join("");
 document.getElementById("sets").innerHTML =
-  (LOOKS.length ? `<section class="set" id="looks"><h2>Shop the look</h2><p>Complete trees, styled by TreeStyle. Tap a tree for every piece to recreate it.</p><div class="lookgrid">${LOOKS.map(L => lookCard(L)).join("")}</div></section><div class="divider"></div>` : "")
+  (LOOKS.length ? `<section class="set" id="looks"><h2>Shop the look</h2><p>Designed with the TreeStyle app. Tap a tree to shop every piece early.</p><div class="lookgrid">${LOOKS.map(L => lookCard(L)).join("")}</div></section><div class="divider"></div>` : "")
   + `<section class="set" id="essentials"><h2>Stylist's essentials</h2><p>Every stylist keeps these on hand.</p><div class="grid" id="essGrid"></div></section>`;
 // The looks now cover each color, so older color and category links open the matching look (or the gallery)
 { const OLD = { red:"look-red", green:"look-green", gold:"look-gold", silver:"look-winter", blue:"look-lodge" };
@@ -266,7 +269,7 @@ const sheet = document.getElementById("sheet");
 let PHOTOS = {};
 function openLook(id, push) {
   const L = LOOKS.find(x => x.id === id); if (!L) return;
-  sheet.querySelector(".inner").innerHTML = `<button class="x" aria-label="Close">×</button>${lookHtml(L)}<div class="others"><h4>More looks</h4><div class="row">${LOOKS.filter(x => x.id !== id).map(x => lookCard(x, true)).join("")}</div></div>`;
+  sheet.querySelector(".inner").innerHTML = `<button class="x" aria-label="Close">×</button>${lookHtml(L)}<a class="early" href="/"><b>Want TreeStyle to design yours?</b><span>The app styles your own tree from a photo. Get early access ›</span></a><div class="others"><h4>More looks</h4><div class="row">${LOOKS.filter(x => x.id !== id).map(x => lookCard(x, true)).join("")}</div></div>`;
   showLooks(PHOTOS); sheet.classList.add("on"); sheet.scrollTop = 0; document.body.classList.add("locked");
   if (push) history.pushState(null, "", "#look-" + id); else history.replaceState(null, "", "#look-" + id);
 }
