@@ -38,11 +38,16 @@ async function readSlots(prefix) {
     return out;
   }
 }
+const LOOK_SLOT = /^look_(check|lodge|fruit|black|red|green|gold|winter)$/;   // the eight Shop the look trees (not the kept older versions)
 async function latest() {
   if (!blobConnected()) return null;
   const live = await readSlots("brand/photos/");
   // A preview copy shows the live photos plus any it picked itself
-  return IS_PREVIEW ? { ...live, ...(await readSlots(envPath("brand/photos/"))) } : live;
+  if (IS_PREVIEW) return { ...live, ...(await readSlots(envPath("brand/photos/"))) };
+  // Shop the look photos are painted in the preview Studio: the live site shows the newest one from either copy
+  const prev = await readSlots("preview/brand/photos/").catch(() => ({}));
+  for (const [slot, b] of Object.entries(prev)) if (LOOK_SLOT.test(slot) && (!live[slot] || t(b) > t(live[slot]))) live[slot] = b;
+  return live;
 }
 // Photos picked in the preview Studio that are newer than the live ones (they don't go live on their own)
 async function previewPicks() {
