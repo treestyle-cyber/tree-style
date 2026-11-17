@@ -81,7 +81,7 @@ RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or 
 The result must look like an ordinary real photograph of the same tree in the same room, not an illustration, with no circles, rings, outlines or other markings drawn on it.`;
 }
 
-async function callGemini(model, img, prompt, aspect, pieces, map, ref, plainFlowers, refNote = RIBBON_REF_NOTE) {
+async function callGemini(model, img, prompt, aspect, pieces, map, ref, plainFlowers, refNote = RIBBON_REF_NOTE, diagram = false) {
   // (map is skipped for small revisions: the current preview already shows the placements)
   const generationConfig = { responseModalities: ["IMAGE"] };
   if (aspect) generationConfig.imageConfig = { aspectRatio: aspect };
@@ -92,7 +92,8 @@ async function callGemini(model, img, prompt, aspect, pieces, map, ref, plainFlo
       contents: [{ parts: [
         { text: prompt },
         { inline_data: { mime_type: img.mediaType, data: img.data } },
-        ...(map ? [{ text: "Placement map (reference only, do not edit or copy its drawing style): the same photo with soft colored blobs showing WHERE each addition goes: " + (refNote === RIBBON_REF_NOTE ? "ovals in the ribbon color = a spot where a piece of wide ribbon spills or billows out of the branches (never a bow);" : "ovals in the ribbon color = a spot where ribbon goes, in the ribbon style described;") + " small blobs in the accent ribbon color = small accent loops; " + (plainFlowers ? "blobs in the flower color = flowers" : "blobs with a yellow center = flowers") + "; round blobs = ornaments in that color at that size. The blobs are position hints only: the finished photo must contain NO circles, rings, outlines, dots, blobs, labels or markings of any kind, only real decorations. Follow its positions and spacing so the result matches the homeowner's step-by-step guide, and don't add groupings or extra pieces the map and instructions don't show. If the written instructions and the map disagree about where something goes, follow the map." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : []),
+        ...(map && diagram ? [{ text: "Placement diagram (a guide, not a photo): a drawing of this tree's outline as a dashed triangle on plain paper, with a small colored cross and a short label at each spot where an addition goes (the ribbon spots, flowers, and each ornament with its color and size). It lines up with the photo, so a cross at a spot in the diagram means that piece goes at the same spot on the tree. Use it only for positions: the finished photo contains no crosses, lines, dashes, labels, text or markings of any kind, only real, photorealistic decorations. Follow its positions and spacing so the result matches the homeowner's step-by-step guide, and don't add groupings or extra pieces the diagram and instructions don't show. If the written instructions and the diagram disagree about where something goes, follow the diagram." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : []),
+        ...(map && !diagram ? [{ text: "Placement map (reference only, do not edit or copy its drawing style): the same photo with soft colored blobs showing WHERE each addition goes: " + (refNote === RIBBON_REF_NOTE ? "ovals in the ribbon color = a spot where a piece of wide ribbon spills or billows out of the branches (never a bow);" : "ovals in the ribbon color = a spot where ribbon goes, in the ribbon style described;") + " small blobs in the accent ribbon color = small accent loops; " + (plainFlowers ? "blobs in the flower color = flowers" : "blobs with a yellow center = flowers") + "; round blobs = ornaments in that color at that size. The blobs are position hints only: the finished photo must contain NO circles, rings, outlines, dots, blobs, labels or markings of any kind, only real decorations. Follow its positions and spacing so the result matches the homeowner's step-by-step guide, and don't add groupings or extra pieces the map and instructions don't show. If the written instructions and the map disagree about where something goes, follow the map." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : []),
         ...(pieces ? [{ text: "Reference only (do not edit this one): the homeowner's own special pieces (it may be a board of several photos side by side; the board itself is not part of the scene). Show these exact pieces on the tree where the instructions place them." }, { inline_data: { mime_type: pieces.mediaType, data: pieces.data } }] : []),
         ...(ref ? [{ text: refNote }, { inline_data: { mime_type: ref.mediaType, data: ref.data } }] : [])
       ] }],
@@ -163,9 +164,9 @@ export default async function handler(req, res) {
     else console.error("RIBBON_CLEAR_FAILED", c.status, JSON.stringify(c.body?.candidates?.[0]?.finishReason || c.body?.error?.message || "").slice(0, 200));
   }
   for (const model of models) {
-    let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote);
+    let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, variant === "diagram");
     // Some models reject imageConfig; retry once without it.
-    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, prompt, null, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote);
+    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, prompt, null, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, variant === "diagram");
     if (!out.ok) {
       lastErr = out.body?.error?.message || `Gemini error ${out.status}`;
       // Model not available, or no quota for it on this account: try the next one
@@ -182,7 +183,7 @@ export default async function handler(req, res) {
       const fluke = /NO_IMAGE|no image returned/i.test(String(why));
       if (!retried && (fluke || /SAFETY|PROHIBIT|RECITATION|BLOCK|IMAGE_OTHER|OTHER|copyright|trademark/i.test(String(why)))) {
         retried = true;
-        const again = await callGemini(model, img, fluke ? prompt : prompt + GENERIC, ar, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote);
+        const again = await callGemini(model, img, fluke ? prompt : prompt + GENERIC, ar, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, variant === "diagram");
         const p2 = again.body?.candidates?.[0]?.content?.parts || [], pic2 = p2.find(p => p.inlineData || p.inline_data);
         if (again.ok && pic2) { const d2 = pic2.inlineData || pic2.inline_data; return res.status(200).json({ image: `data:${d2.mimeType || d2.mime_type || "image/png"};base64,${d2.data}`, _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !fluke, retried: true } }); }
         console.error("RENDER_REFUSED_AGAIN", JSON.stringify({ model, why: String(again.body?.candidates?.[0]?.finishReason || again.status).slice(0, 200) }));

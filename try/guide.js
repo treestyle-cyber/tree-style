@@ -597,7 +597,28 @@
     // A plain position map for the image model: the photo with soft colored marks where things go.
     // opts.plainFlowers (Lab variant "map2", Nov 12): flowers as a plain blob in their own color, without the yellow center
     // that kept showing up in previews as yellow discs
+    // opts.diagram (Lab variant "diagram", Nov 17): the same positions drawn as a diagram, not over their photo: the tree's
+    // outline on plain paper with a small colored cross and a short label for each piece, so nothing in it can be blended
+    // into the photo as a painted disc (Eric saw flat red circles and flat green discs)
+    function drawDiagram(o) {
+      const S = scene, sizes = ORN_IN(data), u = Math.max(W, H) / 1000;
+      o.globalAlpha = 1; o.fillStyle = "#F6F3EC"; o.fillRect(0, 0, W, H);
+      const A = [data.cone.apex[0] * W, data.cone.apex[1] * H], L = [data.cone.left[0] * W, data.cone.left[1] * H], R = [data.cone.right[0] * W, data.cone.right[1] * H];
+      o.strokeStyle = "#8A8478"; o.lineWidth = 2.5 * u; o.setLineDash([10 * u, 7 * u]);
+      o.beginPath(); o.moveTo(A[0], A[1]); o.lineTo(L[0], L[1]); o.lineTo(R[0], R[1]); o.closePath(); o.stroke(); o.setLineDash([]);
+      o.font = `600 ${Math.round(15 * u)}px sans-serif`; o.textBaseline = "middle";
+      const mark = (x, y, col, label) => {
+        const k = 9 * u; o.strokeStyle = col; o.lineWidth = 3.2 * u;
+        o.beginPath(); o.moveTo(x - k, y); o.lineTo(x + k, y); o.moveTo(x, y - k); o.lineTo(x, y + k); o.stroke();
+        if (label) { o.fillStyle = "#3A352E"; o.fillText(label, x + k + 3 * u, y); }
+      };
+      if (RB.base) ribbonPlan.marks.forEach(([x, y]) => mark(x, y, RB.base.color, `${colorName(RB.base.color)} ribbon`));
+      if (RB.accent) (S.accentLoops || []).forEach((Lp, i) => { if (i % 2) return; mark(Lp.x, Lp.y, RB.accent.color, "accent ribbon"); });
+      if (data.picks.floral.kind !== "none") S.all.filter(m => m.floral).forEach(m => mark(m.x + RW.base * .9, m.y + RW.base * .3, data.picks.floral.color, `${colorName(data.picks.floral.color)} ${data.picks.floral.kind}`));
+      data.ornaments.forEach(b => mark(b.x * W, b.y * H, b.color, `${colorName(b.color)} ${sizes[b.size]}" ornament`));
+    }
     function drawMap(o, opts = {}) {
+      if (opts.diagram) return drawDiagram(o);
       o.globalAlpha = 1; o.drawImage(img, 0, 0, W, H);
       o.fillStyle = "rgba(255,255,255,.25)"; o.fillRect(0, 0, W, H);
       const u = G.unit, sizes = ORN_IN(data), S = scene;
