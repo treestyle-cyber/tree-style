@@ -5,6 +5,8 @@
 // GET  /api/brand?img=<slot>           -> the chosen image itself (used when the store is private)
 // POST /api/brand { action:"generate", prompt, aspect }   -> { image: dataURL }            (password)
 // POST /api/brand { action:"use", slot, image }           -> { url }                       (password)
+// GET  /api/brand?kit=1                -> { kit, updated }   the Brand kit saved in the Studio (colors, fonts, logos), read-only here
+// GET  /api/brand?kitfile=<path>       -> a file the Brand kit uses (font, logo) when the store is private
 import { put, list, get } from "@vercel/blob";
 import { blobToken, blobVarNames, blobConnected, IS_PREVIEW, envPath } from "../lib/blob.js";
 const tok = () => (blobToken() ? { token: blobToken() } : {});
@@ -74,6 +76,29 @@ function cleanItems(items) {
   })).filter(x => x.label);
 }
 
+// ---- Brand kit (read-only on this copy): the kit is edited on the Studio's Brand kit page and saved as one small
+// JSON file (newest wins) plus the files it points to. Same storage as the Brand kit page, so both read one kit.
+const KIT_DIR = "brand/kit/settings/";
+async function newestIn(prefix) {
+  let best = null, cursor;
+  do {
+    const page = await list({ ...tok(), prefix, cursor, limit: 1000 });
+    for (const b of page.blobs) if (!best || t(b) > t(best)) best = b;
+    cursor = page.hasMore ? page.cursor : null;
+  } while (cursor);
+  return best;
+}
+async function readBlob(b) {
+  const r = await get(b.pathname, { ...tok(), access: "private" }).catch(() => null);
+  if (r && r.stream) return Buffer.from(await new Response(r.stream).arrayBuffer());
+  return Buffer.from(await (await fetch(b.url)).arrayBuffer());
+}
+// A preview copy uses its own kit once one has been saved on a preview, otherwise the live kit
+async function kitBlob() {
+  if (!blobConnected()) return null;
+  return (IS_PREVIEW && await newestIn("preview/" + KIT_DIR)) || await newestIn(KIT_DIR);
+}
+
 async function generate(prompt, aspect, base, map) {
   const ref = await ribbonRef();
   let lastErr = "";
@@ -101,6 +126,29 @@ async function generate(prompt, aspect, base, map) {
 }
 
 export default async function handler(req, res) {
+  if (req.method === "GET" && req.query?.kit) {
+    res.setHeader("cache-control", "public, max-age=30");
+    try {
+      const b = await kitBlob();
+      if (!b) return res.status(200).json({ kit: null });
+      return res.status(200).json({ kit: JSON.parse((await readBlob(b)).toString("utf8")), updated: b.uploadedAt });
+    } catch (e) { return res.status(200).json({ kit: null, error: String(e.message || e) }); }
+  }
+  if (req.method === "GET" && req.query?.kitfile) {
+    const path = String(req.query.kitfile);
+    if (!/^(preview\/)?brand\/kit\/files\/[\w.-]+$/.test(path)) return res.status(400).end();
+    const r = await get(path, { ...tok(), access: "private" }).catch(() => null);
+    let buf = r && r.stream ? Buffer.from(await new Response(r.stream).arrayBuffer()) : null;
+    if (!buf) {
+      const hit = (await list({ ...tok(), prefix: path, limit: 1 }).catch(() => ({ blobs: [] }))).blobs[0];
+      if (hit) buf = Buffer.from(await (await fetch(hit.url)).arrayBuffer());
+    }
+    if (!buf) return res.status(404).end();
+    res.setHeader("cache-control", "public, max-age=31536000, immutable");
+    const ext = path.split(".").pop();
+    res.setHeader("content-type", { png: "image/png", jpg: "image/jpeg", webp: "image/webp", svg: "image/svg+xml", woff2: "font/woff2", woff: "font/woff", otf: "font/otf", ttf: "font/ttf" }[ext] || "application/octet-stream");
+    return res.status(200).send(buf);
+  }
   if (req.method === "GET") {
     const slot = String(req.query?.img || "");
     try {
