@@ -153,13 +153,13 @@ const stories = {};   // look id -> { spots, pick, files }
 function storyPanel(id) {
   const L = LOOKS.find(l => l.id === id), st = stories[id], el = $("#story-" + id), cur = photos["look_" + id];
   el.hidden = false;
-  el.innerHTML = `<div class="eyebrow">Instagram story · 4 slides</div><div class="slides" id="slides-${id}"><p class="msg">Drawing the slides…</p></div>
+  el.innerHTML = `<div class="eyebrow">Instagram story · 5 slides</div><div class="slides" id="slides-${id}"><p class="msg">Drawing the slides…</p></div>
     <div class="row" style="align-items:flex-start;margin-top:12px;gap:18px">
       <div class="spotwrap"><img src="${esc(cur)}" alt="" data-spotimg="${id}">${st.spots.map(([, x, y], i) => `<span class="spot${st.pick === i ? " on" : ""}" style="left:${x * 100}%;top:${y * 100}%">${i + 1}</span>`).join("")}</div>
       <div class="labels" style="flex:1;min-width:240px"><p class="msg" style="margin-top:0">The details slide: pick a number, then tap the tree where that close-up should be. Edit the notes as you like.</p>
         ${st.spots.map(([t], i) => `<label><input type="radio" name="pick-${id}" data-pick="${id}:${i}"${st.pick === i ? " checked" : ""}> ${i + 1} <input type="text" value="${esc(t)}" data-label="${id}:${i}"></label>`).join("")}
-        <div class="row" style="margin-top:10px"><button class="btn small" data-save="${id}">Save the 4 slides</button><button class="btn small ghost" data-redraw="${id}">Redraw</button></div>
-        <p class="msg">On your phone, Save opens the share sheet: choose Save Images. Add the link sticker on slide 4 in Instagram, linking to <span style="color:var(--gold)">/picks#look-${id}</span>.</p></div></div>`;
+        <div class="row" style="margin-top:10px"><button class="btn small" data-save="${id}">Save the 5 slides</button><button class="btn small ghost" data-redraw="${id}">Redraw</button></div>
+        <p class="msg">On your phone, Save opens the share sheet: choose Save Images. Add the link sticker on slide 5 in Instagram, linking to <span style="color:var(--gold)">/picks#look-${id}</span>.</p></div></div>`;
   drawStory(id);
 }
 async function drawStory(id) {
