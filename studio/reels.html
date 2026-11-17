@@ -121,8 +121,8 @@
   </div>
 </div>
 
-<script src="/try/engine.js"></script>
-<script src="/try/guide.js"></script>
+<script src="/try/engine.js?v=20261117c"></script>
+<script src="/try/guide.js?v=20261117c"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -232,14 +232,14 @@ async function appAfter(before, mode, style) {
   const aspect = ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0];
   let map;
   try {
-    const cv = document.createElement("canvas"), g = TreeGuide.create(im, cv, result, mode); g.drawMap();
+    const cv = document.createElement("canvas"), g = TreeGuide.create(im, cv, result, mode); g.drawMap({ diagram: true });
     const k = Math.min(1, 1024 / Math.max(cv.width, cv.height)), c2 = document.createElement("canvas");
     c2.width = Math.round(cv.width * k); c2.height = Math.round(cv.height * k); c2.getContext("2d").drawImage(cv, 0, 0, c2.width, c2.height); map = c2.toDataURL("image/jpeg", .8);
   } catch (e) { console.error(e); }
   // Same as the app: fuller branches when the plan shapes them or the tree scored low on fullness
   // same as the app: never a real tree, never when Fullness scored 8+, else when it scored 7 or less or the plan shapes the branches
   const fc = (result.categories || []).find(c => c.name === "Fullness"), shape = result.tree?.kind !== "natural" && (fc ? Number(fc.score) <= 7 : (result.plan || []).some(x => x.element === "fluff"));
-  const out = await api("/api/render", { image: before, brief: result.render_brief, aspect, map, shape: shape || undefined });
+  const out = await api("/api/render", { image: before, brief: result.render_brief, aspect, map, mapKind: "diagram", shape: shape || undefined });
   return out.image;
 }
 

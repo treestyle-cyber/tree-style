@@ -135,8 +135,8 @@
   </div>
 </div>
 
-<script src="/try/engine.js"></script>
-<script src="/try/guide.js"></script>
+<script src="/try/engine.js?v=20261117c"></script>
+<script src="/try/guide.js?v=20261117c"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -347,11 +347,11 @@ function setupBA(ph) {
       const aspect = ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0];
       let map;
       try {
-        const cv = document.createElement("canvas"), g = TreeGuide.create(im, cv, result, mode); g.drawMap();
+        const cv = document.createElement("canvas"), g = TreeGuide.create(im, cv, result, mode); g.drawMap({ diagram: true });
         const k = Math.min(1, 1024 / Math.max(cv.width, cv.height)), c2 = document.createElement("canvas");
         c2.width = Math.round(cv.width * k); c2.height = Math.round(cv.height * k); c2.getContext("2d").drawImage(cv, 0, 0, c2.width, c2.height); map = c2.toDataURL("image/jpeg", .8);
       } catch (e) { console.error(e); }
-      const out = await api("/api/render", { image: before, brief: result.render_brief, aspect, map });
+      const out = await api("/api/render", { image: before, brief: result.render_brief, aspect, map, mapKind: "diagram" });
       after = await shrink(out.image, 1536);
       $("#baAfter").innerHTML = `<span class="lbl">After</span><img src="${after}" alt="">`;
       $("#baUse").disabled = false; msg("Love it? Use this pair. Or make another.");

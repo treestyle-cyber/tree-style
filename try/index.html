@@ -1507,8 +1507,8 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   </div>
 </div>
 
-<script src="/try/engine.js?v=202610180545"></script>
-<script src="/try/guide.js?v=202610180545"></script>
+<script src="/try/engine.js?v=20261117c"></script>
+<script src="/try/guide.js?v=20261117c"></script>
 <script>
 // Screen preview (Studio → Screens): /try/?screen-preview&s=<screen> opens that screen straight away with the
 // Studio's sample tree (or ?screen-preview=mine, this browser's own last tree). Nothing links here from the app.
@@ -2987,7 +2987,7 @@ const evalTiming = r => { const m = r._meta || {}; return m.planSeconds != null 
 async function placementMap() {
   try {
     const cv = document.createElement("canvas"), g = TreeGuide.create(await getPhotoImg(), cv, result, mode);
-    g.drawMap();
+    g.drawMap({ diagram: true }); // the image model gets a diagram, not marks over the photo (won in the Lab, Nov 17)
     const k = Math.min(1, 1024 / Math.max(cv.width, cv.height)), c2 = document.createElement("canvas");
     c2.width = Math.round(cv.width * k); c2.height = Math.round(cv.height * k);
     c2.getContext("2d").drawImage(cv, 0, 0, c2.width, c2.height);
@@ -3012,7 +3012,7 @@ async function makePreview(extraPieces, change) {
     // A design-partner change edits the preview they're looking at, so nothing else shifts.
     const body = change && change.base
       ? { image: await thumb(change.base, 1536, .92), brief: change.brief, aspect: photoAspect, pieces: extraPieces || undefined, revision: true }
-      : { image: photo, brief: result.render_brief, aspect: photoAspect, pieces: extraPieces || keyPhoto || undefined, map: lastMap = await placementMap(), shape: needsShaping(result) || undefined, generic: !!result.branded_theme || undefined };
+      : { image: photo, brief: result.render_brief, aspect: photoAspect, pieces: extraPieces || keyPhoto || undefined, map: lastMap = await placementMap(), mapKind: "diagram", shape: needsShaping(result) || undefined, generic: !!result.branded_theme || undefined };
     if (lastMap) $("#mapImg").src = lastMap;
     const out = await api("/api/render", body);
     after = out.image;

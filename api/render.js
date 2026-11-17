@@ -109,7 +109,9 @@ export default async function handler(req, res) {
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
 
-  const { image, brief, aspect, pieces, map, revision, shape, variant, generic, ribbonStyle, removeFirst } = req.body || {};
+  const { image, brief, aspect, pieces, map, revision, shape, variant, generic, ribbonStyle, removeFirst, mapKind } = req.body || {};
+  // The placement map is a diagram (outline, crosses, labels on plain paper) when the page drew it that way (live since Nov 17); an older cached page still sends marks over the photo
+  const diagramMap = mapKind === "diagram" || variant === "diagram";
   // Lab test "nomap" (Eric, Nov 17: flat red circles on a preview, flat green discs on the Evergreen with Envy photo): the
   // image model sometimes paints the placement map's round ornament spots as flat discs, so the test sends no map at all
   const pc = parseDataUrl(pieces), mp = variant === "nomap" ? null : parseDataUrl(map);
@@ -164,9 +166,9 @@ export default async function handler(req, res) {
     else console.error("RIBBON_CLEAR_FAILED", c.status, JSON.stringify(c.body?.candidates?.[0]?.finishReason || c.body?.error?.message || "").slice(0, 200));
   }
   for (const model of models) {
-    let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, variant === "diagram");
+    let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap);
     // Some models reject imageConfig; retry once without it.
-    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, prompt, null, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, variant === "diagram");
+    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, prompt, null, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap);
     if (!out.ok) {
       lastErr = out.body?.error?.message || `Gemini error ${out.status}`;
       // Model not available, or no quota for it on this account: try the next one
@@ -183,7 +185,7 @@ export default async function handler(req, res) {
       const fluke = /NO_IMAGE|no image returned/i.test(String(why));
       if (!retried && (fluke || /SAFETY|PROHIBIT|RECITATION|BLOCK|IMAGE_OTHER|OTHER|copyright|trademark/i.test(String(why)))) {
         retried = true;
-        const again = await callGemini(model, img, fluke ? prompt : prompt + GENERIC, ar, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, variant === "diagram");
+        const again = await callGemini(model, img, fluke ? prompt : prompt + GENERIC, ar, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap);
         const p2 = again.body?.candidates?.[0]?.content?.parts || [], pic2 = p2.find(p => p.inlineData || p.inline_data);
         if (again.ok && pic2) { const d2 = pic2.inlineData || pic2.inline_data; return res.status(200).json({ image: `data:${d2.mimeType || d2.mime_type || "image/png"};base64,${d2.data}`, _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !fluke, retried: true } }); }
         console.error("RENDER_REFUSED_AGAIN", JSON.stringify({ model, why: String(again.body?.candidates?.[0]?.finishReason || again.status).slice(0, 200) }));
