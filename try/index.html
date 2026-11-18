@@ -352,6 +352,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .buyrow strong::first-letter{text-transform:uppercase}
   .buyrow b.pic{width:56px;height:56px;border-radius:14px;background:radial-gradient(circle at 50% 40%,rgba(243,238,231,.16),rgba(243,238,231,.04) 70%);box-shadow:inset 0 0 0 1px rgba(184,156,107,.28);display:grid;place-items:center;padding:6px}
   .buyrow b.pic:has(.fillpic),.lookpic:has(.fillpic){padding:0;overflow:hidden}
+  .fillmark{display:contents}
   .fillpic{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
   .buyrow b.pic svg{width:100%;height:100%;display:block;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
   .buyrow.reuse{background:none;border-style:dashed}
@@ -3292,6 +3293,11 @@ const ESS_PIC = {
 // from the item's name. Pine has a built-in photo from Kylie's splash branches; the rest show the drawing until a photo is picked.
 const FILL_KINDS = [["pine", "pine(?! ?cone)|\\bfir\\b|spruce|norfolk|evergreen|greenery|garland"], ["cedar", "cedar|juniper|cypress"], ["eucalyptus", "eucalyptus"], ["magnolia", "magnolia"], ["holly", "holly"], ["berries", "berr"], ["pinecone", "pinecone|pine cone|cone"], ["cotton", "cotton"], ["birch", "birch|twig|branch"], ["wheat", "wheat|grass|oat"], ["orange", "orange|citrus"], ["glitter", "glitter|spray|sparkle|starburst|burst"], ["icicle", "icicle|crystal|acrylic|clear"], ["pearl", "pearl|bead"], ["candy", "candy|peppermint|lollipop|gumdrop|cookie|gingerbread|sprinkle"], ["poinsettia", "poinsettia"], ["rose", "rose(?! gold)"], ["hydrangea", "hydrangea"], ["feather", "feather|plume"], ["flower", "flower|floral|bloom|amaryllis|peony|lily|orchid"]];
 const FILL_BUILTIN = { pine: "/brand/filler/pine.jpg" };
+function fillKind(label) {
+  const l = String(label || "").toLowerCase(); let k = "", at = 1e9;
+  for (const [kind, r] of FILL_KINDS) { const m = new RegExp(r).exec(l); if (m && m.index < at) { at = m.index; k = kind; } }
+  return k;
+}
 function fillPhoto(label) {
   // the piece named first wins ("Cotton stems and frosted pinecone picks" is cotton)
   const l = String(label || "").toLowerCase();
@@ -3300,7 +3306,12 @@ function fillPhoto(label) {
   return k ? ((window.__PH || {})["fill_" + k] || FILL_BUILTIN[k] || "") : "";
 }
 function itemPic(b, key) {
-  if (/^(primary_picks|small_picks|florals)$/.test(key)) { const ph = fillPhoto(b.label); if (ph) return `<img class="fillpic" src="${esc(ph)}" alt="" loading="lazy">`; }
+  if (/^(primary_picks|small_picks|florals)$/.test(key)) {
+    const ph = fillPhoto(b.label), fk = fillKind(b.label);
+    if (ph) return `<img class="fillpic" src="${esc(ph)}" alt="" loading="lazy" data-fillslot="${fk}">`;
+    if (fk && SAMPLE) return `<span class="fillmark" data-fillslot="${fk}">` + itemPic(b, key + "_draw") + `</span>`;   // Studio → Screens can find it to replace
+  }
+  if (/_draw$/.test(key)) key = key.replace(/_draw$/, "");
   if (key === "essentials") return `<svg viewBox="0 0 48 48" aria-hidden="true">${ESS_PIC[b.id] || `<path d="M14 18h20l-2 22H16z" fill="none" stroke="#D4B26E" stroke-width="2.2" stroke-linejoin="round"/><path d="M19 18a5 5 0 0 1 10 0" fill="none" stroke="#D4B26E" stroke-width="2.2"/>`}</svg>`;
   const c = b.color || "#C9B48A", l = (b.label || "").toLowerCase(), id = "g" + Math.random().toString(36).slice(2, 7);
   const shade = `<defs><radialGradient id="${id}" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient></defs>`;
@@ -3811,6 +3822,7 @@ function reportPhotoSpots() {
   const add = (el, slot) => { if (el && el !== document.body && el !== document.documentElement && !found.some(f => f.el === el)) found.push({ el: el.querySelector(":scope > .tpic") || el, slot }); };
   for (const sh of document.styleSheets) { let rules; try { rules = sh.cssRules; } catch (e) { continue; }
     for (const r of rules || []) { const m = r.selectorText && /--photo-([a-z0-9_]+)/.exec(r.cssText); if (!m) continue; try { document.querySelectorAll(r.selectorText).forEach(el => add(el, m[1])); } catch (e) {} } }
+  document.querySelectorAll("[data-fillslot]").forEach(el => add(el.closest(".pic,.lookpic") || el, "fill_" + el.dataset.fillslot));   // shopping list filler photos
   document.querySelectorAll("[style*='--photo-']").forEach(el => add(el, /--photo-([a-z0-9_]+)/.exec(el.getAttribute("style"))[1]));
   const send = () => {
     const W = innerWidth, H = innerHeight, spots = [];

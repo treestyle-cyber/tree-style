@@ -218,7 +218,7 @@ const PHOTO_SPOTS = {
   keep: ["Keep my style", "Style card", "4:5"], classic: ["Traditional", "Style card", "4:5"], rustic: ["Rustic", "Style card", "4:5"], modern: ["Modern", "Style card", "4:5"],
   elegant: ["Elegant", "Style card", "4:5"], playful: ["Playful", "Style card", "4:5"], themed: ["Themed", "Style card", "4:5"],
 };
-const spotName = id => (PHOTO_SPOTS[id] || [/^ess_/.test(id) ? "Essentials: " + id.slice(4).replace(/_/g, " ") : id])[0];
+const spotName = id => (PHOTO_SPOTS[id] || [/^ess_/.test(id) ? "Essentials: " + id.slice(4).replace(/_/g, " ") : /^fill_/.test(id) ? "Filler: " + id.slice(5) : id])[0];
 let photoMode = false, brandPhotos = {};
 const CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
 addEventListener("message", e => {
@@ -232,7 +232,7 @@ const shrinkPhoto = (file, max = 1600) => new Promise((ok, no) => { const im = n
 document.addEventListener("click", async e => {
   const sp = e.target.closest(".spot"); if (!sp || !photoMode) return;
   e.stopPropagation();
-  const slot = sp.dataset.slot, info = PHOTO_SPOTS[slot] || [spotName(slot), "", ""], cur = brandPhotos[slot];
+  const slot = sp.dataset.slot, info = PHOTO_SPOTS[slot] || [spotName(slot), /^fill_/.test(slot) ? "Every shopping list item of this kind" : "", /^fill_/.test(slot) ? "1:1" : ""], cur = brandPhotos[slot];
   const r = sp.getBoundingClientRect();
   const p = pop(r.right, r.top, `<b>${esc(info[0])}</b><div class="meta">${esc(info[1])}${info[2] ? " · shown about " + info[2] + ", so leave room at the edges" : ""}</div>${cur ? `<img class="cur" src="${esc(cur)}" alt="">` : `<div class="meta">Using the built-in texture until a photo is chosen.</div>`}<label class="btn up">Upload a photo<input type="file" accept="image/*" hidden></label><div class="acts"><a class="btn ghost" href="/studio/" target="_blank" rel="noopener">More in Photos ↗</a></div><p class="msg"></p>`);
   p.querySelector("input").onchange = async ev => {
