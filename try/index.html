@@ -1321,6 +1321,12 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   body.camlive .snapcam{background:#000 !important}
   .snapcam .camup{position:absolute;left:calc(50% - 37px - 92px);bottom:calc(10% + 12px + env(safe-area-inset-bottom));display:grid;justify-items:center;gap:4px;background:none;border:0;color:#F7F1E8;font:600 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.14em;text-transform:uppercase;cursor:pointer;text-shadow:0 1px 6px rgba(0,0,0,.6)}
   .snapcam .camup svg{width:40px;height:40px;padding:9px;border-radius:50%;background:rgba(20,14,10,.35);border:1.5px solid rgba(247,241,232,.7);box-sizing:border-box}
+  /* The camera layer for every other photo */
+  .snapcam.camlayer{display:block;position:fixed;inset:0;z-index:80;background:#000}
+  .snapcam.camlayer[hidden]{display:none}
+  .snapcam .camx{position:absolute;right:16px;top:max(16px,calc(env(safe-area-inset-top) + 8px));width:44px;height:44px;border-radius:50%;border:1.5px solid rgba(247,241,232,.7);background:rgba(20,14,10,.35);color:#F7F1E8;font:300 30px/1 var(--sans);cursor:pointer}
+  .snapcam .camlmsg{position:absolute;left:24px;right:24px;top:42%;margin:0;text-align:center;color:#F7F1E8;font:calc(16px * var(--s-body,1))/1.45 var(--sans)}
+  .snapcam .shutter:disabled{opacity:.45}
 </style>
 </head>
 <body>
@@ -1805,6 +1811,14 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   <button data-nav="s-profile"><svg viewBox="0 0 24 24" style="stroke-width:1.65"><circle cx="12" cy="7.2" r="3.5"/><path d="M3.5 21v-1.3a8.5 8.5 0 0 1 17 0V21Z"/></svg>Profile</button>
 </nav>
 <button id="helpFab" aria-label="Need help? Ask your stylist" data-help><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.2 9.2a2.9 2.9 0 1 1 4.1 2.6c-.8.4-1.3 1-1.3 1.8v.6"/><path d="M12 17.6h.01" stroke-width="2.6"/></svg></button>
+<!-- The in-app camera for every other photo (Ivory look): their idea, room, own tree, special pieces, inspiration, pieces in Change something -->
+<div class="snapcam camlayer" id="camLayer" hidden><video id="camLv" playsinline muted autoplay></video><i class="vf tl"></i><i class="vf tr"></i><i class="vf bl"></i><i class="vf br"></i>
+  <p class="snaptxt">Snap or Upload<br>a Photo of <span id="camLWhat">Your Piece</span></p>
+  <p class="camlmsg" id="camLMsg" hidden></p>
+  <button type="button" class="shutter" id="camLShot" aria-label="Take the photo"></button>
+  <button type="button" class="camup" id="camLUp" aria-label="Upload a photo from your library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M20.5 16l-5-5-8.5 8"/></svg><span>Upload</span></button>
+  <button type="button" class="camx" id="camLX" aria-label="Close the camera">×</button>
+</div>
 <div class="foot" id="foot" hidden><button class="btn" id="footBtn"></button></div>
 
 <div id="zoom" hidden>
@@ -4363,6 +4377,47 @@ $("#shutter").onclick = async () => {
   $("#file").click();   // no camera in the app: the phone's own camera or library
 };
 $("#camUp").onclick = () => { try { localStorage.setItem("ts_photo_tips", "1"); } catch {} stopCam(); $("#file").click(); };
+
+// Every other photo they add (Ivory look) opens the same in-app camera: full screen, the corners, "Snap or Upload a Photo of …",
+// the shutter, Upload for the library and × to close. The picture goes into that photo's own field, as if chosen from the library.
+const CAM_WHAT = { ideaFile: "Your Inspiration", ideaRoomFile: "Your Room", roomTreeFile: "Your Tree", keyFile: "Your Piece", inspoFile: "Your Inspiration", pPhoto: "Your Piece" };
+let camLInput = null, camLStream = null;
+function closeCamLayer() {
+  if (camLStream) camLStream.getTracks().forEach(t => t.stop());
+  camLStream = null; $("#camLv").srcObject = null; $("#camLayer").hidden = true; camLInput = null;
+}
+async function openCamLayer(inp) {
+  camLInput = inp; $("#camLWhat").textContent = CAM_WHAT[inp.id] || "Your Photo";
+  $("#camLMsg").hidden = true; $("#camLShot").disabled = true; $("#camLayer").hidden = false;
+  try {
+    if (camDenied || !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) throw new Error("no camera");
+    const st = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1440 } }, audio: false });
+    if ($("#camLayer").hidden) { st.getTracks().forEach(t => t.stop()); return; }
+    camLStream = st; const v = $("#camLv"); v.srcObject = st; await v.play().catch(() => {}); $("#camLShot").disabled = false;
+  } catch (e) {
+    camDenied = true; $("#camLMsg").hidden = false;
+    $("#camLMsg").textContent = "The camera isn't available here. Tap Upload to take or choose a photo.";
+  }
+}
+document.addEventListener("click", e => {
+  if (SAMPLE || !document.documentElement.classList.contains("theme-ivory")) return;
+  const lab = e.target.closest("label"); if (!lab) return;
+  const inp = lab.querySelector('input[type="file"]'); if (!inp || inp.id === "file" || e.target === inp) return;
+  if (e.target.closest('.x,[id$="Clear"]')) return;
+  e.preventDefault(); openCamLayer(inp);
+}, true);
+$("#camLShot").onclick = async () => {
+  const v = $("#camLv"), inp = camLInput; if (!inp || !v.videoWidth) return;
+  const c = document.createElement("canvas"); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext("2d").drawImage(v, 0, 0);
+  const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .92));
+  closeCamLayer();
+  const dt = new DataTransfer(); dt.items.add(new File([blob], "camera.jpg", { type: "image/jpeg" }));
+  inp.files = dt.files; inp.dispatchEvent(new Event("change", { bubbles: true }));
+};
+$("#camLUp").onclick = () => { const inp = camLInput; closeCamLayer(); if (inp) inp.click(); };
+$("#camLX").onclick = closeCamLayer;
+addEventListener("visibilitychange", () => { if (document.hidden && !$("#camLayer").hidden) closeCamLayer(); });
+addEventListener("popstate", () => { if (!$("#camLayer").hidden) closeCamLayer(); });
 $("#navSignOut").onclick = () => { password = ""; try { sessionStorage.removeItem("ts_pw"); } catch {} show("s-pass", []); };
 function drawStyleCards() {
   $("#styleCards").innerHTML = STYLE_PICK.concat([["themed", "Themed", "One story, your idea"]]).map(([v, name, sub]) => {
