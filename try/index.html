@@ -99,6 +99,36 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .bar{height:6px;background:var(--line);border-radius:9px;overflow:hidden}
   .bar i{display:block;height:100%;width:0;background:var(--green);transition:width .5s}
   @keyframes spin{to{transform:rotate(360deg)}}
+  /* Page loader: the arched pine with a thin gold ring turning around it, on the page background. It fades in only after
+     a quarter second, so quick loads never flash it */
+  #pageLoad{position:fixed;inset:0;z-index:400;display:grid;place-content:center;justify-items:center;gap:14px;background:var(--bg);opacity:0;animation:plIn .3s ease .25s forwards;transition:opacity .35s ease}
+  #pageLoad.done{opacity:0 !important;animation:none;pointer-events:none}
+  #pageLoad[hidden]{display:none}
+  /* The logo's pine gets decorated: ornaments pop onto its branches one after another, the star lights at the top,
+     little glints twinkle around it, then everything slips off and it starts again (a 3.6 second loop) */
+  .pl-tree{position:relative;width:100px;aspect-ratio:482/700}
+  .pl-tree img{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))}
+  .pl-tree i{position:absolute;width:9px;height:9px;margin:-2px 0 0 -4.5px;border-radius:50%;transform:scale(0);opacity:0;animation:plOrn 3.6s cubic-bezier(.3,1.6,.5,1) infinite}
+  .pl-tree i::before{content:"";position:absolute;left:50%;top:-2.5px;width:3.5px;height:2.5px;margin-left:-1.75px;border-radius:1px;background:#B89C6B}
+  /* All gold, in three tones so they still read as separate ornaments: bright gold, champagne and antique gold */
+  .pl-tree i.ob{background:radial-gradient(circle at 35% 30%,#FFF4D2,#D9B45E 55%,#8A6A2E);box-shadow:0 0 7px rgba(232,200,120,.7)}
+  .pl-tree i.og{background:radial-gradient(circle at 35% 30%,#FFF8E6,#E8D3A2 55%,#A88C5A);box-shadow:0 0 7px rgba(240,220,170,.65)}
+  .pl-tree i.oi{background:radial-gradient(circle at 35% 30%,#F6E2B0,#B8924A 55%,#6B4F22);box-shadow:0 0 6px rgba(200,160,90,.6)}
+  .pl-tree i.oe{background:radial-gradient(circle at 35% 30%,#FFF1C9,#C9A458 55%,#7A5E2C);box-shadow:0 0 7px rgba(232,200,120,.7)}
+  .pl-star{position:absolute;left:50%;top:9%;width:20px;height:20px;margin:-10px 0 0 -10px;opacity:0;animation:plStar 3.6s ease infinite}
+  .pl-star svg{width:100%;height:100%;fill:#F2D58A;filter:drop-shadow(0 0 6px rgba(242,213,138,.9))}
+  .pl-tree u{position:absolute;width:8px;height:8px;margin:-4px 0 0 -4px;opacity:0;animation:plGlint 2.4s ease-in-out infinite;background:radial-gradient(circle,#FFF6DA 0 18%,transparent 20%),linear-gradient(90deg,transparent 44%,#F2D58A 50%,transparent 56%),linear-gradient(0deg,transparent 44%,#F2D58A 50%,transparent 56%)}
+  @keyframes plOrn{0%{transform:scale(0) translateY(-6px);opacity:0}9%{transform:scale(1) translateY(0);opacity:1}72%{transform:scale(1);opacity:1}86%,100%{transform:scale(.4) translateY(4px);opacity:0}}
+  @keyframes plStar{0%,58%{opacity:0;transform:scale(.3) rotate(-40deg)}68%{opacity:1;transform:scale(1.15) rotate(0)}74%{transform:scale(1)}84%{opacity:1}96%,100%{opacity:0;transform:scale(.6)}}
+  @keyframes plGlint{0%,100%{opacity:0;transform:scale(.3) rotate(0)}50%{opacity:1;transform:scale(1) rotate(45deg)}}
+  @media (prefers-reduced-motion:reduce){.pl-tree i,.pl-star{animation:none;opacity:1;transform:none}.pl-tree u{display:none}}
+  .pl-word{margin-top:4px;font:500 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+  @keyframes plIn{to{opacity:1}}
+  html.theme-ivory .pl-tree img{filter:drop-shadow(0 6px 14px rgba(74,54,32,.18))}
+  /* Kylie: the startup loader uses the same loading tree (logo-gold ornaments hanging from the branch ends), keeping the star and glints */
+  .pl-tree .treeload{position:absolute;inset:0;width:100%;margin:0}
+  .pl-tree .treeload svg{filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))}
+  html.theme-ivory .pl-tree .treeload svg{filter:none}
   /* ---------- TreeStyle brand surfaces ---------- */
   .welcome{position:relative;border-radius:var(--radius);overflow:hidden;margin:6px 0 26px;padding:30px 20px 26px;text-align:center;
     background:linear-gradient(rgba(20,28,44,.55),rgba(20,28,44,.82)),var(--photo-velvet, url(/brand/velvet-midnight.jpg)) center/cover;box-shadow:0 24px 40px -28px rgba(20,28,44,.7)}
@@ -1082,6 +1112,27 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .ring .rnum{position:relative;margin-top:-8px;font:400 calc(46px * var(--s-headline,1))/1 var(--serif);font-variant-numeric:lining-nums;color:var(--ink)}
   .ring .rof{position:absolute;top:62%;font:500 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
   html.theme-ivory .rating .rword b{font:italic 400 calc(19px * var(--s-subheadline,1))/1.15 var(--sans);color:var(--espresso)}
+  /* Feedback rating in the Ivory look: five thin numbered rings (1 to 5) instead of ornaments; tapped ones turn deep berry like the score ring */
+  .hint-num{display:none}
+  html.theme-ivory .hint-orn{display:none}
+  html.theme-ivory .hint-num{display:inline}
+  html.theme-ivory .rate{gap:10px}
+  html.theme-ivory .rate button{width:46px;height:46px}
+  html.theme-ivory .rate button i{left:0;bottom:0;width:46px;height:46px;background:none;border:1.6px solid #E6DFD3;box-sizing:border-box;display:grid;place-items:center}
+  html.theme-ivory .rate button i::after{content:attr(data-n);position:static;width:auto;height:auto;margin:0;background:none;border-radius:0;font:400 calc(20px * var(--s-headline,1))/1 var(--serif);font-variant-numeric:lining-nums;color:var(--muted)}
+  html.theme-ivory .rate button.on i{background:none;border-color:#4A2228}
+  html.theme-ivory .rate button.on i::after{color:var(--ink)}
+  /* The same ring on the results screen's score strip and at the top of How it scored, so the Ivory look never mixes rings and ornaments */
+  html.theme-ivory .scorestrip .orns,html.theme-ivory .scorestrip .snum,html.theme-ivory .scoretop .orns,html.theme-ivory .scoretop .rword span{display:none}
+  html.theme-ivory .scorestrip{background:var(--paper);border-color:var(--champagne)}
+  html.theme-ivory .scorestrip .ring{display:grid;place-items:center;position:relative;flex:none;width:64px;aspect-ratio:1}
+  html.theme-ivory .scorestrip .ring[hidden]{display:none}
+  html.theme-ivory .scorestrip .ring .rnum{margin-top:-6px;font-size:calc(22px * var(--s-headline,1))}
+  html.theme-ivory .scorestrip .ring .rof{top:61%;font-size:7.5px;letter-spacing:.18em}
+  html.theme-ivory .scorestrip .ring .rtrack,html.theme-ivory .scorestrip .ring .rarc{stroke-width:4.5}
+  html.theme-ivory .scorestrip b{font:italic 400 calc(20px * var(--s-subheadline,1))/1.15 var(--sans);color:var(--espresso)}
+  html.theme-ivory .scoretop .ring{display:grid;place-items:center;position:relative;width:min(140px,36vw);aspect-ratio:1}
+  html.theme-ivory .scoretop .rword b{font:italic 400 calc(19px * var(--s-subheadline,1))/1.15 var(--sans);color:var(--espresso)}
 
   /* Ivory look: every shopping list icon is a photo square. Until an item has its own photo, its drawing sits on the same
      dark pine-and-lights photo as the ribbon and ornament photos, so the list reads as one set (Kylie: make them consistent) */
@@ -1159,6 +1210,8 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </style>
 </head>
 <body>
+<!-- Page loader: shows while the app starts (saved tree, sample tree, Studio phones), fades out once the first screen is ready -->
+<div id="pageLoad" role="status" aria-label="Loading"><div class="pl-tree"><div class="treeload" data-treeload></div><b class="pl-star"><svg viewBox="0 0 24 24"><path d="M12 1.5l2.6 7.1 7.4.3-5.8 4.6 2 7.2L12 16.5l-6.2 4.2 2-7.2L2 8.9l7.4-.3z"/></svg></b><u style="left:8%;top:30%;animation-delay:0.4s"></u><u style="left:90%;top:40%;animation-delay:1.3s"></u><u style="left:14%;top:62%;animation-delay:2.1s"></u><u style="left:88%;top:66%;animation-delay:0.9s"></u><u style="left:50%;top:92%;animation-delay:1.7s"></u></div><span class="pl-word">Loading</span></div>
 
 <header class="appbar" id="appbar">
   <button id="navBack" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -1364,16 +1417,16 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
       <div id="hubFixList"></div>
       <button class="hubmore" id="hubFixMore" hidden></button>
     </div>
-    <button class="scorestrip" id="navScoreBtn" data-go="s-score"><span class="orns" id="stripOrns"></span><span class="sw"><b id="stripWord">How it scored</b><small id="stripSub">Balance, lights, the top and more</small></span><span class="chev">See how it scored ›</span></button>
+    <button class="scorestrip" id="navScoreBtn" data-go="s-score"><span class="orns" id="stripOrns"></span><span class="ring" id="stripRing"></span><span class="sw"><b id="stripWord">How it scored</b><small id="stripSub">Balance, lights, the top and more</small></span><span class="chev">See how it scored ›</span></button>
     <div class="tellline" id="tellCard">Amounts are our best estimate from the photo. <button id="navDetails">Add your tree's details</button> for a better one.</div>
     <div class="telldone" id="tellDone" hidden></div>
     <div class="card fb" id="fbCard">
       <div id="fbForm">
         <h3>How did we do?</h3>
         <p class="sub muted">You're one of our first testers. Your honest take shapes what we build.</p>
-        <div class="q2">Rate the results <span class="muted" style="font-weight:400;font-size:14px">· tap an ornament</span></div>
+        <div class="q2">Rate the results <span class="muted" style="font-weight:400;font-size:14px">· tap <span class="hint-orn">an ornament</span><span class="hint-num">a number</span></span></div>
         <div class="rate" id="fbRate" role="radiogroup" aria-label="Rating out of 5">
-          <button data-v="1" aria-label="1"><i></i></button><button data-v="2" aria-label="2"><i></i></button><button data-v="3" aria-label="3"><i></i></button><button data-v="4" aria-label="4"><i></i></button><button data-v="5" aria-label="5"><i></i></button>
+          <button data-v="1" aria-label="1"><i data-n="1"></i></button><button data-v="2" aria-label="2"><i data-n="2"></i></button><button data-v="3" aria-label="3"><i data-n="3"></i></button><button data-v="4" aria-label="4"><i data-n="4"></i></button><button data-v="5" aria-label="5"><i data-n="5"></i></button>
         </div>
         <div class="q2">Would you pay $19.99 for a Holiday Pass?</div>
         <div class="row" style="margin-bottom:12px">
@@ -3071,7 +3124,8 @@ function fill() {
   const shopping = TreeGuide.shoppingList(r, mode), nItems = shopping.reduce((a, g) => a + g.items.length, 0);
   $("#navScoreBtn").hidden = !(r.categories || []).length;
   { const so = r.overall != null ? toOrn(r.overall) : null; $("#stripOrns").innerHTML = so ? ornHtml(so) : ""; $("#stripOrns").hidden = !so;
-    $("#stripWord").textContent = so ? `${levelWord(so)} · ${so} of 5` : "How it scored"; $("#stripSub").textContent = so ? "Your tree today, part by part" : "Balance, lights, the top and more"; }
+    $("#stripRing").innerHTML = so ? ringHtml(so) : ""; $("#stripRing").hidden = !so;
+    $("#stripWord").innerHTML = so ? `${levelWord(so)}<span class="snum"> · ${so} of 5</span>` : "How it scored"; $("#stripSub").textContent = so ? "Your tree today, part by part" : "Balance, lights, the top and more"; }
   $("#fixesSub").textContent = mode === "design" ? "The plan at a glance." : "Biggest difference for the least effort, best first.";
   $("#fixes").innerHTML = fixes.map((f, i) => fixHtml(f, i)).join("");
   // The top three fixes sit right under the preview; the full list stays one tap away
@@ -3083,10 +3137,10 @@ function fill() {
   $("#actShopSub").textContent = nItems2 ? `${nItems2} things to buy, with links` : "You already have what you need";
   const moreFix = fixes.length - 3;
   $("#hubFixMore").hidden = moreFix <= 0; $("#hubFixMore").textContent = moreFix === 1 ? "See 1 more fix" : `See ${moreFix} more fixes`;
-  $("#scoreSub").textContent = r.overall != null ? `Your tree today: ${toOrn(r.overall)} of 5 ornaments, ${levelWord(toOrn(r.overall)).toLowerCase()}. Here's how each part scored, out of 10.` : "";
+  $("#scoreSub").textContent = r.overall != null ? `Your tree today: ${toOrn(r.overall)} of 5${document.documentElement.classList.contains("theme-ivory") ? "" : " ornaments"}, ${levelWord(toOrn(r.overall)).toLowerCase()}. Here's how each part scored, out of 10.` : "";
   const CAT_STEP = { "Top of the tree": "crown", "Lights": "lights", "Big and small": "statement", "Fullness": "fluff", "Depth": "statement", "Pulled together": "ribbon" };
   const o = r.overall != null ? toOrn(r.overall) : null;
-  $("#cats").innerHTML = (o ? `<div class="scoretop"><div class="orns">${ornHtml(o)}</div><div class="rword"><b>${levelWord(o)}</b><span>${o} of 5</span></div></div>` : "")
+  $("#cats").innerHTML = (o ? `<div class="scoretop"><div class="orns">${ornHtml(o)}</div><div class="ring">${ringHtml(o)}</div><div class="rword"><b>${levelWord(o)}</b><span>${o} of 5</span></div></div>` : "")
     + [...(r.categories || [])].sort((a, b) => a.score - b.score).map(c => `<div class="cat"><div class="top"><span>${esc(c.name)}</span><span>${c.score}/10</span></div><div class="b"><i style="width:${c.score * 10}%"></i></div><p>${esc(c.note)}</p>${c.score <= 7 && CAT_STEP[c.name] && (r.plan || []).some(p => p.element === CAT_STEP[c.name]) ? `<button class="raise" data-raise="${CAT_STEP[c.name]}">How to raise it</button>` : ""}</div>`).join("");
   $("#cats").querySelectorAll("[data-raise]").forEach(b => b.onclick = () => openPlan(b.dataset.raise));
   shopNow = shopping;
@@ -3438,7 +3492,7 @@ function nearestPhoto(set, hex, label) {
 }
 function shopPhoto(b, key) {
   const l = String(b.label || "").toLowerCase(), ph = window.__PH || {};
-  if (key === "ribbon") { if (/candy|peppermint|stripe/.test(l)) return ""; if (/plaid|tartan|check/.test(l)) return "/brand/ribbons/plaid-green.jpg"; const n = nearestPhoto("ribbons", b.color, l); return n ? `/brand/ribbons/${n}.jpg` : ""; }
+  if (key === "ribbon") { if (/candy|peppermint/.test(l) || /stripe/.test(l) && /red/.test(l) && /white/.test(l)) return "/brand/ribbons/candy-stripe.jpg"; if (/plaid|tartan|check/.test(l)) return "/brand/ribbons/plaid-green.jpg"; const n = nearestPhoto("ribbons", b.color, l); return n ? `/brand/ribbons/${n}.jpg` : ""; }
   if (key === "statement" || key === "medium") {
     const shape = /teardrop|\bdrop/.test(l) ? "teardrop" : /finial/.test(l) ? "finial" : /icicle/.test(l) ? "icicle" : "";
     if (shape) return ph["orn_" + shape] || "";   // shaped ornaments: their own Studio photo spot
@@ -3871,7 +3925,11 @@ $("#resumeBtn").onclick = async () => {
 };
 $("#resumeNew").onclick = () => { $("#resume").hidden = true; document.querySelector(".tiles").scrollIntoView({ block: "center", behavior: "smooth" }); };
 // Coming back within a few hours lands right back on the tree; after that, the home screen offers it.
-async function startApp() {
+// The page loader goes once the first screen is ready (and after 20 seconds at most, so it can never trap anyone)
+function pageReady() { const l = document.getElementById("pageLoad"); if (!l || l.classList.contains("done")) return; l.classList.add("done"); setTimeout(() => { l.hidden = true; }, 400); }
+setTimeout(pageReady, 20000);
+async function startApp() { try { await startApp1(); } finally { pageReady(); } }
+async function startApp1() {
   if (SAMPLE && password && (await sampleStart())) return;   // the Studio password (or a preview copy) is needed
   if (!password) { show("s-pass", []); return; }
   // Refreshing a tree screen (/try/plan, /try/shop…) reopens your saved tree right there;
@@ -3900,7 +3958,7 @@ async function sampleStart() {
       const d = await (await fetch("/api/brand?sample=1" + (q.get("t") === "design" ? "&kind=design" : ""))).json();
       st = d.sample || null;
       if (st) {
-        const toData = async u => { if (!u || /^data:/.test(u)) return u; const b = await (await fetch(u)).blob(); return await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); }); };
+        const toData = async u => { if (!u || /^data:/.test(u)) return u; let b; try { const r = await fetch(u); if (!r.ok) return u; b = await r.blob(); } catch (e) { return u; } /* a missing picture keeps its address instead of losing the whole sample */ return await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); }); };
         st.photo = await toData(st.photo); st.after = await toData(st.after); st.keyPhoto = await toData(st.keyPhoto);
         for (const v of st.versions || []) v.after = await toData(v.after);
       }
@@ -3937,7 +3995,14 @@ async function sampleStart() {
     if (v === "error") { $("#startErr").textContent = $("#detailsErr").textContent = "Something went wrong: the design service is busy right now. Please try again."; setTimeout(() => $("#startErr").scrollIntoView({ block: "center" }), 300); }
     if (v === "tips") { $("#tipsH").textContent = "Before you take the photo"; $("#tipsList").innerHTML = tipGrid(); openSheet("#tipsSheet"); }
   }
-  else if (!st || !st.result) { badge.textContent = "No sample tree yet"; show(id, ["s-home"]); }
+  else if (!st || !st.result) {
+    badge.textContent = "No sample tree yet"; badge.style.top = "auto"; badge.style.bottom = "12px"; show(id, ["s-home"]);
+    // Say so on the screen itself, not just in the small badge (Eric saw an empty step and couldn't tell why)
+    const note = document.createElement("div");
+    note.style.cssText = "position:fixed;left:16px;right:16px;top:50%;transform:translateY(-50%);z-index:300;background:#FFFCF7;color:#2C2118;border:1px solid #D9CCC0;border-radius:16px;padding:18px 20px;font:15px/1.45 Inter,system-ui,sans-serif;text-align:center;box-shadow:0 18px 40px -20px rgba(0,0,0,.5)";
+    note.innerHTML = `<b style="display:block;font:500 20px/1.2 'Cormorant Garamond',serif;margin-bottom:6px">No sample ${q.get("t") === "design" ? "design" : "tree"} yet</b>This screen shows a tree's ${id === "s-plan" ? "step-by-step plan" : "results"}, so it needs a sample. Run ${q.get("t") === "design" ? "Design my tree" : "Check my tree"} once in this browser, then in Studio → Screens tap <i>Use my last tree as a sample</i>.`;
+    document.body.appendChild(note);
+  }
   // The waiting states: plan still designing, or plan ready and the picture still painting
   if (id === "s-reveal" && st && st.result && (v === "working" || v === "painting")) {
     if (v === "working") { planState = "wait"; planT0 = Date.now(); previewState = "idle"; } else { previewState = "wait"; }
@@ -4082,7 +4147,7 @@ function ornamentPhoto(p) {
 function ribbonPhoto(p) {
   const c = p.colors, n = p.name.toLowerCase(), f = p.fin;
   if (/plaid|tartan|check/.test(f + " " + n)) return "plaid-green";
-  if (/candy|peppermint/.test(n) || /stripe/.test(f) && /white/.test(c)) return "";   // candy cane stripes: no photo looks like them
+  if (/candy|peppermint/.test(n) || /stripe/.test(f + " " + n) && /red/.test(c) && /white/.test(c + " " + n)) return "candy-stripe";   // red and white candy stripes
   if (/burgundy|wine/.test(c)) return "burgundy-gold";
   if (/(^|,)red/.test(c)) return ["red", "red-2", "red-3"][parseInt(p.asin.slice(-2), 36) % 3];
   if (/sage|olive|moss|dusty green/.test(c + " " + n)) return "sage";
