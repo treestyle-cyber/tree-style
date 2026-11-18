@@ -25,7 +25,9 @@
 <script src="/brand-kit.js"></script>
 <script>
 // Brand photos chosen in the Studio replace the fabric textures (each spot keeps its texture until then)
-fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" + Date.now() : "")).then(r => r.json()).then(d => { const ph = d.photos || {}; window.__PH = ph; if (Array.isArray(d.essentials) && d.essentials.length) window.__ESS = d.essentials; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); } }).catch(() => {});
+fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" + Date.now() : "")).then(r => r.json()).then(d => { const ph = d.photos || {}; window.__PH = ph; if (Array.isArray(d.essentials) && d.essentials.length) window.__ESS = d.essentials; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); }
+  // The shopping list may already be drawn by now: draw it again so filler photos show (Kylie: they weren't showing up)
+  if (Object.keys(ph).some(k => /^fill_/.test(k))) { const redo = () => { try { if (typeof result !== "undefined" && result) fill(); if (document.getElementById("s-look") && !document.getElementById("s-look").hidden) drawLook(); } catch (e) {} }; if (document.readyState === "complete") redo(); else addEventListener("load", redo); } }).catch(() => {});
 </script>
 <link rel="icon" type="image/png" href="/brand/favicon.png">
 <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
