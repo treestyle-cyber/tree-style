@@ -242,6 +242,12 @@ const SLOTS = [
     prompt: "Square product photo: a metal or woven tree collar around the base of a Christmas tree on a wood floor, with the lowest pine branches above it and warm white lights glowing softly, warm golden evening light, realistic, like a high-end holiday catalog. No people, no text." },
   { id: "base_basket", fill: true, name: "Base: Basket", where: "The photo beside tree baskets on the shopping list (until one is picked, a drawing shows)", aspect: "1:1",
     prompt: "Square product photo: a large woven basket holding the base of a Christmas tree on a wood floor, with the lowest pine branches above it and warm white lights glowing softly, warm golden evening light, realistic, like a high-end holiday catalog. No people, no text." },
+  { id: "orn_teardrop", fill: true, name: "Ornament: Teardrop ornaments", where: "The photo beside teardrop ornaments on the shopping list (until one is picked, a drawing shows)", aspect: "1:1",
+    prompt: "Close-up product photo, square: a few glass teardrop ornaments in antique gold, hanging among lush green pine branches with warm white fairy lights softly out of focus behind, warm golden evening light, shallow depth of field, rich and realistic, like a high-end holiday catalog. No text." },
+  { id: "orn_finial", fill: true, name: "Ornament: Finial ornaments", where: "The photo beside finial ornaments on the shopping list (until one is picked, a drawing shows)", aspect: "1:1",
+    prompt: "Close-up product photo, square: a few long glass finial ornaments with pointed tips in antique gold, hanging among lush green pine branches with warm white fairy lights softly out of focus behind, warm golden evening light, shallow depth of field, rich and realistic, like a high-end holiday catalog. No text." },
+  { id: "orn_icicle", fill: true, name: "Ornament: Icicle ornaments", where: "The photo beside icicle ornaments on the shopping list (until one is picked, a drawing shows)", aspect: "1:1",
+    prompt: "Close-up product photo, square: a few clear glass icicle ornaments in antique gold, hanging among lush green pine branches with warm white fairy lights softly out of focus behind, warm golden evening light, shallow depth of field, rich and realistic, like a high-end holiday catalog. No text." },
   { id: "ess_hooks", product: true, name: "Essentials: ornament hooks", where: "Stylist's essentials, end of the shopping list", aspect: "1:1",
     prompt: "A small loose heap of thin antique gold wire ornament hooks, a few lying apart so their S shape is clear, one hooking a small winter berry glass ornament by its cap." },
   { id: "ess_wire", product: true, name: "Essentials: floral paddle wire", where: "Stylist's essentials, end of the shopping list", aspect: "1:1",
@@ -276,7 +282,7 @@ const shrink = (src, max = 1600) => new Promise(res => {
 const wide = a => { const [w, h] = String(a).split(":").map(Number); return w > h; };
 // Make every filler photo that is still missing, a few at a time; each then waits for "Use this" on its card
 async function makeAllFiller(keep) {
-  const cards = [...document.querySelectorAll('.slot[data-id^="fill_"],.slot[data-id^="top_"],.slot[data-id^="base_"]')].filter(el => !el.querySelector(".frame.cur img"));
+  const cards = [...document.querySelectorAll('.slot[data-id^="fill_"],.slot[data-id^="top_"],.slot[data-id^="base_"],.slot[data-id^="orn_"]')].filter(el => !el.querySelector(".frame.cur img"));
   // the stylist's essentials cards make their own photos (Make a photo); include the ones still without a photo
   const ess = [...document.querySelectorAll(".emk")].filter(bt => { const c = bt.closest("[data-id]"); return c && !c.querySelector(".frame img"); });
   const b = $("#fillAll"), m = $("#fillAllMsg");
@@ -296,7 +302,7 @@ function build(current) {
   const ar = a => a.replace(":", " / ");
   const missing = SLOTS.filter(s => s.fill && !current[s.id]).length, total = SLOTS.filter(s => s.fill).length;
   if (!$("#fillAllBox")) { const box = document.createElement("div"); box.id = "fillAllBox"; box.className = "adopt"; $("#grid").before(box); }
-  $("#fillAllBox").innerHTML = `<b>Photos for the shopping list</b><span>${missing ? missing + " of " + total + " filler, topper and base spots have no photo yet, so their items show a drawing." : "Every filler, topper and base spot has a photo."} The stylist's essentials without a photo are included too. Make them all at once, then tap Use this on each one you like (or Upload your own). Ribbons and ornaments already use photos.</span><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="fillKeep">Make and keep all</button><button class="btn ghost" id="fillAll">Make all, I'll choose</button></span><p class="msg" id="fillAllMsg"></p>`;
+  $("#fillAllBox").innerHTML = `<b>Photos for the shopping list</b><span>${missing ? missing + " of " + total + " filler, topper, base and ornament-shape spots have no photo yet, so their items show a drawing." : "Every filler, topper and base spot has a photo."} The stylist's essentials without a photo are included too. Make them all at once, then tap Use this on each one you like (or Upload your own). Ribbons and ornaments already use photos.</span><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="fillKeep">Make and keep all</button><button class="btn ghost" id="fillAll">Make all, I'll choose</button></span><p class="msg" id="fillAllMsg"></p>`;
   $("#fillAll").onclick = () => makeAllFiller(false);
   $("#fillKeep").onclick = async () => { $("#fillKeep").disabled = true; await makeAllFiller(true); const mm = $("#fillAllMsg"); if (/^Made \d+/.test(mm.textContent)) mm.textContent = mm.textContent.replace(/^Made (\d+) of \d+\..*$/, "Made and kept $1 photos. They're in the app now (allow about a minute); any can be replaced on its card."); };
   $("#grid").innerHTML = SLOTS.filter(s => !s.product).map(s => `

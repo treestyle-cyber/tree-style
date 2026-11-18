@@ -21,7 +21,7 @@ import { checkPassword, parseDataUrl } from "../lib/util.js";
 
 const SLOTS = ["before", "after", "ribbonref", "ribbon_billows", "ribbon_cascades", "ribbon_layered", "ribbon_loops", "ribbon_bursts", "ribbon_curls", "velvet", "velvetberry", "hero", "homebg", "scan", "splash", "check", "design", "keep", "classic", "rustic", "modern", "elegant", "playful", "themed", "ess_hooks", "ess_wire", "ess_ties", "ess_remote", "ess_cord", "ess_scissors"];
 // Stylist's essentials cards each have a photo spot named ess_<card id>, so cards added in the Studio get one too
-const isSlot = s => SLOTS.includes(s) || /^ess_[a-z0-9]{1,24}$/.test(s) || /^(fill|top|base)_[a-z]{1,16}$/.test(s);   // fill_<kind>: filler photos
+const isSlot = s => SLOTS.includes(s) || /^ess_[a-z0-9]{1,24}$/.test(s) || /^(fill|top|base|orn)_[a-z]{1,16}$/.test(s);   // fill_<kind>: filler photos
 const MODELS = [process.env.GEMINI_IMAGE_MODEL, "gemini-3.1-flash-image-preview", "gemini-2.5-flash-image"].filter(Boolean);
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
 

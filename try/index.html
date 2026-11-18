@@ -27,7 +27,7 @@
 // Brand photos chosen in the Studio replace the fabric textures (each spot keeps its texture until then)
 fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" + Date.now() : "")).then(r => r.json()).then(d => { const ph = d.photos || {}; window.__PH = ph; if (Array.isArray(d.essentials) && d.essentials.length) window.__ESS = d.essentials; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); }
   // The shopping list may already be drawn by now: draw it again so filler photos show (Kylie: they weren't showing up)
-  if (Object.keys(ph).some(k => /^(fill|top|base)_/.test(k))) { const redo = () => { try { if (typeof result !== "undefined" && result) fill(); if (document.getElementById("s-look") && !document.getElementById("s-look").hidden) drawLook(); } catch (e) {} }; if (document.readyState === "complete") redo(); else addEventListener("load", redo); } }).catch(() => {});
+  if (Object.keys(ph).some(k => /^(fill|top|base|orn)_/.test(k))) { const redo = () => { try { if (typeof result !== "undefined" && result) fill(); if (document.getElementById("s-look") && !document.getElementById("s-look").hidden) drawLook(); } catch (e) {} }; if (document.readyState === "complete") redo(); else addEventListener("load", redo); } }).catch(() => {});
 </script>
 <link rel="icon" type="image/png" href="/brand/favicon.png">
 <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
@@ -1082,6 +1082,12 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .ring .rnum{position:relative;margin-top:-8px;font:400 calc(46px * var(--s-headline,1))/1 var(--serif);font-variant-numeric:lining-nums;color:var(--ink)}
   .ring .rof{position:absolute;top:62%;font:500 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
   html.theme-ivory .rating .rword b{font:italic 400 calc(19px * var(--s-subheadline,1))/1.15 var(--sans);color:var(--espresso)}
+
+  /* Ivory look: every shopping list icon is a photo square. Until an item has its own photo, its drawing sits on the same
+     dark pine-and-lights photo as the ribbon and ornament photos, so the list reads as one set (Kylie: make them consistent) */
+  html.theme-ivory .buyrow b.pic{padding:7px;border-radius:12px;box-shadow:none;background:linear-gradient(rgba(16,13,9,.35),rgba(16,13,9,.35)),url(/brand/start-garland.jpg) 30% 60%/260% auto}
+  html.theme-ivory .buyrow b.pic svg{filter:drop-shadow(0 4px 6px rgba(0,0,0,.55))}
+  html.theme-ivory .buyrow b.pic:has(.fillpic){padding:0}
 </style>
 </head>
 <body>
@@ -3339,12 +3345,15 @@ function nearestPhoto(set, hex, label) {
 function shopPhoto(b, key) {
   const l = String(b.label || "").toLowerCase(), ph = window.__PH || {};
   if (key === "ribbon") { if (/candy|peppermint|stripe/.test(l)) return ""; if (/plaid|tartan|check/.test(l)) return "/brand/ribbons/plaid-green.jpg"; const n = nearestPhoto("ribbons", b.color, l); return n ? `/brand/ribbons/${n}.jpg` : ""; }
-  if (key === "statement" || key === "medium") { if (/teardrop|drop|finial|icicle|star|figure|bird|pick|cluster/.test(l)) return ""; const n = nearestPhoto("ornaments", b.color, l); return n ? `/brand/ornaments/${n}.jpg` : ""; }
+  if (key === "statement" || key === "medium") {
+    const shape = /teardrop|\bdrop/.test(l) ? "teardrop" : /finial/.test(l) ? "finial" : /icicle/.test(l) ? "icicle" : "";
+    if (shape) return ph["orn_" + shape] || "";   // shaped ornaments: their own Studio photo spot
+    if (/star|figure|bird|pick|cluster/.test(l)) return ""; const n = nearestPhoto("ornaments", b.color, l); return n ? `/brand/ornaments/${n}.jpg` : ""; }
   if (key === "crown") { const k = kindOf(TOP_KINDS, l) || "topper"; return ph["top_" + k] || ph.top_topper || ""; }
   if (key === "base") { const k = kindOf(BASE_KINDS, l) || "skirt"; return ph["base_" + k] || ""; }
   return "";
 }
-function shopSlot(b, key) { const l = String(b.label || "").toLowerCase(); return key === "crown" ? "top_" + (kindOf(TOP_KINDS, l) || "topper") : key === "base" ? "base_" + (kindOf(BASE_KINDS, l) || "skirt") : ""; }
+function shopSlot(b, key) { const l = String(b.label || "").toLowerCase(); if ((key === "statement" || key === "medium") && /teardrop|\bdrop|finial|icicle/.test(l)) return "orn_" + (/finial/.test(l) ? "finial" : /icicle/.test(l) ? "icicle" : "teardrop"); return key === "crown" ? "top_" + (kindOf(TOP_KINDS, l) || "topper") : key === "base" ? "base_" + (kindOf(BASE_KINDS, l) || "skirt") : ""; }
 function fillKind(label) {
   const l = String(label || "").toLowerCase(); let k = "", at = 1e9;
   for (const [kind, r] of FILL_KINDS) { const m = new RegExp(r).exec(l); if (m && m.index < at) { at = m.index; k = kind; } }
@@ -3367,6 +3376,7 @@ function itemPic(b, key) {
     const ph = shopPhoto(b, key), slot = shopSlot(b, key);
     if (ph) return `<img class="fillpic" src="${esc(ph)}" alt="" loading="lazy"${slot ? ` data-pslot="${slot}"` : ""}>`;
     if (slot && SAMPLE) return `<span class="fillmark" data-pslot="${slot}">` + itemPic(b, key + "_draw") + `</span>`;
+    if (slot) return itemPic(b, key + "_draw");
   }
   if (/_draw$/.test(key)) key = key.replace(/_draw$/, "");
   if (key === "essentials") return `<svg viewBox="0 0 48 48" aria-hidden="true">${ESS_PIC[b.id] || `<path d="M14 18h20l-2 22H16z" fill="none" stroke="#D4B26E" stroke-width="2.2" stroke-linejoin="round"/><path d="M19 18a5 5 0 0 1 10 0" fill="none" stroke="#D4B26E" stroke-width="2.2"/>`}</svg>`;
