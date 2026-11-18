@@ -104,16 +104,26 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   #pageLoad{position:fixed;inset:0;z-index:400;display:grid;place-content:center;justify-items:center;gap:14px;background:var(--bg);opacity:0;animation:plIn .3s ease .25s forwards;transition:opacity .35s ease}
   #pageLoad.done{opacity:0 !important;animation:none;pointer-events:none}
   #pageLoad[hidden]{display:none}
-  .pl-mark{position:relative;width:84px;height:84px;display:grid;place-items:center}
-  .pl-mark svg{position:absolute;inset:0;width:100%;height:100%;animation:spin 1.4s linear infinite}
-  .pl-track{fill:none;stroke:rgba(184,156,107,.18);stroke-width:2}
-  .pl-arc{fill:none;stroke:var(--gold,#B89C6B);stroke-width:2.4;stroke-linecap:round;stroke-dasharray:72 289}
-  .pl-mark img{height:42px;width:auto;animation:plBreathe 1.8s ease-in-out infinite}
-  .pl-word{font:500 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+  /* The logo's pine gets decorated: ornaments pop onto its branches one after another, the star lights at the top,
+     little glints twinkle around it, then everything slips off and it starts again (a 3.6 second loop) */
+  .pl-tree{position:relative;width:100px;aspect-ratio:482/700}
+  .pl-tree img{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))}
+  .pl-tree i{position:absolute;width:9px;height:9px;margin:-2px 0 0 -4.5px;border-radius:50%;transform:scale(0);opacity:0;animation:plOrn 3.6s cubic-bezier(.3,1.6,.5,1) infinite}
+  .pl-tree i::before{content:"";position:absolute;left:50%;top:-2.5px;width:3.5px;height:2.5px;margin-left:-1.75px;border-radius:1px;background:#B89C6B}
+  .pl-tree i.ob{background:radial-gradient(circle at 35% 30%,#E0A3A0,#8E2B33 55%,#4A1218);box-shadow:0 0 6px rgba(142,43,51,.55)}
+  .pl-tree i.og{background:radial-gradient(circle at 35% 30%,#FFF1C9,#C9A458 55%,#7A5E2C);box-shadow:0 0 7px rgba(232,200,120,.7)}
+  .pl-tree i.oi{background:radial-gradient(circle at 35% 30%,#fff,#EDE4D3 55%,#B7A88E);box-shadow:0 0 6px rgba(255,248,230,.6)}
+  .pl-tree i.oe{background:radial-gradient(circle at 35% 30%,#9CC2A4,#2F5D43 55%,#163022);box-shadow:0 0 6px rgba(47,93,67,.5)}
+  .pl-star{position:absolute;left:50%;top:9%;width:20px;height:20px;margin:-10px 0 0 -10px;opacity:0;animation:plStar 3.6s ease infinite}
+  .pl-star svg{width:100%;height:100%;fill:#F2D58A;filter:drop-shadow(0 0 6px rgba(242,213,138,.9))}
+  .pl-tree u{position:absolute;width:8px;height:8px;margin:-4px 0 0 -4px;opacity:0;animation:plGlint 2.4s ease-in-out infinite;background:radial-gradient(circle,#FFF6DA 0 18%,transparent 20%),linear-gradient(90deg,transparent 44%,#F2D58A 50%,transparent 56%),linear-gradient(0deg,transparent 44%,#F2D58A 50%,transparent 56%)}
+  @keyframes plOrn{0%{transform:scale(0) translateY(-6px);opacity:0}9%{transform:scale(1) translateY(0);opacity:1}72%{transform:scale(1);opacity:1}86%,100%{transform:scale(.4) translateY(4px);opacity:0}}
+  @keyframes plStar{0%,58%{opacity:0;transform:scale(.3) rotate(-40deg)}68%{opacity:1;transform:scale(1.15) rotate(0)}74%{transform:scale(1)}84%{opacity:1}96%,100%{opacity:0;transform:scale(.6)}}
+  @keyframes plGlint{0%,100%{opacity:0;transform:scale(.3) rotate(0)}50%{opacity:1;transform:scale(1) rotate(45deg)}}
+  @media (prefers-reduced-motion:reduce){.pl-tree i,.pl-star{animation:none;opacity:1;transform:none}.pl-tree u{display:none}}
+  .pl-word{margin-top:4px;font:500 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
   @keyframes plIn{to{opacity:1}}
-  @keyframes plBreathe{50%{opacity:.6;transform:scale(.96)}}
-  html.theme-ivory .pl-arc{stroke:#4A2228}
-  html.theme-ivory .pl-track{stroke:rgba(74,54,32,.14)}
+  html.theme-ivory .pl-tree img{filter:drop-shadow(0 6px 14px rgba(74,54,32,.18))}
   /* ---------- TreeStyle brand surfaces ---------- */
   .welcome{position:relative;border-radius:var(--radius);overflow:hidden;margin:6px 0 26px;padding:30px 20px 26px;text-align:center;
     background:linear-gradient(rgba(20,28,44,.55),rgba(20,28,44,.82)),var(--photo-velvet, url(/brand/velvet-midnight.jpg)) center/cover;box-shadow:0 24px 40px -28px rgba(20,28,44,.7)}
@@ -1186,7 +1196,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </head>
 <body>
 <!-- Page loader: shows while the app starts (saved tree, sample tree, Studio phones), fades out once the first screen is ready -->
-<div id="pageLoad" role="status" aria-label="Loading"><div class="pl-mark"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" class="pl-track"/><circle cx="50" cy="50" r="46" class="pl-arc"/></svg><img src="/brand/logo-icon.png" alt=""></div><span class="pl-word">Loading</span></div>
+<div id="pageLoad" role="status" aria-label="Loading"><div class="pl-tree"><img src="/brand/logo-icon.png" alt=""><i class="ob" style="left:42%;top:36%;animation-delay:0.00s"></i><i class="og" style="left:59%;top:37%;animation-delay:0.16s"></i><i class="oi" style="left:36%;top:47%;animation-delay:0.32s"></i><i class="oe" style="left:64%;top:48%;animation-delay:0.48s"></i><i class="ob" style="left:30%;top:59%;animation-delay:0.64s"></i><i class="og" style="left:70%;top:58%;animation-delay:0.80s"></i><i class="oi" style="left:46%;top:62%;animation-delay:0.96s"></i><i class="oe" style="left:25%;top:72%;animation-delay:1.12s"></i><i class="ob" style="left:57%;top:73%;animation-delay:1.28s"></i><i class="og" style="left:75%;top:71%;animation-delay:1.44s"></i><i class="oi" style="left:38%;top:80%;animation-delay:1.60s"></i><i class="oe" style="left:66%;top:81%;animation-delay:1.76s"></i><i class="ob" style="left:18%;top:80%;animation-delay:1.92s"></i><i class="og" style="left:83%;top:79%;animation-delay:2.08s"></i><b class="pl-star"><svg viewBox="0 0 24 24"><path d="M12 1.5l2.6 7.1 7.4.3-5.8 4.6 2 7.2L12 16.5l-6.2 4.2 2-7.2L2 8.9l7.4-.3z"/></svg></b><u style="left:8%;top:30%;animation-delay:0.4s"></u><u style="left:90%;top:40%;animation-delay:1.3s"></u><u style="left:14%;top:62%;animation-delay:2.1s"></u><u style="left:88%;top:66%;animation-delay:0.9s"></u><u style="left:50%;top:92%;animation-delay:1.7s"></u></div><span class="pl-word">Loading</span></div>
 
 <header class="appbar" id="appbar">
   <button id="navBack" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
