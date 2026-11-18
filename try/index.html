@@ -1340,6 +1340,14 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .snapcam .camlevel.level i{background:#D9BC7E}
   .snapcam .camlevelbtn{position:absolute;left:50%;top:calc(max(16px,env(safe-area-inset-top)) + 112px);transform:translateX(-50%);padding:7px 14px;border-radius:999px;border:1px solid rgba(247,241,232,.7);background:rgba(20,14,10,.4);color:#F7F1E8;font:600 calc(12.5px * var(--s-body,1)) var(--sans);cursor:pointer}
   .snapcam .camlevelbtn[hidden],body:not(.camlive) .snapcam:not(.camlayer) .camlevelbtn{display:none}
+  /* The opening screen's logo is decorated: ornaments one at a time, then the star (a single pass, about 3 seconds in all) */
+  #splash .splogo-w{position:relative;display:inline-block;line-height:0}
+  #splash .splorns{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;opacity:0;transform:translateY(14px) scale(.96);animation:spLogo 1.1s cubic-bezier(.2,.7,.2,1) .15s forwards}
+  #splash .splorns .so{opacity:0;transform-box:fill-box;transform-origin:50% 0;animation:splOrn .7s ease-out forwards;animation-delay:calc(1.05s + var(--i) * .17s)}
+  @keyframes splOrn{0%{opacity:0;transform:translateY(-16px) scale(.6)}45%{opacity:1;transform:translateY(0) rotate(5deg)}70%{transform:rotate(-3deg)}100%{opacity:1;transform:none}}
+  #splash .splorns .sst{opacity:0;transform-box:fill-box;transform-origin:50% 50%;animation:splStar .8s ease forwards 2.95s;filter:drop-shadow(0 0 14px rgba(255,226,150,.9))}
+  @keyframes splStar{0%{opacity:0;transform:scale(.4) rotate(-70deg)}60%{opacity:1;transform:scale(1.3) rotate(0)}100%{opacity:1;transform:scale(1)}}
+  @media (prefers-reduced-motion:reduce){#splash .splorns,#splash .splorns .so,#splash .splorns .sst{animation:none;opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -1387,7 +1395,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   <!-- Opening screen: the welcome plays once each time the app is opened, then fades to the two choices -->
   <div id="splash" hidden aria-hidden="true">
     <div class="spwrap">
-      <img class="splogo" src="/brand/logo-stacked.png" alt="">
+      <span class="splogo-w"><img class="splogo" src="/brand/logo-stacked.png" alt=""><svg class="splorns" id="splOrns" viewBox="0 0 1100 776" aria-hidden="true"></svg></span>
       <div class="sphl"><span class="sprule"></span><h1>A more beautiful tree<br>starts here.</h1></div>
     </div>
   </div>
@@ -2716,7 +2724,7 @@ function playSplash() {
   let gone = false;
   const close = () => { if (gone) return; gone = true; sp.classList.add("out"); setTimeout(() => { sp.hidden = true; }, 750); };
   sp.addEventListener("click", close, { once: true });
-  setTimeout(close, fast ? 1600 : 3300);
+  setTimeout(close, fast ? 1600 : 4400);   // long enough for the logo tree to be decorated and its star to land
 }
 $("#navBack").onclick = () => history.back();
 $("#navHome").onclick = () => show("s-home", []);
@@ -3055,6 +3063,17 @@ function treeLoadSvg(small) {
 function fillTreeLoads(root) { (root || document).querySelectorAll("[data-treeload]:empty").forEach(el => { const sm = el.dataset.treeload === "s"; el.classList.add("treeload", sm ? "tl-small" : "tl-big"); el.innerHTML = treeLoadSvg(sm); }); }
 new MutationObserver(() => fillTreeLoads()).observe(document.documentElement, { childList: true, subtree: true });
 fillTreeLoads();
+
+// The opening screen's logo gets decorated like the loading tree (Kylie): once the logo has risen in, the gold ornaments
+// appear on its branch ends one at a time and the star lands on top; then the screen fades to home. The logo's tree sits
+// at x 350-706 of the 1100 x 776 stacked logo, so the loading tree's ornament spots are scaled onto it.
+(function () {
+  const svg = document.getElementById("splOrns"); if (!svg) return;
+  const k = 357 / 482, g = "splg";
+  const orns = TREE_ORNS["tl-big"].map(([x, y, r], i) => `<g class="so" style="--i:${i}"><line x1="${x}" y1="${y}" x2="${x}" y2="${y + 8}" stroke="#B8955A" stroke-width="3"/><rect x="${x - r * .32}" y="${y + 7}" width="${r * .64}" height="${r * .42}" rx="1.5" fill="#9A7A45"/><circle cx="${x}" cy="${y + 8 + r * 1.3}" r="${r}" fill="url(#${g})"/></g>`).join("");
+  svg.innerHTML = `<defs><radialGradient id="${g}" cx=".36" cy=".32" r=".75"><stop offset="0" stop-color="#FBF0CF"/><stop offset=".25" stop-color="#E3C68B"/><stop offset=".65" stop-color="#B8955A"/><stop offset="1" stop-color="#6E5228"/></radialGradient><linearGradient id="${g}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF4D0"/><stop offset=".55" stop-color="#E6C77F"/><stop offset="1" stop-color="#A9843F"/></linearGradient></defs>`
+    + `<g transform="translate(350 0) scale(${k.toFixed(4)})">${orns}<path class="sst" d="${treeStarPath(241, 58, 64)}" fill="url(#${g}s)"/></g>`;
+})();
 
 // Accounts (design only): the buttons say so, the two sign-in screens link to each other, and the Profile shows the saved trees
 const AC_SOON = "Accounts are coming soon. This screen is a design preview.";
