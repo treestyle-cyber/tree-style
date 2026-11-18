@@ -1064,14 +1064,14 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   /* Ivory look, photo screen before a photo is in (tree photos, not the room): a full-screen tree photo,
      viewfinder corners, "Snap or Upload a Photo of Your Tree" and a round shutter that opens the camera or library */
   .snapcam{display:none}
-  html.theme-ivory #s-photo:not(.has):not(.room):not(.roompath){animation:none}   /* the slide-in would trap the full-screen photo */
-  html.theme-ivory body:has(#s-photo:not([hidden]):not(.has):not(.room):not(.roompath)) .snapcam{display:block;position:fixed;inset:0;z-index:3;background:linear-gradient(180deg,rgba(20,14,10,.45),rgba(20,14,10,.1) 30%,rgba(20,14,10,.15) 60%,rgba(20,14,10,.7)),var(--photo-scan, url(/brand/scan-bg.jpg)) center/cover}
-  html.theme-ivory #s-photo:not(.has):not(.room):not(.roompath) > :not(#photoErr){display:none}
-  html.theme-ivory #s-photo:not(.has):not(.room):not(.roompath) > #photoErr{position:fixed;left:16px;right:16px;bottom:calc(10% + 92px + env(safe-area-inset-bottom));z-index:5;text-align:center;color:#FFE3DC;text-shadow:0 1px 8px rgba(0,0,0,.7)}
-  html.theme-ivory body:has(#s-photo:not([hidden]):not(.has):not(.room):not(.roompath)) .foot{display:none !important}
-  html.theme-ivory body:has(#s-photo:not([hidden]):not(.has):not(.room):not(.roompath)) .appbar{background:transparent;position:fixed;left:0;right:0;z-index:4}
-  html.theme-ivory body:has(#s-photo:not([hidden]):not(.has):not(.room):not(.roompath)) .appbar button,html.theme-ivory body:has(#s-photo:not([hidden]):not(.has):not(.room):not(.roompath)) #navBack{color:#F7F1E8;box-shadow:inset 0 0 0 1.5px rgba(247,241,232,.6)}
-  html.theme-ivory body:has(#s-photo:not([hidden]):not(.has):not(.room):not(.roompath)) .appbar .barmono{filter:none}
+  html.theme-ivory #s-photo:not(.has):not(.room){animation:none}   /* the slide-in would trap the full-screen photo */
+  html.theme-ivory body:has(#s-photo:not([hidden]):not(.has):not(.room)) .snapcam{display:block;position:fixed;inset:0;z-index:3;background:linear-gradient(180deg,rgba(20,14,10,.45),rgba(20,14,10,.1) 30%,rgba(20,14,10,.15) 60%,rgba(20,14,10,.7)),var(--photo-scan, url(/brand/scan-bg.jpg)) center/cover}
+  html.theme-ivory #s-photo:not(.has):not(.room) > :not(#photoErr){display:none}
+  html.theme-ivory #s-photo:not(.has):not(.room) > #photoErr{position:fixed;left:16px;right:16px;bottom:calc(10% + 92px + env(safe-area-inset-bottom));z-index:5;text-align:center;color:#FFE3DC;text-shadow:0 1px 8px rgba(0,0,0,.7)}
+  html.theme-ivory body:has(#s-photo:not([hidden]):not(.has):not(.room)) .foot{display:none !important}
+  html.theme-ivory body:has(#s-photo:not([hidden]):not(.has):not(.room)) .appbar{background:transparent;position:fixed;left:0;right:0;z-index:4}
+  html.theme-ivory body:has(#s-photo:not([hidden]):not(.has):not(.room)) .appbar button,html.theme-ivory body:has(#s-photo:not([hidden]):not(.has):not(.room)) #navBack{color:#F7F1E8;box-shadow:inset 0 0 0 1.5px rgba(247,241,232,.6)}
+  html.theme-ivory body:has(#s-photo:not([hidden]):not(.has):not(.room)) .appbar .barmono{filter:none}
   .snapcam .vf{position:absolute;width:44px;height:44px;border:0 solid rgba(247,241,232,.92)}
   .snapcam .tl{left:12%;top:20%;border-width:2.5px 0 0 2.5px;border-top-left-radius:6px}
   .snapcam .tr{right:12%;top:20%;border-width:2.5px 2.5px 0 0;border-top-right-radius:6px}
@@ -1310,6 +1310,12 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   @media (prefers-reduced-motion:reduce){.ring .rb.on .rbg{animation:none}}
   .ring .rnum{margin-top:-6px}
   html.theme-ivory .scoretop .ring{margin-top:14px}
+  /* The room photo gets the same full-screen viewfinder (Kylie): a living room photo behind it and "a Photo of Your Room"
+     (Studio spot "Room photo screen (Ivory look)", roomscan; until one is picked, the home screen's room photo) */
+  .snapcam .sn-room{display:none}
+  body:has(#s-photo.roompath:not([hidden])) .snapcam .sn-tree{display:none}
+  body:has(#s-photo.roompath:not([hidden])) .snapcam .sn-room{display:inline}
+  html.theme-ivory body:has(#s-photo.roompath:not([hidden]):not(.has):not(.room)) .snapcam{background:linear-gradient(180deg,rgba(20,14,10,.45),rgba(20,14,10,.1) 30%,rgba(20,14,10,.15) 60%,rgba(20,14,10,.7)),var(--photo-roomscan, url(/brand/home-bg.jpg)) center/cover}
 </style>
 </head>
 <body>
@@ -1781,7 +1787,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 
 <!-- Ivory look: a full-screen photo with viewfinder corners and a shutter button (Kylie's Upload / Scan screen) -->
     <div class="snapcam"><i class="vf tl"></i><i class="vf tr"></i><i class="vf bl"></i><i class="vf br"></i>
-      <p class="snaptxt">Snap or Upload<br>a Photo of Your Tree</p>
+      <p class="snaptxt">Snap or Upload<br>a Photo of Your <span class="sn-tree">Tree</span><span class="sn-room">Room</span></p>
       <button type="button" class="shutter" id="shutter" aria-label="Take or choose a photo"></button>
     </div>
 <button class="lookbar" id="lookBar" type="button"><svg class="sprig" viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M6 44C18 34 30 24 50 6"/><path d="M14 37c-4-6-3-12 1-15 2 6 2 11-1 15zM22 30c-5-5-5-11-2-15 3 5 4 10 2 15zM30 23c-4-6-3-12 1-15 2 6 2 11-1 15zM38 16c-4-5-4-10-1-13 2 5 3 9 1 13z"/><path d="M15 38c6-1 12 1 15 6-6 1-11-1-15-6zM23 31c6-1 12 1 15 5-6 1-11 0-15-5zM31 24c6-2 12 0 15 4-6 1-11 0-15-4zM39 17c5-2 10-1 13 3-5 1-10 1-13-3z"/></svg><span><b>Shop the Look</b><small>Curated selections for every style</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
