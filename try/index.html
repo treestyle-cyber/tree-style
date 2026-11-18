@@ -3900,7 +3900,7 @@ async function sampleStart() {
       const d = await (await fetch("/api/brand?sample=1" + (q.get("t") === "design" ? "&kind=design" : ""))).json();
       st = d.sample || null;
       if (st) {
-        const toData = async u => { if (!u || /^data:/.test(u)) return u; const b = await (await fetch(u)).blob(); return await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); }); };
+        const toData = async u => { if (!u || /^data:/.test(u)) return u; let b; try { const r = await fetch(u); if (!r.ok) return u; b = await r.blob(); } catch (e) { return u; } /* a missing picture keeps its address instead of losing the whole sample */ return await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); }); };
         st.photo = await toData(st.photo); st.after = await toData(st.after); st.keyPhoto = await toData(st.keyPhoto);
         for (const v of st.versions || []) v.after = await toData(v.after);
       }
@@ -3937,7 +3937,14 @@ async function sampleStart() {
     if (v === "error") { $("#startErr").textContent = $("#detailsErr").textContent = "Something went wrong: the design service is busy right now. Please try again."; setTimeout(() => $("#startErr").scrollIntoView({ block: "center" }), 300); }
     if (v === "tips") { $("#tipsH").textContent = "Before you take the photo"; $("#tipsList").innerHTML = tipGrid(); openSheet("#tipsSheet"); }
   }
-  else if (!st || !st.result) { badge.textContent = "No sample tree yet"; show(id, ["s-home"]); }
+  else if (!st || !st.result) {
+    badge.textContent = "No sample tree yet"; badge.style.top = "auto"; badge.style.bottom = "12px"; show(id, ["s-home"]);
+    // Say so on the screen itself, not just in the small badge (Eric saw an empty step and couldn't tell why)
+    const note = document.createElement("div");
+    note.style.cssText = "position:fixed;left:16px;right:16px;top:50%;transform:translateY(-50%);z-index:300;background:#FFFCF7;color:#2C2118;border:1px solid #D9CCC0;border-radius:16px;padding:18px 20px;font:15px/1.45 Inter,system-ui,sans-serif;text-align:center;box-shadow:0 18px 40px -20px rgba(0,0,0,.5)";
+    note.innerHTML = `<b style="display:block;font:500 20px/1.2 'Cormorant Garamond',serif;margin-bottom:6px">No sample ${q.get("t") === "design" ? "design" : "tree"} yet</b>This screen shows a tree's ${id === "s-plan" ? "step-by-step plan" : "results"}, so it needs a sample. Run ${q.get("t") === "design" ? "Design my tree" : "Check my tree"} once in this browser, then in Studio → Screens tap <i>Use my last tree as a sample</i>.`;
+    document.body.appendChild(note);
+  }
   // The waiting states: plan still designing, or plan ready and the picture still painting
   if (id === "s-reveal" && st && st.result && (v === "working" || v === "painting")) {
     if (v === "working") { planState = "wait"; planT0 = Date.now(); previewState = "idle"; } else { previewState = "wait"; }
