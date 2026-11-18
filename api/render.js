@@ -143,7 +143,12 @@ export default async function handler(req, res) {
   const rs = variant === "ribbon6" || variant === "simple" ? RIBBON_STYLES[ribbonStyle] : null;
   const styleRef = rs ? await ribbonRef(rs.slot) : null;
   const rref = styleRef || await ribbonRef();
-  const refUsed = styleRef ? rs.slot : rref ? "ribbonref" : "none";
+  // A Change something edit gets the ribbon reference photo only when the change is about ribbon (Eric, Nov 17: moving a
+  // leaf cluster came back as the reference photo itself, a different snowy tree in a different room, since a small
+  // edit with a second whole tree photo beside it can be painted onto the wrong picture)
+  const useRef = !revision || /ribbon/i.test(String(brief || ""));
+  const rrefSent = useRef ? rref : null;
+  const refUsed = !rrefSent ? "none" : styleRef ? rs.slot : "ribbonref";
   const refNote = rs ? `Reference photo showing the ribbon style to use, "${rs.name}". Do not copy its room, tree, colors, ribbon or ornaments; copy only HOW the ribbon is placed on the tree. Paint the ribbons the instructions describe, used this way.` : undefined;
   const shapeText = rs ? `\n\nRIBBON STYLE: ${rs.name}. ${rs.paint}` : RIBBON_SHAPE;
   // Lab "ribbon6": the old ribbon comes off first, and the new ribbon has to be plainly visible (Eric: a diagonal plaid
@@ -166,9 +171,9 @@ export default async function handler(req, res) {
     else console.error("RIBBON_CLEAR_FAILED", c.status, JSON.stringify(c.body?.candidates?.[0]?.finishReason || c.body?.error?.message || "").slice(0, 200));
   }
   for (const model of models) {
-    let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap);
+    let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rrefSent, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap);
     // Some models reject imageConfig; retry once without it.
-    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, prompt, null, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap);
+    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, prompt, null, pc, revision ? null : mp, rrefSent, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap);
     if (!out.ok) {
       lastErr = out.body?.error?.message || `Gemini error ${out.status}`;
       // Model not available, or no quota for it on this account: try the next one
@@ -185,7 +190,7 @@ export default async function handler(req, res) {
       const fluke = /NO_IMAGE|no image returned/i.test(String(why));
       if (!retried && (fluke || /SAFETY|PROHIBIT|RECITATION|BLOCK|IMAGE_OTHER|OTHER|copyright|trademark/i.test(String(why)))) {
         retried = true;
-        const again = await callGemini(model, img, fluke ? prompt : prompt + GENERIC, ar, pc, revision ? null : mp, rref, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap);
+        const again = await callGemini(model, img, fluke ? prompt : prompt + GENERIC, ar, pc, revision ? null : mp, rrefSent, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap);
         const p2 = again.body?.candidates?.[0]?.content?.parts || [], pic2 = p2.find(p => p.inlineData || p.inline_data);
         if (again.ok && pic2) { const d2 = pic2.inlineData || pic2.inline_data; return res.status(200).json({ image: `data:${d2.mimeType || d2.mime_type || "image/png"};base64,${d2.data}`, _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !fluke, retried: true } }); }
         console.error("RENDER_REFUSED_AGAIN", JSON.stringify({ model, why: String(again.body?.candidates?.[0]?.finishReason || again.status).slice(0, 200) }));
