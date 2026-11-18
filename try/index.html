@@ -99,6 +99,21 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .bar{height:6px;background:var(--line);border-radius:9px;overflow:hidden}
   .bar i{display:block;height:100%;width:0;background:var(--green);transition:width .5s}
   @keyframes spin{to{transform:rotate(360deg)}}
+  /* Page loader: the arched pine with a thin gold ring turning around it, on the page background. It fades in only after
+     a quarter second, so quick loads never flash it */
+  #pageLoad{position:fixed;inset:0;z-index:400;display:grid;place-content:center;justify-items:center;gap:14px;background:var(--bg);opacity:0;animation:plIn .3s ease .25s forwards;transition:opacity .35s ease}
+  #pageLoad.done{opacity:0 !important;animation:none;pointer-events:none}
+  #pageLoad[hidden]{display:none}
+  .pl-mark{position:relative;width:84px;height:84px;display:grid;place-items:center}
+  .pl-mark svg{position:absolute;inset:0;width:100%;height:100%;animation:spin 1.4s linear infinite}
+  .pl-track{fill:none;stroke:rgba(184,156,107,.18);stroke-width:2}
+  .pl-arc{fill:none;stroke:var(--gold,#B89C6B);stroke-width:2.4;stroke-linecap:round;stroke-dasharray:72 289}
+  .pl-mark img{height:42px;width:auto;animation:plBreathe 1.8s ease-in-out infinite}
+  .pl-word{font:500 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+  @keyframes plIn{to{opacity:1}}
+  @keyframes plBreathe{50%{opacity:.6;transform:scale(.96)}}
+  html.theme-ivory .pl-arc{stroke:#4A2228}
+  html.theme-ivory .pl-track{stroke:rgba(74,54,32,.14)}
   /* ---------- TreeStyle brand surfaces ---------- */
   .welcome{position:relative;border-radius:var(--radius);overflow:hidden;margin:6px 0 26px;padding:30px 20px 26px;text-align:center;
     background:linear-gradient(rgba(20,28,44,.55),rgba(20,28,44,.82)),var(--photo-velvet, url(/brand/velvet-midnight.jpg)) center/cover;box-shadow:0 24px 40px -28px rgba(20,28,44,.7)}
@@ -1170,6 +1185,8 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </style>
 </head>
 <body>
+<!-- Page loader: shows while the app starts (saved tree, sample tree, Studio phones), fades out once the first screen is ready -->
+<div id="pageLoad" role="status" aria-label="Loading"><div class="pl-mark"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" class="pl-track"/><circle cx="50" cy="50" r="46" class="pl-arc"/></svg><img src="/brand/logo-icon.png" alt=""></div><span class="pl-word">Loading</span></div>
 
 <header class="appbar" id="appbar">
   <button id="navBack" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -3871,7 +3888,11 @@ $("#resumeBtn").onclick = async () => {
 };
 $("#resumeNew").onclick = () => { $("#resume").hidden = true; document.querySelector(".tiles").scrollIntoView({ block: "center", behavior: "smooth" }); };
 // Coming back within a few hours lands right back on the tree; after that, the home screen offers it.
-async function startApp() {
+// The page loader goes once the first screen is ready (and after 20 seconds at most, so it can never trap anyone)
+function pageReady() { const l = document.getElementById("pageLoad"); if (!l || l.classList.contains("done")) return; l.classList.add("done"); setTimeout(() => { l.hidden = true; }, 400); }
+setTimeout(pageReady, 20000);
+async function startApp() { try { await startApp1(); } finally { pageReady(); } }
+async function startApp1() {
   if (SAMPLE && password && (await sampleStart())) return;   // the Studio password (or a preview copy) is needed
   if (!password) { show("s-pass", []); return; }
   // Refreshing a tree screen (/try/plan, /try/shop…) reopens your saved tree right there;
