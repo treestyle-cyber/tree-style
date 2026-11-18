@@ -160,6 +160,16 @@ const PLAN_PART = `
 
 YOUR PART: the scores and first impression are being written separately at the same time. You write only the plan, ideas, mockup and render brief.`;
 
+// Versions so far, so a request to take back or cut down something a recent change added can start from the picture
+// before that change and add a smaller amount, instead of asking the image model to erase pieces (Eric, Nov 17:
+// "too many green velvet picks", and removing some worked poorly).
+function versionsNote(rv) {
+  const vs = Array.isArray(rv.versions) ? rv.versions.slice(-8) : [];
+  if (vs.length < 2) return "";
+  const lines = vs.map(v => `Version ${v.n}${v.n === rv.at ? " (on screen now)" : ""}: ${String(v.label || "").slice(0, 60)}${v.brief ? ` (change made: ${String(v.brief).slice(0, 300)})` : ""}`).join("\n");
+  return `\nVERSIONS SO FAR (each picture is the one before it with that change painted on):\n${lines}\n` +
+    `TAKING BACK OR CUTTING DOWN: the picture tool adds pieces well but erases them poorly. If this request takes back or reduces something one of the recent changes added ("too many", "fewer", "less", "remove the ... you added", "smaller"), set start_from to the version number just before the change that added it, and write change_brief as edits to THAT version's picture: every change made since then that should stay (repeat it in full), plus the reduced one at the corrected amount (e.g. "add 5 green velvet picks" instead of 12, or leave it out entirely if they want none). Otherwise, and whenever the request is about something that was in the original design, set start_from to 0 and edit the current preview as usual.\n`;
+}
 function revisePrompt(rv, hasExtra, inspoN) {
   const t = rv.tree || {}, mode = rv.mode === "design" ? "design" : "check";
   const history = (rv.history || []).slice(-6).map(h => `${h.role === "user" ? "Homeowner" : "You"}: ${String(h.text).slice(0, 400)}`).join("\n");
@@ -172,7 +182,7 @@ ${rv.cone ? `Tree outline in the photo (fractions of width/height): apex ${JSON.
 
 CURRENT PLAN (JSON):
 ${JSON.stringify(rv.current)}
-${history ? "\nEARLIER IN THIS CONVERSATION:\n" + history + "\n" : ""}
+${history ? "\nEARLIER IN THIS CONVERSATION:\n" + history + "\n" : ""}${versionsNote(rv)}
 HOMEOWNER'S REQUEST: ${String(rv.request || "").slice(0, 800)}
 
 Use plain everyday words in reply and changes (stems not picks, flowers not florals, top of the tree not crown).
@@ -185,7 +195,8 @@ Reply with this JSON:
  "reply": "<1-2 friendly sentences>",
  "changes": ["<1-5 short items>"],
  "version_label": "<3-5 words>",
- "change_brief": "<edit instructions for the CURRENT preview photo, which already shows the previous version: describe ONLY what to add, remove or swap for this request, with sizes, colors, how many and where (e.g. 'Add red and black buffalo check wired ribbon, 2.5 inches wide, as 2-3 loops tucked into the branches at each of the 7 existing ribbon spots: upper left, upper right, ...'). Everything else stays exactly as it is. Even for a broad request ("more jeweled", "I don't love it", "make it fancier"), build on the current preview: name the specific pieces to add, swap or take off and where, and leave the rest as it is; never re-describe the whole tree. 40-120 words.>",
+ "start_from": <0 to edit the current preview; or a version number from VERSIONS SO FAR, when this request takes back or cuts down something a recent change added>,
+ "change_brief": "<edit instructions for the CURRENT preview photo (or, when start_from is set, for that version's picture), which already shows the previous version: describe ONLY what to add, remove or swap for this request, with sizes, colors, how many and where (e.g. 'Add red and black buffalo check wired ribbon, 2.5 inches wide, as 2-3 loops tucked into the branches at each of the 7 existing ribbon spots: upper left, upper right, ...'). Everything else stays exactly as it is. Even for a broad request ("more jeweled", "I don't love it", "make it fancier"), build on the current preview: name the specific pieces to add, swap or take off and where, and leave the rest as it is; never re-describe the whole tree. 40-120 words.>",
  ${PLAN_SHAPE(mode, true)}
 }
 ${PLAN_NOTES(mode, true)}

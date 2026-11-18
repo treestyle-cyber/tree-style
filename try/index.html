@@ -3867,7 +3867,7 @@ async function partnerSend(req, label, opts = {}) {
     const cur = { quick_fixes: result.quick_fixes, plan: result.plan, ideas: result.ideas, mockup: result.mockup };
     const res = await api("/api/evaluate", {
       image: photo, extra: sentOrn || undefined, inspo: mode === "design" ? (inspoPhoto || ideaPhoto || undefined) : undefined,
-      revise: { current: cur, request: req, history: chat, style: val("style"), theme: $("#theme").value.trim(), mode, tree: result.tree, cone: result.cone }
+      revise: { current: cur, request: req, history: chat, style: val("style"), theme: $("#theme").value.trim(), mode, tree: result.tree, cone: result.cone, versions: versions.slice(0, current + 1).map((v, i) => ({ n: i + 1, label: v.label, brief: v.brief || "" })), at: current + 1 }
     });
     const next = Object.assign(JSON.parse(JSON.stringify(result)), {
       quick_fixes: (res.quick_fixes || []).length ? res.quick_fixes : result.quick_fixes,
@@ -3882,11 +3882,13 @@ async function partnerSend(req, label, opts = {}) {
     L.painting();
     fill();
     loadDetails();
-    const prevAfter = after;
+    // Taking back or cutting down something a recent change added: edit the picture from before that change, adding the right amount, instead of asking the image model to erase pieces
+    const sf = Number(res.start_from) || 0, from = sf >= 1 && sf <= current && versions[sf - 1] && versions[sf - 1].after ? versions[sf - 1].after : null;
+    const prevAfter = from || after;
     // A small change edits the preview they're looking at; a whole new style is painted fresh from their photo
     await makePreview(sentOrn, !opts.fresh && prevAfter && res.change_brief ? { base: prevAfter, brief: res.change_brief } : null);
     versions = versions.slice(0, current + 1);
-    versions.push({ label: String(res.version_label || label || req).slice(0, 60), result: JSON.parse(JSON.stringify(result)), after });
+    versions.push({ label: String(res.version_label || label || req).slice(0, 60), result: JSON.parse(JSON.stringify(result)), after, brief: String(res.change_brief || "").slice(0, 600), from: from ? sf : undefined });
     current = versions.length - 1;
     const reply = res.reply || "Here's the updated tree.";
     addMsg("ai", reply, { tag: `Version ${current + 1}`, list: (res.changes || []).slice(0, 5) });
