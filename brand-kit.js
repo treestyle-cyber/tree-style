@@ -85,6 +85,7 @@
     // The bottom navigation bar and Shop the Look are off until switched on here (Eric approves first)
     if (!/[?&]nav=1\b/.test(location.search)) root.classList.toggle("has-nav", !!(kit.nav && kit.nav.bar) || lookPreview() === "ivory");
     // The overall Look: the dark velvet (as designed) or Ivory editorial (Kylie's mockup)
+    if (!/[?&]screen-preview\b/.test(location.search) || !root.classList.contains("has-help")) root.classList.toggle("has-help", !!(kit.nav && kit.nav.help));   // Need help? stylist, once Eric approves
     root.classList.toggle("theme-ivory", kit.look === "ivory" || lookPreview() === "ivory");
     style("kit-vars", (faces || "") + (vars.length ? ":root:root:root{" + vars.join(";") + "}" : "") + rules.join(""));
 

@@ -1088,6 +1088,52 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   html.theme-ivory .buyrow b.pic{padding:7px;border-radius:12px;box-shadow:none;background:linear-gradient(rgba(16,13,9,.35),rgba(16,13,9,.35)),url(/brand/start-garland.jpg) 30% 60%/260% auto}
   html.theme-ivory .buyrow b.pic svg{filter:drop-shadow(0 4px 6px rgba(0,0,0,.55))}
   html.theme-ivory .buyrow b.pic:has(.fillpic){padding:0}
+
+  /* Need help? personal stylist (Kylie's idea): off until the Brand kit switches it on (html.has-help) */
+  .helprow{display:none}
+  html.has-help .helprow{display:flex}
+  .helprow{align-items:center;gap:14px;width:100%;margin:14px 0;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-align:left;cursor:pointer;font:inherit}
+  .helprow .hi{width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;background:rgba(184,156,107,.16);color:var(--gold)}
+  .helprow .hi svg{width:22px;height:22px}
+  .helprow b{display:block;font:500 calc(19px * var(--s-subheadline,1))/1.15 var(--serif)}
+  .helprow small{display:block;color:var(--muted);font-size:calc(13.5px * var(--s-body,1))}
+  .helprow i{margin-left:auto;font:300 26px/1 var(--sans);font-style:normal;color:var(--muted)}
+  #s-help{display:flex;flex-direction:column;min-height:calc(100dvh - 90px)}
+  #s-help[hidden]{display:none}
+  #s-help h1{text-align:left}
+  #s-help h1::after{display:none}
+  .helphead{display:flex;gap:12px;align-items:center;margin:8px 0 14px}
+  .helphead .hav{width:48px;height:48px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--paper);border:1px solid var(--line)}
+  .helphead .hav img{height:30px;width:auto}
+  .helphead p{margin:0;font-size:calc(15px * var(--s-body,1));color:var(--ink);line-height:1.4}
+  .chatlog{display:grid;gap:10px;align-content:start;flex:1}
+  .chatlog .bub{max-width:84%;padding:12px 14px;border-radius:16px;font-size:calc(15px * var(--s-body,1));line-height:1.45;white-space:pre-line}
+  .chatlog .bub.me{justify-self:end;background:var(--ivory);color:var(--midnight);border-bottom-right-radius:4px}
+  .chatlog .bub.ai{justify-self:start;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-bottom-left-radius:4px}
+  .chatlog .bub.wait{color:var(--muted);font-style:italic}
+  .helpchips{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+  .helpchips button{appearance:none;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:99px;padding:8px 12px;font:500 13px var(--sans);cursor:pointer}
+  .helpform{display:flex;gap:8px;align-items:center;position:sticky;bottom:calc(10px + env(safe-area-inset-bottom));padding:6px 6px 6px 16px;border-radius:99px;background:var(--paper);border:1px solid var(--line)}
+  html.has-nav .helpform{bottom:calc(96px + env(safe-area-inset-bottom))}
+  .helpform input{flex:1;border:0 !important;background:none !important;padding:10px 0 !important;font:16px var(--sans);color:var(--ink);min-width:0;box-shadow:none !important}
+  .helpform button{width:42px;height:42px;border-radius:50%;border:0;background:var(--gold);color:var(--on-accent);display:grid;place-items:center;cursor:pointer;flex:none}
+  .helpform button svg{width:20px;height:20px}
+  .helpnote{font-size:12px;color:var(--muted);text-align:center;margin:10px 0 0}
+  /* Ivory look: the deep evergreen chat from the mockup */
+  html.theme-ivory #s-help{background:#1F3A2C;margin:-16px -20px 0;padding:16px 20px 24px;color:#F3EEE7}
+  html.theme-ivory #s-help h1,html.theme-ivory .helphead p{color:#F3EEE7}
+  html.theme-ivory .helphead .hav{background:#F3EEE7}
+  html.theme-ivory .chatlog .bub.me{background:#F7F1E8;color:#2C2118}
+  html.theme-ivory .chatlog .bub.ai{background:#F7F1E8;color:#2C2118;border:0}
+  html.theme-ivory .helpchips button{color:#F3EEE7;border-color:rgba(243,238,231,.35)}
+  html.theme-ivory .helpform{background:#F7F1E8;border:0}
+  html.theme-ivory .helpform input{color:#2C2118}
+  html.theme-ivory .helpform button{background:#1F3A2C;color:#F3EEE7}
+  html.theme-ivory .helpnote{color:rgba(243,238,231,.65)}
+  html.theme-ivory body:has(#s-help:not([hidden])){background:#1F3A2C}
+  html.theme-ivory body:has(#s-help:not([hidden])) .appbar{background:#1F3A2C}
+  html.theme-ivory body:has(#s-help:not([hidden])) .appbar .barmono{filter:none}
+  html.theme-ivory body:has(#s-help:not([hidden])) .appbar button,html.theme-ivory body:has(#s-help:not([hidden])) #navBack{color:#F3EEE7}
 </style>
 </head>
 <body>
@@ -1321,6 +1367,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
       </div>
       <div class="thanks" id="fbThanks" hidden>Thank you! 🎄</div>
     </div>
+<button class="helprow" type="button" data-help><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v10H9l-4 3.5v-3.5H4z"/><path d="M9.5 9.2a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.7-.9 1.3"/><path d="M12 14.4h.01"/></svg></span><span><b>Need help?</b><small>Ask your personal stylist</small></span><i>›</i></button>
     <button class="btn ghost" id="restart" style="width:100%">Try another tree</button>
     <details class="debug">
       <summary>Behind the scenes (testing)</summary>
@@ -1353,6 +1400,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
       <button class="btn ghost" id="prevStep">Back</button>
       <button class="btn" id="nextStep">Done, next step</button>
     </div>
+    <button class="helprow" type="button" data-help><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v10H9l-4 3.5v-3.5H4z"/><path d="M9.5 9.2a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.7-.9 1.3"/><path d="M12 14.4h.01"/></svg></span><span><b>Need help?</b><small>Ask your personal stylist</small></span><i>›</i></button>
   </section>
 
   <!-- Design partner -->
@@ -1391,7 +1439,17 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     <h1>Shopping list</h1>
     <p class="sub">What to look for, in the order you'll use it.</p>
     <div class="card" id="shop"></div>
+    <button class="helprow" type="button" data-help><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v10H9l-4 3.5v-3.5H4z"/><path d="M9.5 9.2a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.7-.9 1.3"/><path d="M12 14.4h.01"/></svg></span><span><b>Need help?</b><small>Ask your personal stylist</small></span><i>›</i></button>
     <p class="small muted" style="font-size:13px">Links open one of our picks or a store search. As an Amazon Associate, TreeStyle may earn from qualifying purchases.</p>
+  </section>
+  <!-- Need help? Personal stylist (on once the Brand kit switches it on) -->
+  <section class="screen" id="s-help" data-title="Your stylist" hidden>
+    <h1>Your personal stylist</h1>
+    <div class="helphead"><span class="hav"><img src="/brand/logo-icon.png" alt=""></span><p>Need a hand? Ask about ribbon, ornaments, placement or your shopping list.</p></div>
+    <div class="chatlog" id="helpLog"></div>
+    <div class="helpchips" id="helpChips"></div>
+    <form class="helpform" id="helpForm"><input id="helpText" type="text" placeholder="Type a message…" autocomplete="off" maxlength="600"><button aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button></form>
+    <p class="helpnote">Your stylist gives advice. To change your design, tap Change something on your results.</p>
   </section>
   <!-- Tab pages (shown by the bottom navigation bar) -->
   <section class="screen tabpage" id="s-styles" data-title="Styles" hidden>
@@ -1410,6 +1468,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
       <div class="card"><b>Early access</b><p>You're one of the first to try TreeStyle. Thank you for helping shape it.</p></div>
       <div class="card"><b>Your trees</b><p>Your tree, plan and shopping list are saved on this device only.</p></div>
       <div class="card"><b>Questions or ideas?</b><p>Tell us under "How did we do?" at the bottom of your results.</p></div>
+      <button class="helprow" type="button" data-help><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v10H9l-4 3.5v-3.5H4z"/><path d="M9.5 9.2a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.7-.9 1.3"/><path d="M12 14.4h.01"/></svg></span><span><b>Need help?</b><small>Ask your personal stylist</small></span><i>›</i></button>
       <button class="btn ghost" id="navSignOut">Sign out</button>
     </div>
   </section>
@@ -3854,6 +3913,11 @@ async function sampleStart() {
     $("#viewer").innerHTML = `<div class="renderwait"><img src="${photo}" alt="" style="max-height:220px;margin:0 auto 12px;border-radius:8px;opacity:.6">The preview didn't come through this time.<div class="err" style="font-size:13px">The image service was busy.</div><button class="btn" id="retryPreview" style="margin-top:12px">Paint it again</button></div>`;
     $("#seg").hidden = $("#hint").hidden = $("#save").hidden = $("#baBtn").hidden = true;
   }
+  if (id === "s-help") {
+    document.documentElement.classList.add("has-help");
+    if (v !== "empty") helpChat = [{ role: "user", text: "How do I add the ribbon so it doesn't look like a garland?" }, { role: "assistant", text: "Work in short pieces, 12 to 18 inches each. Tuck one end deep into the branches, let the ribbon billow out once, and tuck the other end back in. Place them in a loose zigzag down the tree, fuller toward the bottom, so the eye travels without seeing a line." }];
+    helpDraw();
+  }
   if (id === "s-partner" && st && st.result && v === "versions") {
     versions.push({ label: "More gold", result: JSON.parse(JSON.stringify(result)), after }); current = versions.length - 1; renderVersions();
     setTimeout(() => $("#versions").scrollIntoView({ block: "center" }), 300);
@@ -4008,6 +4072,30 @@ function drawLook() {
 }
 $("#lookList").onclick = e => { const b = e.target.closest("[data-all]"); if (!b) return; const k = lookStyle + b.dataset.all; lookAll[k] = !lookAll[k]; drawLook(); };
 $("#lookChips").onclick = e => { const b = e.target.closest("[data-look]"); if (!b) return; lookStyle = b.dataset.look; drawLook(); };
+
+// ---- Need help? personal stylist ----
+const HELP_CHIPS = ["How do I add the ribbon?", "How many ornaments does my tree need?", "My tree looks sparse. What can I do?", "Where do the biggest ornaments go?", "How do I make the top look finished?"];
+let helpChat = [];
+function helpDraw() {
+  const log = $("#helpLog");
+  log.innerHTML = (helpChat.length ? "" : `<div class="bub ai">Hi! I'm your TreeStyle stylist. Ask me anything about decorating your tree${result ? ", and I'll answer for the plan you have" : ""}.</div>`)
+    + helpChat.map(m => `<div class="bub ${m.role === "user" ? "me" : "ai"}${m.wait ? " wait" : ""}">${esc(m.text)}</div>`).join("");
+  $("#helpChips").innerHTML = helpChat.length ? "" : HELP_CHIPS.map(c => `<button type="button" data-ask="${esc(c)}">${esc(c)}</button>`).join("");
+  requestAnimationFrame(() => { const last = log.lastElementChild; if (last && helpChat.length) last.scrollIntoView({ block: "end", behavior: "smooth" }); });
+}
+async function helpAsk(q) {
+  q = String(q || "").trim(); if (!q) return;
+  helpChat = helpChat.filter(m => !m.wait); helpChat.push({ role: "user", text: q }, { role: "assistant", text: "Thinking…", wait: true }); helpDraw();
+  const tree = result ? { mode, style: val("style"), height: $("#hVal") ? $("#hVal").value : "", plan: (result.plan || []).map(p => ({ title: p.title, shop: p.shop })),
+    shopping: TreeGuide.shoppingList(result, mode).flatMap(g => g.items.map(i => i.label)) } : null;
+  let reply;
+  try { reply = (await api("/api/help", { messages: helpChat.filter(m => !m.wait), tree })).reply; }
+  catch (e) { reply = SAMPLE ? "In the real app your stylist answers here. (This is a screen preview, so nothing is sent.)" : "Sorry, we couldn't reach your stylist just now. Please try again."; }
+  helpChat = helpChat.filter(m => !m.wait); helpChat.push({ role: "assistant", text: reply }); helpDraw();
+}
+$("#helpForm").onsubmit = e => { e.preventDefault(); const t = $("#helpText"); helpAsk(t.value); t.value = ""; };
+$("#helpChips").onclick = e => { const b = e.target.closest("[data-ask]"); if (b) helpAsk(b.dataset.ask); };
+document.addEventListener("click", e => { if (e.target.closest("[data-help]")) { show("s-help"); helpDraw(); } });
 /* ---------------- start ---------------- */
 startApp();
 </script>
