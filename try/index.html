@@ -1218,20 +1218,28 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .renderwait .treeload{width:92px;margin-bottom:14px}
   @media (max-height:740px){#loading .treeload{width:76px;margin-bottom:10px}}
   @media (max-height:620px){#loading .treeload{width:56px;margin-bottom:6px}}
-  /* Ivory look sign-in (Kylie's layout, in the Ivory colors): the gold logo on cream at the top, a full-width photo band
-     (the Studio's Welcome photo) with "A more beautiful tree starts here." over it, then the sign-in on cream with the bronze button */
-  html.theme-ivory body:has(#s-pass:not([hidden])) .appbar{position:fixed;left:0;right:0;background:transparent;visibility:hidden}   /* the logo below takes its place */
-  html.theme-ivory #s-pass .hero{min-height:0;margin:0 -18px 6px;padding:0;border-bottom:0;background:none;justify-content:flex-start;gap:0}
-  html.theme-ivory #s-pass .hero .lockup{padding:max(22px,calc(env(safe-area-inset-top) + 14px)) 0 22px;margin:0}
-  html.theme-ivory #s-pass .hero .lockup img.logos{width:min(220px,58vw);filter:none}
-  html.theme-ivory #s-pass .hero .hl{min-height:min(52vw,320px);display:flex;flex-direction:column;justify-content:flex-end;padding:26px 26px 28px;
-    background:linear-gradient(90deg,rgba(28,18,10,.62),rgba(28,18,10,.25) 55%,rgba(28,18,10,0)),linear-gradient(180deg,rgba(28,18,10,0) 45%,rgba(28,18,10,.35)),var(--photo-hero, url(/brand/scan-bg.jpg)) center/cover}
-  html.theme-ivory #s-pass .hero .hl h1{color:#F7F1E8;font-size:calc(36px * var(--s-headline,1));max-width:8em;text-shadow:0 2px 16px rgba(0,0,0,.45)}
-  html.theme-ivory #s-pass .hero .rule{background:#E9D6AE;margin-left:-26px;width:70px}
-  html.theme-ivory #s-pass .kicker{color:var(--brass);margin-top:26px}
-  html.theme-ivory #s-pass .ttl{color:var(--ink)}
-  html.theme-ivory #s-pass .sub{margin-bottom:22px}
-  html.theme-ivory #s-pass #pw{background:#FFFCF7;border:1px solid rgba(138,107,62,.45);border-radius:999px;padding:15px 20px}
+  /* Ivory look sign-in (Kylie's mockup): a full-screen dark photo of frosted branches and a plum ornament (Studio spot
+     "Sign-in screen (Ivory look)", else brand/signin-bg.jpg), the gold logo at the top, the headline low on the left,
+     then a cream pill for the password and a midnight pill with a gold edge to enter */
+  html.theme-ivory body:has(#s-pass:not([hidden])) .appbar{position:fixed;left:0;right:0;background:transparent;visibility:hidden}
+  html.theme-ivory body:has(#s-pass:not([hidden]))::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:linear-gradient(180deg,rgba(8,10,14,.55),rgba(8,10,14,.1) 26%,rgba(8,10,14,.12) 50%,rgba(8,10,14,.62) 74%,rgba(8,10,14,.86)),var(--photo-signin, url(/brand/signin-bg.jpg)) center/cover}
+  html.theme-ivory body:has(#s-pass:not([hidden])) main{padding-bottom:0}
+  html.theme-ivory #s-pass{min-height:100dvh;display:flex;flex-direction:column;padding:0 8px max(28px,env(safe-area-inset-bottom));box-sizing:border-box}
+  html.theme-ivory #s-pass .hero{flex:1;min-height:0;margin:0;padding:max(26px,calc(env(safe-area-inset-top) + 18px)) 0 22px;border-bottom:0;background:none;display:flex;flex-direction:column;justify-content:space-between}
+  html.theme-ivory #s-pass .hero .lockup{margin:0;padding:0}
+  html.theme-ivory #s-pass .hero .lockup img.logos{width:min(230px,60vw);filter:drop-shadow(0 4px 10px rgba(0,0,0,.6))}
+  html.theme-ivory #s-pass .hero .hl{padding:0 8px}
+  html.theme-ivory #s-pass .hero .rule{display:none}
+  html.theme-ivory #s-pass .hero .hl h1{color:#F7F1E8;font:500 calc(46px * var(--s-headline,1))/1.02 var(--serif);max-width:7.5em;text-shadow:0 2px 18px rgba(0,0,0,.55)}
+  html.theme-ivory #s-pass .kicker{margin:0 0 12px;padding:0 8px;text-align:left;color:#D9BD84}
+  html.theme-ivory #s-pass .ttl,html.theme-ivory #s-pass .sub{display:none}
+  html.theme-ivory #s-pass form{display:grid;gap:14px;max-width:none;width:100%}
+  html.theme-ivory #s-pass #pw{width:100%;box-sizing:border-box;background:#F4EEE5;border:1px solid rgba(217,189,132,.7);border-radius:999px;padding:15px 20px;text-align:center;color:var(--ink);font:500 calc(20px * var(--s-headline,1)) var(--serif)}
+  html.theme-ivory #s-pass #pw::placeholder{color:#2C2118;opacity:.75}
+  html.theme-ivory #s-pass form .btn{width:100%;padding:15px 20px;background:#141C2C;color:#F7F1E8;border:1.5px solid #C9A86A;font:500 calc(21px * var(--s-headline,1)) var(--serif);letter-spacing:.01em;text-transform:none}
+  html.theme-ivory #s-pass form .btn:hover{background:#1D2740}
+  html.theme-ivory #s-pass .err{color:#FFD9CF;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 </style>
 </head>
 <body>
