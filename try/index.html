@@ -1082,6 +1082,16 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .ring .rnum{position:relative;margin-top:-8px;font:400 calc(46px * var(--s-headline,1))/1 var(--serif);font-variant-numeric:lining-nums;color:var(--ink)}
   .ring .rof{position:absolute;top:62%;font:500 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
   html.theme-ivory .rating .rword b{font:italic 400 calc(19px * var(--s-subheadline,1))/1.15 var(--sans);color:var(--espresso)}
+  /* Feedback rating in the Ivory look: five thin numbered rings (1 to 5) instead of ornaments; tapped ones turn deep berry like the score ring */
+  .hint-num{display:none}
+  html.theme-ivory .hint-orn{display:none}
+  html.theme-ivory .hint-num{display:inline}
+  html.theme-ivory .rate{gap:10px}
+  html.theme-ivory .rate button{width:46px;height:46px}
+  html.theme-ivory .rate button i{left:0;bottom:0;width:46px;height:46px;background:none;border:1.6px solid #E6DFD3;box-sizing:border-box;display:grid;place-items:center}
+  html.theme-ivory .rate button i::after{content:attr(data-n);position:static;width:auto;height:auto;margin:0;background:none;border-radius:0;font:400 calc(20px * var(--s-headline,1))/1 var(--serif);font-variant-numeric:lining-nums;color:var(--muted)}
+  html.theme-ivory .rate button.on i{background:none;border-color:#4A2228}
+  html.theme-ivory .rate button.on i::after{color:var(--ink)}
   /* The same ring on the results screen's score strip and at the top of How it scored, so the Ivory look never mixes rings and ornaments */
   html.theme-ivory .scorestrip .orns,html.theme-ivory .scorestrip .snum,html.theme-ivory .scoretop .orns,html.theme-ivory .scoretop .rword span{display:none}
   html.theme-ivory .scorestrip{background:var(--paper);border-color:var(--champagne)}
@@ -1372,9 +1382,9 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
       <div id="fbForm">
         <h3>How did we do?</h3>
         <p class="sub muted">You're one of our first testers. Your honest take shapes what we build.</p>
-        <div class="q2">Rate the results <span class="muted" style="font-weight:400;font-size:14px">· tap an ornament</span></div>
+        <div class="q2">Rate the results <span class="muted" style="font-weight:400;font-size:14px">· tap <span class="hint-orn">an ornament</span><span class="hint-num">a number</span></span></div>
         <div class="rate" id="fbRate" role="radiogroup" aria-label="Rating out of 5">
-          <button data-v="1" aria-label="1"><i></i></button><button data-v="2" aria-label="2"><i></i></button><button data-v="3" aria-label="3"><i></i></button><button data-v="4" aria-label="4"><i></i></button><button data-v="5" aria-label="5"><i></i></button>
+          <button data-v="1" aria-label="1"><i data-n="1"></i></button><button data-v="2" aria-label="2"><i data-n="2"></i></button><button data-v="3" aria-label="3"><i data-n="3"></i></button><button data-v="4" aria-label="4"><i data-n="4"></i></button><button data-v="5" aria-label="5"><i data-n="5"></i></button>
         </div>
         <div class="q2">Would you pay $19.99 for a Holiday Pass?</div>
         <div class="row" style="margin-bottom:12px">
