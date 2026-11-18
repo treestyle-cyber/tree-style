@@ -1338,6 +1338,8 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .snapcam .camlevel::before{content:"";position:absolute;left:0;right:0;top:0;border-top:1px dashed rgba(247,241,232,.45)}
   .snapcam .camlevel i{position:absolute;left:0;right:0;top:-1px;height:2px;border-radius:2px;background:#F7F1E8;box-shadow:0 0 6px rgba(0,0,0,.5);transform:rotate(var(--roll,0deg));transition:transform .2s,background .2s}
   .snapcam .camlevel.level i{background:#D9BC7E}
+  .snapcam .camlevelbtn{position:absolute;left:50%;top:calc(max(16px,env(safe-area-inset-top)) + 112px);transform:translateX(-50%);padding:7px 14px;border-radius:999px;border:1px solid rgba(247,241,232,.7);background:rgba(20,14,10,.4);color:#F7F1E8;font:600 calc(12.5px * var(--s-body,1)) var(--sans);cursor:pointer}
+  .snapcam .camlevelbtn[hidden],body:not(.camlive) .snapcam:not(.camlayer) .camlevelbtn{display:none}
 </style>
 </head>
 <body>
@@ -1808,7 +1810,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </div>
 
 <!-- Ivory look: a full-screen photo with viewfinder corners and a shutter button (Kylie's Upload / Scan screen) -->
-    <div class="snapcam"><video id="camv" playsinline muted autoplay hidden></video><div class="camguide" aria-live="polite"><span class="cgtxt"></span></div><div class="camlevel" aria-hidden="true"><i></i></div><i class="vf tl"></i><i class="vf tr"></i><i class="vf bl"></i><i class="vf br"></i>
+    <div class="snapcam"><video id="camv" playsinline muted autoplay hidden></video><div class="camguide" aria-live="polite"><span class="cgtxt"></span></div><div class="camlevel" aria-hidden="true"><i></i></div><button type="button" class="camlevelbtn" hidden>Turn on the level</button><i class="vf tl"></i><i class="vf tr"></i><i class="vf bl"></i><i class="vf br"></i>
       <p class="snaptxt">Snap or Upload<br>a Photo of Your <span class="sn-tree">Tree</span><span class="sn-room">Room</span></p>
       <button type="button" class="shutter" id="shutter" aria-label="Take or choose a photo"></button>
       <button type="button" class="camup" id="camUp" aria-label="Upload a photo from your library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M20.5 16l-5-5-8.5 8"/></svg><span>Upload</span></button>
@@ -1823,7 +1825,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </nav>
 <button id="helpFab" aria-label="Need help? Ask your stylist" data-help><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.2 9.2a2.9 2.9 0 1 1 4.1 2.6c-.8.4-1.3 1-1.3 1.8v.6"/><path d="M12 17.6h.01" stroke-width="2.6"/></svg></button>
 <!-- The in-app camera for every other photo (Ivory look): their idea, room, own tree, special pieces, inspiration, pieces in Change something -->
-<div class="snapcam camlayer" id="camLayer" hidden><video id="camLv" playsinline muted autoplay></video><div class="camguide" aria-live="polite"><span class="cgtxt"></span></div><div class="camlevel" aria-hidden="true"><i></i></div><i class="vf tl"></i><i class="vf tr"></i><i class="vf bl"></i><i class="vf br"></i>
+<div class="snapcam camlayer" id="camLayer" hidden><video id="camLv" playsinline muted autoplay></video><div class="camguide" aria-live="polite"><span class="cgtxt"></span></div><div class="camlevel" aria-hidden="true"><i></i></div><button type="button" class="camlevelbtn" hidden>Turn on the level</button><i class="vf tl"></i><i class="vf tr"></i><i class="vf bl"></i><i class="vf br"></i>
   <p class="snaptxt">Snap or Upload<br>a Photo of <span id="camLWhat">Your Piece</span></p>
   <p class="camlmsg" id="camLMsg" hidden></p>
   <button type="button" class="shutter" id="camLShot" aria-label="Take the photo"></button>
@@ -4437,12 +4439,22 @@ addEventListener("popstate", () => { if (!$("#camLayer").hidden) closeCamLayer()
 // and "Looks good" with gold corners when everything is right. Phones that don't report tilt simply get no level guide.
 const ORI = { beta: null, gamma: null };
 addEventListener("deviceorientation", e => { if (e.beta != null) { ORI.beta = e.beta; ORI.gamma = e.gamma; } });
-let motionAsked = false;
+// iPhones (Safari and Chrome) share tilt only after "Motion & Orientation Access" is allowed, and only when asked from a tap
+// (click), not a touch-down. Ask on the taps that lead to the camera, keep asking until it's allowed, and offer a button on
+// the camera itself while it's still needed.
+const motionNeedsAsk = () => !!(window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === "function");
+let motionState = motionNeedsAsk() ? "ask" : "ok";   // ask · ok · denied
 function askMotion() {
-  if (motionAsked) return; motionAsked = true;
-  try { if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === "function") DeviceOrientationEvent.requestPermission().catch(() => {}); } catch (e) {}
+  if (motionState !== "ask") return;
+  try {
+    DeviceOrientationEvent.requestPermission().then(r => { motionState = r === "granted" ? "ok" : "ask"; syncLevelBtn(); }).catch(() => {});   // not allowed yet: the camera keeps its "Turn on the level" button
+  } catch (e) {}
 }
-document.addEventListener("pointerdown", e => { if (e.target.closest(".snapcam,#tipsGo,label")) askMotion(); }, true);
+function syncLevelBtn() { document.querySelectorAll(".camlevelbtn").forEach(b => b.hidden = motionState !== "ask"); }
+document.addEventListener("click", e => {
+  if (e.target.closest(".choice,.src,label,#tipsGo,#shutter,#camLShot,.snapcam,.camlevelbtn,[data-nav]")) askMotion();
+}, true);
+document.addEventListener("click", e => { if (e.target.closest(".camlevelbtn")) askMotion(); });
 const gCanvas = document.createElement("canvas");
 const gCtx = gCanvas.getContext("2d", { willReadFrequently: true });
 // The tree is found by its fine detail (needles, lights and ornaments are busy; walls, floors and windows are smooth),
@@ -4485,6 +4497,7 @@ function runGuides() {
     let tips = []; try { tips = guideFor(v, isTree); } catch (e) {}
     const ok = !tips.length;
     box.querySelector(".cgtxt").textContent = ok ? "Looks good · take the photo" : tips[0];
+    const lb = box.querySelector(".camlevelbtn"); if (lb) lb.hidden = motionState !== "ask";
     box.classList.toggle("camok", ok); box.classList.add("guiding");
     const lv = box.querySelector(".camlevel");
     if (ORI.gamma != null) { lv.hidden = false; lv.style.setProperty("--roll", (-ORI.gamma).toFixed(1) + "deg"); lv.classList.toggle("level", Math.abs(ORI.gamma) <= 5 && ORI.beta >= 72 && ORI.beta <= 108); }
