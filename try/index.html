@@ -1218,19 +1218,20 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .renderwait .treeload{width:92px;margin-bottom:14px}
   @media (max-height:740px){#loading .treeload{width:76px;margin-bottom:10px}}
   @media (max-height:620px){#loading .treeload{width:56px;margin-bottom:6px}}
-  /* Ivory look sign-in (Kylie: the tester screen in the new branding): the opening screen's dark pine photo with the large
-     gold logo and its deep shadow, the line in ivory over it, then a cream panel that rises over the photo's bottom edge */
-  html.theme-ivory #s-pass .hero{min-height:min(60dvh,560px);margin-bottom:0;padding:26px 26px 54px;border-bottom:0;justify-content:space-between;
-    background:radial-gradient(70% 45% at 50% 34%,rgba(4,10,6,.5),transparent 75%),linear-gradient(180deg,rgba(0,0,0,.28),rgba(0,0,0,.22) 55%,rgba(0,0,0,.55)),var(--photo-splash, url(/brand/splash-bg.jpg)) center/cover}
-  html.theme-ivory #s-pass .hero .lockup img.logos{width:min(270px,70vw);filter:drop-shadow(0 6px 10px rgba(0,0,0,.85)) drop-shadow(0 16px 34px rgba(0,0,0,.7))}
-  html.theme-ivory #s-pass .hero .hl h1{color:#F7F1E8;text-shadow:0 2px 18px rgba(0,0,0,.6)}
-  html.theme-ivory #s-pass .hero .rule{background:#D9BD84}
-  html.theme-ivory #s-pass .kicker{position:relative;margin:-28px -18px 8px;padding:30px 0 0;background:var(--bg);border-radius:28px 28px 0 0;color:var(--brass)}
+  /* Ivory look sign-in (Kylie's layout, in the Ivory colors): the gold logo on cream at the top, a full-width photo band
+     (the Studio's Welcome photo) with "A more beautiful tree starts here." over it, then the sign-in on cream with the bronze button */
+  html.theme-ivory body:has(#s-pass:not([hidden])) .appbar{position:fixed;left:0;right:0;background:transparent;visibility:hidden}   /* the logo below takes its place */
+  html.theme-ivory #s-pass .hero{min-height:0;margin:0 -18px 6px;padding:0;border-bottom:0;background:none;justify-content:flex-start;gap:0}
+  html.theme-ivory #s-pass .hero .lockup{padding:max(22px,calc(env(safe-area-inset-top) + 14px)) 0 22px;margin:0}
+  html.theme-ivory #s-pass .hero .lockup img.logos{width:min(220px,58vw);filter:none}
+  html.theme-ivory #s-pass .hero .hl{min-height:min(52vw,320px);display:flex;flex-direction:column;justify-content:flex-end;padding:26px 26px 28px;
+    background:linear-gradient(90deg,rgba(28,18,10,.62),rgba(28,18,10,.25) 55%,rgba(28,18,10,0)),linear-gradient(180deg,rgba(28,18,10,0) 45%,rgba(28,18,10,.35)),var(--photo-hero, url(/brand/scan-bg.jpg)) center/cover}
+  html.theme-ivory #s-pass .hero .hl h1{color:#F7F1E8;font-size:calc(36px * var(--s-headline,1));max-width:8em;text-shadow:0 2px 16px rgba(0,0,0,.45)}
+  html.theme-ivory #s-pass .hero .rule{background:#E9D6AE;margin-left:-26px;width:70px}
+  html.theme-ivory #s-pass .kicker{color:var(--brass);margin-top:26px}
   html.theme-ivory #s-pass .ttl{color:var(--ink)}
   html.theme-ivory #s-pass .sub{margin-bottom:22px}
-  html.theme-ivory body:has(#s-pass:not([hidden])) .appbar{position:fixed;left:0;right:0;background:transparent;visibility:hidden}   /* the photo runs to the top */
-  html.theme-ivory #s-pass .hero{padding-top:max(34px,calc(env(safe-area-inset-top) + 24px))}
-  html.theme-ivory #s-pass #pw{background:#FFFDF9;border:1px solid var(--line);border-radius:999px;padding:15px 20px}
+  html.theme-ivory #s-pass #pw{background:#FFFCF7;border:1px solid rgba(138,107,62,.45);border-radius:999px;padding:15px 20px}
 </style>
 </head>
 <body>
