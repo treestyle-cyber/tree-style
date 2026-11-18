@@ -27,7 +27,7 @@
 // Brand photos chosen in the Studio replace the fabric textures (each spot keeps its texture until then)
 fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" + Date.now() : "")).then(r => r.json()).then(d => { const ph = d.photos || {}; window.__PH = ph; if (Array.isArray(d.essentials) && d.essentials.length) window.__ESS = d.essentials; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); }
   // The shopping list may already be drawn by now: draw it again so filler photos show (Kylie: they weren't showing up)
-  if (Object.keys(ph).some(k => /^fill_/.test(k))) { const redo = () => { try { if (typeof result !== "undefined" && result) fill(); if (document.getElementById("s-look") && !document.getElementById("s-look").hidden) drawLook(); } catch (e) {} }; if (document.readyState === "complete") redo(); else addEventListener("load", redo); } }).catch(() => {});
+  if (Object.keys(ph).some(k => /^(fill|top|base)_/.test(k))) { const redo = () => { try { if (typeof result !== "undefined" && result) fill(); if (document.getElementById("s-look") && !document.getElementById("s-look").hidden) drawLook(); } catch (e) {} }; if (document.readyState === "complete") redo(); else addEventListener("load", redo); } }).catch(() => {});
 </script>
 <link rel="icon" type="image/png" href="/brand/favicon.png">
 <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
@@ -3293,6 +3293,36 @@ const ESS_PIC = {
 // from the item's name. Pine has a built-in photo from Kylie's splash branches; the rest show the drawing until a photo is picked.
 const FILL_KINDS = [["pine", "pine(?! ?cone)|\\bfir\\b|spruce|norfolk|evergreen|greenery|garland"], ["cedar", "cedar|juniper|cypress"], ["eucalyptus", "eucalyptus"], ["magnolia", "magnolia"], ["holly", "holly"], ["berries", "berr"], ["pinecone", "pinecone|pine cone|cone"], ["cotton", "cotton"], ["birch", "birch|twig|branch"], ["wheat", "wheat|grass|oat"], ["orange", "orange|citrus"], ["glitter", "glitter|spray|sparkle|starburst|burst"], ["icicle", "icicle|crystal|acrylic|clear"], ["pearl", "pearl|bead"], ["candy", "candy|peppermint|lollipop|gumdrop|cookie|gingerbread|sprinkle"], ["poinsettia", "poinsettia"], ["rose", "rose(?! gold)"], ["hydrangea", "hydrangea"], ["feather", "feather|plume"], ["flower", "flower|floral|bloom|amaryllis|peony|lily|orchid"]];
 const FILL_BUILTIN = { pine: "/brand/filler/pine.jpg" };
+const TOP_KINDS = [["star", "star(?!burst)"], ["starburst", "starburst|sunburst|burst"], ["finial", "finial|spire|point"], ["angel", "angel"], ["bow", "bow"], ["crown", "crown"], ["snowflake", "snowflake"], ["bird", "bird|cardinal|owl|dove"], ["spray", "spray|floral|flower|pick|bouquet"], ["topper", ""]], BASE_KINDS = [["skirt", "skirt"], ["collar", "collar|ring"], ["basket", "basket|crate|urn|planter|pot"]];
+function kindOf(list, label) {
+  const l = String(label || "").toLowerCase(); let k = "", at = 1e9;
+  for (const [kind, r] of list) { if (!r) continue; const m = new RegExp(r).exec(l); if (m && m.index < at) { at = m.index; k = kind; } }
+  return k;
+}
+// Ribbon and ornament photos for the shopping list (the same photos as Shop the Look), by the color the plan gives
+const PHOTO_HEX = { ornaments: { red: "#B3262E", burgundy: "#6B1E2A", gold: "#C9A24E", champagne: "#DCC9A0", rosegold: "#D3A08E", green: "#2F6A47", sage: "#8FA48A", blue: "#5E7FA6", navy: "#1E2B48", silver: "#B8BDC3", ivory: "#E9E0CC", pink: "#D99AAE", copper: "#A9673A", brown: "#7A5534", purple: "#6E4A86" },
+  ribbons: { "burgundy-gold": "#6B1E2A", red: "#9E2A2F", sage: "#8FA48A", emerald: "#2A5A3D", navy: "#1E2B48", blue: "#5E7FA6", gold: "#B8923E", champagne: "#CDB68C", ivory: "#E6DCC6", silver: "#B3B8BE", brown: "#6E4B2E", pink: "#C98A9E", copper: "#A5653A" } };
+function nearestPhoto(set, hex, label) {
+  const l = String(label || "").toLowerCase(), names = Object.keys(PHOTO_HEX[set]);
+  const word = { "rose gold": "rosegold", wine: "burgundy", burgundy: set === "ribbons" ? "burgundy-gold" : "burgundy", emerald: set === "ribbons" ? "emerald" : "green", green: set === "ribbons" ? "emerald" : "green", white: "ivory", cream: "ivory", gray: "silver", grey: "silver", plum: "purple" };
+  // the color word named first, as a whole word ("wired" is not red; "sage green" is sage)
+  let pick = "", at = 1e9;
+  const cands = Object.entries(word).concat(names.map(n => [n.split("-")[0], n]));
+  for (const [w, n] of cands) { if (!names.includes(n)) continue; const m = new RegExp("\\b" + w + "\\b").exec(l); if (m && m.index < at) { at = m.index; pick = n; } }
+  if (pick) return pick;
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return "";
+  const rgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)), c = rgb("#" + m[1]);
+  return names.reduce((best, n) => { const d = rgb(PHOTO_HEX[set][n]).reduce((a, v, i) => a + (v - c[i]) ** 2, 0); return d < best[1] ? [n, d] : best; }, ["", 1e9])[0];
+}
+function shopPhoto(b, key) {
+  const l = String(b.label || "").toLowerCase(), ph = window.__PH || {};
+  if (key === "ribbon") { if (/candy|peppermint|stripe/.test(l)) return ""; if (/plaid|tartan|check/.test(l)) return "/brand/ribbons/plaid-green.jpg"; const n = nearestPhoto("ribbons", b.color, l); return n ? `/brand/ribbons/${n}.jpg` : ""; }
+  if (key === "statement" || key === "medium") { if (/teardrop|drop|finial|icicle|star|figure|bird|pick|cluster/.test(l)) return ""; const n = nearestPhoto("ornaments", b.color, l); return n ? `/brand/ornaments/${n}.jpg` : ""; }
+  if (key === "crown") { const k = kindOf(TOP_KINDS, l) || "topper"; return ph["top_" + k] || ph.top_topper || ""; }
+  if (key === "base") { const k = kindOf(BASE_KINDS, l) || "skirt"; return ph["base_" + k] || ""; }
+  return "";
+}
+function shopSlot(b, key) { const l = String(b.label || "").toLowerCase(); return key === "crown" ? "top_" + (kindOf(TOP_KINDS, l) || "topper") : key === "base" ? "base_" + (kindOf(BASE_KINDS, l) || "skirt") : ""; }
 function fillKind(label) {
   const l = String(label || "").toLowerCase(); let k = "", at = 1e9;
   for (const [kind, r] of FILL_KINDS) { const m = new RegExp(r).exec(l); if (m && m.index < at) { at = m.index; k = kind; } }
@@ -3308,8 +3338,13 @@ function fillPhoto(label) {
 function itemPic(b, key) {
   if (/^(primary_picks|small_picks|florals)$/.test(key)) {
     const ph = fillPhoto(b.label), fk = fillKind(b.label);
-    if (ph) return `<img class="fillpic" src="${esc(ph)}" alt="" loading="lazy" data-fillslot="${fk}">`;
-    if (fk && SAMPLE) return `<span class="fillmark" data-fillslot="${fk}">` + itemPic(b, key + "_draw") + `</span>`;   // Studio → Screens can find it to replace
+    if (ph) return `<img class="fillpic" src="${esc(ph)}" alt="" loading="lazy" data-pslot="fill_${fk}">`;
+    if (fk && SAMPLE) return `<span class="fillmark" data-pslot="fill_${fk}">` + itemPic(b, key + "_draw") + `</span>`;   // Studio → Screens can find it to replace
+  }
+  if (/^(ribbon|statement|medium|crown|base)$/.test(key)) {
+    const ph = shopPhoto(b, key), slot = shopSlot(b, key);
+    if (ph) return `<img class="fillpic" src="${esc(ph)}" alt="" loading="lazy"${slot ? ` data-pslot="${slot}"` : ""}>`;
+    if (slot && SAMPLE) return `<span class="fillmark" data-pslot="${slot}">` + itemPic(b, key + "_draw") + `</span>`;
   }
   if (/_draw$/.test(key)) key = key.replace(/_draw$/, "");
   if (key === "essentials") return `<svg viewBox="0 0 48 48" aria-hidden="true">${ESS_PIC[b.id] || `<path d="M14 18h20l-2 22H16z" fill="none" stroke="#D4B26E" stroke-width="2.2" stroke-linejoin="round"/><path d="M19 18a5 5 0 0 1 10 0" fill="none" stroke="#D4B26E" stroke-width="2.2"/>`}</svg>`;
@@ -3822,7 +3857,7 @@ function reportPhotoSpots() {
   const add = (el, slot) => { if (el && el !== document.body && el !== document.documentElement && !found.some(f => f.el === el)) found.push({ el: el.querySelector(":scope > .tpic") || el, slot }); };
   for (const sh of document.styleSheets) { let rules; try { rules = sh.cssRules; } catch (e) { continue; }
     for (const r of rules || []) { const m = r.selectorText && /--photo-([a-z0-9_]+)/.exec(r.cssText); if (!m) continue; try { document.querySelectorAll(r.selectorText).forEach(el => add(el, m[1])); } catch (e) {} } }
-  document.querySelectorAll("[data-fillslot]").forEach(el => add(el.closest(".pic,.lookpic") || el, "fill_" + el.dataset.fillslot));   // shopping list filler photos
+  document.querySelectorAll("[data-pslot]").forEach(el => add(el.closest(".pic,.lookpic") || el, el.dataset.pslot));   // shopping list filler photos
   document.querySelectorAll("[style*='--photo-']").forEach(el => add(el, /--photo-([a-z0-9_]+)/.exec(el.getAttribute("style"))[1]));
   const send = () => {
     const W = innerWidth, H = innerHeight, spots = [];
