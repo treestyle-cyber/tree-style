@@ -110,10 +110,11 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .pl-tree img{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))}
   .pl-tree i{position:absolute;width:9px;height:9px;margin:-2px 0 0 -4.5px;border-radius:50%;transform:scale(0);opacity:0;animation:plOrn 3.6s cubic-bezier(.3,1.6,.5,1) infinite}
   .pl-tree i::before{content:"";position:absolute;left:50%;top:-2.5px;width:3.5px;height:2.5px;margin-left:-1.75px;border-radius:1px;background:#B89C6B}
-  .pl-tree i.ob{background:radial-gradient(circle at 35% 30%,#E0A3A0,#8E2B33 55%,#4A1218);box-shadow:0 0 6px rgba(142,43,51,.55)}
-  .pl-tree i.og{background:radial-gradient(circle at 35% 30%,#FFF1C9,#C9A458 55%,#7A5E2C);box-shadow:0 0 7px rgba(232,200,120,.7)}
-  .pl-tree i.oi{background:radial-gradient(circle at 35% 30%,#fff,#EDE4D3 55%,#B7A88E);box-shadow:0 0 6px rgba(255,248,230,.6)}
-  .pl-tree i.oe{background:radial-gradient(circle at 35% 30%,#9CC2A4,#2F5D43 55%,#163022);box-shadow:0 0 6px rgba(47,93,67,.5)}
+  /* All gold, in three tones so they still read as separate ornaments: bright gold, champagne and antique gold */
+  .pl-tree i.ob{background:radial-gradient(circle at 35% 30%,#FFF4D2,#D9B45E 55%,#8A6A2E);box-shadow:0 0 7px rgba(232,200,120,.7)}
+  .pl-tree i.og{background:radial-gradient(circle at 35% 30%,#FFF8E6,#E8D3A2 55%,#A88C5A);box-shadow:0 0 7px rgba(240,220,170,.65)}
+  .pl-tree i.oi{background:radial-gradient(circle at 35% 30%,#F6E2B0,#B8924A 55%,#6B4F22);box-shadow:0 0 6px rgba(200,160,90,.6)}
+  .pl-tree i.oe{background:radial-gradient(circle at 35% 30%,#FFF1C9,#C9A458 55%,#7A5E2C);box-shadow:0 0 7px rgba(232,200,120,.7)}
   .pl-star{position:absolute;left:50%;top:9%;width:20px;height:20px;margin:-10px 0 0 -10px;opacity:0;animation:plStar 3.6s ease infinite}
   .pl-star svg{width:100%;height:100%;fill:#F2D58A;filter:drop-shadow(0 0 6px rgba(242,213,138,.9))}
   .pl-tree u{position:absolute;width:8px;height:8px;margin:-4px 0 0 -4px;opacity:0;animation:plGlint 2.4s ease-in-out infinite;background:radial-gradient(circle,#FFF6DA 0 18%,transparent 20%),linear-gradient(90deg,transparent 44%,#F2D58A 50%,transparent 56%),linear-gradient(0deg,transparent 44%,#F2D58A 50%,transparent 56%)}
