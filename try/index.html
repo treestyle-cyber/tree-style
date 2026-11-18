@@ -465,7 +465,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .steptabs button{flex:none;appearance:none;border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:9px 16px 9px 9px;font:500 calc(15px * var(--s-body,1)) var(--sans);color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:9px;white-space:nowrap;min-height:46px}
   .steptabs button i{font-style:normal;width:28px;height:28px;border-radius:50%;background:rgba(184,156,107,.14);display:grid;place-items:center;font-size:calc(13px * var(--s-body,1));font-weight:700}
   .steptabs button.on{background:var(--green);border-color:var(--green);color:var(--on-accent);font:500 calc(22px * var(--s-headline,1))/1 var(--serif);padding:8px 20px 8px 9px;min-height:50px}
-  .steptabs button.on i{background:rgba(20,28,44,.18);color:var(--on-accent)}
+  .steptabs button.on i{background:rgba(255,255,255,.16);color:inherit;font:700 calc(14px * var(--s-body,1))/1 var(--sans);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}   /* the number matches the step name (Kylie: it came out brown on brown) */
   .steptabs button.done i{background:var(--brass);color:var(--on-accent)}
   .guidebox{position:relative;border-radius:var(--radius);overflow:hidden;background:#222}
   .guidebox canvas{display:block;width:100%;height:auto;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;cursor:pointer}
