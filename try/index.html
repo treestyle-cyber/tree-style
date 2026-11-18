@@ -1210,8 +1210,6 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .treeload .lo{opacity:0;transform-box:fill-box;transform-origin:50% 0;animation:4.6s ease-in-out infinite}
   .treeload .ts{opacity:0;transform-box:fill-box;transform-origin:50% 50%;animation:tlStar 4.6s ease infinite;filter:drop-shadow(0 0 14px rgba(255,226,150,.9))}
   @keyframes tlStar{0%,58%{opacity:0;transform:scale(.4) rotate(-70deg)}66%{opacity:1;transform:scale(1.3) rotate(0)}72%,92%{opacity:1;transform:scale(1)}98%,100%{opacity:0;transform:scale(1)}}
-  /* the star is always on top, softly; it lights up once the ornaments are on */
-  .treeload .ts0{opacity:.5}
   @media (prefers-reduced-motion:reduce){.treeload .lo,.treeload .ts{animation:none;opacity:1}}
   /* the small tree in place of spinners */
   .treeload.tl-small{width:22px;margin:0;display:inline-block;vertical-align:middle}
@@ -2878,7 +2876,6 @@ function treeLoadSvg(small) {
     + list.map(([x, y, r]) => small
       ? `<g class="lo"><circle cx="${x}" cy="${y + r}" r="${r}" fill="url(#${g})"/></g>`
       : `<g class="lo"><line x1="${x}" y1="${y}" x2="${x}" y2="${y + 8}" stroke="#B8955A" stroke-width="3"/><rect x="${x - r * .32}" y="${y + 7}" width="${r * .64}" height="${r * .42}" rx="1.5" fill="#9A7A45"/><circle cx="${x}" cy="${y + 8 + r * 1.3}" r="${r}" fill="url(#${g})"/></g>`).join("")
-    + `<path class="ts0" d="${treeStarPath(241, small ? 60 : 58, small ? 96 : 64)}" fill="url(#${g}s)" stroke="url(#${g}s)" stroke-width="${small ? 14 : 6}" stroke-linejoin="round"/>`
     + `<path class="ts" d="${treeStarPath(241, small ? 60 : 58, small ? 96 : 64)}" fill="url(#${g}s)"/></svg>`;
 }
 function fillTreeLoads(root) { (root || document).querySelectorAll("[data-treeload]:empty").forEach(el => { const sm = el.dataset.treeload === "s"; el.classList.add("treeload", sm ? "tl-small" : "tl-big"); el.innerHTML = treeLoadSvg(sm); }); }
