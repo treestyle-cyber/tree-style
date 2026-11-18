@@ -1327,6 +1327,17 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .snapcam .camx{position:absolute;right:16px;top:max(16px,calc(env(safe-area-inset-top) + 8px));width:44px;height:44px;border-radius:50%;border:1.5px solid rgba(247,241,232,.7);background:rgba(20,14,10,.35);color:#F7F1E8;font:300 30px/1 var(--sans);cursor:pointer}
   .snapcam .camlmsg{position:absolute;left:24px;right:24px;top:42%;margin:0;text-align:center;color:#F7F1E8;font:calc(16px * var(--s-body,1))/1.45 var(--sans)}
   .snapcam .shutter:disabled{opacity:.45}
+  /* Live camera guides */
+  .snapcam .camguide{display:none;position:absolute;left:50%;top:calc(max(16px,env(safe-area-inset-top)) + 64px);transform:translateX(-50%);max-width:calc(100% - 40px);padding:9px 16px;border-radius:999px;background:rgba(20,14,10,.62);color:#F7F1E8;font:600 calc(14px * var(--s-body,1))/1.3 var(--sans);text-align:center;white-space:nowrap;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 4px 14px rgba(0,0,0,.3)}
+  .snapcam.guiding .camguide{display:block}
+  body:not(.camlive) .snapcam:not(.camlayer) .camguide,body:not(.camlive) .snapcam:not(.camlayer) .camlevel{display:none}
+  .snapcam.camok .camguide{background:rgba(201,163,94,.92);color:#20160D}
+  .snapcam.camok .vf{border-color:#D9BC7E}
+  .snapcam .camlevel{position:absolute;left:50%;top:50%;width:46%;height:0;transform:translate(-50%,-50%);pointer-events:none}
+  .snapcam .camlevel[hidden]{display:none}
+  .snapcam .camlevel::before{content:"";position:absolute;left:0;right:0;top:0;border-top:1px dashed rgba(247,241,232,.45)}
+  .snapcam .camlevel i{position:absolute;left:0;right:0;top:-1px;height:2px;border-radius:2px;background:#F7F1E8;box-shadow:0 0 6px rgba(0,0,0,.5);transform:rotate(var(--roll,0deg));transition:transform .2s,background .2s}
+  .snapcam .camlevel.level i{background:#D9BC7E}
 </style>
 </head>
 <body>
@@ -1797,7 +1808,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </div>
 
 <!-- Ivory look: a full-screen photo with viewfinder corners and a shutter button (Kylie's Upload / Scan screen) -->
-    <div class="snapcam"><video id="camv" playsinline muted autoplay hidden></video><i class="vf tl"></i><i class="vf tr"></i><i class="vf bl"></i><i class="vf br"></i>
+    <div class="snapcam"><video id="camv" playsinline muted autoplay hidden></video><div class="camguide" aria-live="polite"><span class="cgtxt"></span></div><div class="camlevel" aria-hidden="true"><i></i></div><i class="vf tl"></i><i class="vf tr"></i><i class="vf bl"></i><i class="vf br"></i>
       <p class="snaptxt">Snap or Upload<br>a Photo of Your <span class="sn-tree">Tree</span><span class="sn-room">Room</span></p>
       <button type="button" class="shutter" id="shutter" aria-label="Take or choose a photo"></button>
       <button type="button" class="camup" id="camUp" aria-label="Upload a photo from your library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M20.5 16l-5-5-8.5 8"/></svg><span>Upload</span></button>
@@ -1812,7 +1823,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </nav>
 <button id="helpFab" aria-label="Need help? Ask your stylist" data-help><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.2 9.2a2.9 2.9 0 1 1 4.1 2.6c-.8.4-1.3 1-1.3 1.8v.6"/><path d="M12 17.6h.01" stroke-width="2.6"/></svg></button>
 <!-- The in-app camera for every other photo (Ivory look): their idea, room, own tree, special pieces, inspiration, pieces in Change something -->
-<div class="snapcam camlayer" id="camLayer" hidden><video id="camLv" playsinline muted autoplay></video><i class="vf tl"></i><i class="vf tr"></i><i class="vf bl"></i><i class="vf br"></i>
+<div class="snapcam camlayer" id="camLayer" hidden><video id="camLv" playsinline muted autoplay></video><div class="camguide" aria-live="polite"><span class="cgtxt"></span></div><div class="camlevel" aria-hidden="true"><i></i></div><i class="vf tl"></i><i class="vf tr"></i><i class="vf bl"></i><i class="vf br"></i>
   <p class="snaptxt">Snap or Upload<br>a Photo of <span id="camLWhat">Your Piece</span></p>
   <p class="camlmsg" id="camLMsg" hidden></p>
   <button type="button" class="shutter" id="camLShot" aria-label="Take the photo"></button>
@@ -4361,6 +4372,7 @@ function stopCam() {
   camWant = false;
   if (camStream) camStream.getTracks().forEach(t => t.stop());
   camStream = null; const v = $("#camv"); v.srcObject = null; v.hidden = true; document.body.classList.remove("camlive");
+  const sc = v.closest(".snapcam"); if (sc) sc.classList.remove("guiding", "camok");
 }
 new MutationObserver(() => { if (camScreen()) { if (tipsSeen() && !camStream && !camWant) startCam(); } else if (camStream || camWant) stopCam(); })
   .observe($("#s-photo"), { attributes: true, attributeFilter: ["hidden", "class"] });
@@ -4384,7 +4396,7 @@ const CAM_WHAT = { ideaFile: "Your Inspiration", ideaRoomFile: "Your Room", room
 let camLInput = null, camLStream = null;
 function closeCamLayer() {
   if (camLStream) camLStream.getTracks().forEach(t => t.stop());
-  camLStream = null; $("#camLv").srcObject = null; $("#camLayer").hidden = true; camLInput = null;
+  camLStream = null; $("#camLv").srcObject = null; $("#camLayer").hidden = true; camLInput = null; $("#camLayer").classList.remove("guiding", "camok");
 }
 async function openCamLayer(inp) {
   camLInput = inp; $("#camLWhat").textContent = CAM_WHAT[inp.id] || "Your Photo";
@@ -4418,6 +4430,69 @@ $("#camLUp").onclick = () => { const inp = camLInput; closeCamLayer(); if (inp) 
 $("#camLX").onclick = closeCamLayer;
 addEventListener("visibilitychange", () => { if (document.hidden && !$("#camLayer").hidden) closeCamLayer(); });
 addEventListener("popstate", () => { if (!$("#camLayer").hidden) closeCamLayer(); });
+
+// Live guides on the in-app camera (Kylie): light (too dark, too bright), level (a line that turns gold when straight; tilt
+// up or down), and for tree photos the distance (the tree's green and lights should fill most of the height without touching
+// the edges). A few times a second it looks at a tiny copy of the picture; the most important tip shows in a pill at the top,
+// and "Looks good" with gold corners when everything is right. Phones that don't report tilt simply get no level guide.
+const ORI = { beta: null, gamma: null };
+addEventListener("deviceorientation", e => { if (e.beta != null) { ORI.beta = e.beta; ORI.gamma = e.gamma; } });
+let motionAsked = false;
+function askMotion() {
+  if (motionAsked) return; motionAsked = true;
+  try { if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === "function") DeviceOrientationEvent.requestPermission().catch(() => {}); } catch (e) {}
+}
+document.addEventListener("pointerdown", e => { if (e.target.closest(".snapcam,#tipsGo,label")) askMotion(); }, true);
+const gCanvas = document.createElement("canvas");
+const gCtx = gCanvas.getContext("2d", { willReadFrequently: true });
+// The tree is found by its fine detail (needles, lights and ornaments are busy; walls, floors and windows are smooth),
+// which works in warm or dim light where its colors don't read as green
+function guideFor(v, isTree) {
+  const W = 72, H = Math.max(48, Math.round(72 * v.videoHeight / v.videoWidth)); gCanvas.width = W; gCanvas.height = H;
+  gCtx.drawImage(v, 0, 0, W, H);
+  const d = gCtx.getImageData(0, 0, W, H).data, L = new Float32Array(W * H);
+  let sum = 0, clip = 0;
+  for (let i = 0; i < W * H; i++) { const l = .299 * d[i * 4] + .587 * d[i * 4 + 1] + .114 * d[i * 4 + 2]; L[i] = l; sum += l; if (l > 245) clip++; }
+  const n = W * H, mean = sum / n, tips = [];
+  if (mean < 38) tips.push("Too dark: turn on more lights");
+  else if (mean > 185 || clip / n > .15) tips.push("Too much light: turn away from the window");
+  if (ORI.beta != null) {
+    if (Math.abs(ORI.gamma) > 5) tips.push("Hold your phone level");
+    else if (ORI.beta < 72) tips.push("Tilt the top of your phone back");
+    else if (ORI.beta > 108) tips.push("Tilt the top of your phone forward");
+  }
+  if (isTree && mean >= 30) {
+    const x0 = Math.round(W * .1), x1 = Math.round(W * .9), busy = [];
+    for (let y = 0; y < H - 1; y++) {
+      let c = 0;
+      for (let x = x0; x < x1; x++) { const i = y * W + x; if (Math.abs(L[i + 1] - L[i]) + Math.abs(L[i + W] - L[i]) > 22) c++; }
+      busy.push(c / (x1 - x0) > .28);
+    }
+    const count = busy.filter(Boolean).length, top = busy.indexOf(true), bot = busy.lastIndexOf(true), R = busy.length;
+    if (count < R * .12) tips.push("Point the camera at your tree");
+    else if (top < R * .04 || bot > R * .96) tips.push("Step back so the whole tree fits, top included");
+    else if ((bot - top + 1) / R < .5) tips.push("Move a little closer");
+  }
+  return tips;
+}
+let guideTimer = null;
+function runGuides() {
+  clearInterval(guideTimer);
+  guideTimer = setInterval(() => {
+    const layer = !$("#camLayer").hidden, v = layer ? $("#camLv") : $("#camv"), box = (layer ? $("#camLayer") : $("#camv").closest(".snapcam"));
+    if (!v || !v.videoWidth || (!layer && !camStream)) { clearInterval(guideTimer); guideTimer = null; return; }
+    const isTree = layer ? $("#camLWhat").textContent === "Your Tree" : !$("#s-photo").classList.contains("roompath");
+    let tips = []; try { tips = guideFor(v, isTree); } catch (e) {}
+    const ok = !tips.length;
+    box.querySelector(".cgtxt").textContent = ok ? "Looks good · take the photo" : tips[0];
+    box.classList.toggle("camok", ok); box.classList.add("guiding");
+    const lv = box.querySelector(".camlevel");
+    if (ORI.gamma != null) { lv.hidden = false; lv.style.setProperty("--roll", (-ORI.gamma).toFixed(1) + "deg"); lv.classList.toggle("level", Math.abs(ORI.gamma) <= 5 && ORI.beta >= 72 && ORI.beta <= 108); }
+    else lv.hidden = true;
+  }, 350);
+}
+document.querySelectorAll(".snapcam video").forEach(v => v.addEventListener("playing", runGuides));
+
 $("#navSignOut").onclick = () => { password = ""; try { sessionStorage.removeItem("ts_pw"); } catch {} show("s-pass", []); };
 function drawStyleCards() {
   $("#styleCards").innerHTML = STYLE_PICK.concat([["themed", "Themed", "One story, your idea"]]).map(([v, name, sub]) => {
