@@ -155,6 +155,7 @@
       const emitClusters = () => Object.entries(cg).forEach(([key, { c, n, k, merged }]) => {
         if (merged) return;
         const ins = Math.round(inch[sz]), cn = colorName(c.color);
+        if (/mirror/i.test(cn)) { const dcn = cn.replace(/\s*mirror(ed)?(\s*ball)?/i, "").trim() || "silver"; out.push({ color: c.color, label: `${ins}" ${dcn} disco ball ornaments, for ${plural(k, "cluster", "clusters")}`, qty: range(n), q: `${ins} inch ${dcn} disco ball christmas ornaments` }); return; }
         out.push({ color: c.color, label: `${ins}" ${c.finish} ${cn} ornaments, for ${plural(k, "cluster", "clusters")}`, qty: range(n), q: `${ins} inch ${c.finish} ${cn} ball christmas ornaments` });
       });
       if (!list.length) { emitClusters(); return; }
@@ -175,6 +176,9 @@
       groups.forEach(x => {
         const want = Math.max(MIN_N[sz], Math.round(tot[sz] * x.n / sum)) + x.extra;
         const ins = Math.round(inch[sz]), o = x.o, cn = colorName(o.color);
+        // Mirrored ornaments are sold as disco balls (Eric): "silver mirrored" becomes "silver disco ball ornaments"
+        const disco = /mirror/i.test(cn) && o.shape !== "finial" && o.shape !== "drop", dcn = cn.replace(/\s*mirror(ed)?(\s*ball)?/i, "").trim() || "silver";
+        if (disco) { out.push({ color: o.color, label: `${ins}" ${dcn} disco ball ornaments${x.clusters ? `, including ${plural(x.clusters, "cluster", "clusters")}` : ""}`, qty: range(want), q: `${ins} inch ${dcn} disco ball christmas ornaments` }); return; }
         out.push({
           color: o.color,
           label: `${ins}" ${o.finish !== "shiny" ? o.finish + " " : "shiny "}${cn} ${SHAPE_Q[o.shape] === "ball" ? "ornaments" : SHAPE_Q[o.shape] + (o.shape === "candy" ? "s" : " ornaments")}${x.clusters ? `, including ${plural(x.clusters, "cluster", "clusters")}` : ""}`,
