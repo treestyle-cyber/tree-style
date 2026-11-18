@@ -408,6 +408,13 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .restyle{position:absolute;left:12px;bottom:12px;z-index:3;appearance:none;border:1px solid var(--gold);background:rgba(20,28,44,.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:var(--ivory);font:600 calc(14px * var(--s-body,1)) var(--sans);padding:11px 16px;border-radius:99px;cursor:pointer;box-shadow:0 6px 18px -6px rgba(0,0,0,.6)}
   .restyle{display:flex;align-items:center;gap:8px}
   .restyle svg{width:18px;height:18px;color:var(--gold)}
+  /* Undo / Redo on the preview (Eric, Nov 17): step back through the versions Change something made, right where the picture is */
+  .vstep{position:absolute;right:12px;bottom:12px;z-index:3;display:flex;gap:6px}
+  .vstep[hidden]{display:none}
+  .vstep button{appearance:none;display:flex;align-items:center;gap:6px;border:1px solid var(--gold);background:rgba(20,28,44,.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:var(--ivory);font:600 calc(13px * var(--s-body,1)) var(--sans);padding:10px 13px;border-radius:999px;cursor:pointer}
+  .vstep button[hidden]{display:none}
+  .vstep svg{width:16px;height:16px;color:var(--gold)}
+  html.theme-ivory .vstep button{color:#F7F1E8}
   .stylegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 6px}
   .stylegrid button{appearance:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:rgba(184,156,107,.05);padding:0;cursor:pointer;text-align:left;color:inherit;font:inherit}
   .stylegrid i{display:block;aspect-ratio:16/10;background-size:cover;background-position:center}
@@ -1396,7 +1403,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   <!-- Results hub -->
   <section class="screen" id="s-results" data-title="Your tree" hidden>
     <p class="resline" id="resLine" hidden></p>
-    <div class="vwrap"><div class="viewer" id="viewer"></div><button class="restyle" id="openRestyle" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 11-11"/><path d="m13.5 7.5 3 3"/><path d="M18 2.5v3M16.5 4h3M20.5 9v2.4M19.3 10.2h2.4M9.5 3v2M8.5 4h2"/></svg>Change something</button></div>
+    <div class="vwrap"><div class="viewer" id="viewer"></div><button class="restyle" id="openRestyle" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 11-11"/><path d="m13.5 7.5 3 3"/><path d="M18 2.5v3M16.5 4h3M20.5 9v2.4M19.3 10.2h2.4M9.5 3v2M8.5 4h2"/></svg>Change something</button><div class="vstep" id="vstep" hidden><button type="button" id="undoV" aria-label="Undo the last change" title="Undo the last change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>Undo</button><button type="button" id="redoV" aria-label="Redo the change" title="Redo the change"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>Redo</button></div></div>
     <div class="seg" id="seg" hidden>
       <button data-m="before">Before</button><button data-m="compare" class="on">Compare</button><button data-m="after">After</button>
     </div>
@@ -3756,7 +3763,22 @@ function useVersion(i) {
   $("#vNote").textContent = i === 0 ? "Showing the original plan." : `Version ${i + 1}: ${v.label}`;
   renderVersions(); saveSoon();
 }
+// Undo / Redo pills on the preview: step back to the version before the last change, or forward again (nothing is deleted until a new change is made from an earlier version)
+function updateStep() {
+  const vs = $("#vstep"); if (!vs) return;
+  const canUndo = current > 0, canRedo = current < versions.length - 1;
+  vs.hidden = !canUndo && !canRedo; $("#undoV").hidden = !canUndo; $("#redoV").hidden = !canRedo;
+}
+function stepVersion(d) {
+  const i = current + d; if (busy || i < 0 || i >= versions.length) return;
+  useVersion(i);
+  $("#vNote").textContent = d < 0 ? (i === 0 ? "Back to your original design. Redo brings the change back." : `Back to version ${i + 1}: ${versions[i].label}. Redo brings the change back.`) : `Version ${i + 1}: ${versions[i].label}`;
+  $("#pStatus").textContent = i === 0 ? "Showing the original." : `Showing version ${i + 1}. New changes build on this one.`;
+}
+$("#undoV").onclick = () => stepVersion(-1);
+$("#redoV").onclick = () => stepVersion(1);
 function renderVersions() {
+  updateStep();
   const el = $("#versions");
   if (versions.length < 2) { el.innerHTML = ""; return; }
   el.innerHTML = `<b>Versions:</b>` + versions.map((v, i) => `<button data-i="${i}" class="${i === current ? "on" : ""}" title="${esc(v.label)}">${i === 0 ? "Original" : "V" + (i + 1)}</button>`).join("");
@@ -3841,7 +3863,7 @@ async function partnerSend(req, label, opts = {}) {
     addMsg("ai", reply, { tag: `Version ${current + 1}`, list: (res.changes || []).slice(0, 5) });
     chat.push({ role: "user", text: req }, { role: "assistant", text: reply });
     renderVersions(); resetFeedback(); saveSoon();
-    $("#vNote").hidden = false; $("#vNote").textContent = `Version ${current + 1}: ${versions[current].label}. Older versions are under Change something.`;
+    $("#vNote").hidden = false; $("#vNote").textContent = `Version ${current + 1}: ${versions[current].label}. Undo on the picture steps back.`;
     L.done();
     show("s-results", ["s-home"]);
   } catch (e) {
