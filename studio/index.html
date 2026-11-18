@@ -275,7 +275,7 @@ const shrink = (src, max = 1600) => new Promise(res => {
 // Wide photos (home cards, banners) show New above In use, each at about the size it appears in the app
 const wide = a => { const [w, h] = String(a).split(":").map(Number); return w > h; };
 // Make every filler photo that is still missing, a few at a time; each then waits for "Use this" on its card
-async function makeAllFiller() {
+async function makeAllFiller(keep) {
   const cards = [...document.querySelectorAll('.slot[data-id^="fill_"],.slot[data-id^="top_"],.slot[data-id^="base_"]')].filter(el => !el.querySelector(".frame.cur img"));
   // the stylist's essentials cards make their own photos (Make a photo); include the ones still without a photo
   const ess = [...document.querySelectorAll(".emk")].filter(bt => { const c = bt.closest("[data-id]"); return c && !c.querySelector(".frame img"); });
@@ -283,18 +283,22 @@ async function makeAllFiller() {
   if (!cards.length && !ess.length) { m.textContent = "Every shopping list photo spot already has a photo."; return; }
   b.disabled = true; (cards[0] || ess[0]).scrollIntoView({ behavior: "smooth", block: "start" });
   let done = 0;
-  const one = async el => { el.querySelector(".gen").click(); await new Promise(r => { const t = setInterval(() => { if (!el.querySelector(".gen").disabled) { clearInterval(t); r(); } }, 800); }); m.textContent = `Made ${++done} of ${cards.length}. Tap Use this on the ones you like.`; };
+  const one = async el => { el.querySelector(".gen").click(); await new Promise(r => { const t = setInterval(() => { if (!el.querySelector(".gen").disabled) { clearInterval(t); r(); } }, 800); });
+    if (keep) { const u = el.querySelector(".use"); if (u && !u.disabled) { u.click(); await new Promise(r => setTimeout(r, 2500)); } }   /* "Make and keep all": saved without review */
+    m.textContent = `Made ${++done} of ${cards.length}. Tap Use this on the ones you like.`; };
   m.textContent = `Making ${cards.length + ess.length} photos, about 20 seconds each, three at a time…`;
   for (let i = 0; i < cards.length; i += 3) await Promise.all(cards.slice(i, i + 3).map(one));
-  for (const bt of ess) { bt.click(); await new Promise(r => { const t = setInterval(() => { if (!bt.disabled) { clearInterval(t); r(); } }, 800); }); m.textContent = `Made ${++done} of ${cards.length + ess.length}. Tap Use this (or Use this photo on the essentials) on the ones you like.`; }
+  for (const bt of ess) { bt.click(); await new Promise(r => { const t = setInterval(() => { if (!bt.disabled) { clearInterval(t); r(); } }, 800); });
+    if (keep) { const u = bt.closest("[data-id]").querySelector(".usep"); if (u && !u.hidden) { u.click(); await new Promise(r => setTimeout(r, 2500)); } } m.textContent = `Made ${++done} of ${cards.length + ess.length}. Tap Use this (or Use this photo on the essentials) on the ones you like.`; }
   b.disabled = false;
 }
 function build(current) {
   const ar = a => a.replace(":", " / ");
   const missing = SLOTS.filter(s => s.fill && !current[s.id]).length, total = SLOTS.filter(s => s.fill).length;
   if (!$("#fillAllBox")) { const box = document.createElement("div"); box.id = "fillAllBox"; box.className = "adopt"; $("#grid").before(box); }
-  $("#fillAllBox").innerHTML = `<b>Photos for the shopping list</b><span>${missing ? missing + " of " + total + " filler, topper and base spots have no photo yet, so their items show a drawing." : "Every filler, topper and base spot has a photo."} The stylist's essentials without a photo are included too. Make them all at once, then tap Use this on each one you like (or Upload your own). Ribbons and ornaments already use photos.</span><button class="btn" id="fillAll">Make all shopping list photos</button><p class="msg" id="fillAllMsg"></p>`;
-  $("#fillAll").onclick = makeAllFiller;
+  $("#fillAllBox").innerHTML = `<b>Photos for the shopping list</b><span>${missing ? missing + " of " + total + " filler, topper and base spots have no photo yet, so their items show a drawing." : "Every filler, topper and base spot has a photo."} The stylist's essentials without a photo are included too. Make them all at once, then tap Use this on each one you like (or Upload your own). Ribbons and ornaments already use photos.</span><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="fillKeep">Make and keep all</button><button class="btn ghost" id="fillAll">Make all, I'll choose</button></span><p class="msg" id="fillAllMsg"></p>`;
+  $("#fillAll").onclick = () => makeAllFiller(false);
+  $("#fillKeep").onclick = async () => { $("#fillKeep").disabled = true; await makeAllFiller(true); const mm = $("#fillAllMsg"); if (/^Made \d+/.test(mm.textContent)) mm.textContent = mm.textContent.replace(/^Made (\d+) of \d+\..*$/, "Made and kept $1 photos. They're in the app now (allow about a minute); any can be replaced on its card."); };
   $("#grid").innerHTML = SLOTS.filter(s => !s.product).map(s => `
     <div class="slot${s.texture ? " tex" : ""}${wide(s.aspect) ? " wide" : ""}" data-id="${s.id}">
       <h2>${s.name}</h2><div class="where">${s.where}</div>
