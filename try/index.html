@@ -1239,6 +1239,58 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   html.theme-ivory #s-pass #pw::placeholder{color:#2C2118;opacity:.75}
   html.theme-ivory #s-pass form .btn{width:100%;padding:17px 20px}   /* the brand's own button (color, lettering and shape from the Look and Brand kit), full width */
   html.theme-ivory #s-pass .err{color:#FFD9CF;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+  /* Accounts (design only, Kylie): Create your account, Welcome back (sign in) and the account Profile.
+     The two sign-in screens share the sign-in photo and pill style; nothing creates an account yet */
+  .acscreen{text-align:center;padding-bottom:30px}
+  .acscreen .lockup{margin:4px 0 18px}
+  .acscreen .lockup img.logos{width:min(170px,46vw);height:auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.55))}
+  .acscreen .lockup::after{display:none}
+  .ach{font:500 calc(36px * var(--s-headline,1))/1.08 var(--serif);margin:0;color:var(--ivory)}
+  .ach::after{display:none}
+  .acsub{margin:8px auto 20px;max-width:22em;color:var(--muted);font-size:calc(15px * var(--s-body,1));line-height:1.45}
+  .acform{display:grid;gap:12px;max-width:420px;margin:0 auto}
+  .acform input{width:100%;box-sizing:border-box;border-radius:999px;padding:15px 20px;border:1px solid rgba(217,189,132,.7);background:#F4EEE5;color:#2C2118;font:calc(16px * var(--s-body,1)) var(--sans)}
+  .acform input::placeholder{color:#7B6A57}
+  .acform .btn{width:100%;padding:16px 20px;margin-top:4px}
+  .acforgot{justify-self:end;margin:-4px 6px 0;background:none;border:0;padding:2px 0;color:#D9BD84;font:500 calc(13.5px * var(--s-body,1)) var(--sans);cursor:pointer}
+  .acor{display:flex;align-items:center;gap:12px;margin:6px 0 2px;color:var(--muted);font:500 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.24em;text-transform:uppercase}
+  .acor::before,.acor::after{content:"";flex:1;height:1px;background:rgba(217,189,132,.4)}
+  .acsoc{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border-radius:999px;padding:14px 20px;border:1px solid rgba(0,0,0,.12);background:#fff;color:#1F1F1F;font:600 calc(15px * var(--s-body,1)) var(--sans);cursor:pointer}
+  .acsoc svg{width:20px;height:20px}
+  .acsoc.acapple{background:#000;color:#fff;border-color:#000}
+  .acmsg{min-height:1.2em;margin:2px 0 0;color:#E9D6AE;font-size:calc(13.5px * var(--s-body,1))}
+  .acswap{margin:4px 0 0;color:var(--muted);font-size:calc(14.5px * var(--s-body,1))}
+  .acswap button{background:none;border:0;padding:0;color:#D9BD84;font:600 1em var(--sans);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+  .acfine{margin:0;color:var(--muted);font-size:calc(12px * var(--s-body,1));opacity:.85}
+  body:has(#s-signup:not([hidden]),#s-signin:not([hidden])) .appbar{position:fixed;left:0;right:0;background:transparent;visibility:hidden}   /* the large logo is enough */
+  .acscreen{padding-top:max(22px,calc(env(safe-area-inset-top) + 12px))}
+  html.theme-ivory body:has(#s-signup:not([hidden]),#s-signin:not([hidden]))::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:linear-gradient(180deg,rgba(8,10,14,.6),rgba(8,10,14,.45) 30%,rgba(8,10,14,.7) 60%,rgba(8,10,14,.88)),var(--photo-signin, url(/brand/signin-bg.jpg)) center/cover}
+  html.theme-ivory .acscreen{padding-top:max(22px,calc(env(safe-area-inset-top) + 12px))}
+  html.theme-ivory .acscreen .ach{color:#F7F1E8}
+  html.theme-ivory .acscreen .acsub,html.theme-ivory .acscreen .acswap,html.theme-ivory .acscreen .acfine,html.theme-ivory .acscreen .acor{color:#D8CCBC}
+  /* The account Profile */
+  .achead{display:flex;align-items:center;gap:14px;margin:10px 0 22px}
+  .acav{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--green);color:var(--on-accent);font:500 26px var(--serif)}
+  .achead b{display:block;font:500 calc(26px * var(--s-headline,1))/1.1 var(--serif);color:var(--ivory)}
+  .achead small{color:var(--muted);font-size:calc(14px * var(--s-body,1))}
+  .ackey{font:600 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--brass);margin:6px 0 10px}
+  .actrees{display:flex;gap:12px;overflow-x:auto;margin:0 -18px 22px;padding:0 18px 4px;scrollbar-width:none}
+  .actrees::-webkit-scrollbar{display:none}
+  .actree{flex:none;width:132px;border-radius:14px;overflow:hidden;background:var(--paper);border:1px solid var(--line);text-align:left;padding:0;cursor:pointer;color:inherit;font:inherit}
+  .actree span{display:block;aspect-ratio:3/4;background:center/cover var(--paper-2,#EFE6DA)}
+  .actree b{display:block;padding:8px 10px 0;font:500 calc(17px * var(--s-subheadline,1))/1.15 var(--serif);color:var(--ivory)}
+  .actree small{display:block;padding:2px 10px 10px;color:var(--muted);font-size:calc(12px * var(--s-body,1))}
+  .actree.acnew span{display:grid;place-items:center;font:300 40px var(--serif);color:var(--gold);background:none;border-bottom:1px dashed var(--line)}
+  .acrows{display:grid;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--paper)}
+  .acrows button{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;background:none;border:0;border-top:1px solid var(--line);color:var(--ink);font:calc(15.5px * var(--s-body,1)) var(--sans);text-align:left;cursor:pointer}
+  .acrows button:first-child{border-top:0}
+  .acrows i{font-style:normal;font-size:22px;color:var(--muted)}
+  .actog{width:42px;height:24px;border-radius:99px;background:var(--line);position:relative}
+  .actog::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  #s-account .acmsg{text-align:center;color:var(--brass)}
+  .acout{width:100%;margin-top:8px}
+  .acdel{display:block;margin:14px auto 0;background:none;border:0;color:#A3473F;font:500 calc(14px * var(--s-body,1)) var(--sans);cursor:pointer}
 </style>
 </head>
 <body>
@@ -1578,6 +1630,55 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
       <button class="helprow" type="button" data-help><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v10H9l-4 3.5v-3.5H4z"/><path d="M9.5 9.2a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.7-.9 1.3"/><path d="M12 14.4h.01"/></svg></span><span><b>Need help?</b><small>Ask your personal stylist</small></span><i>›</i></button>
       <button class="btn ghost" id="navSignOut">Sign out</button>
     </div>
+  </section>
+  <!-- Accounts: design only (Kylie), not connected to any sign-in service yet; nothing in the app links here until Eric approves -->
+  <section class="screen acscreen" id="s-signup" data-title="" hidden>
+    <div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="TreeStyle · The art of styling"></div>
+    <h1 class="ach">Create your account</h1>
+    <p class="acsub">Save your trees and shopping lists and see them on any device.</p>
+    <form class="acform" data-acform>
+      <input type="text" placeholder="Your name" autocomplete="name">
+      <input type="email" placeholder="Email" autocomplete="email">
+      <input type="password" placeholder="Password" autocomplete="new-password">
+      <button class="btn">Create account</button>
+      <div class="acor"><span>or</span></div>
+      <button type="button" class="acsoc acapple" data-acsoon><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.1-1.2 2.9-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.5-1-2.4-3.9zM14 5.5c.7-.8 1.1-1.9 1-3-1 0-2.2.7-2.9 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.2-.6 2.9-1.4z"/></svg>Continue with Apple</button>
+      <button type="button" class="acsoc" data-acsoon><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9c-.3 1.4-1 2.5-2.2 3.3v2.7h3.5c2.1-1.9 3.3-4.7 3.3-8z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-1 .7-2.2 1.1-3.8 1.1-2.9 0-5.4-2-6.3-4.6H2.1v2.8C3.9 20.5 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.7 14.1c-.2-.7-.4-1.4-.4-2.1s.1-1.4.4-2.1V7.1H2.1C1.4 8.6 1 10.2 1 12s.4 3.4 1.1 4.9l3.6-2.8z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.1-3.1C17.5 2.1 15 1 12 1 7.7 1 3.9 3.5 2.1 7.1l3.6 2.8C6.6 7.4 9.1 5.4 12 5.4z"/></svg>Continue with Google</button>
+      <p class="acmsg" aria-live="polite"></p>
+      <p class="acswap">Already have an account? <button type="button" data-acgo="s-signin">Sign in</button></p>
+      <p class="acfine">By creating an account you agree to our Terms and Privacy Policy.</p>
+    </form>
+  </section>
+  <section class="screen acscreen" id="s-signin" data-title="" hidden>
+    <div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="TreeStyle · The art of styling"></div>
+    <h1 class="ach">Welcome back</h1>
+    <p class="acsub">Sign in to see your trees.</p>
+    <form class="acform" data-acform>
+      <input type="email" placeholder="Email" autocomplete="email">
+      <input type="password" placeholder="Password" autocomplete="current-password">
+      <button type="button" class="acforgot" data-acsoon>Forgot password?</button>
+      <button class="btn">Sign in</button>
+      <div class="acor"><span>or</span></div>
+      <button type="button" class="acsoc acapple" data-acsoon><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.1-1.2 2.9-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.5-1-2.4-3.9zM14 5.5c.7-.8 1.1-1.9 1-3-1 0-2.2.7-2.9 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.2-.6 2.9-1.4z"/></svg>Continue with Apple</button>
+      <button type="button" class="acsoc" data-acsoon><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9c-.3 1.4-1 2.5-2.2 3.3v2.7h3.5c2.1-1.9 3.3-4.7 3.3-8z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-1 .7-2.2 1.1-3.8 1.1-2.9 0-5.4-2-6.3-4.6H2.1v2.8C3.9 20.5 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.7 14.1c-.2-.7-.4-1.4-.4-2.1s.1-1.4.4-2.1V7.1H2.1C1.4 8.6 1 10.2 1 12s.4 3.4 1.1 4.9l3.6-2.8z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.1-3.1C17.5 2.1 15 1 12 1 7.7 1 3.9 3.5 2.1 7.1l3.6 2.8C6.6 7.4 9.1 5.4 12 5.4z"/></svg>Continue with Google</button>
+      <p class="acmsg" aria-live="polite"></p>
+      <p class="acswap">New to TreeStyle? <button type="button" data-acgo="s-signup">Create an account</button></p>
+    </form>
+  </section>
+  <section class="screen tabpage" id="s-account" data-title="Profile" hidden>
+    <div class="achead"><span class="acav">Y</span><div><b>Your name</b><small>you@email.com</small></div></div>
+    <div class="ackey">Your trees</div>
+    <div class="actrees" id="acTrees"></div>
+    <div class="ackey">Account</div>
+    <div class="acrows">
+      <button type="button" data-acsoon><span>Name and email</span><i>›</i></button>
+      <button type="button" data-acsoon><span>Password</span><i>›</i></button>
+      <button type="button" data-acsoon><span>Email me new looks and tips</span><em class="actog"></em></button>
+      <button type="button" data-acsoon><span>Help and questions</span><i>›</i></button>
+    </div>
+    <p class="acmsg" aria-live="polite"></p>
+    <button class="btn ghost acout" type="button" data-acsoon>Sign out</button>
+    <button class="acdel" type="button" data-acsoon>Delete account</button>
   </section>
   <section class="screen tabpage" id="s-look" data-title="Shop the Look" hidden>
     <h1>Shop the Look</h1>
@@ -2897,6 +2998,21 @@ function fillTreeLoads(root) { (root || document).querySelectorAll("[data-treelo
 new MutationObserver(() => fillTreeLoads()).observe(document.documentElement, { childList: true, subtree: true });
 fillTreeLoads();
 
+// Accounts (design only): the buttons say so, the two sign-in screens link to each other, and the Profile shows the saved trees
+const AC_SOON = "Accounts are coming soon. This screen is a design preview.";
+document.addEventListener("click", e => {
+  const go = e.target.closest("[data-acgo]"); if (go) { show(go.dataset.acgo, []); return; }
+  const soon = e.target.closest("[data-acsoon]");
+  if (soon) { const m = soon.closest(".screen").querySelector(".acmsg"); if (m) m.textContent = AC_SOON; }
+});
+document.querySelectorAll("[data-acform]").forEach(f => f.addEventListener("submit", e => { e.preventDefault(); f.querySelector(".acmsg").textContent = AC_SOON; }));
+function drawAccount(st) {
+  const trees = [];
+  if (st && (st.after || st.photo)) trees.push({ pic: st.after || st.photo, name: (st.result && st.result.headline) ? "Your tree" : "Your tree", when: "Saved on this device" });
+  $("#acTrees").innerHTML = trees.map(t => `<button type="button" class="actree" data-acsoon><span style="background-image:url('${t.pic}')"></span><b>${t.name}</b><small>${t.when}</small></button>`).join("")
+    + `<button type="button" class="actree acnew" data-acgo="s-home"><span>+</span><b>Start a new tree</b><small>Check or design</small></button>`;
+}
+
 let loadGen = 0;
 function startLoading(title, steps, evalSeconds, pic) {
   const gen = ++loadGen;
@@ -4017,6 +4133,7 @@ async function sampleStart() {
   badge.style.cssText = "position:fixed;right:8px;top:8px;z-index:300;font:600 10px Inter,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;background:rgba(20,28,44,.85);color:#C5B28F;padding:4px 8px;border-radius:99px;pointer-events:none";
   document.body.appendChild(badge);
   if (name === "pass") { show("s-pass", []); if (q.get("v") === "wrong") { $("#passErr").textContent = "That password didn't work."; setTimeout(() => $("#passErr").scrollIntoView({ block: "center" }), 300); } reportPhotoSpots(); return true; }
+  if (name === "signup" || name === "signin") { show("s-" + name, []); if (q.get("v") === "soon") document.querySelector("#s-" + name + " .acmsg").textContent = AC_SOON; reportPhotoSpots(); return true; }
   if (name === "intro") { show("s-home", []); $("#splash").hidden = false; reportPhotoSpots(); return true; }   // the opening screen, held still
   // The tree: the Studio's sample (its pictures fetched back into the page), or this browser's own
   let st = null;
@@ -4044,7 +4161,8 @@ async function sampleStart() {
   }
   const pic = st && (st.after || st.photo);
   const tap = sel => { const b = document.querySelector(sel); if (b) b.click(); };
-  if (!treeScreens.includes(id)) {
+  if (id === "s-account") { drawAccount(st); show(id, []); }
+  else if (!treeScreens.includes(id)) {
     // Start screens are reached the way a person reaches them, so each shows its real wording for that path
     const design = v === "design" || v === "room" || v === "roomfilled" || v === "bare" || id === "s-start" || id === "s-idea";
     if (id !== "s-home" && !(v === "filled" || v === "results")) tap(`.choice[data-mode="${design ? "design" : "check"}"]`);
@@ -4139,11 +4257,11 @@ function reportPhotoSpots() {
 
 
 // ---- Bottom navigation bar, Shop the Look and the tab pages (off until the Brand kit switches it on) ----
-const NAV_ROOTS = ["s-home", "s-styles", "s-saved", "s-shop", "s-profile", "s-look"];
+const NAV_ROOTS = ["s-home", "s-styles", "s-saved", "s-shop", "s-profile", "s-look", "s-account"];
 function navPaint(id) {
   document.body.classList.toggle("navroot", NAV_ROOTS.includes(id));
   document.body.classList.toggle("onhome", id === "s-home");
-  const tab = id === "s-look" ? "s-shop" : id;
+  const tab = id === "s-look" ? "s-shop" : id === "s-account" ? "s-profile" : id;
   document.querySelectorAll("#navbar button").forEach(b => { if (b.dataset.nav === tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   if (id === "s-styles") drawStyleCards();
   if (id === "s-saved") drawSaved();
