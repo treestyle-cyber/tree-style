@@ -1146,6 +1146,16 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   html.has-nav body.navroot #helpFab{bottom:calc(98px + env(safe-area-inset-bottom))}
   html.has-nav body.navroot.onhome #helpFab{bottom:calc(178px + env(safe-area-inset-bottom))}
   body:has(#s-help:not([hidden])) #helpFab,body:has(#s-pass:not([hidden])) #helpFab,body:has(.sheet:not([hidden])) #helpFab{display:none}
+  /* Loading: the logo's tree, ornaments in the logo's gold hanging from the branch ends one by one (Kylie) */
+  .treeload{width:104px;margin:0 auto 18px;aspect-ratio:482/700}
+  .treeload svg{display:block;width:100%;height:100%;overflow:visible}
+  .treeload .lo{opacity:0;transform-box:fill-box;transform-origin:50% 0;animation:loHang 5.2s ease-in-out infinite;animation-delay:calc(var(--i) * .34s)}
+  @keyframes loHang{0%{opacity:0;transform:translateY(-14px) rotate(-8deg)}9%{opacity:1;transform:translateY(0) rotate(5deg)}15%{transform:rotate(-3deg)}21%{transform:rotate(1deg)}26%,68%{opacity:1;transform:none}78%,100%{opacity:0;transform:none}}
+  @media (prefers-reduced-motion:reduce){.treeload .lo{animation:none;opacity:1}}
+  #loading .scan{display:none}
+  .renderwait .treeload{width:92px;margin-bottom:14px}
+  @media (max-height:740px){#loading .treeload{width:76px;margin-bottom:10px}}
+  @media (max-height:620px){#loading .treeload{width:56px;margin-bottom:6px}}
 </style>
 </head>
 <body>
@@ -1593,7 +1603,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   <div class="box">
     <div class="scan" id="scan" hidden><img id="scanImg" alt=""><i></i></div>
     <div class="staycard"><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7.5v5.5"/><circle cx="12" cy="16.3" r=".6" fill="currentColor"/></svg></span><div><b>Keep this screen open</b><span>Closing TreeStyle or switching apps can stop your design.</span></div></div>
-    <div class="big"></div>
+    <div class="treeload" data-treeload></div>
     <h2 id="loadTitle"></h2>
     <div class="bar"><i id="loadFill"></i></div>
     <p class="muted" id="loadNote">About a minute. Hang tight.</p>
@@ -2771,6 +2781,18 @@ function startTips() {
 }
 function stopTips() { clearInterval(tipTimer); tipTimer = null; }
 
+// Loading tree (Kylie): the logo with gold ornaments that hang one at a time from the branch ends, then fade in turn
+const TREE_ORNS = [[207,214,14],[300,262,15],[150,330,16],[352,352,16],[226,410,17],[96,424,17],[400,440,17],[300,512,20],[150,520,20],[420,540,17]];
+let treeLoadN = 0;
+function treeLoadSvg() {
+  const g = "tlg" + (++treeLoadN);
+  return `<svg viewBox="0 0 482 700" aria-hidden="true"><defs><radialGradient id="${g}" cx=".36" cy=".32" r=".75"><stop offset="0" stop-color="#FBF0CF"/><stop offset=".25" stop-color="#E3C68B"/><stop offset=".65" stop-color="#B8955A"/><stop offset="1" stop-color="#6E5228"/></radialGradient></defs><image href="/brand/logo-icon.png" width="482" height="700"/>`
+    + TREE_ORNS.map(([x, y, r], i) => `<g class="lo" style="--i:${i}"><line x1="${x}" y1="${y}" x2="${x}" y2="${y + 8}" stroke="#B8955A" stroke-width="3"/><rect x="${x - r * .32}" y="${y + 7}" width="${r * .64}" height="${r * .42}" rx="1.5" fill="#9A7A45"/><circle cx="${x}" cy="${y + 8 + r * 1.3}" r="${r}" fill="url(#${g})"/></g>`).join("") + `</svg>`;
+}
+function fillTreeLoads(root) { (root || document).querySelectorAll("[data-treeload]:empty").forEach(el => { el.innerHTML = treeLoadSvg(); }); }
+new MutationObserver(() => fillTreeLoads()).observe(document.documentElement, { childList: true, subtree: true });
+fillTreeLoads();
+
 let loadGen = 0;
 function startLoading(title, steps, evalSeconds, pic) {
   const gen = ++loadGen;
@@ -2928,7 +2950,7 @@ function getPlan(pending) {
 /* ---------------- first preview (in the background, while they read their results) ---------------- */
 let previewP = null, previewState = "idle";
 function paintWait() {
-  $("#viewer").innerHTML = `<div class="renderwait"><div class="spin"></div>Painting your preview…<div style="font-size:13px">About 30 seconds. Look around while you wait, and keep TreeStyle open.</div></div>`;
+  $("#viewer").innerHTML = `<div class="renderwait"><div class="treeload" data-treeload></div>Painting your preview…<div style="font-size:13px">About 30 seconds. Look around while you wait, and keep TreeStyle open.</div></div>`;
   $("#seg").hidden = $("#hint").hidden = $("#save").hidden = $("#baBtn").hidden = true;
 }
 function paintFirst() {
@@ -3132,7 +3154,7 @@ async function makePreview(extraPieces, change) {
     $("#viewer").innerHTML = `<div class="renderwait"><img src="${photo}" alt="" style="max-height:220px;margin:0 auto 12px;border-radius:8px;opacity:.6">The preview didn't come through this time.<div class="err" style="font-size:13px">${esc(e.message).slice(0, 220)}</div><button class="btn" id="retryPreview" style="margin-top:12px">Paint it again</button></div>`;
     $("#seg").hidden = $("#hint").hidden = $("#save").hidden = $("#baBtn").hidden = true;
     // Paint again with the same plan, so a fluke doesn't mean starting over
-    $("#retryPreview").onclick = () => { $("#viewer").innerHTML = `<div class="renderwait"><div class="spin"></div>Painting your tree again…<div style="font-size:13px">About 30 seconds.</div></div>`; makePreview(extraPieces, change); };
+    $("#retryPreview").onclick = () => { $("#viewer").innerHTML = `<div class="renderwait"><div class="treeload" data-treeload></div>Painting your tree again…<div style="font-size:13px">About 30 seconds.</div></div>`; makePreview(extraPieces, change); };
   }
 }
 let swept = false;
