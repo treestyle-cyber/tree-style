@@ -1067,6 +1067,21 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   html.theme-ivory .src small{grid-column:2;grid-row:3;color:var(--muted) !important;font-size:calc(14.5px * var(--s-body,1));margin-top:4px}
   html.theme-ivory .src .tic{position:absolute;left:34px;top:50%;margin-top:-28px}
   html.theme-ivory body:has(#s-start:not([hidden]))::after{content:"";position:fixed;left:0;right:0;bottom:0;height:calc(min(100vw,600px) * .41);z-index:-1;pointer-events:none;background:linear-gradient(180deg,var(--bg),rgba(244,238,229,0) 35%),url(/brand/start-garland.jpg) center bottom/cover no-repeat}
+
+  /* Ivory look, rating (Kylie's mockup): "Your style assessment", two rings in place of the ornaments, the words in italic below */
+  .ring,.ratk{display:none}
+  html.theme-ivory .rating{grid-template-columns:1fr 1fr;gap:6px 18px;padding:20px 18px 18px;background:var(--paper);border:1px solid var(--champagne);box-shadow:0 0 0 7px #F4EEE5,0 0 0 8px rgba(74,54,32,.1)}
+  html.theme-ivory .rating .ratk{display:block !important;grid-column:1/-1;text-align:center;font:500 calc(15px * var(--s-label,1)) var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--ink);margin-bottom:8px}
+  html.theme-ivory .rating .rarrow,html.theme-ivory .rating .orns,html.theme-ivory .rating .rword span{display:none}
+  html.theme-ivory .rating .rlbl{font:600 calc(10.5px * var(--s-label,1)) var(--sans);letter-spacing:.12em;color:var(--muted)}
+  html.theme-ivory .rating .ring{display:grid;place-items:center;position:relative;width:min(140px,36vw);aspect-ratio:1;margin:6px 0 4px}
+  .ring svg{position:absolute;inset:0;width:100%;height:100%}
+  .ring .rtrack{fill:none;stroke:#E6DFD3;stroke-width:3.2}
+  .ring .rarc{fill:none;stroke:#4A2228;stroke-width:3.2;stroke-linecap:round;transition:stroke-dasharray .9s ease}
+  .rrow.after .ring .rarc{stroke:#B39A6B}
+  .ring .rnum{position:relative;margin-top:-8px;font:400 calc(46px * var(--s-headline,1))/1 var(--serif);font-variant-numeric:lining-nums;color:var(--ink)}
+  .ring .rof{position:absolute;top:62%;font:500 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+  html.theme-ivory .rating .rword b{font:italic 400 calc(19px * var(--s-subheadline,1))/1.15 var(--sans);color:var(--espresso)}
 </style>
 </head>
 <body>
@@ -1232,10 +1247,11 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   <!-- Reveal -->
   <section class="screen reveal" id="s-reveal" data-title="Your results" data-foot="seeIt" hidden>
     <div id="revealScore" class="rating">
+      <div class="ratk iv">Your style assessment</div>
       <p class="potline" id="potLine" hidden></p>
-      <div class="rrow"><div class="rlbl">Your tree today</div><div class="orns" id="orns"></div><div class="rword"><b id="ornWord"></b><span id="ornNum"></span></div></div>
+      <div class="rrow"><div class="rlbl">Your tree today</div><div class="orns" id="orns"></div><div class="ring" id="ring"></div><div class="rword"><b id="ornWord"></b><span id="ornNum"></span></div></div>
       <div class="rarrow" aria-hidden="true">→</div>
-      <div class="rrow after" id="afterRow"><div class="rlbl">After your plan</div><div class="orns" id="ornsAfter"></div><div class="rword"><b id="afterWord"></b><span id="afterNum"></span></div></div>
+      <div class="rrow after" id="afterRow"><div class="rlbl">After your plan</div><div class="orns" id="ornsAfter"></div><div class="ring" id="ringAfter"></div><div class="rword"><b id="afterWord"></b><span id="afterNum"></span></div></div>
     </div>
     <div class="staycard" id="stayNote" hidden><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7.5v5.5"/><circle cx="12" cy="16.3" r=".6" fill="currentColor"/></svg></span><div><b>Keep this screen open</b><span>Closing TreeStyle or switching apps can stop your design.</span></div></div>
     <ol class="progress" id="progress" hidden>
@@ -2903,6 +2919,11 @@ const ornHtml = (n, delay = 0) => { let h = ""; for (let i = 1; i <= 5; i++) h +
 const LEVELS = ["", "Lots of potential", "Nice start", "Well done", "Polished", "Designer-ready"];
 const levelWord = n => LEVELS[Math.max(1, Math.min(5, Math.floor(n)))];
 
+// Ivory look (Kylie's mockup): the score as a ring that fills to the score out of 5, the number in the middle
+function ringHtml(v) {
+  const n = Math.max(0, Math.min(5, Number(v) || 0)), C = 2 * Math.PI * 44, on = C * n / 5;
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" class="rtrack"/><circle cx="50" cy="50" r="44" class="rarc" stroke-dasharray="${on.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 50 50)"/></svg><span class="rnum">${n.toFixed(1)}</span><span class="rof">of 5</span>`;
+}
 function fillReveal() {
   const r = result, check = mode === "check" && r.overall != null;
   $("#revealScore").hidden = !check;
@@ -2913,6 +2934,7 @@ function fillReveal() {
       $("#orns").innerHTML = ornHtml(o); $("#orns").dataset.o = String(o) + r.headline;
       $("#ornsAfter").innerHTML = a ? ornHtml(a, .8) : "";
     }
+    $("#ring").innerHTML = ringHtml(o); $("#ringAfter").innerHTML = a ? ringHtml(a) : "";
     $("#ornWord").textContent = levelWord(o); $("#ornNum").textContent = `${o} of 5`;
     $("#afterRow").hidden = !a || a <= o;
     // Lead with what the tree can become, not a grade
