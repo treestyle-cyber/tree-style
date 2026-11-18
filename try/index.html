@@ -1218,6 +1218,19 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .renderwait .treeload{width:92px;margin-bottom:14px}
   @media (max-height:740px){#loading .treeload{width:76px;margin-bottom:10px}}
   @media (max-height:620px){#loading .treeload{width:56px;margin-bottom:6px}}
+  /* Ivory look sign-in (Kylie: the tester screen in the new branding): the opening screen's dark pine photo with the large
+     gold logo and its deep shadow, the line in ivory over it, then a cream panel that rises over the photo's bottom edge */
+  html.theme-ivory #s-pass .hero{min-height:min(60dvh,560px);margin-bottom:0;padding:26px 26px 54px;border-bottom:0;justify-content:space-between;
+    background:radial-gradient(70% 45% at 50% 34%,rgba(4,10,6,.5),transparent 75%),linear-gradient(180deg,rgba(0,0,0,.28),rgba(0,0,0,.22) 55%,rgba(0,0,0,.55)),var(--photo-splash, url(/brand/splash-bg.jpg)) center/cover}
+  html.theme-ivory #s-pass .hero .lockup img.logos{width:min(270px,70vw);filter:drop-shadow(0 6px 10px rgba(0,0,0,.85)) drop-shadow(0 16px 34px rgba(0,0,0,.7))}
+  html.theme-ivory #s-pass .hero .hl h1{color:#F7F1E8;text-shadow:0 2px 18px rgba(0,0,0,.6)}
+  html.theme-ivory #s-pass .hero .rule{background:#D9BD84}
+  html.theme-ivory #s-pass .kicker{position:relative;margin:-28px -18px 8px;padding:30px 0 0;background:var(--bg);border-radius:28px 28px 0 0;color:var(--brass)}
+  html.theme-ivory #s-pass .ttl{color:var(--ink)}
+  html.theme-ivory #s-pass .sub{margin-bottom:22px}
+  html.theme-ivory body:has(#s-pass:not([hidden])) .appbar{position:fixed;left:0;right:0;background:transparent;visibility:hidden}   /* the photo runs to the top */
+  html.theme-ivory #s-pass .hero{padding-top:max(34px,calc(env(safe-area-inset-top) + 24px))}
+  html.theme-ivory #s-pass #pw{background:#FFFDF9;border:1px solid var(--line);border-radius:999px;padding:15px 20px}
 </style>
 </head>
 <body>
