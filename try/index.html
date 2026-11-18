@@ -1294,6 +1294,9 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   @keyframes ornSwing{0%{transform:rotate(0)}22%{transform:rotate(4deg)}48%{transform:rotate(-2.5deg)}74%{transform:rotate(1deg)}100%{transform:rotate(0)}}
   @media (prefers-reduced-motion:reduce){.rate button.on{animation:none}}
   .rate button:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:8px}
+  /* Gold gradient on every bar and the score ring (Kylie): the score's category bars, the shopping list's progress, the loading bar */
+  :root{--goldbar:linear-gradient(90deg,#9C7638 0%,#C9A35E 35%,#EBD49C 62%,#C49C58 82%,#A47E3C 100%)}
+  .cat .b i,#loading .bar i,.gotbar i,html.theme-ivory .cat .b i,html.theme-ivory #loading .bar i,html.theme-ivory .gotbar i{background:var(--goldbar) !important}
 </style>
 </head>
 <body>
@@ -3243,9 +3246,11 @@ const LEVELS = ["", "Lots of potential", "Nice start", "Well done", "Polished", 
 const levelWord = n => LEVELS[Math.max(1, Math.min(5, Math.floor(n)))];
 
 // Ivory look (Kylie's mockup): the score as a ring that fills to the score out of 5, the number in the middle
+let ringN = 0;
 function ringHtml(v) {
   const n = Math.max(0, Math.min(5, Number(v) || 0)), C = 2 * Math.PI * 44, on = C * n / 5;
-  return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" class="rtrack"/><circle cx="50" cy="50" r="44" class="rarc" stroke-dasharray="${on.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 50 50)"/></svg><span class="rnum">${n.toFixed(1)}</span><span class="rof">of 5</span>`;
+  const g = "rg" + (++ringN);
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F0DDA8"/><stop offset=".35" stop-color="#CDA862"/><stop offset=".7" stop-color="#A47E3C"/><stop offset="1" stop-color="#D8B977"/></linearGradient></defs><circle cx="50" cy="50" r="44" class="rtrack"/><circle cx="50" cy="50" r="44" class="rarc" style="stroke:url(#${g})" stroke-dasharray="${on.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 50 50)"/></svg><span class="rnum">${n.toFixed(1)}</span><span class="rof">of 5</span>`;
 }
 function fillReveal() {
   const r = result, check = mode === "check" && r.overall != null;
