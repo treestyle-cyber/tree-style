@@ -392,12 +392,6 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   /* feedback */
   .fb h3{font-size:calc(26px * var(--s-body,1));margin:0 0 4px}
   .fb .sub{margin:0 0 12px;font-size:calc(14px * var(--s-body,1))}
-  .rate{display:flex;gap:8px;margin:4px 0 14px}
-  .rate button{appearance:none;border:0;background:none;padding:0;cursor:pointer;width:38px;height:42px;position:relative}
-  .rate button i{position:absolute;left:3px;bottom:0;width:32px;height:32px;border-radius:50%;background:var(--line);display:block;transition:transform .15s}
-  .rate button i::after{content:"";position:absolute;left:50%;top:-6px;width:10px;height:7px;margin-left:-5px;background:var(--brass);border-radius:2px}
-  .rate button.on i{background:radial-gradient(circle at 35% 30%,#c98f8a,var(--winterberry) 58%,#3E1A1A)}
-  .rate button:active i{transform:scale(.9)}
   .fb textarea{width:100%;font:calc(16px * var(--s-body,1))/1.4 var(--sans);padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper);resize:vertical;color:var(--ink);margin:6px 0 10px}
   .fb input[type=text]{width:100%;border-radius:12px;margin-bottom:12px}
   .fb .q2{font-weight:600;margin:4px 0 8px}
@@ -1121,14 +1115,6 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   html.theme-ivory .rating .rword b{font:italic 400 calc(19px * var(--s-subheadline,1))/1.15 var(--sans);color:var(--espresso)}
   /* Feedback rating in the Ivory look: five thin numbered rings (1 to 5) instead of ornaments; tapped ones turn deep berry like the score ring */
   .hint-num{display:none}
-  html.theme-ivory .hint-orn{display:none}
-  html.theme-ivory .hint-num{display:inline}
-  html.theme-ivory .rate{gap:10px}
-  html.theme-ivory .rate button{width:46px;height:46px}
-  html.theme-ivory .rate button i{left:0;bottom:0;width:46px;height:46px;background:none;border:1.6px solid #E6DFD3;box-sizing:border-box;display:grid;place-items:center}
-  html.theme-ivory .rate button i::after{content:attr(data-n);position:static;width:auto;height:auto;margin:0;background:none;border-radius:0;font:400 calc(20px * var(--s-headline,1))/1 var(--serif);font-variant-numeric:lining-nums;color:var(--muted)}
-  html.theme-ivory .rate button.on i{background:none;border-color:#4A2228}
-  html.theme-ivory .rate button.on i::after{color:var(--ink)}
   /* The same ring on the results screen's score strip and at the top of How it scored, so the Ivory look never mixes rings and ornaments */
   html.theme-ivory .scorestrip .orns,html.theme-ivory .scorestrip .snum,html.theme-ivory .scoretop .orns,html.theme-ivory .scoretop .rword span{display:none}
   html.theme-ivory .scorestrip{background:var(--paper);border-color:var(--champagne)}
@@ -1291,6 +1277,18 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   #s-account .acmsg{text-align:center;color:var(--brass)}
   .acout{width:100%;margin-top:8px}
   .acdel{display:block;margin:14px auto 0;background:none;border:0;color:#A3473F;font:500 calc(14px * var(--s-body,1)) var(--sans);cursor:pointer}
+  /* "How did we do?" rating (Kylie): five hanging gold line ornaments (star, round with a bow, bell, round, tree) on strings
+     of different lengths; tapping one fills it and the ones before it with solid gold, and they swing a little */
+  .rate{display:flex;gap:8px;align-items:flex-start;margin:6px 0 14px;height:74px}
+  .rate button{appearance:none;border:0;background:none;padding:0;cursor:pointer;width:46px;height:74px;transform-origin:50% 0}
+  .rate button svg{display:block;width:100%;height:100%;overflow:visible}
+  .rate .os{stroke:#C9A86A;stroke-width:1.1;opacity:.85}
+  .rate .of,.rate .ob,.rate .oc{fill:none;stroke:#C9A86A;stroke-width:1.6;stroke-linejoin:round;transition:fill .25s}
+  .rate button.on .of,.rate button.on .ob,.rate button.on .oc{fill:url(#ornGold);stroke:#B8955A}
+  .rate button.on{animation:ornSwing .9s ease-out}
+  @keyframes ornSwing{0%{transform:rotate(0)}25%{transform:rotate(7deg)}50%{transform:rotate(-4deg)}75%{transform:rotate(2deg)}100%{transform:rotate(0)}}
+  @media (prefers-reduced-motion:reduce){.rate button.on{animation:none}}
+  .rate button:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:8px}
 </style>
 </head>
 <body>
@@ -1510,7 +1508,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
         <p class="sub muted">You're one of our first testers. Your honest take shapes what we build.</p>
         <div class="q2">Rate the results <span class="muted" style="font-weight:400;font-size:14px">· tap <span class="hint-orn">an ornament</span><span class="hint-num">a number</span></span></div>
         <div class="rate" id="fbRate" role="radiogroup" aria-label="Rating out of 5">
-          <button data-v="1" aria-label="1"><i data-n="1"></i></button><button data-v="2" aria-label="2"><i data-n="2"></i></button><button data-v="3" aria-label="3"><i data-n="3"></i></button><button data-v="4" aria-label="4"><i data-n="4"></i></button><button data-v="5" aria-label="5"><i data-n="5"></i></button>
+          <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="ornGold" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#F6E3B4"/><stop offset=".45" stop-color="#D2AE68"/><stop offset="1" stop-color="#9C7638"/></linearGradient></defs></svg><button data-v="1" aria-label="1 of 5"><svg viewBox="0 0 40 74" aria-hidden="true"><line class="os" x1="20" y1="0" x2="20" y2="22"/><rect class="oc" x="16.5" y="22" width="7" height="4.5" rx="1"/><path class="of" d="M20.0 26.0 L24.0 35.5 L34.3 36.4 L26.4 43.1 L28.8 53.1 L20.0 47.8 L11.2 53.1 L13.6 43.1 L5.7 36.4 L16.0 35.5Z"/></svg></button><button data-v="2" aria-label="2 of 5"><svg viewBox="0 0 40 74" aria-hidden="true"><line class="os" x1="20" y1="0" x2="20" y2="36"/><path class="ob" d="M20 39 c-5 -5 -9 -2 -6 1 c2 2 5 1 6 -1 c1 2 4 3 6 1 c3 -3 -1 -6 -6 -1z"/><circle class="of" cx="20" cy="55" r="14"/></svg></button><button data-v="3" aria-label="3 of 5"><svg viewBox="0 0 40 74" aria-hidden="true"><line class="os" x1="20" y1="0" x2="20" y2="16"/><path class="ob" d="M20 19 c-5 -5 -9 -2 -6 1 c2 2 5 1 6 -1 c1 2 4 3 6 1 c3 -3 -1 -6 -6 -1z"/><path class="of" d="M20 21 c-7 0 -9 6 -9 13 c0 6 -2 9 -5 12 h28 c-3 -3 -5 -6 -5 -12 c0 -7 -2 -13 -9 -13z"/><circle class="of" cx="20" cy="49" r="2.6"/></svg></button><button data-v="4" aria-label="4 of 5"><svg viewBox="0 0 40 74" aria-hidden="true"><line class="os" x1="20" y1="0" x2="20" y2="30"/><rect class="oc" x="16.5" y="30" width="7" height="4.5" rx="1"/><circle class="of" cx="20" cy="49" r="14.5"/></svg></button><button data-v="5" aria-label="5 of 5"><svg viewBox="0 0 40 74" aria-hidden="true"><line class="os" x1="20" y1="0" x2="20" y2="20"/><rect class="oc" x="16.5" y="20" width="7" height="4.5" rx="1"/><path class="of" d="M20 24 l7 10 h-3.5 l7.5 10 h-3.5 l7.5 11 h-31 l7.5 -11 h-3.5 l7.5 -10 h-3.5z"/></svg></button>
         </div>
         <div class="q2">Would you pay $19.99 for a Holiday Pass?</div>
         <div class="row" style="margin-bottom:12px">
