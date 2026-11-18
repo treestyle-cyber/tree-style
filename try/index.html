@@ -1297,6 +1297,18 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   /* Gold gradient on every bar and the score ring (Kylie): the score's category bars, the shopping list's progress, the loading bar */
   :root{--goldbar:linear-gradient(90deg,#9C7638 0%,#C9A35E 35%,#EBD49C 62%,#C49C58 82%,#A47E3C 100%)}
   .cat .b i,#loading .bar i,.gotbar i,html.theme-ivory .cat .b i,html.theme-ivory #loading .bar i,html.theme-ivory .gotbar i{background:var(--goldbar) !important}
+  /* String-of-lights score (Kylie): wire, sockets and bulbs; lit bulbs glow and switch on in turn */
+  .ring svg{overflow:visible}
+  .ring .rwire{fill:none;stroke:#3F4A33;stroke-width:.9;opacity:.8}
+  .ring .rbs{fill:#3F4A33}
+  .ring .rbg{fill:#F4EFE6;stroke:#CFC3AE;stroke-width:.5}
+  .ring .rb.on .rbg{stroke:#C9913A;stroke-width:.4;filter:drop-shadow(0 0 2.2px rgba(255,200,100,.95)) drop-shadow(0 0 5px rgba(255,190,90,.55));animation:bulbOn .5s ease both;animation-delay:calc(.25s + var(--d))}
+  @keyframes bulbOn{from{opacity:.25}to{opacity:1}}
+  .ring .rb.on:nth-of-type(3n) .rbg{animation:bulbOn .5s ease both,bulbTw 3.2s ease-in-out infinite;animation-delay:calc(.25s + var(--d)),calc(1.6s + var(--d))}
+  @keyframes bulbTw{50%{filter:drop-shadow(0 0 1px rgba(255,200,100,.6))}}
+  @media (prefers-reduced-motion:reduce){.ring .rb.on .rbg{animation:none}}
+  .ring .rnum{margin-top:-6px}
+  html.theme-ivory .scoretop .ring{margin-top:14px}
 </style>
 </head>
 <body>
@@ -3245,12 +3257,22 @@ const ornHtml = (n, delay = 0) => { let h = ""; for (let i = 1; i <= 5; i++) h +
 const LEVELS = ["", "Lots of potential", "Nice start", "Well done", "Polished", "Designer-ready"];
 const levelWord = n => LEVELS[Math.max(1, Math.min(5, Math.floor(n)))];
 
-// Ivory look (Kylie's mockup): the score as a ring that fills to the score out of 5, the number in the middle
+// Ivory look: the score as a circle of string lights (Kylie): a fine wire sagging between 15 sockets, a small glass bulb at each,
+// pointing outward; 3 bulbs per point of the score glow warm gold (they switch on one after another), the rest stay clear and unlit
 let ringN = 0;
 function ringHtml(v) {
-  const n = Math.max(0, Math.min(5, Number(v) || 0)), C = 2 * Math.PI * 44, on = C * n / 5;
-  const g = "rg" + (++ringN);
-  return `<svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F0DDA8"/><stop offset=".35" stop-color="#CDA862"/><stop offset=".7" stop-color="#A47E3C"/><stop offset="1" stop-color="#D8B977"/></linearGradient></defs><circle cx="50" cy="50" r="44" class="rtrack"/><circle cx="50" cy="50" r="44" class="rarc" style="stroke:url(#${g})" stroke-dasharray="${on.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 50 50)"/></svg><span class="rnum">${n.toFixed(1)}</span><span class="rof">of 5</span>`;
+  const n = Math.max(0, Math.min(5, Number(v) || 0)), N = 15, lit = Math.round(n / 5 * N), R = 40, g = "rg" + (++ringN);
+  const pt = (a, r) => [50 + r * Math.sin(a), 50 - r * Math.cos(a)];
+  let wire = "", bulbs = "";
+  for (let i = 0; i < N; i++) {
+    const a0 = i / N * 2 * Math.PI, a1 = (i + 1) / N * 2 * Math.PI, [x0, y0] = pt(a0, R), [x1, y1] = pt(a1, R), [cx, cy] = pt((a0 + a1) / 2, R - 4.2);
+    wire += (i ? "" : `M${x0.toFixed(2)} ${y0.toFixed(2)}`) + ` Q${cx.toFixed(2)} ${cy.toFixed(2)} ${x1.toFixed(2)} ${y1.toFixed(2)}`;
+    const deg = (a0 * 180 / Math.PI).toFixed(1), on = i < lit;
+    bulbs += `<g class="rb${on ? " on" : ""}" style="--d:${(i * .09).toFixed(2)}s" transform="rotate(${deg} 50 50)"><rect class="rbs" x="48.6" y="${50 - R - 3}" width="2.8" height="3.4" rx=".6"/>`
+      + `<path class="rbg" d="M50 ${50 - R - 3} c-2.6 0 -3.4 -2.6 -3.2 -4.4 c.3 -2.4 1.8 -4 3.2 -5.4 c1.4 1.4 2.9 3 3.2 5.4 c.2 1.8 -.6 4.4 -3.2 4.4z" ${on ? `style="fill:url(#${g})"` : ""}/></g>`;
+  }
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="${g}" cx=".45" cy=".35" r=".75"><stop offset="0" stop-color="#FFF8DF"/><stop offset=".45" stop-color="#F5D483"/><stop offset="1" stop-color="#C9913A"/></radialGradient></defs>`
+    + `<path class="rwire" d="${wire}"/>${bulbs}</svg><span class="rnum">${n.toFixed(1)}</span><span class="rof">of 5</span>`;
 }
 function fillReveal() {
   const r = result, check = mode === "check" && r.overall != null;
