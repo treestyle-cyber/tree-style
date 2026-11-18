@@ -1082,6 +1082,17 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .ring .rnum{position:relative;margin-top:-8px;font:400 calc(46px * var(--s-headline,1))/1 var(--serif);font-variant-numeric:lining-nums;color:var(--ink)}
   .ring .rof{position:absolute;top:62%;font:500 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
   html.theme-ivory .rating .rword b{font:italic 400 calc(19px * var(--s-subheadline,1))/1.15 var(--sans);color:var(--espresso)}
+  /* The same ring on the results screen's score strip and at the top of How it scored, so the Ivory look never mixes rings and ornaments */
+  html.theme-ivory .scorestrip .orns,html.theme-ivory .scorestrip .snum,html.theme-ivory .scoretop .orns,html.theme-ivory .scoretop .rword span{display:none}
+  html.theme-ivory .scorestrip{background:var(--paper);border-color:var(--champagne)}
+  html.theme-ivory .scorestrip .ring{display:grid;place-items:center;position:relative;flex:none;width:64px;aspect-ratio:1}
+  html.theme-ivory .scorestrip .ring[hidden]{display:none}
+  html.theme-ivory .scorestrip .ring .rnum{margin-top:-6px;font-size:calc(22px * var(--s-headline,1))}
+  html.theme-ivory .scorestrip .ring .rof{top:61%;font-size:7.5px;letter-spacing:.18em}
+  html.theme-ivory .scorestrip .ring .rtrack,html.theme-ivory .scorestrip .ring .rarc{stroke-width:4.5}
+  html.theme-ivory .scorestrip b{font:italic 400 calc(20px * var(--s-subheadline,1))/1.15 var(--sans);color:var(--espresso)}
+  html.theme-ivory .scoretop .ring{display:grid;place-items:center;position:relative;width:min(140px,36vw);aspect-ratio:1}
+  html.theme-ivory .scoretop .rword b{font:italic 400 calc(19px * var(--s-subheadline,1))/1.15 var(--sans);color:var(--espresso)}
 
   /* Ivory look: every shopping list icon is a photo square. Until an item has its own photo, its drawing sits on the same
      dark pine-and-lights photo as the ribbon and ornament photos, so the list reads as one set (Kylie: make them consistent) */
@@ -1354,7 +1365,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
       <div id="hubFixList"></div>
       <button class="hubmore" id="hubFixMore" hidden></button>
     </div>
-    <button class="scorestrip" id="navScoreBtn" data-go="s-score"><span class="orns" id="stripOrns"></span><span class="sw"><b id="stripWord">How it scored</b><small id="stripSub">Balance, lights, the top and more</small></span><span class="chev">See how it scored ›</span></button>
+    <button class="scorestrip" id="navScoreBtn" data-go="s-score"><span class="orns" id="stripOrns"></span><span class="ring" id="stripRing"></span><span class="sw"><b id="stripWord">How it scored</b><small id="stripSub">Balance, lights, the top and more</small></span><span class="chev">See how it scored ›</span></button>
     <div class="tellline" id="tellCard">Amounts are our best estimate from the photo. <button id="navDetails">Add your tree's details</button> for a better one.</div>
     <div class="telldone" id="tellDone" hidden></div>
     <div class="card fb" id="fbCard">
@@ -3049,7 +3060,8 @@ function fill() {
   const shopping = TreeGuide.shoppingList(r, mode), nItems = shopping.reduce((a, g) => a + g.items.length, 0);
   $("#navScoreBtn").hidden = !(r.categories || []).length;
   { const so = r.overall != null ? toOrn(r.overall) : null; $("#stripOrns").innerHTML = so ? ornHtml(so) : ""; $("#stripOrns").hidden = !so;
-    $("#stripWord").textContent = so ? `${levelWord(so)} · ${so} of 5` : "How it scored"; $("#stripSub").textContent = so ? "Your tree today, part by part" : "Balance, lights, the top and more"; }
+    $("#stripRing").innerHTML = so ? ringHtml(so) : ""; $("#stripRing").hidden = !so;
+    $("#stripWord").innerHTML = so ? `${levelWord(so)}<span class="snum"> · ${so} of 5</span>` : "How it scored"; $("#stripSub").textContent = so ? "Your tree today, part by part" : "Balance, lights, the top and more"; }
   $("#fixesSub").textContent = mode === "design" ? "The plan at a glance." : "Biggest difference for the least effort, best first.";
   $("#fixes").innerHTML = fixes.map((f, i) => fixHtml(f, i)).join("");
   // The top three fixes sit right under the preview; the full list stays one tap away
@@ -3061,10 +3073,10 @@ function fill() {
   $("#actShopSub").textContent = nItems2 ? `${nItems2} things to buy, with links` : "You already have what you need";
   const moreFix = fixes.length - 3;
   $("#hubFixMore").hidden = moreFix <= 0; $("#hubFixMore").textContent = moreFix === 1 ? "See 1 more fix" : `See ${moreFix} more fixes`;
-  $("#scoreSub").textContent = r.overall != null ? `Your tree today: ${toOrn(r.overall)} of 5 ornaments, ${levelWord(toOrn(r.overall)).toLowerCase()}. Here's how each part scored, out of 10.` : "";
+  $("#scoreSub").textContent = r.overall != null ? `Your tree today: ${toOrn(r.overall)} of 5${document.documentElement.classList.contains("theme-ivory") ? "" : " ornaments"}, ${levelWord(toOrn(r.overall)).toLowerCase()}. Here's how each part scored, out of 10.` : "";
   const CAT_STEP = { "Top of the tree": "crown", "Lights": "lights", "Big and small": "statement", "Fullness": "fluff", "Depth": "statement", "Pulled together": "ribbon" };
   const o = r.overall != null ? toOrn(r.overall) : null;
-  $("#cats").innerHTML = (o ? `<div class="scoretop"><div class="orns">${ornHtml(o)}</div><div class="rword"><b>${levelWord(o)}</b><span>${o} of 5</span></div></div>` : "")
+  $("#cats").innerHTML = (o ? `<div class="scoretop"><div class="orns">${ornHtml(o)}</div><div class="ring">${ringHtml(o)}</div><div class="rword"><b>${levelWord(o)}</b><span>${o} of 5</span></div></div>` : "")
     + [...(r.categories || [])].sort((a, b) => a.score - b.score).map(c => `<div class="cat"><div class="top"><span>${esc(c.name)}</span><span>${c.score}/10</span></div><div class="b"><i style="width:${c.score * 10}%"></i></div><p>${esc(c.note)}</p>${c.score <= 7 && CAT_STEP[c.name] && (r.plan || []).some(p => p.element === CAT_STEP[c.name]) ? `<button class="raise" data-raise="${CAT_STEP[c.name]}">How to raise it</button>` : ""}</div>`).join("");
   $("#cats").querySelectorAll("[data-raise]").forEach(b => b.onclick = () => openPlan(b.dataset.raise));
   shopNow = shopping;
