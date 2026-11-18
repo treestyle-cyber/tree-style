@@ -230,7 +230,7 @@ const lookHtml = L => `<article class="look"><div class="lookpic" data-look="${L
   <div class="lookbody"><div class="eyebrow">Sneak peek · ${L.pieces.length} pieces to shop early</div><h3>${esc(L.name)}</h3><p>${esc(L.blurb)}</p><ul class="plist">${L.pieces.map(lookPiece).join("")}</ul></div></article>`;
 // The gallery: one card per look (photo, name); tapping opens the full look with every piece in a sheet
 const lookCard = (L, small) => `<button class="lookcard" ${small ? "" : `id="look-${L.id}"`} data-open="${L.id}"><div class="lookpic" data-look="${L.id}"><p class="soon">Styling…</p></div><div class="lc"><b>${esc(L.name)}</b>${small ? "" : `<span class="go">Shop this look ›</span>`}</div></button>`;
-const LOOKS = window.LOOKS || [];
+const LOOKS = (window.LOOKS || []).filter(L => !L.draft);   // a draft look shows in Studio → Looks only, until Eric picks its photo
 // Shop by color: every pick (the stylist's choice lists above plus every piece used in the looks) grouped by its main color,
 // then by kind of piece in a sideways-scrolling row, so a story can link straight to one color (/picks#red).
 const COLORS = [
