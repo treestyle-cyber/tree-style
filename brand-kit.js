@@ -9,7 +9,7 @@
   var SHAPES = { pill: "999px", rounded: "12px", square: "3px" };
   var COLOR_KEYS = ["midnight", "winterberry", "evergreen", "walnut", "oat", "ivory", "gold", "espresso", "champagne", "cream", "warmivory"];
   var applied = "";
-  var LOOK_LINK = lookPreview();   // read ?look= now: the app tidies its address bar as it starts
+  var LOOK_LINK = lookPreview(), HELP_LINK = helpPreview();   // read ?look= now: the app tidies its address bar as it starts
   // Which styles belong to each font role (worked out from the app's and website's styles; body copy is everything else)
   var ROLES = ["headline", "subheadline", "body", "label", "button"];
   var SEL = {"headline":["#loading h2","#s-reveal::before","#splash h1",".appbar .title",".choice.tile b",".detline",".hero .hl h1",".lockup b",".sheetbox h3",".stephead h2",".steptabs button.on","h1","h2","h3"],"subheadline":["#bigReveal p","#loading .tipcard p","#s-reveal #summary",".act b",".buyrow strong",".esshead b",".fb .thanks",".fix b",".navlist b",".planitem h4",".potline",".progress b",".ptips b",".rating .rword b",".resline",".resume b",".rword b",".scard b",".scorestrip b",".sheetmore button",".shophead b",".src b",".steps .n",".stylegrid b",".tipcard p",".welcome .wl","details.buy .bt b","label.drop strong"],"label":["#s-details .q .lbl",".ba div span",".bafield",".brand b",".brand small",".buyh",".buyrow em",".choice.tile em",".compare .tag",".esscard em",".esschip em",".esshead small",".eyebrow",".hero .eyebrow",".hubk",".kicker",".lockup small",".msg .vtag",".ptipk",".rlbl",".rmhint",".scorestrip .chev",".sheetk",".stepcard .k",".stephead .k",".tag",".tipk","details.buy .bt small","header.top a.join","section.get .eyebrow"],"button":[".btn",".btn.ghost",".finish .btn",".foot .btn",".hero .btn",".qarow .btn",".resumebtns .btn",".shophead .btn",".stepnav .btn",".tellcard .btn",".tools .btn"]};
@@ -85,7 +85,7 @@
     // The bottom navigation bar and Shop the Look are off until switched on here (Eric approves first)
     if (!/[?&]nav=1\b/.test(location.search)) root.classList.toggle("has-nav", !!(kit.nav && kit.nav.bar) || lookPreview() === "ivory");
     // The overall Look: the dark velvet (as designed) or Ivory editorial (Kylie's mockup)
-    if (!/[?&]screen-preview\b/.test(location.search) || !root.classList.contains("has-help")) root.classList.toggle("has-help", !!(kit.nav && kit.nav.help));   // Need help? stylist, once Eric approves
+    if (!/[?&]screen-preview\b/.test(location.search) || !root.classList.contains("has-help")) root.classList.toggle("has-help", !!(kit.nav && kit.nav.help) || helpPreview() === "1");   // Need help? stylist, once Eric approves
     root.classList.toggle("theme-ivory", kit.look === "ivory" || lookPreview() === "ivory");
     style("kit-vars", (faces || "") + (vars.length ? ":root:root:root{" + vars.join(";") + "}" : "") + rules.join(""));
 
@@ -144,6 +144,11 @@
   function lookPreview() {
     var m = /[?&]look=(ivory|dark)\b/.exec(location.search);
     try { if (m) sessionStorage.setItem("ts_look", m[1]); return sessionStorage.getItem("ts_look") || ""; } catch (e) { return m ? m[1] : ""; }
+  }
+  // A link can preview the Need help? stylist without saving it: ?help=1 (kept for this tab until ?help=0)
+  function helpPreview() {
+    var m = /[?&]help=([01])\b/.exec(location.search);
+    try { if (m) sessionStorage.setItem("ts_help", m[1]); return sessionStorage.getItem("ts_help") || ""; } catch (e) { return m ? m[1] : ""; }
   }
   window.TSKit = { apply: apply, clean: clean, fontsOf: fontsOf };
 
