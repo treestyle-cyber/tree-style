@@ -1256,11 +1256,6 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   html.theme-ivory .acscreen .ach{color:#F7F1E8}
   html.theme-ivory .acscreen .acsub,html.theme-ivory .acscreen .acswap,html.theme-ivory .acscreen .acfine,html.theme-ivory .acscreen .acor{color:#D8CCBC}
   /* The account Profile */
-  .achead{display:flex;align-items:center;gap:14px;margin:10px 0 22px}
-  .acav{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--green);color:var(--on-accent);font:500 26px var(--serif)}
-  .achead b{display:block;font:500 calc(26px * var(--s-headline,1))/1.1 var(--serif);color:var(--ivory)}
-  .achead small{color:var(--muted);font-size:calc(14px * var(--s-body,1))}
-  .ackey{font:600 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--brass);margin:6px 0 10px}
   .actrees{display:flex;gap:12px;overflow-x:auto;margin:0 -18px 22px;padding:0 18px 4px;scrollbar-width:none}
   .actrees::-webkit-scrollbar{display:none}
   .actree{flex:none;width:132px;border-radius:14px;overflow:hidden;background:var(--paper);border:1px solid var(--line);text-align:left;padding:0;cursor:pointer;color:inherit;font:inherit}
@@ -1272,10 +1267,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .acrows button{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;background:none;border:0;border-top:1px solid var(--line);color:var(--ink);font:calc(15.5px * var(--s-body,1)) var(--sans);text-align:left;cursor:pointer}
   .acrows button:first-child{border-top:0}
   .acrows i{font-style:normal;font-size:22px;color:var(--muted)}
-  .actog{width:42px;height:24px;border-radius:99px;background:var(--line);position:relative}
-  .actog::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
   #s-account .acmsg{text-align:center;color:var(--brass)}
-  .acout{width:100%;margin-top:8px}
   .acdel{display:block;margin:14px auto 0;background:none;border:0;color:#A3473F;font:500 calc(14px * var(--s-body,1)) var(--sans);cursor:pointer}
   /* "How did we do?" rating (Kylie): five heirloom glass ornaments in fine gold line (a round one with an etched band, a teardrop
      finial, an onion dome, a faceted jewel drop, a ribbed round one), each with a fluted cap on a fine thread at its own length.
@@ -1348,6 +1340,43 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   #splash .splorns .sst{opacity:0;transform-box:fill-box;transform-origin:50% 50%;animation:splStar .8s ease forwards 2.95s;filter:drop-shadow(0 0 14px rgba(255,226,150,.9))}
   @keyframes splStar{0%{opacity:0;transform:scale(.4) rotate(-70deg)}60%{opacity:1;transform:scale(1.3) rotate(0)}100%{opacity:1;transform:scale(1)}}
   @media (prefers-reduced-motion:reduce){#splash .splorns,#splash .splorns .so,#splash .splorns .sst{animation:none;opacity:1;transform:none}}
+  /* Profile, designed (Kylie): a pine photo band, a large round photo in a gold ring that they can change, a gold Early access
+     badge, labels with fine gold rules, gold line icons on the rows, a switch that fills with gold, Sign out as the brand button */
+  #s-account{position:relative;padding-top:0}
+  .acband{height:150px;margin:0 -18px;border-radius:0 0 28px 28px;background:linear-gradient(180deg,rgba(8,10,14,.25),rgba(8,10,14,.55)),var(--photo-splash, url(/brand/splash-bg.jpg)) center 35%/cover}
+  .achead{display:grid;justify-items:center;text-align:center;margin:-62px 0 24px;position:relative}
+  .acav{position:relative;width:118px;height:118px;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+    background:linear-gradient(145deg,#5B3E26,#3E2A19);color:#F3E2B6;font:500 48px var(--serif);
+    box-shadow:0 0 0 3px #F4EEE5,0 0 0 5px #C9A35E,0 12px 26px -10px rgba(0,0,0,.45)}
+  .acav .acpic{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover}
+  .acav .acpic[hidden]{display:none}
+  .accam{position:absolute;right:2px;bottom:4px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#EBD49C,#B8955A);color:#2C2118;box-shadow:0 0 0 3px #F4EEE5,0 3px 8px rgba(0,0,0,.25)}
+  .accam svg{width:18px;height:18px}
+  .achead b{display:block;margin-top:14px;font:500 calc(30px * var(--s-headline,1))/1.1 var(--serif);color:var(--ivory)}
+  .achead small{display:block;margin-top:2px;color:var(--muted);font-size:calc(14.5px * var(--s-body,1))}
+  .acbadge{margin-top:10px;padding:5px 12px;border-radius:999px;font:600 calc(10.5px * var(--s-label,1)) var(--sans);letter-spacing:.2em;text-transform:uppercase;color:#5B3E26;background:linear-gradient(90deg,rgba(201,163,94,.18),rgba(235,212,156,.35),rgba(201,163,94,.18));border:1px solid rgba(184,149,90,.45)}
+  .ackey{display:flex;align-items:center;gap:12px;margin:8px 0 12px;font:600 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--brass)}
+  .ackey::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(184,149,90,.6),rgba(184,149,90,0))}
+  .actree{box-shadow:0 10px 22px -16px rgba(44,33,24,.5)}
+  .actree.acnew span{background:radial-gradient(circle at 50% 45%,rgba(201,163,94,.12),transparent 70%)}
+  .acrows{box-shadow:0 10px 24px -18px rgba(44,33,24,.45)}
+  .acrows button{justify-content:flex-start}
+  .acrows button > span:not(.aci){flex:1}
+  .aci{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#9C7A3E;background:rgba(201,163,94,.12)}
+  .aci svg{width:19px;height:19px}
+  .actog{flex:none;width:46px;height:27px;border-radius:99px;background:#E4DCCF;position:relative;box-shadow:inset 0 1px 3px rgba(0,0,0,.15);transition:background .25s}
+  .actog::after{content:"";position:absolute;left:3px;top:3px;width:21px;height:21px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3);transition:transform .25s}
+  .acmailrow[aria-pressed="true"] .actog{background:linear-gradient(90deg,#9C7638,#C9A35E 40%,#EBD49C 70%,#C49C58)}
+  .acmailrow[aria-pressed="true"] .actog::after{transform:translateX(19px)}
+  .acout{width:100%;margin-top:18px}
+  html:not(.theme-ivory) .acav{box-shadow:0 0 0 3px var(--bg),0 0 0 5px #C9A35E}
+  html:not(.theme-ivory) .acbadge{color:#E6CF98;background:rgba(201,163,94,.12)}
+  /* the pine band runs up behind the top bar */
+  body:has(#s-account:not([hidden])) .appbar{position:fixed;left:0;right:0;background:transparent;border-color:transparent}
+  body:has(#s-account:not([hidden])) .appbar .barmono{filter:brightness(1.6)}
+  body:has(#s-account:not([hidden])) .appbar button{color:#F7F1E8}
+  .acband{height:calc(190px + env(safe-area-inset-top))}
+  html:not(.theme-ivory) .accam{box-shadow:0 0 0 3px var(--bg)}
 </style>
 </head>
 <body>
@@ -1723,18 +1752,25 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     </form>
   </section>
   <section class="screen tabpage" id="s-account" data-title="Profile" hidden>
-    <div class="achead"><span class="acav">Y</span><div><b>Your name</b><small>you@email.com</small></div></div>
-    <div class="ackey">Your trees</div>
+    <div class="acband" aria-hidden="true"></div>
+    <div class="achead">
+      <label class="acav" aria-label="Add a profile photo"><span class="acini">Y</span><img class="acpic" alt="" hidden>
+        <span class="accam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5h3l1.6-2.2h6.8L17 8.5h3v10H4z"/><circle cx="12" cy="13.2" r="3.2"/></svg></span>
+        <input type="file" id="acPhoto" accept="image/*" hidden></label>
+      <b>Your name</b><small>you@email.com</small>
+      <span class="acbadge">Early access</span>
+    </div>
+    <div class="ackey"><span>Your trees</span></div>
     <div class="actrees" id="acTrees"></div>
-    <div class="ackey">Account</div>
+    <div class="ackey"><span>Account</span></div>
     <div class="acrows">
-      <button type="button" data-acsoon><span>Name and email</span><i>›</i></button>
-      <button type="button" data-acsoon><span>Password</span><i>›</i></button>
-      <button type="button" data-acsoon><span>Email me new looks and tips</span><em class="actog"></em></button>
-      <button type="button" data-acsoon><span>Help and questions</span><i>›</i></button>
+      <button type="button" data-acsoon><span class="aci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 19.5c1.2-3.4 4-5 7-5s5.8 1.6 7 5"/></svg></span><span>Name and email</span><i>›</i></button>
+      <button type="button" data-acsoon><span class="aci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="10.5" width="13" height="9" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg></span><span>Password</span><i>›</i></button>
+      <button type="button" class="acmailrow" aria-pressed="false"><span class="aci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="m4.5 7 7.5 6 7.5-6"/></svg></span><span>Email me new looks and tips</span><em class="actog"></em></button>
+      <button type="button" data-acsoon><span class="aci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.4v.4"/><path d="M12 16.6h.01"/></svg></span><span>Help and questions</span><i>›</i></button>
     </div>
     <p class="acmsg" aria-live="polite"></p>
-    <button class="btn ghost acout" type="button" data-acsoon>Sign out</button>
+    <button class="btn acout" type="button" data-acsoon>Sign out</button>
     <button class="acdel" type="button" data-acsoon>Delete account</button>
   </section>
   <section class="screen tabpage" id="s-look" data-title="Shop the Look" hidden>
@@ -3083,6 +3119,25 @@ document.addEventListener("click", e => {
   if (soon) { const m = soon.closest(".screen").querySelector(".acmsg"); if (m) m.textContent = AC_SOON; }
 });
 document.querySelectorAll("[data-acform]").forEach(f => f.addEventListener("submit", e => { e.preventDefault(); f.querySelector(".acmsg").textContent = AC_SOON; }));
+// Profile photo (design only for now): it shows right away and is kept on this phone until accounts are connected
+(function () {
+  const show = d => { if (!d) return; const img = document.querySelector("#s-account .acpic"); img.src = d; img.hidden = false; document.querySelector("#s-account .acini").hidden = true; };
+  try { show(localStorage.getItem("ts_profile_photo")); } catch (e) {}
+  document.getElementById("acPhoto").addEventListener("change", async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const url = await loadPhoto(f), im = new Image(); im.src = url; await im.decode();
+      const c = document.createElement("canvas"), S = 320, k = Math.min(im.width, im.height); c.width = c.height = S;
+      c.getContext("2d").drawImage(im, (im.width - k) / 2, (im.height - k) / 2, k, k, 0, 0, S, S);
+      const d = c.toDataURL("image/jpeg", .85); show(d); try { localStorage.setItem("ts_profile_photo", d); } catch (e) {}
+    } catch (err) { document.querySelector("#s-account .acmsg").textContent = "Couldn't read that photo. Try a JPG or PNG."; }
+  });
+  document.querySelector("#s-account .acmailrow").addEventListener("click", e => {
+    const b = e.currentTarget, on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", String(on));
+    try { localStorage.setItem("ts_tips_email", on ? "1" : "0"); } catch (err) {}
+  });
+  try { if (localStorage.getItem("ts_tips_email") === "1") document.querySelector("#s-account .acmailrow").setAttribute("aria-pressed", "true"); } catch (e) {}
+})();
 function drawAccount(st) {
   const trees = [];
   if (st && (st.after || st.photo)) trees.push({ pic: st.after || st.photo, name: (st.result && st.result.headline) ? "Your tree" : "Your tree", when: "Saved on this device" });
@@ -4413,7 +4468,7 @@ $("#camUp").onclick = () => { try { localStorage.setItem("ts_photo_tips", "1"); 
 
 // Every other photo they add (Ivory look) opens the same in-app camera: full screen, the corners, "Snap or Upload a Photo of …",
 // the shutter, Upload for the library and × to close. The picture goes into that photo's own field, as if chosen from the library.
-const CAM_WHAT = { ideaFile: "Your Inspiration", ideaRoomFile: "Your Room", roomTreeFile: "Your Tree", keyFile: "Your Piece", inspoFile: "Your Inspiration", pPhoto: "Your Piece" };
+const CAM_WHAT = { ideaFile: "Your Inspiration", ideaRoomFile: "Your Room", roomTreeFile: "Your Tree", keyFile: "Your Piece", inspoFile: "Your Inspiration", pPhoto: "Your Piece", acPhoto: "Yourself" };
 let camLInput = null, camLStream = null;
 function closeCamLayer() {
   if (camLStream) camLStream.getTracks().forEach(t => t.stop());
@@ -4424,7 +4479,7 @@ async function openCamLayer(inp) {
   $("#camLMsg").hidden = true; $("#camLShot").disabled = true; $("#camLayer").hidden = false;
   try {
     if (camDenied || !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) throw new Error("no camera");
-    const st = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1440 } }, audio: false });
+    const st = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: inp.id === "acPhoto" ? "user" : "environment" }, width: { ideal: 1920 }, height: { ideal: 1440 } }, audio: false });
     if ($("#camLayer").hidden) { st.getTracks().forEach(t => t.stop()); return; }
     camLStream = st; const v = $("#camLv"); v.srcObject = st; await v.play().catch(() => {}); $("#camLShot").disabled = false;
   } catch (e) {
