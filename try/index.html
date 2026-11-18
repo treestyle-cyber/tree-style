@@ -1316,6 +1316,11 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   body:has(#s-photo.roompath:not([hidden])) .snapcam .sn-tree{display:none}
   body:has(#s-photo.roompath:not([hidden])) .snapcam .sn-room{display:inline}
   html.theme-ivory body:has(#s-photo.roompath:not([hidden]):not(.has):not(.room)) .snapcam{background:linear-gradient(180deg,rgba(20,14,10,.45),rgba(20,14,10,.1) 30%,rgba(20,14,10,.15) 60%,rgba(20,14,10,.7)),var(--photo-roomscan, url(/brand/home-bg.jpg)) center/cover}
+  /* The in-app camera (Ivory look): the live picture fills the viewfinder screen; Upload sits beside the shutter */
+  .snapcam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+  body.camlive .snapcam{background:#000 !important}
+  .snapcam .camup{position:absolute;left:calc(50% - 37px - 92px);bottom:calc(10% + 12px + env(safe-area-inset-bottom));display:grid;justify-items:center;gap:4px;background:none;border:0;color:#F7F1E8;font:600 calc(11px * var(--s-label,1)) var(--sans);letter-spacing:.14em;text-transform:uppercase;cursor:pointer;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+  .snapcam .camup svg{width:40px;height:40px;padding:9px;border-radius:50%;background:rgba(20,14,10,.35);border:1.5px solid rgba(247,241,232,.7);box-sizing:border-box}
 </style>
 </head>
 <body>
@@ -1786,9 +1791,10 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </div>
 
 <!-- Ivory look: a full-screen photo with viewfinder corners and a shutter button (Kylie's Upload / Scan screen) -->
-    <div class="snapcam"><i class="vf tl"></i><i class="vf tr"></i><i class="vf bl"></i><i class="vf br"></i>
+    <div class="snapcam"><video id="camv" playsinline muted autoplay hidden></video><i class="vf tl"></i><i class="vf tr"></i><i class="vf bl"></i><i class="vf br"></i>
       <p class="snaptxt">Snap or Upload<br>a Photo of Your <span class="sn-tree">Tree</span><span class="sn-room">Room</span></p>
       <button type="button" class="shutter" id="shutter" aria-label="Take or choose a photo"></button>
+      <button type="button" class="camup" id="camUp" aria-label="Upload a photo from your library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M20.5 16l-5-5-8.5 8"/></svg><span>Upload</span></button>
     </div>
 <button class="lookbar" id="lookBar" type="button"><svg class="sprig" viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M6 44C18 34 30 24 50 6"/><path d="M14 37c-4-6-3-12 1-15 2 6 2 11-1 15zM22 30c-5-5-5-11-2-15 3 5 4 10 2 15zM30 23c-4-6-3-12 1-15 2 6 2 11-1 15zM38 16c-4-5-4-10-1-13 2 5 3 9 1 13z"/><path d="M15 38c6-1 12 1 15 6-6 1-11-1-15-6zM23 31c6-1 12 1 15 5-6 1-11 0-15-5zM31 24c6-2 12 0 15 4-6 1-11 0-15-4zM39 17c5-2 10-1 13 3-5 1-10 1-13-3z"/></svg><span><b>Shop the Look</b><small>Curated selections for every style</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
 <nav class="navbar" id="navbar" aria-label="Main">
@@ -2754,7 +2760,7 @@ document.querySelector("label.drop").addEventListener("click", e => {
 });
 function closeTips() { const sh = $("#tipsSheet"); sh.classList.remove("on"); setTimeout(() => sh.hidden = true, 280); }
 $("#tipsSheet").addEventListener("click", e => {
-  if (e.target.closest("#tipsGo")) { try { localStorage.setItem("ts_photo_tips", "1"); } catch {} closeTips(); $("#file").click(); return; }
+  if (e.target.closest("#tipsGo")) { try { localStorage.setItem("ts_photo_tips", "1"); } catch {} closeTips(); if (camScreen()) { startCam().then(ok => { if (!ok) $("#file").click(); }); } else $("#file").click(); return; }
   if (e.target.closest("[data-close]")) closeTips();
 });
 function setPhotoCopy(key) {
@@ -2911,8 +2917,8 @@ async function loadPhoto(file) {
   photoAspect = ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0];
   return c.toDataURL("image/jpeg", 0.88);
 }
-$("#file").addEventListener("change", async e => {
-  const f = e.target.files[0]; if (!f) return;
+$("#file").addEventListener("change", e => { const f = e.target.files[0]; if (f) usePhotoFile(f); });
+async function usePhotoFile(f) {
   $("#photoErr").textContent = "";
   try {
     photo = await loadPhoto(f); baseKey = "";
@@ -2925,7 +2931,7 @@ $("#file").addEventListener("change", async e => {
     paint(false);
     photoChecked();
   } catch { $("#photoErr").textContent = "Couldn't read that photo. Try a JPG or PNG."; }
-});
+}
 
 const STYLE_NOTES = {
   keep: "We'll figure out the style you already have and help you refine it.",
@@ -4321,7 +4327,42 @@ document.querySelectorAll("#navbar button").forEach(b => b.onclick = async () =>
   show(t, ["s-home"]);
 });
 $("#lookBar").onclick = () => show("s-look", ["s-home"]);
-$("#shutter").onclick = () => document.querySelector("label.drop").click();   // same as tapping the photo box: tips the first time, then the camera or library
+// Ivory look: the camera opens inside the app, live behind the viewfinder (Kylie). It starts when the photo screen shows
+// (after the photo tips the first time); the shutter takes the picture, Upload picks one from the library. If the phone
+// has no camera or says no, the shutter falls back to the phone's own camera or library choice.
+let camStream = null, camWant = false, camDenied = false;
+const camOn = () => !!(camStream && $("#camv").videoWidth);
+const camScreen = () => document.documentElement.classList.contains("theme-ivory") && !$("#s-photo").hidden && !$("#s-photo").classList.contains("has") && !$("#s-photo").classList.contains("room") && !photo;
+async function startCam() {
+  if (SAMPLE || camStream || camDenied || !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) return false;
+  camWant = true;
+  try {
+    const st = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1440 } }, audio: false });
+    if (!camWant || !camScreen()) { st.getTracks().forEach(t => t.stop()); return false; }
+    camStream = st; const v = $("#camv"); v.srcObject = st; v.hidden = false; await v.play().catch(() => {});
+    document.body.classList.add("camlive"); return true;
+  } catch (e) { camDenied = true; return false; }
+}
+function stopCam() {
+  camWant = false;
+  if (camStream) camStream.getTracks().forEach(t => t.stop());
+  camStream = null; const v = $("#camv"); v.srcObject = null; v.hidden = true; document.body.classList.remove("camlive");
+}
+new MutationObserver(() => { if (camScreen()) { if (tipsSeen() && !camStream && !camWant) startCam(); } else if (camStream || camWant) stopCam(); })
+  .observe($("#s-photo"), { attributes: true, attributeFilter: ["hidden", "class"] });
+addEventListener("visibilitychange", () => { if (document.hidden) stopCam(); else if (camScreen() && tipsSeen()) startCam(); });
+$("#shutter").onclick = async () => {
+  if (camOn()) {
+    const v = $("#camv"), c = document.createElement("canvas"); c.width = v.videoWidth; c.height = v.videoHeight;
+    c.getContext("2d").drawImage(v, 0, 0);
+    const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .92));
+    stopCam(); usePhotoFile(new File([blob], "camera.jpg", { type: "image/jpeg" })); return;
+  }
+  if (!tipsSeen()) { document.querySelector("label.drop").click(); return; }   // the tips first; Got it opens the camera
+  if (await startCam()) return;
+  $("#file").click();   // no camera in the app: the phone's own camera or library
+};
+$("#camUp").onclick = () => { try { localStorage.setItem("ts_photo_tips", "1"); } catch {} stopCam(); $("#file").click(); };
 $("#navSignOut").onclick = () => { password = ""; try { sessionStorage.removeItem("ts_pw"); } catch {} show("s-pass", []); };
 function drawStyleCards() {
   $("#styleCards").innerHTML = STYLE_PICK.concat([["themed", "Themed", "One story, your idea"]]).map(([v, name, sub]) => {
