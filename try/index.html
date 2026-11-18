@@ -3261,7 +3261,12 @@ const levelWord = n => LEVELS[Math.max(1, Math.min(5, Math.floor(n)))];
 // Ivory look: the score as a circle of string lights (Kylie): a fine wire sagging between 15 sockets, a small glass bulb at each,
 // pointing outward; 3 bulbs per point of the score glow warm gold (they switch on one after another), the rest stay clear and unlit
 let ringN = 0;
-function ringHtml(v) {
+function ringHtml(v, plain) {
+  // The small score on the results strip stays a plain ring (Kylie): a pale track with a gold gradient arc that fills to the score
+  if (plain) {
+    const n = Math.max(0, Math.min(5, Number(v) || 0)), C = 2 * Math.PI * 44, on = C * n / 5, g = "rg" + (++ringN);
+    return `<svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F0DDA8"/><stop offset=".35" stop-color="#CDA862"/><stop offset=".7" stop-color="#A47E3C"/><stop offset="1" stop-color="#D8B977"/></linearGradient></defs><circle cx="50" cy="50" r="44" class="rtrack"/><circle cx="50" cy="50" r="44" class="rarc" style="stroke:url(#${g})" stroke-dasharray="${on.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 50 50)"/></svg><span class="rnum">${n.toFixed(1)}</span><span class="rof">of 5</span>`;
+  }
   const n = Math.max(0, Math.min(5, Number(v) || 0)), N = 15, lit = Math.round(n / 5 * N), R = 40, g = "rg" + (++ringN);
   const pt = (a, r) => [50 + r * Math.sin(a), 50 - r * Math.cos(a)];
   let wire = "", bulbs = "";
@@ -3322,7 +3327,7 @@ function fill() {
   const shopping = TreeGuide.shoppingList(r, mode), nItems = shopping.reduce((a, g) => a + g.items.length, 0);
   $("#navScoreBtn").hidden = !(r.categories || []).length;
   { const so = r.overall != null ? toOrn(r.overall) : null; $("#stripOrns").innerHTML = so ? ornHtml(so) : ""; $("#stripOrns").hidden = !so;
-    $("#stripRing").innerHTML = so ? ringHtml(so) : ""; $("#stripRing").hidden = !so;
+    $("#stripRing").innerHTML = so ? ringHtml(so, true) : ""; $("#stripRing").hidden = !so;
     $("#stripWord").innerHTML = so ? `${levelWord(so)}<span class="snum"> · ${so} of 5</span>` : "How it scored"; $("#stripSub").textContent = so ? "Your tree today, part by part" : "Balance, lights, the top and more"; }
   $("#fixesSub").textContent = mode === "design" ? "The plan at a glance." : "Biggest difference for the least effort, best first.";
   $("#fixes").innerHTML = fixes.map((f, i) => fixHtml(f, i)).join("");
