@@ -409,7 +409,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .restyle{display:flex;align-items:center;gap:8px}
   .restyle svg{width:18px;height:18px;color:var(--gold)}
   /* Undo / Redo on the preview (Eric, Nov 17): step back through the versions Change something made, right where the picture is */
-  .vstep{position:absolute;right:12px;bottom:12px;z-index:3;display:flex;gap:6px}
+  .vstep{position:absolute;right:10px;bottom:58px;z-index:3;display:flex;gap:6px} /* above the zoom button (bottom right), clear of Change something */
   .vstep[hidden]{display:none}
   .vstep button{appearance:none;display:flex;align-items:center;gap:6px;border:1px solid var(--gold);background:rgba(20,28,44,.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:var(--ivory);font:600 calc(13px * var(--s-body,1)) var(--sans);padding:10px 13px;border-radius:999px;cursor:pointer}
   .vstep button[hidden]{display:none}
