@@ -3438,7 +3438,7 @@ function nearestPhoto(set, hex, label) {
 }
 function shopPhoto(b, key) {
   const l = String(b.label || "").toLowerCase(), ph = window.__PH || {};
-  if (key === "ribbon") { if (/candy|peppermint|stripe/.test(l)) return ""; if (/plaid|tartan|check/.test(l)) return "/brand/ribbons/plaid-green.jpg"; const n = nearestPhoto("ribbons", b.color, l); return n ? `/brand/ribbons/${n}.jpg` : ""; }
+  if (key === "ribbon") { if (/candy|peppermint/.test(l) || /stripe/.test(l) && /red/.test(l) && /white/.test(l)) return "/brand/ribbons/candy-stripe.jpg"; if (/plaid|tartan|check/.test(l)) return "/brand/ribbons/plaid-green.jpg"; const n = nearestPhoto("ribbons", b.color, l); return n ? `/brand/ribbons/${n}.jpg` : ""; }
   if (key === "statement" || key === "medium") {
     const shape = /teardrop|\bdrop/.test(l) ? "teardrop" : /finial/.test(l) ? "finial" : /icicle/.test(l) ? "icicle" : "";
     if (shape) return ph["orn_" + shape] || "";   // shaped ornaments: their own Studio photo spot
@@ -4082,7 +4082,7 @@ function ornamentPhoto(p) {
 function ribbonPhoto(p) {
   const c = p.colors, n = p.name.toLowerCase(), f = p.fin;
   if (/plaid|tartan|check/.test(f + " " + n)) return "plaid-green";
-  if (/candy|peppermint/.test(n) || /stripe/.test(f) && /white/.test(c)) return "";   // candy cane stripes: no photo looks like them
+  if (/candy|peppermint/.test(n) || /stripe/.test(f + " " + n) && /red/.test(c) && /white/.test(c + " " + n)) return "candy-stripe";   // red and white candy stripes
   if (/burgundy|wine/.test(c)) return "burgundy-gold";
   if (/(^|,)red/.test(c)) return ["red", "red-2", "red-3"][parseInt(p.asin.slice(-2), 36) % 3];
   if (/sage|olive|moss|dusty green/.test(c + " " + n)) return "sage";
