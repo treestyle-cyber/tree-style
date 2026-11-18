@@ -88,18 +88,23 @@
     g.fillStyle = rgbaOf(IVORY, .92); g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(s, W / 2, y - 7); g.restore();
   }
 
-  // 1 \u00B7 The hook: the whole tree, full screen, in Eric's voice
+  // 1 \u00B7 The hook: the whole tree, top to bottom, with nothing over it (Eric: the stickers covered the tree, so no slide showed
+  // all of it). The same photo, blurred, fills the slide behind; the stickers sit above and below the picture.
   async function hook(L, p) {
     const [c, g] = canvas();
-    fullPhoto(g, p, { fy: .5 });
-    shade(g, 0, 640, .62, 0); shade(g, H - 780, H, 0, .78);
-    sticker(g, ["SNEAK PEEK \u{1F440}"], W / 2 - 150, SAFE_T + 30, { font: `800 34px ${SANS}`, size: 34, bg: GOLD, fg: MID, rot: -4, padX: 30, padY: 16 });
-    sticker(g, ["I asked my app to design", "a Christmas tree\u2026"], W / 2, SAFE_T + 200, { font: `800 62px ${SANS}`, size: 62, rot: -2 });
-    const f = fit(g, "\u2026and it made this \u{1F60D}", 980, 112, 70, n => `700 ${n}px ${HAND}`);
-    say(g, "\u2026and it made this \u{1F60D}", W / 2, SAFE_B - 250, `700 ${f}px ${HAND}`);
-    const nf = fit(g, L.name, 860, 76, 48, n => `italic 600 ${n}px ${SERIF}`);
-    sticker(g, [L.name], W / 2, SAFE_B - 110, { font: `italic 600 ${nf}px ${SERIF}`, size: nf, bg: GOLD, fg: MID, rot: 2, padX: 44, padY: 18 });
-    aiLabel(g, SAFE_B + 10);
+    fullPhoto(g, p, { zoom: 1.15, blur: 30 }); g.fillStyle = "rgba(8,11,18,.5)"; g.fillRect(0, 0, W, H);
+    sticker(g, ["SNEAK PEEK \u{1F440}"], W / 2 - 150, SAFE_T + 20, { font: `800 34px ${SANS}`, size: 34, bg: GOLD, fg: MID, rot: -4, padX: 30, padY: 16 });
+    sticker(g, ["I asked my app to design", "a Christmas tree\u2026"], W / 2, SAFE_T + 168, { font: `800 58px ${SANS}`, size: 58, rot: -2 });
+    // The picture, whole: as large as fits between the stickers, never cropped
+    const top = SAFE_T + 290, bot = H - 500, k = Math.min((W - 80) / p.width, (bot - top) / p.height), pw = p.width * k, ph = p.height * k, px = (W - pw) / 2, py = top + (bot - top - ph) / 2;
+    g.save(); g.shadowColor = "rgba(0,0,0,.55)"; g.shadowBlur = 50; g.shadowOffsetY = 14; g.fillStyle = MID; rr(g, px, py, pw, ph, 26); g.fill(); g.restore();
+    g.save(); rr(g, px, py, pw, ph, 26); g.clip(); g.drawImage(p, px, py, pw, ph); g.restore();
+    g.save(); g.strokeStyle = rgbaOf(IVORY, .9); g.lineWidth = 6; rr(g, px, py, pw, ph, 26); g.stroke(); g.restore();
+    const f = fit(g, "\u2026and it made this \u{1F60D}", 980, 92, 60, n => `700 ${n}px ${HAND}`);
+    say(g, "\u2026and it made this \u{1F60D}", W / 2, bot + 92, `700 ${f}px ${HAND}`);
+    const nf = fit(g, L.name, 860, 66, 44, n => `italic 600 ${n}px ${SERIF}`);
+    sticker(g, [L.name], W / 2, bot + 186, { font: `italic 600 ${nf}px ${SERIF}`, size: nf, bg: GOLD, fg: MID, rot: 2, padX: 44, padY: 16 });
+    aiLabel(g, SAFE_B + 30);
     return c;
   }
 
