@@ -1207,9 +1207,9 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   /* Loading: the logo's tree, ornaments in the logo's gold hanging from the branch ends one by one (Kylie) */
   .treeload{width:104px;margin:0 auto 18px;aspect-ratio:482/700}
   .treeload svg{display:block;width:100%;height:100%;overflow:visible}
-  .treeload .lo{opacity:0;transform-box:fill-box;transform-origin:50% 0;animation:4.6s ease-in-out infinite}
-  .treeload .ts{opacity:0;transform-box:fill-box;transform-origin:50% 50%;animation:tlStar 4.6s ease infinite;filter:drop-shadow(0 0 14px rgba(255,226,150,.9))}
-  @keyframes tlStar{0%,58%{opacity:0;transform:scale(.4) rotate(-70deg)}66%{opacity:1;transform:scale(1.3) rotate(0)}72%,92%{opacity:1;transform:scale(1)}98%,100%{opacity:0;transform:scale(1)}}
+  .treeload .lo{opacity:0;transform-box:fill-box;transform-origin:50% 0;animation:8s ease-in-out infinite}
+  .treeload .ts{opacity:0;transform-box:fill-box;transform-origin:50% 50%;animation:tlStar 8s ease infinite;filter:drop-shadow(0 0 14px rgba(255,226,150,.9))}
+  @keyframes tlStar{0%,72%{opacity:0;transform:scale(.4) rotate(-70deg)}77%{opacity:1;transform:scale(1.3) rotate(0)}80%,91%{opacity:1;transform:scale(1)}97%,100%{opacity:0;transform:scale(1)}}
   @media (prefers-reduced-motion:reduce){.treeload .lo,.treeload .ts{animation:none;opacity:1}}
   /* the small tree in place of spinners */
   .treeload.tl-small{width:22px;margin:0;display:inline-block;vertical-align:middle}
@@ -1218,12 +1218,6 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .renderwait .treeload{width:92px;margin-bottom:14px}
   @media (max-height:740px){#loading .treeload{width:76px;margin-bottom:10px}}
   @media (max-height:620px){#loading .treeload{width:56px;margin-bottom:6px}}
-  /* Checklist and Your plan / Your preview: the small loading tree instead of a spinning ring, on the line being worked on */
-  .litree.treeload{display:none}
-  #loading li.on::before{display:none}
-  #loading li.on .litree.treeload{display:block;position:absolute;left:-3px;top:50%;transform:translateY(-58%)}
-  .progress .on .ic{border:0 !important;animation:none !important;background:none !important;display:grid;place-items:center}
-  .progress .on .ic .litree.treeload{display:block;width:24px}
 </style>
 </head>
 <body>
@@ -1399,8 +1393,8 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     </div>
     <div class="staycard" id="stayNote" hidden><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7.5v5.5"/><circle cx="12" cy="16.3" r=".6" fill="currentColor"/></svg></span><div><b>Keep this screen open</b><span>Closing TreeStyle or switching apps can stop your design.</span></div></div>
     <ol class="progress" id="progress" hidden>
-      <li id="pg1"><span class="ic"><span class="litree" data-treeload="s"></span></span><div><b>Your plan</b><small>Ribbon, stems, ornaments and your shopping list · <em></em></small></div></li>
-      <li id="pg2"><span class="ic"><span class="litree" data-treeload="s"></span></span><div><b>Your preview</b><small>A picture of your finished tree · <em></em></small></div></li>
+      <li id="pg1"><span class="ic"></span><div><b>Your plan</b><small>Ribbon, stems, ornaments and your shopping list · <em></em></small></div></li>
+      <li id="pg2"><span class="ic"></span><div><b>Your preview</b><small>A picture of your finished tree · <em></em></small></div></li>
     </ol>
     <h1 id="headline"></h1>
     <p id="summary"></p>
@@ -1481,7 +1475,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   <section class="screen" id="s-plan" data-title="Step by step" hidden>
     <div class="steptabs" id="stepTabs" role="tablist"></div>
     <div class="stephead"><div class="k" id="stepK"></div><h2 id="stepTitle"></h2></div>
-    <p class="stepwriting" id="stepWriting" hidden><span data-treeload="s"></span>Adding the detailed how-to for each step. It appears here in a few seconds.</p>
+    <p class="stepwriting" id="stepWriting" hidden><span class="spin"></span>Adding the detailed how-to for each step. It appears here in a few seconds.</p>
     <div class="guidebox"><canvas id="guideCv" aria-label="Diagram of this step on your tree"></canvas><div class="branchanim" id="branchAnim" hidden></div><span class="peek" id="peek" aria-hidden="true">Press and hold to see your photo</span><button class="zoombtn" id="zoomGuide" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6M10.5 7.5v6M7.5 10.5h6"/></svg></button></div>
     <div class="card stepcard">
       <p id="stepLead"></p>
@@ -2852,15 +2846,15 @@ function startTips() {
 function stopTips() { clearInterval(tipTimer); tipTimer = null; }
 
 // Loading tree (Kylie): the logo's pine, ornaments in the logo's gold appearing one at a time on the branch ends,
-// then the star lands on top; it holds, fades and starts again. data-treeload="s" is the small icon used in place of spinners.
+// then the star lands on top; it holds, fades and starts again. data-treeload="s" is a small version (not used at the moment).
 const TREE_ORNS = { "tl-big": [[207,214,14],[300,262,15],[150,330,16],[352,352,16],[226,410,17],[96,424,17],[400,440,17],[300,512,20],[150,520,20],[420,540,17]],
   "tl-small": [[300,262,34],[150,330,36],[352,400,38],[200,470,40],[110,530,40],[380,540,40]] };
 let treeLoadN = 0;
 (function treeLoadKeyframes() {
   let css = "";
   for (const [k, list] of Object.entries(TREE_ORNS)) list.forEach((o, i) => {
-    const p = Math.round(4 + i * 56 / (list.length - 1));
-    css += `@keyframes tl-${k}-${i}{0%,${p}%{opacity:0;transform:translateY(-16px) scale(.6)}${p + 5}%{opacity:1;transform:translateY(0) rotate(5deg)}${p + 9}%{transform:rotate(-3deg)}${p + 13}%,88%{opacity:1;transform:none}95%,100%{opacity:0;transform:none}}`
+    const p = Math.round(10 + i * 54 / (list.length - 1));
+    css += `@keyframes tl-${k}-${i}{0%,${p}%{opacity:0;transform:translateY(-16px) scale(.6)}${p + 3}%{opacity:1;transform:translateY(0) rotate(5deg)}${p + 5}%{transform:rotate(-3deg)}${p + 7}%,91%{opacity:1;transform:none}97%,100%{opacity:0;transform:none}}`
       + `.treeload.${k} .lo:nth-of-type(${i + 1}){animation-name:tl-${k}-${i}}`;
   });
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
@@ -2887,7 +2881,7 @@ function startLoading(title, steps, evalSeconds, pic) {
   const gen = ++loadGen;
   $("#loadTitle").textContent = title;
   $("#scan").hidden = !pic; if (pic) $("#scanImg").src = pic;
-  $("#loadSteps").innerHTML = steps.map(s => `<li><span class="litree" data-treeload="s"></span>${s}</li>`).join("");
+  $("#loadSteps").innerHTML = steps.map(s => `<li>${s}</li>`).join("");
   $("#loading").hidden = false;
   $("#loadNote").textContent = evalSeconds < 20 ? "Just a few more seconds." : "About a minute. Hang tight.";
   startTips();
@@ -3137,7 +3131,7 @@ function fillReveal() {
   $("#summary").textContent = r.summary || "";
   $("#eye").textContent = "";   // the summary already says where the eye lands; no second line for it
   // Two things happen after the scores: the plan, then the preview. Show them as two steps.
-  const step = (el, st, note) => { el.className = st; el.querySelector(".ic").innerHTML = st === "ok" ? "✓" : st === "bad" ? "!" : st === "on" ? `<span class="litree" data-treeload="s"></span>` : ""; el.querySelector("em").textContent = note; };
+  const step = (el, st, note) => { el.className = st; el.querySelector(".ic").textContent = st === "ok" ? "✓" : st === "bad" ? "!" : ""; el.querySelector("em").textContent = note; };
   const designWord = mode === "design" ? "finished" : "improved";
   $("#pg2").querySelector("small").firstChild.textContent = `A picture of your ${designWord} tree · `;
   step($("#pg1"), planState === "wait" ? "on" : planState === "error" ? "bad" : "ok", planState === "wait" ? planLeft() : planState === "error" ? "didn't come through. Tap Try again." : "ready");
