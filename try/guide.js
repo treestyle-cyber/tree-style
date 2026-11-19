@@ -501,7 +501,8 @@
       ribbonPlan.layer = sh;
     }
     const layerFor = k => k === "ribbon" ? (ribbonPlan.layer || planL.ribbon) : planL[k];
-    let afterImg = null;
+    let afterImg = null, photoSteps = false;
+    const usesAfter = key => photoSteps && !!afterImg && key !== "fluff" && key !== "all";
 
     // Which steps this tree needs
     const has = {};
@@ -555,6 +556,13 @@
       const o = ctx, u = G.unit, vs = viewScale(), S = scene, sizes = ORN_IN(data);
       placed = [];
       if (peek) { o.drawImage(img, 0, 0, W, H); return; }
+      // Ivory look (Kylie's step mockups): every step after shaping shows their finished tree, the preview, with only the
+      // numbered spots on top (drawn by the app); the drawn pieces stay as the fallback until the preview exists
+      if (usesAfter(key)) {
+        const k2 = Math.max(W / afterImg.naturalWidth, H / afterImg.naturalHeight), aw = afterImg.naturalWidth * k2, ah = afterImg.naturalHeight * k2;
+        o.drawImage(afterImg, (W - aw) / 2, (H - ah) / 2, aw, ah);
+        return;
+      }
       if (key === "all" && afterImg) {
         const k2 = Math.max(W / afterImg.naturalWidth, H / afterImg.naturalHeight), aw = afterImg.naturalWidth * k2, ah = afterImg.naturalHeight * k2;
         o.drawImage(afterImg, (W - aw) / 2, (H - ah) / 2, aw, ah);
@@ -755,11 +763,12 @@
       else if (key === "florals") pts = spread(S.all.filter(m => m.floral).map(m => [m.x, m.y]), 3);
       else if (key === "statement") pts = spread(orn(["xl", "l"]), 3);
       else if (key === "medium") pts = spread(orn(["m", "s"]), 3);
+      else if (key === "ribbon") pts = (ribbonPlan.marks || []).slice();   // every ribbon spot, top down
       else if (key === "crown") pts = [[G.A[0], G.A[1] + G.treeH * .05], [(G.L[0] + G.R[0]) / 2 + G.treeH * .12, G.L[1] - G.treeH * .03]];
       return pts.filter(p => p && isFinite(p[0]) && isFinite(p[1]));
     }
 
-    return { steps, title: k => STEP_TITLE[k], draw, pins, setQuiet: v => { quiet = !!v; }, drawMap: opts => drawMap(ctx, opts), lead, note, legend, itemsFor, buy, data, setAfter: im => { afterImg = im; } };
+    return { steps, title: k => STEP_TITLE[k], draw, pins, setQuiet: v => { quiet = !!v; }, drawMap: opts => drawMap(ctx, opts), lead, note, legend, itemsFor, buy, data, usesAfter, setPhotoSteps: v => { photoSteps = !!v; }, setAfter: im => { afterImg = im; } };
   }
 
   window.TreeGuide = { create, normalize, shoppingList };

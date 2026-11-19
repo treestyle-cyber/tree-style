@@ -2008,7 +2008,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </div>
 
 <script src="/try/engine.js?v=20261117c"></script>
-<script src="/try/guide.js?v=20261119j"></script>
+<script src="/try/guide.js?v=20261119k"></script>
 <script src="/picks-looks.js"></script>
 <script>
 // Screen preview (Studio → Screens): /try/?screen-preview&s=<screen> opens that screen straight away with the
@@ -3424,7 +3424,7 @@ function paintFirst() {
     fillReveal();
     if (stack[stack.length - 1] === "s-results") sweep();
     saveSoon();
-    if (after && guide) { const ai = new Image(); ai.onload = () => { if (!guide) return; guide.setAfter(ai); if (guide.steps[stepIdx] === "all") drawStep(); }; ai.src = after; }
+    if (after && guide) { const ai = new Image(); ai.onload = () => { if (!guide) return; guide.setAfter(ai); if (guide.steps[stepIdx] === "all" || (guide.usesAfter && guide.usesAfter(guide.steps[stepIdx]))) drawStep(); }; ai.src = after; }
   });
 }
 
@@ -4047,7 +4047,7 @@ async function drawStep() {
   if (!guide) {
     try { guide = TreeGuide.create(await getPhotoImg(), $("#guideCv"), result, mode); }
     catch (e) { console.error(e); return; }
-    if (after) { const ai = new Image(); ai.onload = () => { if (!guide) return; guide.setAfter(ai); if (guide.steps[stepIdx] === "all") drawStep(); }; ai.src = after; }
+    if (after) { const ai = new Image(); ai.onload = () => { if (!guide) return; guide.setAfter(ai); if (guide.steps[stepIdx] === "all" || (guide.usesAfter && guide.usesAfter(guide.steps[stepIdx]))) drawStep(); }; ai.src = after; }
     goodSteps = new Set(mode === "check" ? guide.steps.filter(k => GOOD_CAT[k] && catScore(k) >= 7) : []); openGood = new Set();
     stepIdx = pendingStep != null ? pendingStep : Math.max(0, guide.steps.findIndex(k => !goodSteps.has(k))); pendingStep = null;
     if (pendingKey && guide.steps.includes(pendingKey)) stepIdx = guide.steps.indexOf(pendingKey); pendingKey = null;
@@ -4059,6 +4059,7 @@ async function drawStep() {
   $("#stepTabs").querySelectorAll("button").forEach(b => b.onclick = () => { stepIdx = +b.dataset.i; drawStep(); });
   const on = $("#stepTabs .on"); if (on) on.scrollIntoView({ block: "nearest", inline: "center" });
   if (guide.setQuiet) guide.setQuiet(document.documentElement.classList.contains("theme-ivory"));
+  if (guide.setPhotoSteps) guide.setPhotoSteps(document.documentElement.classList.contains("theme-ivory"));
   guide.draw(key, false);   // the numbered spots go on once the instruction card is set, below
   // shaping the branches is shown, not pointed at: a branch unfolding, then its tips. Not when the branches already scored
   // well (the step says "Already looking great"), unless they open the step anyway
@@ -4079,7 +4080,7 @@ async function drawStep() {
   $("#stepLegend").hidden = !lg.length || collapsed;
   $("#stepLegend").innerHTML = lg.map(l => `<li><b style="background:${l.color}"></b>${esc(l.text)}</li>`).join("");
   // A small key on the picture itself: what this step's marks are (Kylie: make the step pictures easy to understand)
-  const gk = key === "all" || collapsed || anim ? [] : guide.legend(key).slice(0, 4);
+  const gk = key === "all" || collapsed || anim || (guide.usesAfter && guide.usesAfter(key)) ? [] : guide.legend(key).slice(0, 4);
   $("#guideKey").hidden = !gk.length;
   $("#guideKey").innerHTML = gk.map(l => `<li><b style="background:${l.color}"></b>${esc(l.text)}</li>`).join("");
   let items = "";
@@ -4205,9 +4206,9 @@ function drawGuide(key, peek) {
 // The numbered spots on the picture (Ivory look): the active one gets a light halo, tap one to see its instruction
 function drawPins(key) {
   sv2PinHits = []; if ($("#pinPulse")) $("#pinPulse").hidden = true;
-  if (!guide || !guide.pins || !document.documentElement.classList.contains("theme-ivory") || key === "all" || key === "ribbon") return;
+  if (!guide || !guide.pins || !document.documentElement.classList.contains("theme-ivory") || key === "all" || (key === "ribbon" && !(guide.usesAfter && guide.usesAfter(key)))) return;
   const cv = $("#guideCv"), g = cv.getContext("2d"), pts = guide.pins(key), r = Math.max(10, cv.width * .03);
-  const n = key === "crown" ? pts.length : Math.min(pts.length, window.__sv2n || 0);
+  const n = key === "crown" || key === "ribbon" ? pts.length : Math.min(pts.length, window.__sv2n || 0);   // the ribbon numbers every spot (it never folds away)
   const active = key === "crown" ? ((window.__sv2part || "crown") === "base" ? 1 : 0) : (window.__sv2pin || 0);
   for (let i = 0; i < n; i++) {
     const [px, py] = pts[i], x = Math.min(cv.width - r * 1.4, px + r * 1.3), y = Math.max(r * 1.4, py - r * 1.3);
