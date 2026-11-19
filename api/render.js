@@ -104,6 +104,33 @@ async function callGemini(model, img, prompt, aspect, pieces, map, ref, plainFlo
   return { ok: r.ok, status: r.status, body };
 }
 
+// Safety check after a preview painted with the placement diagram (Eric, Nov 18: a Check, Please! preview came back with the
+// diagram's crosses and labels printed over the tree). Claude looks at the finished picture; if it shows printed words, plus
+// signs or flat painted dots, the image model makes one small edit that removes only those. A clean picture is left alone.
+const MARK_FIX = "Edit this photo and change only one thing: remove every printed word, label, letter, plus sign or cross, and every flat painted dot or disc drawn on top of the picture. Where a marking covers part of a decoration or branch, show that decoration or branch whole and natural underneath. Keep everything else exactly as it is: the same tree, every ornament, ribbon, flower and stem in the same place, the same room, light and framing. The finished photo has no text or markings anywhere.";
+async function hasMarks(d) {
+  if (!process.env.ANTHROPIC_API_KEY) return false;
+  try {
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({ model: process.env.CLAUDE_MODEL || "claude-sonnet-5-5", max_tokens: 10, messages: [{ role: "user", content: [
+        { type: "image", source: { type: "base64", media_type: d.mimeType || d.mime_type || "image/png", data: d.data } },
+        { type: "text", text: "This should be a realistic photo of a decorated Christmas tree. Is any printed text, label, plus sign or cross, or flat painted dot or disc drawn on top of the photo (not part of a real decoration, sign or artwork in the room)? Answer only YES or NO." }
+      ] }] })
+    });
+    const b = await r.json().catch(() => ({}));
+    return /^\s*YES/i.test((b.content || []).map(x => x.text || "").join(""));
+  } catch { return false; }
+}
+async function cleanMarks(model, d, ar) {
+  if (!(await hasMarks(d))) return { d, fixed: false };
+  const out = await callGemini(model, { mediaType: d.mimeType || d.mime_type || "image/png", data: d.data }, MARK_FIX, ar, null, null, null, false);
+  const p = (out.body?.candidates?.[0]?.content?.parts || []).find(x => x.inlineData || x.inline_data);
+  if (out.ok && p) { console.error("MARKS_CLEANED", model); return { d: p.inlineData || p.inline_data, fixed: true }; }
+  console.error("MARKS_CLEAN_FAILED", out.status); return { d, fixed: false };
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
   if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
@@ -192,15 +219,16 @@ export default async function handler(req, res) {
         retried = true;
         const again = await callGemini(model, img, fluke ? prompt : prompt + GENERIC, ar, pc, revision ? null : mp, rrefSent, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap);
         const p2 = again.body?.candidates?.[0]?.content?.parts || [], pic2 = p2.find(p => p.inlineData || p.inline_data);
-        if (again.ok && pic2) { const d2 = pic2.inlineData || pic2.inline_data; return res.status(200).json({ image: `data:${d2.mimeType || d2.mime_type || "image/png"};base64,${d2.data}`, _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !fluke, retried: true } }); }
+        if (again.ok && pic2) { let d2 = pic2.inlineData || pic2.inline_data; let marksFixed = false; if (mp && !revision) ({ d: d2, fixed: marksFixed } = await cleanMarks(model, d2, ar)); return res.status(200).json({ image: `data:${d2.mimeType || d2.mime_type || "image/png"};base64,${d2.data}`, _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !fluke, retried: true } }); }
         console.error("RENDER_REFUSED_AGAIN", JSON.stringify({ model, why: String(again.body?.candidates?.[0]?.finishReason || again.status).slice(0, 200) }));
       }
       return res.status(502).json({ error: `No image came back (${why})`, model });
     }
-    const d = pic.inlineData || pic.inline_data;
+    let d = pic.inlineData || pic.inline_data, marksFixed = false;
+    if (mp && !revision) ({ d, fixed: marksFixed } = await cleanMarks(model, d, ar));
     return res.status(200).json({
       image: `data:${d.mimeType || d.mime_type || "image/png"};base64,${d.data}`,
-      _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !!generic, ribbonRef: refUsed, cleared }
+      _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !!generic, ribbonRef: refUsed, cleared, marksFixed }
     });
   }
   return res.status(502).json({ error: lastErr || "No image model available" });
