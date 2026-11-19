@@ -669,8 +669,31 @@ function stepVideos(current) {
 // A link can open the Studio at one photo spot and start making a photo there: /studio/?make=check
 // (?make=vid_fluff starts the step video on the Shape the branches card)
 (function () {
-  const vm = (/[?&]make=vid_([a-z_]+)/.exec(location.search) || [])[1];
-  if (vm) { let n = 0; const t = setInterval(() => { const b = document.querySelector(`.vbox[data-vid="vid_${vm}"]`); if (b && !b.querySelector(".vgen").disabled) { clearInterval(t); b.scrollIntoView({ block: "center" }); b.style.outline = "2px solid #B89C6B"; b.querySelector(".vgen").click(); } else if (++n > 60) clearInterval(t); }, 500); return; }
+  // ?make=vid_fluff makes that step's clip and keeps it automatically (no review needed; it can be replaced later);
+  // ?make=step-videos does the same for every step that has no video yet, one after another
+  const vm = (/[?&]make=vid_([a-z_]+)/.exec(location.search) || [])[1], all = /[?&]make=step-videos\b/.test(location.search);
+  if (vm || all) {
+    const waitFor = (f, ms = 600, max = 400) => new Promise(r => { let n = 0; const t = setInterval(() => { const v = f(); if (v || ++n > max) { clearInterval(t); r(v); } }, ms); });
+    const makeKeep = async b => {
+      b.scrollIntoView({ block: "center" }); b.style.outline = "2px solid #B89C6B";
+      const gen = b.querySelector(".vgen"), use = b.querySelector(".vuse"), msg = b.querySelector(".vmsg");
+      gen.click(); await waitFor(() => !gen.disabled);
+      if (use.disabled) return false;   // the clip failed; its message says why
+      use.click(); await waitFor(() => /Saved|err/.test(msg.className + msg.textContent));
+      b.style.outline = ""; return /Saved/.test(msg.textContent);
+    };
+    (async () => {
+      await waitFor(() => document.querySelector(".vbox .vgen"));
+      const boxes = vm ? [document.querySelector(`.vbox[data-vid="vid_${vm}"]`)].filter(Boolean)
+        : [...document.querySelectorAll(".vbox")].filter(b => !b.querySelector(".frame.cur video"));
+      let made = 0;
+      for (const b of boxes) { if (await makeKeep(b)) made++; else break; }
+      const note = document.createElement("div"); note.className = "adopt";
+      note.innerHTML = `<b>${made ? `Made and kept ${made} step video${made === 1 ? "" : "s"}` : "No step video was made"}</b><span>${made ? "They play in the step cards now (allow about a minute)." : boxes.length ? "See the message on the step card for why." : "Every step already has a video."}</span>`;
+      document.querySelector("#studio").prepend(note); note.scrollIntoView({ block: "start" });
+    })();
+    return;
+  }
   const id = (/[?&]make=([a-z0-9_]+)/.exec(location.search) || [])[1]; if (!id) return;
   let tries = 0;
   const t = setInterval(() => {
