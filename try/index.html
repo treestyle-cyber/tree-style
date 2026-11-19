@@ -1394,11 +1394,34 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   html.theme-ivory #s-plan{display:flex;flex-direction:column}
   html.theme-ivory #s-plan[hidden]{display:none}
   html.theme-ivory #s-plan .sv2head{display:block;order:1;text-align:center;margin:2px 0 14px}
+  html.theme-ivory.revealing #s-plan .sv2head,html.theme-ivory.revealing #s-plan .stepcard,html.theme-ivory.revealing #s-plan .sv2tabs{display:none !important}
   html.theme-ivory #s-plan .steptabs{order:2;display:none}
   html.theme-ivory.sv2tabs-open #s-plan .steptabs{display:flex}
   html.theme-ivory #s-plan .stephead{display:none !important}
   html.theme-ivory #s-plan .stepwriting{order:3}
   html.theme-ivory #s-plan .guidebox{order:4;border-radius:16px}
+  /* The finished tree reveal (Kylie): a celebratory headline, the tree in a gold frame with a soft shimmer, a message, Share and Download */
+  .revtop,.revbot{display:none}
+  html.theme-ivory #s-plan .revtop{display:block;order:3;text-align:center;margin:4px 0 16px;animation:revup .7s ease-out both}
+  html.theme-ivory #s-plan .revbot{display:block;order:5;text-align:center;margin:18px 4px 0;animation:revup .7s .25s ease-out both}
+  html.theme-ivory #s-plan .revtop[hidden],html.theme-ivory #s-plan .revbot[hidden]{display:none}
+  .reveye{display:block;font:600 calc(11.5px * var(--s-label,1)) var(--sans);letter-spacing:.24em;text-transform:uppercase;color:#9a7a3e}
+  .revtop h2{margin:6px 0 8px;font:500 calc(40px * var(--s-headline,1))/1.05 var(--serif);color:var(--ink)}
+  .revrule{display:flex;align-items:center;justify-content:center;gap:10px;color:#B89C6B}
+  .revrule i{display:block;width:56px;height:1px;background:linear-gradient(90deg,transparent,#C9A35E,transparent)}
+  .revrule b{font-weight:400;font-size:13px}
+  html.theme-ivory #s-plan .guidebox.finreveal{box-shadow:0 0 0 1px rgba(201,163,94,.9),0 0 0 6px #fbf6ee,0 0 0 7px rgba(201,163,94,.45),0 24px 44px -20px rgba(44,30,16,.55)}
+  .guidebox.finreveal::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(255,244,214,.45) 48%,transparent 60%);transform:translateX(-120%);animation:revshine 2.4s .5s ease-out 1 both}
+  .guidebox .revspark{position:absolute;width:14px;height:14px;pointer-events:none;color:#F3DFA8;opacity:0;animation:revtw 2.6s ease-in-out infinite;filter:drop-shadow(0 0 4px rgba(255,236,180,.9))}
+  .revbot p{margin:0 auto 16px;max-width:30em;font:calc(16px * var(--s-body,1))/1.55 var(--sans);color:#4a3a2c}
+  .revbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .revbtns .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin:0;padding:15px 12px;text-transform:uppercase;letter-spacing:.14em;font:600 calc(14px * var(--s-body,1)) var(--sans)}
+  .revnote{display:block;margin:10px 0 0;color:var(--oat,#8a7660);font-size:calc(12.5px * var(--s-body,1))}
+  .revanother{appearance:none;border:0;background:none;margin:14px 0 0;color:#7a5a2a;font:600 calc(14px * var(--s-body,1)) var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+  @keyframes revup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes revshine{to{transform:translateX(120%)}}
+  @keyframes revtw{0%,100%{opacity:0;transform:scale(.4) rotate(0)}45%{opacity:1;transform:scale(1) rotate(20deg)}70%{opacity:.2}}
+  @media (prefers-reduced-motion:reduce){.revtop,.revbot,.guidebox.finreveal::after,.guidebox .revspark{animation:none!important}.guidebox.finreveal::after{display:none}.guidebox .revspark{opacity:.8}}
   html.theme-ivory #s-plan .sv2tabs{display:flex;order:5}
   html.theme-ivory #s-plan .sv2tabs[hidden]{display:none}
   html.theme-ivory #s-plan .sv2parts{display:grid;order:6}
@@ -1753,6 +1776,8 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 
   <!-- Plan -->
   <section class="screen" id="s-plan" data-title="Step by step" hidden>
+    <div class="revtop" id="revTop" hidden><span class="reveye">Your finished tree</span><h2 id="revH">Beautifully done.</h2><span class="revrule" aria-hidden="true"><i></i><b>✦</b><i></i></span></div>
+    <div class="revbot" id="revBot" hidden><p id="revMsg"></p><div class="revbtns"><button type="button" class="btn" id="revShare"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Share</button><button type="button" class="btn ghost" id="revSave"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>Download</button></div><small class="revnote" id="revNote">Shares to Instagram, Facebook, Messages and more. The image carries the TreeStyle logo.</small><button type="button" class="revanother" id="revAnother">Style another tree</button></div>
     <div class="sv2head" id="sv2Head"><div class="sv2top"><span class="sv2k" id="sv2K"></span><button type="button" class="sv2all" id="sv2All">All steps</button></div>
       <div class="sv2bar" id="sv2Bar"></div><h2 class="sv2t" id="sv2T"></h2><p class="sv2s" id="sv2S"></p></div>
     <div class="steptabs" id="stepTabs" role="tablist"></div>
@@ -4069,6 +4094,49 @@ function getPhotoImg() {
   if (photoImg && photoImg.src === photo) return Promise.resolve(photoImg);
   return new Promise((ok, bad) => { const im = new Image(); im.onload = () => { photoImg = im; ok(im); }; im.onerror = bad; im.src = photo; });
 }
+// The finished tree reveal (Ivory look, Kylie): headline, framed picture with a shimmer and a few gold glints, a happy message,
+// Share (the phone's share sheet: Instagram, Facebook, Messages…) and Download, both with the branded image from Save and share
+function revealSetup(key, steps) {
+  const on = key === "all" && document.documentElement.classList.contains("theme-ivory");
+  const box = $("#guideCv").parentElement;
+  $("#revTop").hidden = $("#revBot").hidden = !on; box.classList.toggle("finreveal", on);
+  box.querySelectorAll(".revspark").forEach(e => e.remove());
+  document.documentElement.classList.toggle("revealing", on);
+  if (!on) return;
+  const total = steps.length - 1, done = steps.filter(k => k !== "all" && (doneSteps.has(k) || goodSteps.has(k))).length, all = done >= total;
+  $("#revH").textContent = all ? "Beautifully done." : "Here's your finished tree.";
+  $("#revMsg").textContent = all
+    ? "Every ribbon tucked, every ornament set just so. This is your tree, styled with a designer's eye. Turn on the lights, step back and enjoy it all season long."
+    : "This is the tree your plan creates: every ribbon, ornament and finishing touch in its place. Follow the steps and it's yours to enjoy all season long.";
+  const hasPic = !!after;
+  $("#revShare").hidden = $("#revSave").hidden = $("#revNote").hidden = !hasPic;
+  $("#revShare").parentElement.style.display = hasPic ? "" : "none";
+  // a few gold glints around the tree
+  [[12, 18, 0], [84, 12, .8], [8, 62, 1.6], [90, 54, .4], [50, 6, 1.2], [78, 80, 2]].forEach(([x, y, d]) => {
+    const sp = document.createElement("span"); sp.className = "revspark"; sp.style.left = x + "%"; sp.style.top = y + "%"; sp.style.animationDelay = d + "s";
+    sp.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 0l2.2 9.8L24 12l-9.8 2.2L12 24l-2.2-9.8L0 12l9.8-2.2z"/></svg>';
+    box.appendChild(sp);
+  });
+}
+async function revImage() { return await markedImage().catch(() => null); }
+$("#revShare").onclick = async () => {
+  const b = $("#revShare"); b.disabled = true;
+  try {
+    const blob = await revImage(), file = blob && new File([blob], "my-tree-treestyle.jpg", { type: "image/jpeg" });
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: "My tree, styled with TreeStyle", text: "My tree, styled with TreeStyle ✨" }); return; } catch (e) { if (e.name === "AbortError") return; }
+    }
+    // no share sheet here (most computers): save it instead, and say so
+    const a = document.createElement("a"); a.href = blob ? URL.createObjectURL(blob) : after; a.download = "my-tree-treestyle.jpg"; a.click();
+    $("#revNote").textContent = "Sharing isn't available in this browser, so we saved the image for you to post.";
+  } finally { b.disabled = false; }
+};
+$("#revSave").onclick = async () => {
+  const b = $("#revSave"); b.disabled = true;
+  try { const blob = await revImage(); const a = document.createElement("a"); a.href = blob ? URL.createObjectURL(blob) : after; a.download = "my-tree-treestyle.jpg"; a.click(); $("#revNote").textContent = "Saved. Look for my-tree-treestyle.jpg in your downloads or photos."; }
+  finally { b.disabled = false; }
+};
+$("#revAnother").onclick = () => $("#restart").click();
 async function drawStep() {
   if (!result) return;
   closePinPop(); if ($("#stepKeyPanel")) { $("#stepKeyPanel").hidden = true; $("#guideCv").parentElement.classList.remove("haskey"); }
@@ -4124,6 +4192,7 @@ async function drawStep() {
   $("#stepItems").innerHTML = items;
   }
   $("#prevStep").hidden = stepIdx === 0;
+  revealSetup(key, steps);
   if (key === "all") {
     const total2 = steps.length - 1, nd2 = steps.filter(k => k !== "all" && (doneSteps.has(k) || goodSteps.has(k))).length;
     if (nd2 >= total2) {
