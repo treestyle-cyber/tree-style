@@ -4157,10 +4157,15 @@ async function watermarked(minW, maxW, q) {
   const W = Math.round(Math.min(maxW, Math.max(minW, im.naturalWidth * 2))), H = Math.round(im.naturalHeight * W / im.naturalWidth);
   const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
   g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high"; g.drawImage(im, 0, 0, W, H);
-  const fade = g.createLinearGradient(0, H * .8, 0, H); fade.addColorStop(0, "rgba(10,12,16,0)"); fade.addColorStop(1, "rgba(10,12,16,.58)"); g.fillStyle = fade; g.fillRect(0, H * .8, W, H * .2);
+  // a deep, soft fade up from the bottom so the gold logo stands out (Kylie), eased so it has no visible edge
+  const f0 = H * .6, fade = g.createLinearGradient(0, f0, 0, H);
+  [[0, 0], [.3, .12], [.55, .34], [.78, .6], [1, .82]].forEach(([t, a]) => fade.addColorStop(t, `rgba(8,10,14,${a})`));
+  g.fillStyle = fade; g.fillRect(0, f0, W, H - f0);
   if (logo) {
     const lw = W * .34, lh = lw * logo.naturalHeight / logo.naturalWidth, pad = W * .04;
-    g.save(); g.shadowColor = "rgba(0,0,0,.55)"; g.shadowBlur = W * .012; g.globalAlpha = .95; g.drawImage(logo, W - pad - lw, H - pad - lh, lw, lh); g.restore();
+    const cx = W - pad - lw / 2, cy = H - pad - lh / 2, glow = g.createRadialGradient(cx, cy, 0, cx, cy, lw * .75);   // a soft shadow right behind the logo
+    glow.addColorStop(0, "rgba(6,8,12,.5)"); glow.addColorStop(1, "rgba(6,8,12,0)"); g.fillStyle = glow; g.fillRect(cx - lw, cy - lw, lw * 2, lw * 2);
+    g.save(); g.shadowColor = "rgba(0,0,0,.7)"; g.shadowBlur = W * .014; g.globalAlpha = 1; g.drawImage(logo, W - pad - lw, H - pad - lh, lw, lh); g.restore();
     g.font = `500 ${Math.round(W * .017)}px Inter, sans-serif`; g.fillStyle = "rgba(247,241,232,.82)"; g.textBaseline = "bottom"; g.fillText("AI preview", pad, H - pad);
   }
   return new Promise(ok => c.toBlob(ok, "image/jpeg", q));
