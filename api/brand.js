@@ -322,7 +322,7 @@ export default async function handler(req, res) {
     if (!/^vid_[a-z_]{1,16}$/.test(slot || "")) return res.status(400).json({ error: "Unknown video spot" });
     if (!blobConnected()) return res.status(400).json({ error: "Storage isn't connected." });
     const n = (v, lo, hi, d) => { v = Number(v); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, Math.round(v * 100) / 100)) : d; };
-    const c = req.body.reset ? null : { x: n(req.body.x, 0, 100, 50), y: n(req.body.y, 0, 100, 50), z: n(req.body.z, 1, 3, 1) };
+    const c = req.body.reset ? null : { x: n(req.body.x, 0, 100, 50), y: n(req.body.y, 0, 100, 50), z: n(req.body.z, .3, 3, 1) };
     try { await setCrop(slot, c); return res.status(200).json({ ok: true, crop: c }); }
     catch (e) { return res.status(500).json({ error: String(e.message || e) }); }
   }

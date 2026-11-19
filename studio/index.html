@@ -622,6 +622,17 @@ const VPROMPT = {
   medium: "Vertical 9:16. Close-up. A hand in a cream knit sweater hangs small antique gold ornaments in open pockets of a decorated fir tree, mixing shapes. Warm white lights glow softly, shallow depth of field, calm. Only hands, no faces.",
   crown: "Vertical 9:16. Close-up. Two hands in a cream knit sweater secure a gold starburst topper to the top stem of a decorated fir tree, then tuck a few stems around its base. Warm white lights glow softly, shallow depth of field, calm. Only hands, no faces."
 };
+function vidCrop(v, cr) {   // where a step video sits in its card: x,y = the point of the clip at the card's centre (%), z = size (1 fills the card, under 1 shows more of the clip, up to the whole of it)
+  const box = v.parentElement; if (!box) return;
+  const x = cr && cr.x != null ? cr.x : 50, y = cr && cr.y != null ? cr.y : 50, z = cr && cr.z ? cr.z : 1;
+  const bw = box.clientWidth, bh = box.clientHeight, vw = v.videoWidth, vh = v.videoHeight;
+  if (!bw || !bh || !vw || !vh) { v.style.objectFit = "cover"; v.style.objectPosition = `${x}% ${y}%`; v.style.transform = ""; if (!v.dataset.cropWait) { v.dataset.cropWait = 1; v.addEventListener("loadedmetadata", () => vidCrop(v, v.__crop), { once: true }); } v.__crop = cr; return; }
+  v.__crop = cr;
+  const fit = Math.min(bw / vw, bh / vh), cover = Math.max(bw / vw, bh / vh), S = z * cover / fit;   // the clip is drawn contained, then scaled
+  const cw = vw * fit * S, ch = vh * fit * S;
+  v.style.objectFit = "contain"; v.style.objectPosition = "50% 50%"; v.style.transformOrigin = "50% 50%";
+  v.style.transform = `translate(${(.5 - x / 100) * cw}px, ${(.5 - y / 100) * ch}px) scale(${S})`;
+}
 function stepVideos(current, crops = {}) {
   if (!document.getElementById("vboxCss")) { const st = document.createElement("style"); st.id = "vboxCss"; st.textContent = ".vbox .frame .lbl{position:absolute;z-index:3}.vbox .frame{position:relative}"; document.head.appendChild(st); }
   document.querySelectorAll('.slot[data-id^="how_"]').forEach(el => {
@@ -632,8 +643,8 @@ function stepVideos(current, crops = {}) {
       <div class="frames"><div class="frame cur" style="aspect-ratio:3 / 2"><span class="lbl">In use</span>${current[vid] ? `<video src="${current[vid]}" muted loop autoplay playsinline style="width:100%;height:100%;object-fit:cover"></video>` : "No video yet"}</div>
       <div class="frame new vnew" style="aspect-ratio:3 / 2"><span class="lbl">New</span>Make a clip to see it here</div></div>
       <div class="vcrop" ${current[vid] ? "" : "hidden"}><div style="display:flex;flex-direction:column;gap:6px">
-        <div class="where">Adjust the crop: drag the In use video to choose what shows in the card, and zoom in with the slider. The In use frame is the same shape as the card in the app.</div>
-        <label class="where" style="display:flex;align-items:center;gap:10px">Zoom <input type="range" class="vzoom" min="1" max="3" step="0.05" value="1" style="flex:1"></label>
+        <div class="where">Adjust the crop: drag the In use video to choose what shows in the card, and make it smaller (to show more of the clip, down to the whole of it) or larger with the Size slider. The In use frame is the same shape as the card in the app.</div>
+        <label class="where" style="display:flex;align-items:center;gap:10px">Size <span style="font-size:11px">smaller</span><input type="range" class="vzoom" min="0.3" max="3" step="0.01" value="1" style="flex:1"><span style="font-size:11px">larger</span></label>
         <div class="row"><button class="btn ghost vcsave" disabled>Save crop</button><button class="btn ghost vcreset">Center</button></div>
       </div></div>
       <textarea class="vprompt">${VPROMPT[key] || ""}</textarea>
@@ -645,14 +656,17 @@ function stepVideos(current, crops = {}) {
     const curF = box.querySelector(".frame.cur"), zoomI = box.querySelector(".vzoom"), cSave = box.querySelector(".vcsave");
     let crop = Object.assign({ x: 50, y: 50, z: 1 }, crops[vid] || {});
     curF.style.overflow = "hidden"; curF.style.touchAction = "none";
-    const applyCrop = () => { const v = curF.querySelector("video"); if (!v) return; v.style.objectPosition = `${crop.x}% ${crop.y}%`; v.style.transformOrigin = `${crop.x}% ${crop.y}%`; v.style.transform = crop.z > 1 ? `scale(${crop.z})` : ""; curF.style.cursor = "grab"; zoomI.value = crop.z; };
+    const applyCrop = () => { const v = curF.querySelector("video"); if (!v) return; vidCrop(v, crop); curF.style.cursor = "grab"; zoomI.value = crop.z; };
+    curF.style.background = "#2a2016";
     const dirty = () => { cSave.disabled = false; applyCrop(); };
     let drag = null;
     curF.addEventListener("pointerdown", e => { if (!curF.querySelector("video")) return; drag = { px: e.clientX, py: e.clientY, x: crop.x, y: crop.y }; curF.setPointerCapture(e.pointerId); curF.style.cursor = "grabbing"; });
     curF.addEventListener("pointermove", e => {
-      if (!drag) return; const r = curF.getBoundingClientRect(), k = 130 / crop.z;
-      crop.x = Math.min(100, Math.max(0, drag.x - (e.clientX - drag.px) / r.width * k));
-      crop.y = Math.min(100, Math.max(0, drag.y - (e.clientY - drag.py) / r.height * k)); dirty();
+      if (!drag) return; const v = curF.querySelector("video"), r = curF.getBoundingClientRect();
+      // move the clip with the finger: the shown point shifts by the drag measured against the clip's drawn size
+      const vw = v.videoWidth || 9, vh = v.videoHeight || 16, cover = Math.max(r.width / vw, r.height / vh), cw = vw * cover * crop.z, ch = vh * cover * crop.z;
+      crop.x = Math.min(100, Math.max(0, drag.x - (e.clientX - drag.px) / cw * 100));
+      crop.y = Math.min(100, Math.max(0, drag.y - (e.clientY - drag.py) / ch * 100)); dirty();
     });
     const endDrag = () => { if (drag) { drag = null; curF.style.cursor = "grab"; } };
     curF.addEventListener("pointerup", endDrag); curF.addEventListener("pointercancel", endDrag);
