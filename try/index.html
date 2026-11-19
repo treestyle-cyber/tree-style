@@ -1446,6 +1446,19 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .sv2dots button{width:30px;height:30px;border-radius:50%;border:1.5px solid rgba(184,149,90,.6);background:transparent;color:var(--oat);font:600 13px var(--sans);cursor:pointer}
   .sv2dots button.on{background:#141C2C;border-color:#141C2C;color:#fff}
   html.theme-ivory #s-plan .guidebox canvas{cursor:pointer}
+  /* Cues that each step has more tips: a pulsing ring on the next spot, Next tip, and a one-time hint */
+  .pinpulse{position:absolute;transform:translate(-50%,-50%);border-radius:50%;border:2.5px solid #E2C27E;box-shadow:0 0 8px rgba(226,194,126,.8);pointer-events:none;animation:pinPulse 1.6s ease-out infinite}
+  .pinpulse[hidden],.guidebox.peeking .pinpulse{display:none}
+  @keyframes pinPulse{0%{opacity:1;transform:translate(-50%,-50%) scale(.85)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.9)}}
+  @media (prefers-reduced-motion:reduce){.pinpulse{animation:none;opacity:.8}}
+  .sv2next{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:0;background:none;border:0;color:var(--brass);font:600 calc(14px * var(--s-body,1)) var(--sans);cursor:pointer}
+  .sv2next[hidden]{display:none}
+  .sv2next span{transition:transform .2s}
+  .sv2next:hover span{transform:translateX(3px)}
+  .sv2hint{display:none}
+  html.theme-ivory #s-plan .sv2hint{display:flex;order:6;justify-content:center;align-items:center;gap:8px;margin:10px 0 0;color:var(--oat);font:500 calc(13.5px * var(--s-body,1)) var(--sans)}
+  html.theme-ivory #s-plan .sv2hint[hidden]{display:none}
+  .sv2hint::before{content:"";width:8px;height:8px;border-radius:50%;background:#D9BC7E;animation:pulse 1.6s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -1707,10 +1720,11 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     <div class="steptabs" id="stepTabs" role="tablist"></div>
     <div class="stephead"><div class="k" id="stepK"></div><h2 id="stepTitle"></h2></div>
     <p class="stepwriting" id="stepWriting" hidden><span class="spin"></span>Adding the detailed how-to for each step. It appears here in a few seconds.</p>
-    <div class="guidebox"><canvas id="guideCv" aria-label="Diagram of this step on your tree"></canvas><ul class="guidekey" id="guideKey" hidden></ul><div class="branchanim" id="branchAnim" hidden></div><span class="peek" id="peek" aria-hidden="true">Press and hold to see your photo</span><button class="zoombtn" id="zoomGuide" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6M10.5 7.5v6M7.5 10.5h6"/></svg></button></div>
+    <div class="guidebox"><canvas id="guideCv" aria-label="Diagram of this step on your tree"></canvas><ul class="guidekey" id="guideKey" hidden></ul><span class="pinpulse" id="pinPulse" hidden></span><div class="branchanim" id="branchAnim" hidden></div><span class="peek" id="peek" aria-hidden="true">Press and hold to see your photo</span><button class="zoombtn" id="zoomGuide" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6M10.5 7.5v6M7.5 10.5h6"/></svg></button></div>
     <div class="sv2tabs" id="sv2Tabs" role="tablist"><button type="button" class="on" data-v="guide">Placement guide</button><button type="button" data-v="photo">Original photo</button></div>
     <div class="sv2parts" id="sv2Parts" hidden><button type="button" data-p="crown">1 Crown</button><button type="button" data-p="base">2 Base</button></div>
-    <div class="sv2how" id="sv2How"><span class="sv2pic" id="sv2Pic"></span><div><h3 id="sv2HT"></h3><p id="sv2HP"></p></div></div>
+    <div class="sv2how" id="sv2How"><span class="sv2pic" id="sv2Pic"></span><div><h3 id="sv2HT"></h3><p id="sv2HP"></p><button type="button" class="sv2next" id="sv2Next" hidden>Next tip <span>→</span></button></div></div>
+    <p class="sv2hint" id="sv2Hint" hidden>Tap the numbers on the picture to see each tip</p>
     <div class="sv2dots" id="sv2Dots"></div>
     <button type="button" class="sv2shop" id="sv2Shop" hidden></button>
     <div class="card stepcard">
@@ -4104,6 +4118,10 @@ async function drawStep() {
     $("#sv2Pic").style.backgroundImage = `url("${pic || after || photo || ""}")`; $("#sv2Pic").classList.toggle("zoom", !pic); $("#sv2Pic").dataset.pslot = "how_" + key;
     $("#sv2HT").textContent = (part ? "" : (ix + 1) + ". ") + cur[0];
     $("#sv2HP").textContent = cur[1] || leadTxt || "";
+    const more = !part && ix < insts.length - 1;
+    $("#sv2Next").hidden = !more; $("#sv2Next").firstChild.textContent = ix === 0 ? "Next tip " : "Tip " + (ix + 2) + " ";
+    let tapped = false; try { tapped = localStorage.getItem("ts_tips_tapped") === "1"; } catch (e) {}
+    $("#sv2Hint").hidden = tapped || part || insts.length < 2 || isAll;
     $("#sv2Dots").innerHTML = !part && insts.length > 1 ? insts.map((_, i) => `<button type="button" data-i="${i}" class="${i === ix ? "on" : ""}" aria-label="Instruction ${i + 1}">${i + 1}</button>`).join("") : "";
     document.querySelectorAll("#stepItems .planitem").forEach(el => { const h = el.querySelector("h4"); el.classList.toggle("sv2dup", !!h && insts.some(x => x[0] === h.textContent)); });
     $("#sv2How").hidden = isAll || collapsed || !($("#sv2HP").textContent);
@@ -4133,7 +4151,7 @@ function drawGuide(key, peek) {
 }
 // The numbered spots on the picture (Ivory look): the active one gets a light halo, tap one to see its instruction
 function drawPins(key) {
-  sv2PinHits = [];
+  sv2PinHits = []; if ($("#pinPulse")) $("#pinPulse").hidden = true;
   if (!guide || !guide.pins || !document.documentElement.classList.contains("theme-ivory") || key === "all" || key === "ribbon") return;
   const cv = $("#guideCv"), g = cv.getContext("2d"), pts = guide.pins(key), r = Math.max(10, cv.width * .03);
   const n = key === "crown" ? pts.length : Math.min(pts.length, window.__sv2n || 0);
@@ -4147,16 +4165,22 @@ function drawPins(key) {
     g.restore();
     sv2PinHits.push([x, y, r * 1.8, i]);
   }
+  // a soft pulsing ring on the next spot, so they know there's more to see (Kylie)
+  const nextI = key === "crown" ? (active === 0 ? 1 : -1) : active + 1, nh = sv2PinHits.find(h => h[3] === nextI), pu = $("#pinPulse");
+  if (nh && pu) { const rc = cv.getBoundingClientRect(), k = rc.width / cv.width; pu.style.left = (nh[0] * k) + "px"; pu.style.top = (nh[1] * k) + "px"; pu.style.width = pu.style.height = (r * 3 * k) + "px"; pu.hidden = false; }
+  else if (pu) pu.hidden = true;
 }
 $("#guideCv").addEventListener("click", e => {
   if (!sv2PinHits.length || !guide) return;
   const cv = $("#guideCv"), rc = cv.getBoundingClientRect(), x = (e.clientX - rc.left) * cv.width / rc.width, y = (e.clientY - rc.top) * cv.height / rc.height;
   const hit = sv2PinHits.find(([px, py, rr]) => Math.hypot(px - x, py - y) <= rr); if (!hit) return;
   e.stopPropagation(); e.preventDefault();
+  try { localStorage.setItem("ts_tips_tapped", "1"); } catch (err) {}
   if (guide.steps[stepIdx] === "crown") window.__sv2part = hit[3] === 1 ? "base" : "crown"; else window.__sv2pin = hit[3];
   drawStep();
 }, true);
-$("#sv2Dots").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; window.__sv2pin = +b.dataset.i; drawStep(); });
+$("#sv2Dots").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; try { localStorage.setItem("ts_tips_tapped", "1"); } catch (err) {} window.__sv2pin = +b.dataset.i; drawStep(); });
+$("#sv2Next").onclick = () => { try { localStorage.setItem("ts_tips_tapped", "1"); } catch (err) {} window.__sv2pin = (window.__sv2pin || 0) + 1; drawStep(); };
 $("#sv2All").onclick = $("#barAll").onclick = () => document.documentElement.classList.toggle("sv2tabs-open");
 $("#sv2Shop").onclick = () => { const b = document.querySelector("#stepItems .buy"); if (b) b.scrollIntoView({ behavior: "smooth", block: "start" }); };
 $("#sv2Tabs").addEventListener("click", e => {
