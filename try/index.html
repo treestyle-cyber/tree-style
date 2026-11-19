@@ -1418,6 +1418,58 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .revbtns .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin:0;padding:15px 12px;text-transform:uppercase;letter-spacing:.14em;font:600 calc(14px * var(--s-body,1)) var(--sans)}
   .revnote{display:block;margin:10px 0 0;color:var(--oat,#8a7660);font-size:calc(12.5px * var(--s-body,1))}
   .revanother{appearance:none;border:0;background:none;margin:14px 0 0;color:#7a5a2a;font:600 calc(14px * var(--s-body,1)) var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+  .rvform{margin:30px 0 0;padding:22px 18px 20px;border-radius:18px;background:#fffaf2;box-shadow:0 0 0 1px rgba(201,163,94,.45),0 14px 30px -22px rgba(44,30,16,.6);text-align:center}
+  .rvform h3{margin:4px 0 12px;font:500 calc(26px * var(--s-headline,1))/1.1 var(--serif);color:var(--ink)}
+  .rvstars{display:flex;justify-content:center;gap:6px;margin:0 0 16px}
+  .rvstars button{appearance:none;border:0;background:none;padding:2px;cursor:pointer}
+  .rvstars svg{fill:none;stroke:#C9A35E;stroke-width:1.3;transition:transform .15s}
+  .rvstars button.on svg{fill:#D4AF62;stroke:#B08A45}
+  .rvstars button:active svg{transform:scale(1.15)}
+  .rvphoto{display:flex;align-items:center;gap:12px;text-align:left;padding:10px;border-radius:14px;border:1px dashed rgba(184,156,107,.8);cursor:pointer;margin:0 0 12px;background:#fbf6ee}
+  .rvph{width:56px;height:70px;flex:none;border-radius:10px;display:grid;place-items:center;background:#efe6d6 center/cover no-repeat;color:#8a6a3a}
+  .rvph.has svg{display:none}
+  .rvphoto b{display:block;font:500 calc(15px * var(--s-body,1)) var(--sans);color:var(--ink)}
+  .rvphoto small{color:#8a7660;font-size:calc(12.5px * var(--s-body,1))}
+  .rvform input[type=text],.rvform textarea{display:block;width:100%;box-sizing:border-box;margin:0 0 10px;padding:13px 14px;border-radius:12px;border:1px solid rgba(184,156,107,.6);background:#fff;font:calc(15px * var(--s-body,1))/1.4 var(--sans);color:var(--ink);resize:vertical}
+  .rvconsent{display:flex;gap:10px;align-items:flex-start;text-align:left;margin:4px 0 14px;font-size:calc(13px * var(--s-body,1));line-height:1.4;color:#5a4632}
+  .rvconsent input{margin-top:3px;accent-color:#7a5a2a}
+  .rvform .btn{width:100%;margin:0}
+  .rvmsg{min-height:1.2em;margin:10px 0 0;font-size:calc(13.5px * var(--s-body,1));color:#5a4632}
+  .rvform.sent .rvsent{display:block}
+  .cmrow{margin:34px -18px 0;text-align:center}
+  .cmrow[hidden]{display:none}
+  .cmtrack{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:14px 18px 18px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .cmtrack::-webkit-scrollbar{display:none}
+  .cmcard{flex:0 0 74%;max-width:290px;scroll-snap-align:center;text-align:left;background:#fffaf2;border-radius:18px;overflow:hidden;box-shadow:0 0 0 1px rgba(201,163,94,.4),0 14px 26px -18px rgba(44,30,16,.6);display:flex;flex-direction:column}
+  .cmcard .cmpic{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:#e9e0d1}
+  .cmcard .cmbody{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .cmwho{display:flex;align-items:center;gap:10px}
+  .cmav,.glav{width:36px;height:36px;border-radius:50%;flex:none;display:grid;place-items:center;background:linear-gradient(145deg,#5B3E26,#3E2A19) center/cover no-repeat;color:#F3E2B6;font:500 18px var(--serif);box-shadow:0 0 0 2px #fffaf2,0 0 0 3px #C9A35E}
+  .cmwho b,.glwho b{display:block;font:500 calc(17px * var(--s-headline,1))/1.1 var(--serif);color:var(--ink)}
+  .cmstars,.glstars{color:#C9A35E;font-size:14px;letter-spacing:2px}
+  .cmtext{margin:0;font-size:calc(13.5px * var(--s-body,1));line-height:1.45;color:#4a3a2c;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex:1}
+  .cmget{appearance:none;border:0;background:none;padding:4px 0 0;text-align:left;color:#7a5a2a;font:600 calc(14px * var(--s-body,1)) var(--sans);cursor:pointer}
+  .cmsample{position:absolute;margin:8px;padding:3px 8px;border-radius:99px;background:rgba(20,28,44,.75);color:#F2EBDD;font:600 10px var(--sans);letter-spacing:.12em}
+  .cmcard{position:relative}
+  .gl{padding:6px 0 30px;text-align:center}
+  .glpic{display:block;width:100%;max-height:62vh;object-fit:cover;border-radius:18px;box-shadow:0 0 0 1px rgba(201,163,94,.8),0 20px 40px -24px rgba(44,30,16,.6)}
+  .glwho{display:flex;align-items:center;justify-content:center;gap:12px;margin:18px 0 8px;text-align:left}
+  .glav{width:48px;height:48px;font-size:22px}
+  .glquote{margin:0 auto 18px;max-width:30em;font:italic 500 calc(18px * var(--s-headline,1))/1.45 var(--serif);color:#4a3a2c}
+  .glnote{display:block;margin:10px 0 0;color:#8a7660;font-size:calc(13px * var(--s-body,1))}
+  .glh{margin:30px 0 12px;font:500 calc(24px * var(--s-headline,1)) var(--serif);color:var(--ink)}
+  .glsteps{list-style:none;margin:0;padding:0;counter-reset:gs;text-align:left}
+  .glsteps li{counter-increment:gs;position:relative;padding:12px 0 12px 46px;border-bottom:1px solid rgba(184,156,107,.3)}
+  .glsteps li::before{content:counter(gs);position:absolute;left:0;top:12px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#1c2433;color:#F2EBDD;font:600 14px var(--sans)}
+  .glsteps b{display:block;font:500 calc(18px * var(--s-headline,1)) var(--serif);color:var(--ink)}
+  .glsteps span{display:block;margin-top:3px;font-size:calc(14px * var(--s-body,1));line-height:1.45;color:#4a3a2c}
+  .glitems{text-align:left;margin:0 0 22px}
+  .glitems h4{margin:14px 0 4px;font:600 calc(11.5px * var(--s-label,1)) var(--sans);letter-spacing:.18em;text-transform:uppercase;color:#9a7a3e}
+  .glitem{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(184,156,107,.25)}
+  .glitem i{width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.1)}
+  .glitem span{font-size:calc(14.5px * var(--s-body,1));color:var(--ink)}
+  .glitem small{display:block;color:#8a7660;font-size:calc(12.5px * var(--s-body,1))}
+  .glitem a{color:#7a5a2a;font:600 calc(13px * var(--s-body,1)) var(--sans);text-decoration:underline;text-underline-offset:3px}
   .shsheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;background:rgba(20,16,10,.45);animation:shfade .2s ease-out}
   .shsheet[hidden]{display:none}
   .shpanel{position:relative;width:100%;max-width:520px;box-sizing:border-box;background:#fbf6ee;border-radius:24px 24px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom));text-align:center;box-shadow:0 -14px 40px -18px rgba(30,20,10,.5);animation:shup .28s ease-out}
@@ -1625,6 +1677,18 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   </section>
 
   <!-- Photo -->
+  <section class="screen" id="s-getlook" data-title="Get this look" hidden>
+    <div class="gl">
+      <img class="glpic" id="glPic" alt="">
+      <div class="glwho"><span class="glav" id="glAv"></span><div><b id="glName"></b><span class="glstars" id="glStars"></span></div></div>
+      <p class="glquote" id="glQuote"></p>
+      <button type="button" class="btn" id="glApply">Style my tree like this</button>
+      <small class="glnote">Snap your own tree and we'll style it this way, then walk you through every step.</small>
+      <h3 class="glh">Their steps</h3><ol class="glsteps" id="glSteps"></ol>
+      <h3 class="glh">What they used</h3><div class="glitems" id="glItems"></div>
+      <button type="button" class="btn" id="glApply2">Style my tree like this</button>
+    </div>
+  </section>
   <section class="screen" id="s-photo" data-title="Your tree" data-foot="photoNext" hidden>
     <h1 id="photoH">Add a photo of your tree</h1>
     <p class="sub" id="photoSub"></p>
@@ -1794,7 +1858,22 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   <!-- Plan -->
   <section class="screen" id="s-plan" data-title="Step by step" hidden>
     <div class="revtop" id="revTop" hidden><span class="reveye">Your finished tree</span><h2 id="revH">Beautifully done.</h2><span class="revrule" aria-hidden="true"><i></i><b>✦</b><i></i></span></div>
-    <div class="revbot" id="revBot" hidden><p id="revMsg"></p><div class="revbtns"><button type="button" class="btn" id="revShare"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Share</button><button type="button" class="btn ghost" id="revSave"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>Download</button></div><small class="revnote" id="revNote">Share to Instagram, Facebook or Pinterest, or download a high-resolution TreeStyle image of your tree.</small><button type="button" class="revanother" id="revAnother">Style another tree</button></div>
+    <div class="revbot" id="revBot" hidden><p id="revMsg"></p><div class="revbtns"><button type="button" class="btn" id="revShare"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Share</button><button type="button" class="btn ghost" id="revSave"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>Download</button></div><small class="revnote" id="revNote">Share to Instagram, Facebook or Pinterest, or download a high-resolution TreeStyle image of your tree.</small><button type="button" class="revanother" id="revAnother">Style another tree</button>
+      <div class="rvform" id="rvForm">
+        <span class="reveye">How did it turn out?</span>
+        <h3>Rate your tree and share it</h3>
+        <div class="rvstars" id="rvStars" role="radiogroup" aria-label="Your rating"><button type="button" data-n="1" aria-label="1 star"><svg viewBox="0 0 24 24" width="34" height="34"><path d="M12 2.6l2.8 6 6.5.7-4.9 4.4 1.4 6.4L12 16.9l-5.8 3.2 1.4-6.4L2.7 9.3l6.5-.7z"/></svg></button><button type="button" data-n="2" aria-label="2 stars"><svg viewBox="0 0 24 24" width="34" height="34"><path d="M12 2.6l2.8 6 6.5.7-4.9 4.4 1.4 6.4L12 16.9l-5.8 3.2 1.4-6.4L2.7 9.3l6.5-.7z"/></svg></button><button type="button" data-n="3" aria-label="3 stars"><svg viewBox="0 0 24 24" width="34" height="34"><path d="M12 2.6l2.8 6 6.5.7-4.9 4.4 1.4 6.4L12 16.9l-5.8 3.2 1.4-6.4L2.7 9.3l6.5-.7z"/></svg></button><button type="button" data-n="4" aria-label="4 stars"><svg viewBox="0 0 24 24" width="34" height="34"><path d="M12 2.6l2.8 6 6.5.7-4.9 4.4 1.4 6.4L12 16.9l-5.8 3.2 1.4-6.4L2.7 9.3l6.5-.7z"/></svg></button><button type="button" data-n="5" aria-label="5 stars"><svg viewBox="0 0 24 24" width="34" height="34"><path d="M12 2.6l2.8 6 6.5.7-4.9 4.4 1.4 6.4L12 16.9l-5.8 3.2 1.4-6.4L2.7 9.3l6.5-.7z"/></svg></button></div>
+        <label class="rvphoto" id="rvPhotoBox"><input type="file" id="rvPhoto" accept="image/*" hidden><span class="rvph" id="rvPhotoPrev"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l2-2.5h6L17 7h3v12H4z"/><circle cx="12" cy="13" r="3.6"/></svg></span><span><b>Add a photo of your finished tree</b><small>Optional: we'll use your preview if you skip it</small></span></label>
+        <input type="text" id="rvName" maxlength="40" placeholder="Your first name" autocomplete="given-name">
+        <textarea id="rvText" maxlength="600" rows="3" placeholder="A few words about your tree (optional)"></textarea>
+        <label class="rvconsent"><input type="checkbox" id="rvConsent"> <span>Share my tree, first name and review in the TreeStyle gallery. Reviews appear once we've looked them over.</span></label>
+        <button type="button" class="btn" id="rvSend">Share my tree</button>
+        <p class="rvmsg" id="rvMsg"></p>
+      </div>
+      <div class="cmrow" id="cmRow" hidden>
+        <span class="reveye">Trees our community styled</span>
+        <div class="cmtrack" id="cmTrack"></div>
+      </div></div>
     <div class="shsheet" id="shSheet" hidden role="dialog" aria-label="Share your tree"><div class="shpanel">
       <button type="button" class="shx" id="shClose" aria-label="Close">×</button>
       <span class="reveye">Share your tree</span>
@@ -4137,6 +4216,7 @@ function revealSetup(key, steps) {
   $("#revMsg").textContent = all
     ? "Every ribbon tucked, every ornament set just so. This is your tree, styled with a designer's eye. Turn on the lights, step back and enjoy it all season long."
     : "This is the tree your plan creates: every ribbon, ornament and finishing touch in its place. Follow the steps and it's yours to enjoy all season long.";
+  loadCommunity(); rvStars();
   const hasPic = !!after;
   $("#revShare").hidden = $("#revSave").hidden = $("#revNote").hidden = !hasPic;
   $("#revShare").parentElement.style.display = hasPic ? "" : "none";
@@ -4254,6 +4334,102 @@ $("#shSheet .shicons").addEventListener("click", async e => {
   } finally { btns.forEach(b => b.disabled = false); }
 });
 $("#revAnother").onclick = () => $("#restart").click();
+
+// ---- Rate your tree and share it (Kylie): stars, a photo of the real finished tree, first name, a few words ----
+let rvRating = 0, rvPhoto = "";
+const STEP_NAMES = { fluff: "Shape the branches", lights: "Add the lights", primary_picks: "Add filler stems", ribbon: "Place the ribbon", florals: "Add floral accents", statement: "Place large ornaments", medium: "Place medium & small ornaments", crown: "Finish the crown & base" };
+function rvStars() { $("#rvStars").querySelectorAll("button").forEach(b => b.classList.toggle("on", +b.dataset.n <= rvRating)); }
+$("#rvStars").addEventListener("click", e => { const b = e.target.closest("button[data-n]"); if (!b) return; rvRating = +b.dataset.n; rvStars(); });
+// a picture, downsized to a JPEG the size a phone shows it
+function jpegOf(src, max, q) {
+  return new Promise((ok, no) => { const i = new Image(); i.onload = () => { try { const k = Math.min(1, max / Math.max(i.naturalWidth, i.naturalHeight)), c = document.createElement("canvas"); c.width = Math.round(i.naturalWidth * k); c.height = Math.round(i.naturalHeight * k); c.getContext("2d").drawImage(i, 0, 0, c.width, c.height); ok(c.toDataURL("image/jpeg", q)); } catch (e) { no(e); } }; i.onerror = no; i.src = src; });
+}
+$("#rvPhoto").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  const url = URL.createObjectURL(f);
+  try { rvPhoto = await jpegOf(url, 1280, .84); $("#rvPhotoPrev").style.backgroundImage = `url("${rvPhoto}")`; $("#rvPhotoPrev").classList.add("has"); $("#rvPhotoBox").querySelector("b").textContent = "Your finished tree"; $("#rvPhotoBox").querySelector("small").textContent = "Tap to change the photo"; }
+  catch (err) { $("#rvMsg").textContent = "Couldn't read that photo. Try another."; }
+};
+try { $("#rvName").value = localStorage.getItem("ts_review_name") || ""; } catch (e) {}
+function reviewPlan() {   // their steps and everything they used, so others can get the look
+  const steps = guide.steps.filter(k => k !== "all").map(k => {
+    const it = (guide.itemsFor(k) || []).find(p => p.how) || {};
+    return { key: k, title: STEP_NAMES[k] || guide.title(k), how: it.how || ((SV2_TIPS[k] || [])[0] || [])[1] || "" };
+  });
+  const items = [];
+  guide.steps.filter(k => k !== "all").forEach(k => (guide.buy(k) || []).forEach(b => { if (b.label && b.color && !/^optional/i.test(b.qty || "")) items.push({ step: k, label: b.label, qty: b.qty || "", q: b.q || b.label, color: b.color }); }));
+  return { steps, items };
+}
+$("#rvSend").onclick = async () => {
+  const msg = t => { $("#rvMsg").textContent = t; };
+  if (SAMPLE) { msg("Reviews aren't sent from screen previews."); return; }
+  if (!rvRating) { msg("Please tap a star rating."); return; }
+  const name = $("#rvName").value.trim(); if (!name) { msg("Please add your first name."); return; }
+  if (!$("#rvConsent").checked) { msg("Please tick the box to share it in the gallery."); return; }
+  const btn = $("#rvSend"); btn.disabled = true; msg("Sharing your tree…");
+  try {
+    try { localStorage.setItem("ts_review_name", name); } catch (e) {}
+    let preview = ""; if (after) { try { preview = await jpegOf(after, 1280, .84); } catch (e) {} }
+    let avatar = ""; try { const a = localStorage.getItem("ts_profile_photo"); if (a) avatar = await jpegOf(a, 200, .85); } catch (e) {}
+    const plan = reviewPlan();
+    const r = await fetch("/api/reviews", { method: "POST", headers: { "content-type": "application/json", "x-test-password": password }, body: JSON.stringify({ name, rating: rvRating, text: $("#rvText").value.trim(), photo: rvPhoto || undefined, preview: preview || undefined, avatar: avatar || undefined, style: val("style"), steps: plan.steps, items: plan.items, consent: true }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || "Couldn't share it just now.");
+    $("#rvForm").innerHTML = `<span class="reveye">Thank you</span><h3>Your tree is on its way to the gallery</h3><p class="rvmsg">We'll add it once we've looked it over. It's a beautiful tree, ${esc(name)}.</p>`;
+  } catch (e) { msg(e.message || "Couldn't share it just now. Please try again."); btn.disabled = false; }
+};
+
+// ---- Trees our community styled: approved reviews, scrolling sideways, each with Get this look ----
+let communityList = null;
+const starStr = n => "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
+function avatarHtml(r, cls) { return r.avatar ? `<span class="${cls}" style="background-image:url('${esc(r.avatar)}')"></span>` : `<span class="${cls}">${esc((r.name || "?").charAt(0).toUpperCase())}</span>`; }
+function sampleReviews() {   // screen previews only, clearly marked: the sample tree as three example cards
+  if (!SAMPLE || !guide) return [];
+  const plan = reviewPlan(), pic = after || photo;
+  return [["Sample: Claire", 5, "The step-by-step made it so easy. Our tree has never looked this good."], ["Sample: Dana", 5, "Loved the ribbon tips. Everyone asks who styled it!"], ["Sample: Morgan", 4, "Took one evening and it looks designer-made."]]
+    .map(([name, rating, text], i) => ({ id: "sample" + i, sample: true, name, rating, text, tree: pic, preview: pic, style: val("style"), steps: plan.steps, items: plan.items }));
+}
+async function loadCommunity() {
+  if (communityList === null) {
+    communityList = [];
+    try { const r = await fetch("/api/reviews"); const d = await r.json(); communityList = Array.isArray(d.reviews) ? d.reviews : []; } catch (e) {}
+  }
+  const list = communityList.length ? communityList : sampleReviews();
+  $("#cmRow").hidden = !list.length;
+  $("#cmTrack").innerHTML = list.map(r => `<div class="cmcard">${r.sample ? '<span class="cmsample">SAMPLE</span>' : ""}<img class="cmpic" src="${esc(r.tree || r.preview)}" alt="${esc(r.name)}'s finished tree" loading="lazy"><div class="cmbody"><div class="cmwho">${avatarHtml(r, "cmav")}<div><b>${esc(r.name)}</b><span class="cmstars" aria-label="${r.rating} out of 5 stars">${starStr(r.rating)}</span></div></div>${r.text ? `<p class="cmtext">“${esc(r.text)}”</p>` : '<p class="cmtext"></p>'}<button type="button" class="cmget" data-rid="${esc(r.id)}">Get this look →</button></div></div>`).join("");
+}
+$("#cmTrack").addEventListener("click", e => {
+  const b = e.target.closest("[data-rid]"); if (!b) return;
+  const r = (communityList.length ? communityList : sampleReviews()).find(x => x.id === b.dataset.rid); if (r) openLookReview(r);
+});
+// ---- Get this look: their tree, their steps and what they used, and Style my tree like this ----
+let lookReview = null;
+function openLookReview(r) {
+  lookReview = r;
+  $("#glPic").src = r.tree || r.preview; $("#glAv").outerHTML = avatarHtml(r, "glav").replace("<span ", '<span id="glAv" ');
+  $("#glName").textContent = r.name; $("#glStars").textContent = starStr(r.rating); $("#glQuote").textContent = r.text ? `“${r.text}”` : "";
+  $("#glSteps").innerHTML = (r.steps || []).map(st => `<li><b>${esc(st.title)}</b>${st.how ? `<span>${esc(st.how)}</span>` : ""}</li>`).join("");
+  const by = {}; (r.items || []).forEach(i => (by[i.step] = by[i.step] || []).push(i));
+  $("#glItems").innerHTML = Object.keys(by).map(k => `<h4>${esc(STEP_NAMES[k] || k)}</h4>` + by[k].map(i => `<div class="glitem"><i style="background:${esc(i.color || "#B8913F")}"></i><span>${esc(String(i.label).replace(/^./, c => c.toUpperCase()))}${i.qty ? `<small>${esc(i.qty)}</small>` : ""}</span><a href="${shopUrl(i.q || i.label)}" target="_blank" rel="noopener sponsored">Shop</a></div>`).join("")).join("");
+  show("s-getlook");
+}
+async function applyLookReview() {
+  const r = lookReview; if (!r) return;
+  const btns = [$("#glApply"), $("#glApply2")]; btns.forEach(b => b.disabled = true);
+  let pic = null; try { pic = await lookPhotoData(r.tree || r.preview); } catch (e) {}
+  btns.forEach(b => b.disabled = false);
+  if (!pic) { alert("Couldn't open that tree's picture. Try again in a moment."); return; }
+  document.querySelector('.choice[data-mode="design"]').click();   // a fresh design of their own tree
+  const brief = [r.text, (r.steps || []).map(st => st.title + (st.how ? ": " + st.how : "")).join(" ")].filter(Boolean).join(" ").slice(0, 1200);
+  chosenLook = { id: "review-" + r.id, name: `${r.name}'s tree`, brief, pieces: (r.items || []).map(i => ({ role: i.step, name: i.label, shop: i.q || i.label })) };
+  inspoPhoto = pic;
+  if (r.style) { setRadio("style", r.style); syncStyle(); }
+  src = "tree"; $("#inspoRow").hidden = true;
+  setPhotoCopy("design");
+  $("#photoSub").textContent = `We'll style it like ${r.name}'s tree. A bare tree works best; anything already on it that isn't part of the look comes off in the preview.`;
+  show("s-photo", ["s-home"]);
+}
+$("#glApply").onclick = applyLookReview; $("#glApply2").onclick = applyLookReview;
 async function drawStep() {
   if (!result) return;
   closePinPop(); if ($("#stepKeyPanel")) { $("#stepKeyPanel").hidden = true; $("#guideCv").parentElement.classList.remove("haskey"); }

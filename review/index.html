@@ -43,6 +43,11 @@
     <button class="btn">Show feedback</button>
   </form>
   <div class="err" id="err"></div>
+  <section id="gal" hidden style="margin:18px 0 30px">
+    <h2 style="font-size:30px;margin:0 0 4px">Gallery reviews</h2>
+    <p class="muted" style="margin:0 0 12px">Shared from the finished tree screen. Nothing shows in the "Trees our community styled" row until it's approved here.</p>
+    <div class="list" id="galList"></div>
+  </section>
   <div class="stats" id="stats" hidden></div>
   <div class="list" id="list"></div>
 </main>
@@ -50,7 +55,7 @@
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 let pw = ""; try { pw = sessionStorage.getItem("ts_pw") || ""; } catch {}
-async function load() {
+var load = async function () {
   $("#err").textContent = ""; $("#list").innerHTML = '<p class="muted">Loading…</p>';
   const r = await fetch("/api/feedback", { headers: { "x-test-password": pw } });
   const d = await r.json().catch(() => ({}));
@@ -74,6 +79,27 @@ async function load() {
       ${e.comment ? `<p class="comment">${esc(e.comment)}</p>` : ""}</div></div>`;
   }).join("");
 }
+// Gallery reviews: approve or remove what customers share (Kylie's community row)
+async function loadGallery() {
+  const hd = { "x-test-password": pw };
+  const [p, a] = await Promise.all([fetch("/api/reviews?pending=1", { headers: hd }).then(r => r.json()).catch(() => ({})), fetch("/api/reviews").then(r => r.json()).catch(() => ({}))]);
+  const pend = p.reviews || [], appr = a.reviews || [];
+  $("#gal").hidden = false;
+  const card = (r, waiting) => `<div class="entry"><div class="pics">${r.tree ? `<img src="${esc(r.tree)}" alt="Their tree">` : ""}${r.preview ? `<img src="${esc(r.preview)}" alt="Preview">` : ""}</div>
+    <div><div class="meta">${esc(new Date(r.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))} · ${esc(r.name)} · ${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)} · ${waiting ? "<b>Waiting for approval</b>" : "In the gallery"}</div>
+    ${r.text ? `<p class="comment">“${esc(r.text)}”</p>` : ""}
+    <div class="row" style="margin-top:10px;gap:8px">${waiting ? `<button class="btn" data-act="approve" data-id="${esc(r.id)}">Approve</button>` : ""}<button class="btn ghost" data-act="remove" data-id="${esc(r.id)}">Remove</button></div></div></div>`;
+  $("#galList").innerHTML = (pend.length || appr.length) ? pend.map(r => card(r, true)).join("") + appr.map(r => card(r, false)).join("") : '<p class="empty">No gallery reviews yet.</p>';
+}
+$("#galList").addEventListener("click", async e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  if (b.dataset.act === "remove" && !confirm("Remove this review and its photos for good?")) return;
+  b.disabled = true;
+  const r = await fetch("/api/reviews", { method: "POST", headers: { "content-type": "application/json", "x-test-password": pw }, body: JSON.stringify({ action: b.dataset.act, id: b.dataset.id }) });
+  if (!r.ok) { const d = await r.json().catch(() => ({})); alert(d.error || "Couldn't do that."); b.disabled = false; return; }
+  loadGallery();
+});
+const _load = load; load = async () => { await _load(); if (!$("#pf").hidden) return; loadGallery(); };
 $("#pf").addEventListener("submit", e => { e.preventDefault(); pw = $("#pw").value; load(); });
 if (pw) load();
 </script>
