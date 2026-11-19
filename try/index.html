@@ -3337,7 +3337,7 @@ async function run() {
   if (!photo) return;
   $("#startErr").textContent = $("#detailsErr").textContent = "";
   const L = startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree", mode === "design" ? DESIGN_STEPS : CHECK_STEPS, 12, photo);
-  evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined, inspo: mode === "design" ? (inspoPhoto || ideaPhoto || undefined) : undefined, look: mode === "design" && chosenLook ? { name: chosenLook.name, brief: chosenLook.brief } : undefined, imagined: mode === "design" && src !== "tree" && !roomTree || undefined };
+  evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined, inspo: mode === "design" ? (inspoPhoto || ideaPhoto || undefined) : undefined, look: mode === "design" && chosenLook ? { name: chosenLook.name, brief: chosenLook.brief, pieces: chosenLook.pieces } : undefined, imagined: mode === "design" && src !== "tree" && !roomTree || undefined };
   planT0 = Date.now();
   const myPlan = api("/api/evaluate", { ...evalBody, part: "plan" });
   myPlan.catch(() => {});
@@ -4826,7 +4826,7 @@ $("#lookGallery").onclick = async e => {
   b.classList.remove("busy");
   if (!pic) { alert("Couldn't open that look's picture. Try again in a moment."); return; }
   document.querySelector('.choice[data-mode="design"]').click();   // a fresh design
-  chosenLook = { id: L.id, name: L.name, brief: L.theme || L.blurb || "" };
+  chosenLook = { id: L.id, name: L.name, brief: L.theme || L.blurb || "", pieces: (L.pieces || []).map(p => ({ role: p[1], name: p[2], shop: String(p[0]).startsWith("q:") ? String(p[0]).slice(2) : p[2] })) };
   inspoPhoto = pic;
   setRadio("style", L.style || "classic"); syncStyle();
   src = "tree"; $("#inspoRow").hidden = true;
