@@ -1474,7 +1474,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .shsheet[hidden]{display:none}
   .shpanel{position:relative;width:100%;max-width:520px;box-sizing:border-box;background:#fbf6ee;border-radius:24px 24px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom));text-align:center;box-shadow:0 -14px 40px -18px rgba(30,20,10,.5);animation:shup .28s ease-out}
   .shx{position:absolute;top:10px;right:12px;width:34px;height:34px;border:0;border-radius:50%;background:transparent;font-size:24px;color:#6a5640;cursor:pointer}
-  .shthumb{display:block;width:96px;height:120px;object-fit:cover;margin:12px auto 18px;border-radius:12px;box-shadow:0 0 0 1px rgba(201,163,94,.8),0 10px 22px -12px rgba(30,20,10,.6)}
+  .shthumb{display:block;width:150px;height:187px;object-fit:cover;margin:12px auto 18px;border-radius:12px;box-shadow:0 0 0 1px rgba(201,163,94,.8),0 10px 22px -12px rgba(30,20,10,.6)}
   .shicons{display:flex;justify-content:center;gap:18px}
   .shicons button[hidden]{display:none}
   .shicons button{appearance:none;border:0;background:none;display:grid;justify-items:center;gap:8px;font:600 calc(12.5px * var(--s-body,1)) var(--sans);color:#3a2c1f;cursor:pointer;padding:4px 0}
@@ -1858,7 +1858,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   <!-- Plan -->
   <section class="screen" id="s-plan" data-title="Step by step" hidden>
     <div class="revtop" id="revTop" hidden><span class="reveye">Your finished tree</span><h2 id="revH">Beautifully done.</h2><span class="revrule" aria-hidden="true"><i></i><b>✦</b><i></i></span></div>
-    <div class="revbot" id="revBot" hidden><p id="revMsg"></p><div class="revbtns"><button type="button" class="btn" id="revShare"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Share</button><button type="button" class="btn ghost" id="revSave"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>Download</button></div><small class="revnote" id="revNote">Share to Instagram, Facebook or Pinterest, or download a high-resolution TreeStyle image of your tree.</small><button type="button" class="revanother" id="revAnother">Style another tree</button>
+    <div class="revbot" id="revBot" hidden><p id="revMsg"></p><div class="revbtns"><button type="button" class="btn" id="revShare"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Share</button><button type="button" class="btn ghost" id="revSave"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>Download</button></div><small class="revnote" id="revNote">Share a branded post to Instagram, Facebook or Pinterest, or download a high-resolution picture of your tree.</small><button type="button" class="revanother" id="revAnother">Style another tree</button>
       <div class="rvform" id="rvForm">
         <span class="reveye">How did it turn out?</span>
         <h3>Rate your tree and share it</h3>
@@ -4237,16 +4237,13 @@ async function watermarked(minW, maxW, q) {
   const W = Math.round(Math.min(maxW, Math.max(minW, im.naturalWidth * 2))), H = Math.round(im.naturalHeight * W / im.naturalWidth);
   const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
   g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high"; g.drawImage(im, 0, 0, W, H);
-  // a deep, soft fade up from the bottom so the gold logo stands out (Kylie), eased so it has no visible edge
-  const f0 = H * .6, fade = g.createLinearGradient(0, f0, 0, H);
-  [[0, 0], [.3, .14], [.55, .38], [.78, .66], [1, .9]].forEach(([t, a]) => fade.addColorStop(t, `rgba(20,28,44,${a})`));   // Midnight, the brand's blue
-  g.fillStyle = fade; g.fillRect(0, f0, W, H - f0);
+  // Kylie: only their finished tree, with the logo in white at 45% in the corner. A soft shadow (not a fade) keeps it
+  // readable on a light wall or floor without darkening the picture.
   if (logo) {
-    const lw = W * .34, lh = lw * logo.naturalHeight / logo.naturalWidth, pad = W * .04;
-    const cx = W - pad - lw / 2, cy = H - pad - lh / 2, glow = g.createRadialGradient(cx, cy, 0, cx, cy, lw * .75);   // a soft shadow right behind the logo
-    glow.addColorStop(0, "rgba(20,28,44,.55)"); glow.addColorStop(1, "rgba(20,28,44,0)"); g.fillStyle = glow; g.fillRect(cx - lw, cy - lw, lw * 2, lw * 2);
-    g.save(); g.shadowColor = "rgba(12,17,28,.75)"; g.shadowBlur = W * .014; g.globalAlpha = 1; g.drawImage(logo, W - pad - lw, H - pad - lh, lw, lh); g.restore();
-    g.font = `500 ${Math.round(W * .017)}px Inter, sans-serif`; g.fillStyle = "rgba(247,241,232,.82)"; g.textBaseline = "bottom"; g.fillText("AI preview", pad, H - pad);
+    const lw = W * .3, lh = lw * logo.naturalHeight / logo.naturalWidth, pad = W * .045, x = W - pad - lw, y = H - pad - lh;
+    const wc = document.createElement("canvas"); wc.width = Math.round(lw); wc.height = Math.round(lh); const wg = wc.getContext("2d");
+    wg.drawImage(logo, 0, 0, wc.width, wc.height); wg.globalCompositeOperation = "source-in"; wg.fillStyle = "#fff"; wg.fillRect(0, 0, wc.width, wc.height);   // the logo in white
+    g.save(); g.globalAlpha = .45; g.shadowColor = "rgba(0,0,0,.55)"; g.shadowBlur = W * .01; g.shadowOffsetY = W * .002; g.drawImage(wc, x, y, lw, lh); g.restore();
   }
   return new Promise(ok => c.toBlob(ok, "image/jpeg", q));
 }
@@ -4278,7 +4275,7 @@ async function templateImage(k, q) {
   if ("letterSpacing" in g) g.letterSpacing = u(3.2) + "px"; g.fillText("AI PREVIEW BY TREESTYLE", u(870), u(1370));
   return new Promise(ok => c.toBlob(ok, "image/jpeg", q));
 }
-const hiRes = () => templateImage(2.4, .95);   // 2693 × 3365
+const hiRes = () => watermarked(2400, 3600, .95);   // their tree alone, with the white logo
 function saveBlob(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
 $("#revSave").onclick = async () => {
   const b = $("#revSave"), t = b.innerHTML; b.disabled = true; b.lastChild.textContent = "Preparing…";
@@ -4291,7 +4288,8 @@ let shareUp = null;   // the uploaded picture, once per tree
 function shareMsg(t) { $("#shMsg").textContent = t || ""; }
 $("#revShare").onclick = () => {
   if ($("#shSheet").parentElement !== document.body) document.body.appendChild($("#shSheet"));   // full screen, above everything
-  $("#shThumb").src = after; shareMsg(""); $("#shMore").hidden = !navigator.share; $("#shSheet").hidden = false;
+  $("#shThumb").src = after; templateImage(.5, .85).then(b => { if (b) $("#shThumb").src = URL.createObjectURL(b); }).catch(() => {});   // shows the branded post they'll share
+  shareMsg(""); $("#shMore").hidden = !navigator.share; $("#shSheet").hidden = false;
 };
 $("#shClose").onclick = () => { $("#shSheet").hidden = true; };
 $("#shSheet").addEventListener("click", e => { if (e.target.id === "shSheet") $("#shSheet").hidden = true; });
