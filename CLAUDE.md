@@ -333,4 +333,4 @@ Read this first in every session. It holds what the team has decided and why, so
 - 2026-11-19: The chat's typing sign is three little gold ornaments (Kylie): polished gold balls with a cap and a fine thread, bobbing and swinging gently one after another; still for people who turn off motion.
 - 2026-11-19: Chat names have round pictures beside them (Kylie), gold-ringed: the stylist's is the arched-pine logo on deep blue; theirs is their profile photo (Profile page), else their first initial, else a small person drawing. Theirs sits to the right of their name, ours to the left.
 - 2026-11-19: The stylist's chat picture is just the tree (Kylie), without the arch: `brand/logo-tree.png`, cut from `logo-icon.png` with the arch removed and nothing else changed. The logo itself is unchanged everywhere else.
-- 2026-11-19: The chat's typing ornaments are smaller (Kylie): 7 px balls (were 11 px) with shorter threads and a gentler bob, in a compact bubble.
+- 2026-11-19: The chat's typing ornaments are smaller (Kylie, twice): 5 px balls (were 11 px) with short threads and a gentle bob, in a compact bubble.

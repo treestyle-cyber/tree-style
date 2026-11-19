@@ -1225,7 +1225,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   html:root #s-help.screen .chatlog .cmsg.ai{justify-self:start;justify-items:start}
   html:root #s-help.screen .chatlog .who{font:700 12.5px var(--sans);letter-spacing:.06em;background:linear-gradient(100deg,#9C7A3C 0%,#E8C77E 30%,#FFF1C8 50%,#D9B25F 70%,#A8823F 100%);-webkit-background-clip:text;background-clip:text;color:transparent;padding:0 4px}
   html:root #s-help.screen .chatlog .bub{max-width:none;color:#fff}
-  html:root #s-help.screen .chatlog .bub:has(.typing){padding:7px 12px}
+  html:root #s-help.screen .chatlog .bub:has(.typing){padding:5px 10px}
   html:root #s-help.screen .chatlog .bub.me{color:#fff;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22)}
   html:root #s-help.screen .chatlog .bub.ai{color:#fff;background:rgba(10,16,30,.38);border:1px solid rgba(232,199,126,.32)}
   html:root #s-help.screen .helpchips button{color:#fff;border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.06)}
@@ -1241,12 +1241,12 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .chatlog .cav svg{width:16px;height:16px}
   .chatlog .cav.ours{background:radial-gradient(circle at 50% 40%,#2E4469,#141C2C)}
   .chatlog .cav.ours img{height:20px;width:auto;margin-top:-1px}
-  .chatlog .typing{display:inline-flex;gap:6px;align-items:flex-end;padding:6px 2px 1px;height:18px}
-  .chatlog .typing i{position:relative;width:7px;height:7px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#FFF6D8 0 10%,#F1D592 24%,#D9B25F 52%,#9C7A3C 100%);box-shadow:0 1px 3px rgba(0,0,0,.35),0 0 6px rgba(232,199,126,.35);transform-origin:50% -6px;animation:tdot 1.3s ease-in-out infinite}
-  .chatlog .typing i::before{content:"";position:absolute;left:50%;top:-2px;width:3px;height:2px;margin-left:-1.5px;border-radius:1px 1px 0 0;background:linear-gradient(90deg,#9C7A3C,#F1D592,#9C7A3C)}
-  .chatlog .typing i::after{content:"";position:absolute;left:50%;top:-6px;width:1px;height:4px;margin-left:-.5px;background:rgba(232,199,126,.7)}
+  .chatlog .typing{display:inline-flex;gap:4px;align-items:flex-end;padding:4px 1px 1px;height:13px}
+  .chatlog .typing i{position:relative;width:5px;height:5px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#FFF6D8 0 10%,#F1D592 24%,#D9B25F 52%,#9C7A3C 100%);box-shadow:0 1px 2px rgba(0,0,0,.35),0 0 4px rgba(232,199,126,.35);transform-origin:50% -4px;animation:tdot 1.3s ease-in-out infinite}
+  .chatlog .typing i::before{content:"";position:absolute;left:50%;top:-1.5px;width:2px;height:1.5px;margin-left:-1px;border-radius:1px 1px 0 0;background:linear-gradient(90deg,#9C7A3C,#F1D592,#9C7A3C)}
+  .chatlog .typing i::after{content:"";position:absolute;left:50%;top:-4px;width:1px;height:2.5px;margin-left:-.5px;background:rgba(232,199,126,.7)}
   .chatlog .typing i:nth-child(2){animation-delay:.2s} .chatlog .typing i:nth-child(3){animation-delay:.4s}
-  @keyframes tdot{0%,70%,100%{transform:translateY(0) rotate(0)}20%{transform:translateY(-3px) rotate(-8deg)}45%{transform:translateY(0) rotate(6deg)}}
+  @keyframes tdot{0%,70%,100%{transform:translateY(0) rotate(0)}20%{transform:translateY(-2px) rotate(-8deg)}45%{transform:translateY(0) rotate(6deg)}}
   @media (prefers-reduced-motion: reduce){.chatlog .typing i{animation:none}}
 
   /* A floating ? at the bottom right opens the stylist chat (only when the Need help? stylist is on).
