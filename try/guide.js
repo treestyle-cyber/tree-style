@@ -755,10 +755,73 @@
     }
     // Numbered spots for the Ivory step screens (Kylie's mockups): up to three places on the picture, each matched to an
     // instruction card. Filler is numbered from the base up (start low and full); the others from the top down.
+    // ---- Keep every piece on the tree (Kylie: icons floated in the air beside an imagined tree) ----
+    // The tree is found in the photo itself: the biggest patch of needle-green, with small gaps (ornaments, lights) closed.
+    // When the plan's outline of the tree is clearly off, every spot is carried across onto the tree that was found
+    // (same height up the tree, same share of the width); any spot still off the branches moves to the nearest branch.
+    let treeMask;
+    function findTree() {
+      if (treeMask !== undefined) return treeMask;
+      treeMask = null;
+      try {
+        const gw = 72, gh = Math.max(24, Math.round(gw * H / W)), c = layer(gw, gh), x = c.getContext("2d", { willReadFrequently: true });
+        x.drawImage(img, 0, 0, gw, gh); const d = x.getImageData(0, 0, gw, gh).data;
+        let m = new Uint8Array(gw * gh);
+        for (let i = 0; i < gw * gh; i++) {
+          const r = d[i * 4] / 255, g = d[i * 4 + 1] / 255, b = d[i * 4 + 2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), v = mx, sat = mx ? (mx - mn) / mx : 0;
+          let h = 0; if (mx > mn) { h = mx === r ? ((g - b) / (mx - mn)) % 6 : mx === g ? (b - r) / (mx - mn) + 2 : (r - g) / (mx - mn) + 4; h = (h * 60 + 360) % 360; }
+          m[i] = (h >= 62 && h <= 178 && sat > .14 && v > .07 && v < .9) || (v < .2 && g >= r * .95 && g >= b * .9 && v > .04) ? 1 : 0;
+        }
+        const grow = (src, on) => { const out = new Uint8Array(src.length); for (let yy = 0; yy < gh; yy++) for (let xx = 0; xx < gw; xx++) { let k = on ? 0 : 1; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const X = xx + dx, Y = yy + dy; const val = X < 0 || Y < 0 || X >= gw || Y >= gh ? 0 : src[Y * gw + X]; if (on && val) k = 1; if (!on && !val) k = 0; } out[yy * gw + xx] = k; } return out; };
+        m = grow(grow(grow(m, true), true), false);   // close the gaps ornaments and lights leave
+        // the biggest connected patch, preferring one that overlaps the plan's outline of the tree
+        const lab = new Int32Array(gw * gh).fill(-1), comps = [];
+        for (let i = 0; i < gw * gh; i++) {
+          if (!m[i] || lab[i] >= 0) continue;
+          const id = comps.length, st = [i]; lab[i] = id; let n = 0, inside = 0;
+          while (st.length) { const j = st.pop(); n++; const xx = j % gw, yy = (j / gw) | 0; const px = (xx + .5) * W / gw, py = (yy + .5) * H / gh; if (py >= G.A[1] && py <= G.L[1] && Math.abs(px - G.centerAt(py)) <= G.halfWidthAt(py) + W * .06) inside++;
+            [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => { const X = xx + dx, Y = yy + dy; if (X < 0 || Y < 0 || X >= gw || Y >= gh) return; const k = Y * gw + X; if (m[k] && lab[k] < 0) { lab[k] = id; st.push(k); } }); }
+          comps.push({ id, n, inside });
+        }
+        if (!comps.length) return treeMask;
+        const best = comps.sort((a, b) => (b.n + b.inside * 2) - (a.n + a.inside * 2))[0];
+        if (best.n < gw * gh * .04) return treeMask;   // no clear tree (a flocked or very dark photo): leave the spots as planned
+        const on = new Uint8Array(gw * gh); for (let i = 0; i < on.length; i++) on[i] = lab[i] === best.id ? 1 : 0;
+        const rows = []; for (let yy = 0; yy < gh; yy++) { let a = -1, z = -1; for (let xx = 0; xx < gw; xx++) if (on[yy * gw + xx]) { if (a < 0) a = xx; z = xx; } if (a >= 0) rows.push([yy, a, z]); }
+        const top = rows[0][0], bot = rows[rows.length - 1][0];
+        const topRows = rows.filter(r => r[0] <= top + Math.max(1, (bot - top) * .06)), apexX = topRows.reduce((t, r) => t + (r[1] + r[2]) / 2, 0) / topRows.length;
+        const nearBase = rows.filter(r => r[0] >= bot - Math.max(2, (bot - top) * .18)), Lx = Math.min(...nearBase.map(r => r[1])), Rx = Math.max(...nearBase.map(r => r[2]));
+        const sx = W / gw, sy = H / gh;
+        treeMask = { gw, gh, on, sx, sy, A: [(apexX + .5) * sx, top * sy], L: [Lx * sx, (bot + 1) * sy], R: [(Rx + 1) * sx, (bot + 1) * sy] };
+        // is the plan's outline far off? (apex, base or width clearly elsewhere)
+        const tm = treeMask, mH = tm.L[1] - tm.A[1], mW = tm.R[0] - tm.L[0], gW = G.R[0] - G.L[0];
+        tm.remap = Math.abs(tm.A[0] - G.A[0]) > W * .07 || Math.abs((tm.L[0] + tm.R[0]) / 2 - (G.L[0] + G.R[0]) / 2) > W * .08 || Math.abs(mH - G.treeH) > G.treeH * .2 || Math.abs(mW - gW) > gW * .3;
+      } catch (e) { treeMask = null; }
+      return treeMask;
+    }
+    function onTree(x, y, kind) {
+      const tm = findTree(); if (!tm || !isFinite(x) || !isFinite(y)) return [x, y];
+      if (tm.remap) {   // carry it across from the plan's outline onto the tree that was found
+        const t = clamp((y - G.A[1]) / G.treeH, 0, 1), hw = G.halfWidthAt(y) || 1, k = clamp((x - G.centerAt(y)) / hw, -1, 1);
+        const mH = tm.L[1] - tm.A[1], ny = tm.A[1] + t * mH, mc = tm.A[0] + t * ((tm.L[0] + tm.R[0]) / 2 - tm.A[0]), mhw = t * (tm.R[0] - tm.L[0]) / 2;
+        x = mc + k * mhw * .9; y = ny;
+      }
+      if (kind === "topper" || kind === "base") return kind === "topper" ? [tm.A[0], tm.A[1] + (tm.L[1] - tm.A[1]) * .03] : [(tm.L[0] + tm.R[0]) / 2, tm.L[1] - (tm.L[1] - tm.A[1]) * .07];
+      // already on the branches (not at the very edge)? keep it; otherwise the nearest spot well inside the tree
+      const cx = clamp(Math.floor(x / tm.sx), 0, tm.gw - 1), cy = clamp(Math.floor(y / tm.sy), 0, tm.gh - 1), at = (X, Y) => X >= 0 && Y >= 0 && X < tm.gw && Y < tm.gh && tm.on[Y * tm.gw + X];
+      const inner = (X, Y) => at(X, Y) && at(X - 1, Y) && at(X + 1, Y) && at(X, Y - 1) && at(X, Y + 1);
+      if (inner(cx, cy)) return [x, y];
+      for (let r = 1; r < Math.max(tm.gw, tm.gh); r++) {
+        let bestD = 1e9, bx = -1, by = -1;
+        for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; if (inner(cx + dx, cy + dy)) { const dd = dx * dx + dy * dy; if (dd < bestD) { bestD = dd; bx = cx + dx; by = cy + dy; } } }
+        if (bx >= 0) return [(bx + .5) * tm.sx, (by + .5) * tm.sy];
+      }
+      return [x, y];
+    }
     // Every spot where this step's pieces go, with what goes there (for the full-color piece icons over their photo)
     function spots(key) {
       const S = scene, out = [];
-      const put = (x, y, kind, o) => { if (isFinite(x) && isFinite(y)) out.push(Object.assign({ x, y, kind }, o || {})); };
+      const put = (x, y, kind, o) => { if (!isFinite(x) || !isFinite(y)) return; [x, y] = onTree(x, y, kind); out.push(Object.assign({ x, y, kind }, o || {})); };
       if (key === "primary_picks") (S.all || []).filter(m => !m.floral).forEach((m, i) => put(m.x, m.y, "filler", { size: m.size, i }));
       else if (key === "florals") (S.all || []).filter(m => m.floral).forEach((m, i) => put(m.x, m.y, "floral", { size: m.size, i, color: data.picks.floral.color }));
       else if (key === "ribbon") (ribbonPlan.marks || []).forEach(([x, y], i) => put(x, y, "ribbon", { i }));
@@ -778,7 +841,8 @@
       else if (key === "medium") pts = spread(orn(["m", "s"]), 3);
       else if (key === "ribbon") pts = (ribbonPlan.marks || []).slice();   // every ribbon spot, top down
       else if (key === "crown") pts = iconSteps ? spots("crown").map(p => [p.x, p.y]) : [[G.A[0], G.A[1] + G.treeH * .05], [(G.L[0] + G.R[0]) / 2 + G.treeH * .12, G.L[1] - G.treeH * .03]];
-      return pts.filter(p => p && isFinite(p[0]) && isFinite(p[1]));
+      pts = pts.filter(p => p && isFinite(p[0]) && isFinite(p[1]));
+      return iconSteps && key !== "crown" ? pts.map(([x, y]) => onTree(x, y)) : pts;   // the numbers sit on the same (on-tree) spots as the icons
     }
 
     return { steps, title: k => STEP_TITLE[k], draw, pins, setQuiet: v => { quiet = !!v; }, drawMap: opts => drawMap(ctx, opts), lead, note, legend, itemsFor, buy, data, usesAfter, spots, unit: () => G.unit, setIconSteps: v => { iconSteps = !!v; }, setPhotoSteps: v => { photoSteps = !!v; }, setAfter: im => { afterImg = im; } };

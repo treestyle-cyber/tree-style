@@ -2035,7 +2035,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </div>
 
 <script src="/try/engine.js?v=20261117c"></script>
-<script src="/try/guide.js?v=20261119l"></script>
+<script src="/try/guide.js?v=20261119m"></script>
 <script src="/picks-looks.js"></script>
 <script>
 // Screen preview (Studio → Screens): /try/?screen-preview&s=<screen> opens that screen straight away with the
@@ -4193,7 +4193,7 @@ const STEP_VIDS = { fluff: "/brand/videos/step-shape.mp4", primary_picks: "/bran
 function sv2Video(key, pic) {
   if (!key || !$("#sv2Pic")) return;
   const ph = window.__PH || {};
-  { const vs = key === "crown" && window.__sv2part === "base" ? "" : (STEP_VIDS[key] || ph["vid_" + key]), cur = $("#sv2Pic").querySelector("video");
+  { const vs = !document.documentElement.classList.contains("has-stepvids") || (key === "crown" && window.__sv2part === "base") ? "" : (STEP_VIDS[key] || ph["vid_" + key]), cur = $("#sv2Pic").querySelector("video");
       if (!vs) { if (cur) cur.remove(); $("#sv2Pic").classList.remove("hasvid"); }
       else if (!cur || cur.dataset.src !== vs) {
         if (cur) cur.remove();
@@ -4257,6 +4257,46 @@ function iconUrl(sp, key, buy) {
   if (sp.kind === "base") { const b = pick(/skirt|collar|basket|base/i)[0]; return b ? shopPhoto(b, "base") : ""; }
   return "";
 }
+// Pieces whose photo must match the plan's color (Kylie: peach roses showed for a design with red ones). Flowers,
+// berries and colored sprays are recolored to the plan's color: the photo's main non-green color is shifted to it,
+// keeping its shading, and the greenery stays as it is. Plain greenery keeps its photo.
+const TINTED = {};
+const NEEDS_TINT = /rose|poinsettia|hydrangea|peon|ranunculus|dahlia|orchid|lil(y|ies)|amaryllis|tulip|carnation|mum|flower|bloom|berr|holly|glitter|spray|feather|candy|peppermint/i;
+const hex6 = h => { h = String(h || "").trim(); const m3 = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(h); return m3 ? "#" + m3[1] + m3[1] + m3[2] + m3[2] + m3[3] + m3[3] : /^#[0-9a-f]{6}$/i.test(h) ? h : ""; };
+function hsvOf(r, g, b) { const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; let h = 0; if (d) { h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; } return [h, mx ? d / mx : 0, mx / 255]; }
+function rgbFromHsv(h, s, v) { const c = v * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = v - c; const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x]; return [(r + m) * 255, (g + m) * 255, (b + m) * 255]; }
+// returns a ready image (canvas) in the plan's color, false if it can't be made, or null while it's being made
+function tintedIcon(url, hex, onReady) {
+  const k = url + "|" + hex; if (k in TINTED) return TINTED[k];
+  TINTED[k] = null;
+  const im = new Image(); im.crossOrigin = "anonymous";
+  im.onload = () => {
+    try {
+      const n = 160, c = document.createElement("canvas"); c.width = c.height = n; const g = c.getContext("2d", { willReadFrequently: true });
+      const sc = Math.max(n / im.naturalWidth, n / im.naturalHeight); g.drawImage(im, (n - im.naturalWidth * sc) / 2, (n - im.naturalHeight * sc) / 2, im.naturalWidth * sc, im.naturalHeight * sc);
+      const id = g.getImageData(0, 0, n, n), d = id.data, hist = new Array(36).fill(0); let cnt = 0;
+      for (let i = 0; i < d.length; i += 4) { const [h, sat, v] = hsvOf(d[i], d[i + 1], d[i + 2]); if (sat > .3 && v > .2 && !(h > 55 && h < 175)) { hist[Math.floor(h / 10)]++; cnt++; } }
+      const [th, ts, tv] = hsvOf(...[1, 3, 5].map(j => parseInt(String(hex).slice(j, j + 2), 16)));
+      if (cnt > n * n * .03) {
+        let peak = 0; hist.forEach((v, i) => { if (v > hist[peak]) peak = i; });
+        const h0 = peak * 10 + 5, near = h => Math.min(Math.abs(h - h0), 360 - Math.abs(h - h0)) < 45;
+        let vs = 0, vn = 0; for (let i = 0; i < d.length; i += 4) { const [h, sat, v] = hsvOf(d[i], d[i + 1], d[i + 2]); if (sat > .2 && near(h)) { vs += v; vn++; } }
+        const vk = vn ? Math.min(1.8, Math.max(.45, tv / (vs / vn))) : 1;
+        for (let i = 0; i < d.length; i += 4) {
+          const [h, sat, v] = hsvOf(d[i], d[i + 1], d[i + 2]); if (!(sat > .2 && near(h))) continue;
+          const ns = ts < .15 ? sat * .15 : Math.min(1, sat * (ts / .7)), nv = Math.min(1, v * vk), [r, gg, b] = rgbFromHsv(ts < .15 ? h : th, ns, nv);
+          d[i] = r; d[i + 1] = gg; d[i + 2] = b;
+        }
+        g.putImageData(id, 0, 0);
+      }
+      TINTED[k] = c; c.toDataURL();   // throws if the photo's site doesn't allow reading it, so we fall back
+    } catch (e) { TINTED[k] = false; }
+    onReady && onReady();
+  };
+  im.onerror = () => { TINTED[k] = false; onReady && onReady(); };
+  im.src = url;
+  return null;
+}
 // The key under the step picture (Kylie's mockup): each piece with its picture and how many, from the shopping list,
 // so the names and counts match it; ornaments are grouped by size ("8 in", "4 in")
 const KEY_TITLE = { primary_picks: "Filler key", ribbon: "Ribbon key", florals: "Flower key", statement: "Ornament key", medium: "Ornament key", crown: "Crown & base key" };
@@ -4279,7 +4319,10 @@ function drawKey(key) {
     const m = /^(?:about\s+)?(\d+)(?:\s*(?:[–-]|to)\s*(\d+))?\b/i.exec(q); return m ? "×" + m[1] + (m[2] ? "–" + m[2] : "") : q;
   };
   const nice = l => l.replace(/\s*christmas\s*/i, " ").replace(/\s*wired ribbon\b/i, "").replace(/\s*\((?:laid on top|thin accent)\)/i, "").trim().replace(/^./, c => c.toUpperCase());
-  const row = (b, name) => { const u = keyIcon(b, key); return `<li><span class="kic" style="${u ? `background-image:url('${esc(u)}')` : `--kc:${esc(b.color)}`}"></span><span class="kname">${esc(name)}</span><span class="kqty">${esc(qty(b.qty) || (key === "crown" ? "×1" : ""))}</span></li>`; };
+  const row = (b, name) => {
+    let u = keyIcon(b, key);
+    if (u && (key === "primary_picks" || key === "florals") && NEEDS_TINT.test(b.label || "") && hex6(b.color)) { const t = tintedIcon(u, hex6(b.color), () => drawKey(key)); u = t ? t.toDataURL("image/jpeg", .85) : ""; }   // same color as the plan, like the icons
+    return `<li><span class="kic" style="${u ? `background-image:url('${esc(u)}')` : `--kc:${esc(b.color)}`}"></span><span class="kname">${esc(name)}</span><span class="kqty">${esc(qty(b.qty) || (key === "crown" ? "×1" : ""))}</span></li>`; };
   let body;
   if (key === "statement" || key === "medium") {
     const groups = {}, order = [];
@@ -4290,6 +4333,13 @@ function drawKey(key) {
   } else body = `<ul>${items.map(b => row(b, nice(b.label))).join("")}</ul>`;
   el.innerHTML = `<div class="ktitle"><span>${esc(KEY_TITLE[key])}</span></div>${body}`;
 }
+// the plan's color when this piece's photo has to be recolored to match (flowers, berries, colored sprays)
+function iconTint(sp, key, buy) {
+  if (sp.kind !== "filler" && sp.kind !== "floral") return "";
+  const list = buy.filter(b => fillPhoto(b.label)); if (!list.length) return "";
+  const b = list[(sp.i || 0) % list.length];
+  return NEEDS_TINT.test(b.label || "") ? hex6(b.color) : "";
+}
 function drawIcons(key) {
   if (!guide || !guide.spots || !document.documentElement.classList.contains("theme-ivory")) return;
   const sps = guide.spots(key); if (!sps.length) return;
@@ -4298,13 +4348,16 @@ function drawIcons(key) {
   // big pieces first so small ones sit on top; the base and topper last
   sps.slice().sort((a, b) => (a.kind === "topper" || a.kind === "base") - (b.kind === "topper" || b.kind === "base") || (R[b.size] || .045) - (R[a.size] || .045)).forEach(sp => {
     const r = W * (sp.kind === "ornament" ? (R[sp.size] || .04) : sp.kind === "ribbon" ? .05 : sp.kind === "topper" ? .075 : sp.kind === "base" ? .085 : .036 + .006 * (sp.size || 2));
-    const im = iconImg(iconUrl(sp, key, buy), key);
+    const src = iconUrl(sp, key, buy), tint = iconTint(sp, key, buy);
+    let im;
+    if (src && tint) { const t = tintedIcon(src, tint, () => { if (guide && guide.steps[stepIdx] === key && !$("#sv2Tabs").querySelector('[data-v="photo"].on')) { drawGuide(key); drawKey(key); } }); im = t || null; if (t === false) sp = Object.assign({}, sp, { kind: sp.kind === "filler" ? "floral" : sp.kind, color: tint, drawn: true }); }   // can't recolor it: draw it in the right color rather than show the wrong one
+    else im = iconImg(src, key);
     g.save();
     g.shadowColor = "rgba(30,20,10,.45)"; g.shadowBlur = r * .5; g.shadowOffsetY = r * .14;
     g.beginPath(); g.arc(sp.x, sp.y, r + Math.max(1.5, r * .09), 0, Math.PI * 2); g.fillStyle = "#fffaf0"; g.fill();
     g.shadowColor = "transparent";
     g.beginPath(); g.arc(sp.x, sp.y, r, 0, Math.PI * 2); g.clip();
-    if (im) { const k = Math.max(2 * r / im.naturalWidth, 2 * r / im.naturalHeight) * 1.08, w = im.naturalWidth * k, h = im.naturalHeight * k; g.drawImage(im, sp.x - w / 2, sp.y - h / 2, w, h); }
+    if (im) { const iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height, k = Math.max(2 * r / iw, 2 * r / ih) * 1.08, w = iw * k, h = ih * k; g.drawImage(im, sp.x - w / 2, sp.y - h / 2, w, h); }
     else if (sp.kind === "floral" || sp.kind === "topper") {   // a flower in its own color, or a gold star, on deep evergreen until a photo exists
       g.fillStyle = "#24402c"; g.fillRect(sp.x - r, sp.y - r, 2 * r, 2 * r);
       const col = sp.kind === "floral" ? (sp.color || "#B0242F") : "#D4AF62", n = sp.kind === "floral" ? 6 : 5;
