@@ -501,7 +501,7 @@
       ribbonPlan.layer = sh;
     }
     const layerFor = k => k === "ribbon" ? (ribbonPlan.layer || planL.ribbon) : planL[k];
-    let afterImg = null, photoSteps = false;
+    let afterImg = null, photoSteps = false, iconSteps = false;
     const usesAfter = key => photoSteps && !!afterImg && key !== "fluff" && key !== "all";
 
     // Which steps this tree needs
@@ -558,6 +558,8 @@
       if (peek) { o.drawImage(img, 0, 0, W, H); return; }
       // Ivory look (Kylie's step mockups): every step after shaping shows their finished tree, the preview, with only the
       // numbered spots on top (drawn by the app); the drawn pieces stay as the fallback until the preview exists
+      // Ivory look (Kylie): their own photo in full color; the app lays a picture of each piece on its spot (spots())
+      if (iconSteps && spots(key).length) { o.drawImage(img, 0, 0, W, H); return; }
       if (usesAfter(key)) {
         const k2 = Math.max(W / afterImg.naturalWidth, H / afterImg.naturalHeight), aw = afterImg.naturalWidth * k2, ah = afterImg.naturalHeight * k2;
         o.drawImage(afterImg, (W - aw) / 2, (H - ah) / 2, aw, ah);
@@ -753,22 +755,33 @@
     }
     // Numbered spots for the Ivory step screens (Kylie's mockups): up to three places on the picture, each matched to an
     // instruction card. Filler is numbered from the base up (start low and full); the others from the top down.
+    // Every spot where this step's pieces go, with what goes there (for the full-color piece icons over their photo)
+    function spots(key) {
+      const S = scene, out = [];
+      const put = (x, y, kind, o) => { if (isFinite(x) && isFinite(y)) out.push(Object.assign({ x, y, kind }, o || {})); };
+      if (key === "primary_picks") (S.all || []).filter(m => !m.floral).forEach((m, i) => put(m.x, m.y, "filler", { size: m.size, i }));
+      else if (key === "florals") (S.all || []).filter(m => m.floral).forEach((m, i) => put(m.x, m.y, "floral", { size: m.size, i, color: data.picks.floral.color }));
+      else if (key === "ribbon") (ribbonPlan.marks || []).forEach(([x, y], i) => put(x, y, "ribbon", { i }));
+      else if (key === "statement" || key === "medium") data.ornaments.filter(b => (key === "statement" ? ["xl", "l"] : ["m", "s"]).includes(b.size)).forEach((b, i) => put(b.x * W, b.y * H, "ornament", { size: b.size, color: b.color, shape: b.shape, i }));
+      else if (key === "crown") { put(G.A[0], G.A[1] + G.treeH * .03, "topper"); put((G.L[0] + G.R[0]) / 2, G.L[1] - G.treeH * .01, "base"); }
+      return out;
+    }
     function pins(key) {
       const S = scene, spread = (pts, n, up) => { pts = pts.slice().sort((a, b) => up ? b[1] - a[1] : a[1] - b[1]); if (pts.length <= n) return pts; return Array.from({ length: n }, (_, i) => pts[Math.round(i * (pts.length - 1) / (n - 1))]); };
       const orn = sz => data.ornaments.filter(b => sz.includes(b.size)).map(b => [b.x * W, b.y * H]);
       let pts = [];
       if (key === "fluff") pts = spread(S.moments.filter(m => m.size >= 2).map(m => [m.x, m.y]), 3);
       else if (key === "lights") pts = [1 / 6, .5, 5 / 6].map(f => { const y = G.A[1] + G.treeH * f; return [G.centerAt(y) - G.halfWidthAt(y) * .45, y]; });
-      else if (key === "primary_picks") pts = spread(S.moments.map(m => [m.x, m.y]), 3, true);
+      else if (key === "primary_picks") pts = spread((S.all || []).filter(m => !m.floral).map(m => [m.x, m.y]), 3, true);   // the same spots as the filler icons
       else if (key === "florals") pts = spread(S.all.filter(m => m.floral).map(m => [m.x, m.y]), 3);
       else if (key === "statement") pts = spread(orn(["xl", "l"]), 3);
       else if (key === "medium") pts = spread(orn(["m", "s"]), 3);
       else if (key === "ribbon") pts = (ribbonPlan.marks || []).slice();   // every ribbon spot, top down
-      else if (key === "crown") pts = [[G.A[0], G.A[1] + G.treeH * .05], [(G.L[0] + G.R[0]) / 2 + G.treeH * .12, G.L[1] - G.treeH * .03]];
+      else if (key === "crown") pts = iconSteps ? spots("crown").map(p => [p.x, p.y]) : [[G.A[0], G.A[1] + G.treeH * .05], [(G.L[0] + G.R[0]) / 2 + G.treeH * .12, G.L[1] - G.treeH * .03]];
       return pts.filter(p => p && isFinite(p[0]) && isFinite(p[1]));
     }
 
-    return { steps, title: k => STEP_TITLE[k], draw, pins, setQuiet: v => { quiet = !!v; }, drawMap: opts => drawMap(ctx, opts), lead, note, legend, itemsFor, buy, data, usesAfter, setPhotoSteps: v => { photoSteps = !!v; }, setAfter: im => { afterImg = im; } };
+    return { steps, title: k => STEP_TITLE[k], draw, pins, setQuiet: v => { quiet = !!v; }, drawMap: opts => drawMap(ctx, opts), lead, note, legend, itemsFor, buy, data, usesAfter, spots, unit: () => G.unit, setIconSteps: v => { iconSteps = !!v; }, setPhotoSteps: v => { photoSteps = !!v; }, setAfter: im => { afterImg = im; } };
   }
 
   window.TreeGuide = { create, normalize, shoppingList };

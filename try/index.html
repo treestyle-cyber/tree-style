@@ -2008,7 +2008,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </div>
 
 <script src="/try/engine.js?v=20261117c"></script>
-<script src="/try/guide.js?v=20261119k"></script>
+<script src="/try/guide.js?v=20261119l"></script>
 <script src="/picks-looks.js"></script>
 <script>
 // Screen preview (Studio → Screens): /try/?screen-preview&s=<screen> opens that screen straight away with the
@@ -4059,7 +4059,7 @@ async function drawStep() {
   $("#stepTabs").querySelectorAll("button").forEach(b => b.onclick = () => { stepIdx = +b.dataset.i; drawStep(); });
   const on = $("#stepTabs .on"); if (on) on.scrollIntoView({ block: "nearest", inline: "center" });
   if (guide.setQuiet) guide.setQuiet(document.documentElement.classList.contains("theme-ivory"));
-  if (guide.setPhotoSteps) guide.setPhotoSteps(document.documentElement.classList.contains("theme-ivory"));
+  if (guide.setIconSteps) guide.setIconSteps(document.documentElement.classList.contains("theme-ivory"));   // Kylie: full-color pieces over their own photo (the preview stays for Your finished tree)
   guide.draw(key, false);   // the numbered spots go on once the instruction card is set, below
   // shaping the branches is shown, not pointed at: a branch unfolding, then its tips. Not when the branches already scored
   // well (the step says "Already looking great"), unless they open the step anyway
@@ -4080,7 +4080,7 @@ async function drawStep() {
   $("#stepLegend").hidden = !lg.length || collapsed;
   $("#stepLegend").innerHTML = lg.map(l => `<li><b style="background:${l.color}"></b>${esc(l.text)}</li>`).join("");
   // A small key on the picture itself: what this step's marks are (Kylie: make the step pictures easy to understand)
-  const gk = key === "all" || collapsed || anim || (guide.usesAfter && guide.usesAfter(key)) ? [] : guide.legend(key).slice(0, 4);
+  const gk = key === "all" || collapsed || anim || (guide.usesAfter && guide.usesAfter(key)) || (document.documentElement.classList.contains("theme-ivory") && guide.spots && guide.spots(key).length) ? [] : guide.legend(key).slice(0, 4);
   $("#guideKey").hidden = !gk.length;
   $("#guideKey").innerHTML = gk.map(l => `<li><b style="background:${l.color}"></b>${esc(l.text)}</li>`).join("");
   let items = "";
@@ -4149,7 +4149,7 @@ async function drawStep() {
     if (collapsed) { window.__sv2n = 0; $("#sv2Dots").innerHTML = ""; $("#sv2Hint").hidden = true; }
     $("#sv2Shop").hidden = isAll || !buy.length; $("#sv2Shop").textContent = "Shop " + ({ lights: "lights", primary_picks: "filler stems", ribbon: "ribbon", florals: "flowers", statement: "large ornaments", medium: "medium & small ornaments", crown: part === "base" ? "the base" : part === "crown" ? "the topper" : "topper & base" }[key] || (guide.title(key) || "").toLowerCase());
     $("#sv2Tabs").hidden = isAll || anim;
-    drawPins(key);
+    drawIcons(key); drawPins(key);
     $("#sv2Tabs").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === "guide"));
   }
   $("#nextStep").textContent = document.documentElement.classList.contains("theme-ivory") && key !== "all" ? (doneSteps.has(key) || goodSteps.has(key) ? (stepIdx === total - 1 ? "See the finished tree" : "Next step") : "Mark step complete") : key === "all" ? "Back to my tree" : (doneSteps.has(key) || goodSteps.has(key)) ? (stepIdx === total - 1 ? "See the finished tree" : "Next step") : (stepIdx === total - 1 ? "Done, see the finished tree" : "Done, next");
@@ -4201,12 +4201,67 @@ const SV2_TIPS = {
 let sv2PinHits = [];
 function drawGuide(key, peek) {
   guide.draw(key, peek);
-  if (!peek) drawPins(key); else sv2PinHits = [];
+  if (!peek) { drawIcons(key); drawPins(key); } else sv2PinHits = [];
 }
 // The numbered spots on the picture (Ivory look): the active one gets a light halo, tap one to see its instruction
+// Full-color pictures of the pieces on their spots over the customer's own photo (Kylie, Ivory look): each spot shows a
+// round photo of what goes there (the ornament or ribbon photo in its color, the Studio's filler, flower, topper and base
+// photos), sized to the piece, with a fine white ring and a soft shadow. A piece with no photo yet gets a glossy disc in its color.
+const ICON_IMGS = {};
+function iconImg(url, key) {
+  if (!url) return null;
+  let im = ICON_IMGS[url];
+  if (!im) { im = ICON_IMGS[url] = new Image(); im.onload = () => { if (guide && guide.steps[stepIdx] === key && !$("#sv2Tabs").querySelector('[data-v="photo"].on')) drawGuide(key); }; im.src = url; }
+  return im.complete && im.naturalWidth ? im : null;
+}
+function iconUrl(sp, key, buy) {
+  const ph = window.__PH || {}, pick = re => buy.filter(b => re.test(String(b.label || "")) ) ;
+  if (sp.kind === "filler" || sp.kind === "floral") {
+    const list = buy.filter(b => fillPhoto(b.label)); if (!list.length) return sp.kind === "filler" ? (FILL_BUILTIN.pine || "") : "";   // filler with no photo yet: the built-in pine
+    return fillPhoto(list[(sp.i || 0) % list.length].label);   // the kinds take turns, so every filler kind shows on the tree
+  }
+  if (sp.kind === "ribbon") { const b = buy.find(b => !/accent/i.test(b.label || "")) || buy[0]; return b ? shopPhoto(b, "ribbon") : ""; }
+  if (sp.kind === "ornament") {
+    if (sp.shape === "drop") return ph.orn_teardrop || ""; if (sp.shape === "finial") return ph.orn_finial || "";
+    const n = nearestPhoto("ornaments", sp.color, ""); return n ? `/brand/ornaments/${n}.jpg` : "";
+  }
+  if (sp.kind === "topper") { const b = pick(/topper|star|angel|finial|bow|crown|spray/i).find(b => !/skirt|collar|basket/i.test(b.label)) || buy[0]; return b ? shopPhoto(b, "crown") : ""; }
+  if (sp.kind === "base") { const b = pick(/skirt|collar|basket|base/i)[0]; return b ? shopPhoto(b, "base") : ""; }
+  return "";
+}
+function drawIcons(key) {
+  if (!guide || !guide.spots || !document.documentElement.classList.contains("theme-ivory")) return;
+  const sps = guide.spots(key); if (!sps.length) return;
+  const cv = $("#guideCv"), g = cv.getContext("2d"), W = cv.width, buy = guide.buy(key) || [], ivory = getComputedStyle(document.documentElement);
+  const R = { xl: .062, l: .052, m: .04, s: .032 };
+  // big pieces first so small ones sit on top; the base and topper last
+  sps.slice().sort((a, b) => (a.kind === "topper" || a.kind === "base") - (b.kind === "topper" || b.kind === "base") || (R[b.size] || .045) - (R[a.size] || .045)).forEach(sp => {
+    const r = W * (sp.kind === "ornament" ? (R[sp.size] || .04) : sp.kind === "ribbon" ? .05 : sp.kind === "topper" ? .075 : sp.kind === "base" ? .085 : .036 + .006 * (sp.size || 2));
+    const im = iconImg(iconUrl(sp, key, buy), key);
+    g.save();
+    g.shadowColor = "rgba(30,20,10,.45)"; g.shadowBlur = r * .5; g.shadowOffsetY = r * .14;
+    g.beginPath(); g.arc(sp.x, sp.y, r + Math.max(1.5, r * .09), 0, Math.PI * 2); g.fillStyle = "#fffaf0"; g.fill();
+    g.shadowColor = "transparent";
+    g.beginPath(); g.arc(sp.x, sp.y, r, 0, Math.PI * 2); g.clip();
+    if (im) { const k = Math.max(2 * r / im.naturalWidth, 2 * r / im.naturalHeight) * 1.08, w = im.naturalWidth * k, h = im.naturalHeight * k; g.drawImage(im, sp.x - w / 2, sp.y - h / 2, w, h); }
+    else if (sp.kind === "floral" || sp.kind === "topper") {   // a flower in its own color, or a gold star, on deep evergreen until a photo exists
+      g.fillStyle = "#24402c"; g.fillRect(sp.x - r, sp.y - r, 2 * r, 2 * r);
+      const col = sp.kind === "floral" ? (sp.color || "#B0242F") : "#D4AF62", n = sp.kind === "floral" ? 6 : 5;
+      g.beginPath();
+      for (let i = 0; i <= n * 2; i++) { const a = -Math.PI / 2 + i * Math.PI / n, rr = i % 2 ? r * (sp.kind === "floral" ? .42 : .38) : r * .86; g[i ? "lineTo" : "moveTo"](sp.x + Math.cos(a) * rr, sp.y + Math.sin(a) * rr); }
+      const gr = g.createRadialGradient(sp.x - r * .2, sp.y - r * .25, r * .05, sp.x, sp.y, r); gr.addColorStop(0, "#fff5d6"); gr.addColorStop(.3, col); gr.addColorStop(1, "#2a1206"); g.fillStyle = gr; g.fill();
+      if (sp.kind === "floral") { g.beginPath(); g.arc(sp.x, sp.y, r * .16, 0, Math.PI * 2); g.fillStyle = "#E8C34A"; g.fill(); }
+    }
+    else {   // a glossy disc in the piece's color until a photo exists
+      const col = sp.color || (sp.kind === "filler" ? "#3E6B45" : sp.kind === "ribbon" ? "#7A1F2B" : sp.kind === "base" ? "#5A3A28" : "#B8913F");
+      const gr = g.createRadialGradient(sp.x - r * .35, sp.y - r * .4, r * .1, sp.x, sp.y, r * 1.05); gr.addColorStop(0, "#ffffff"); gr.addColorStop(.18, col); gr.addColorStop(1, "#1a1208"); g.fillStyle = gr; g.fillRect(sp.x - r, sp.y - r, 2 * r, 2 * r);
+    }
+    g.restore();
+  });
+}
 function drawPins(key) {
   sv2PinHits = []; if ($("#pinPulse")) $("#pinPulse").hidden = true;
-  if (!guide || !guide.pins || !document.documentElement.classList.contains("theme-ivory") || key === "all" || (key === "ribbon" && !(guide.usesAfter && guide.usesAfter(key)))) return;
+  if (!guide || !guide.pins || !document.documentElement.classList.contains("theme-ivory") || key === "all" || (key === "ribbon" && !(guide.usesAfter && guide.usesAfter(key)) && !(guide.spots && guide.spots(key).length))) return;
   const cv = $("#guideCv"), g = cv.getContext("2d"), pts = guide.pins(key), r = Math.max(10, cv.width * .03);
   const n = key === "crown" || key === "ribbon" ? pts.length : Math.min(pts.length, window.__sv2n || 0);   // the ribbon numbers every spot (it never folds away)
   const active = key === "crown" ? ((window.__sv2part || "crown") === "base" ? 1 : 0) : (window.__sv2pin || 0);
