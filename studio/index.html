@@ -633,7 +633,9 @@ function vidCrop(v, cr) {   // where a step video sits in its card: x,y = the po
   v.style.objectFit = "contain"; v.style.objectPosition = "50% 50%"; v.style.transformOrigin = "50% 50%";
   v.style.transform = `translate(${(.5 - x / 100) * cw}px, ${(.5 - y / 100) * ch}px) scale(${S})`;
 }
+const STEP_VIDS = { vid_fluff: "/brand/videos/step-shape.mp4", vid_primary_picks: "/brand/videos/step-filler.mp4" };   // built into the app (Kylie's own clips); a clip kept here replaces it
 function stepVideos(current, crops = {}) {
+  current = Object.assign({}, STEP_VIDS, current);
   if (!document.getElementById("vboxCss")) { const st = document.createElement("style"); st.id = "vboxCss"; st.textContent = ".vbox .frame .lbl{position:absolute;z-index:3}.vbox .frame{position:relative}"; document.head.appendChild(st); }
   document.querySelectorAll('.slot[data-id^="how_"]').forEach(el => {
     const key = el.dataset.id.slice(4), vid = "vid_" + key; if (el.querySelector(".vbox")) return;
