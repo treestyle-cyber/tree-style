@@ -1435,7 +1435,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .sv2pic video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
   .sv2pic.hasvid{background-image:none !important;background-color:#2a2016}
   .sv2how h3{margin:0 0 6px;font:500 calc(24px * var(--s-headline,1))/1.1 var(--serif);color:var(--ink)}
-  .sv2how p{margin:0;color:var(--ink);font-size:calc(15px * var(--s-body,1));line-height:1.45;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+  .sv2how p{margin:0;color:var(--ink);font-size:calc(15px * var(--s-body,1));line-height:1.45}   /* the whole tip shows (Kylie: it was cut off at five lines) */
   .sv2parts{grid-template-columns:1fr 1fr;gap:12px;margin:16px 0 0}
   .sv2parts button{padding:10px;border-radius:12px;border:1.5px solid var(--green);background:transparent;color:var(--green);font:500 calc(19px * var(--s-headline,1)) var(--serif);cursor:pointer}
   .sv2parts button.on{background:var(--green);color:var(--on-accent)}
@@ -2008,7 +2008,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </div>
 
 <script src="/try/engine.js?v=20261117c"></script>
-<script src="/try/guide.js?v=20261119i"></script>
+<script src="/try/guide.js?v=20261119j"></script>
 <script src="/picks-looks.js"></script>
 <script>
 // Screen preview (Studio → Screens): /try/?screen-preview&s=<screen> opens that screen straight away with the
