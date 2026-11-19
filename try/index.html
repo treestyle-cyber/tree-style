@@ -1382,6 +1382,52 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .guidekey[hidden],.guidebox.peeking .guidekey,.guidebox.anim .guidekey{display:none}
   .guidekey li{display:flex;align-items:center;gap:8px;font:600 calc(12.5px * var(--s-body,1))/1.25 var(--sans);color:#2C2118}
   .guidekey b{width:13px;height:13px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+  /* Ivory look step layout (Kylie's mockups) */
+  .sv2head,.sv2tabs,.sv2how,.sv2shop{display:none}
+  html.theme-ivory #s-plan{display:flex;flex-direction:column}
+  html.theme-ivory #s-plan[hidden]{display:none}
+  html.theme-ivory #s-plan .sv2head{display:block;order:1;text-align:center;margin:2px 0 14px}
+  html.theme-ivory #s-plan .steptabs{order:2;display:none}
+  html.theme-ivory.sv2tabs-open #s-plan .steptabs{display:flex}
+  html.theme-ivory #s-plan .stephead{display:none !important}
+  html.theme-ivory #s-plan .stepwriting{order:3}
+  html.theme-ivory #s-plan .guidebox{order:4;border-radius:16px}
+  html.theme-ivory #s-plan .sv2tabs{display:flex;order:5}
+  html.theme-ivory #s-plan .sv2tabs[hidden]{display:none}
+  html.theme-ivory #s-plan .sv2parts{display:grid;order:6}
+  html.theme-ivory #s-plan .sv2parts[hidden]{display:none}
+  html.theme-ivory #s-plan .sv2how{display:grid;order:6}
+  html.theme-ivory #s-plan .sv2how[hidden]{display:none}
+  html.theme-ivory #s-plan .sv2shop{display:block;order:7}
+  html.theme-ivory #s-plan .sv2shop[hidden]{display:none}
+  html.theme-ivory #s-plan .stepnav{order:8;margin-top:14px}
+  html.theme-ivory #s-plan .stepcard{order:9;margin-top:22px}
+  html.theme-ivory #s-plan .helprow{order:10}
+  html.theme-ivory #s-plan #prevStep{display:none}
+  html.theme-ivory #s-plan #nextStep{flex:1;padding:18px 20px}
+  html.theme-ivory #s-plan .peek{display:none}
+  html.theme-ivory #s-plan #stepLead{display:none}
+  html.theme-ivory #s-plan .planitem.sv2dup{display:none}
+  .sv2top{position:relative;display:flex;justify-content:center;align-items:center;min-height:22px}
+  .sv2k{font:600 calc(12px * var(--s-label,1)) var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--brass)}
+  .sv2all{position:absolute;right:0;top:50%;transform:translateY(-50%);background:none;border:0;padding:4px 0;color:var(--ink);font:500 calc(14px * var(--s-body,1)) var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+  .sv2bar{display:flex;gap:5px;justify-content:center;margin:12px auto 14px;max-width:300px}
+  .sv2bar i{flex:1;height:5px;border-radius:99px;background:rgba(184,149,90,.22)}
+  .sv2bar i.on{background:var(--goldbar,linear-gradient(90deg,#9C7638,#C9A35E,#EBD49C,#C49C58))}
+  .sv2t{margin:0;font:500 calc(36px * var(--s-headline,1))/1.05 var(--serif);color:var(--ink)}
+  .sv2s{margin:8px auto 0;max-width:24em;color:var(--oat);font-size:calc(15.5px * var(--s-body,1));line-height:1.4}
+  .sv2tabs{justify-content:space-around;margin:4px 0 0;border-bottom:1px solid rgba(184,149,90,.45)}
+  .sv2tabs button{background:none;border:0;padding:12px 6px 10px;color:var(--oat);font:500 calc(15px * var(--s-body,1)) var(--sans);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+  .sv2tabs button.on{color:var(--ink);font-weight:600;border-bottom-color:var(--green)}
+  .sv2how{grid-template-columns:42% 1fr;gap:16px;align-items:center;margin:18px 0 6px}
+  .sv2pic{display:block;aspect-ratio:3/2;border-radius:12px;background:#2a2016 center/cover no-repeat;box-shadow:0 8px 18px -12px rgba(44,33,24,.6)}
+  .sv2pic.zoom{background-size:260%}
+  .sv2how h3{margin:0 0 6px;font:500 calc(24px * var(--s-headline,1))/1.1 var(--serif);color:var(--ink)}
+  .sv2how p{margin:0;color:var(--ink);font-size:calc(15px * var(--s-body,1));line-height:1.45;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+  .sv2parts{grid-template-columns:1fr 1fr;gap:12px;margin:16px 0 0}
+  .sv2parts button{padding:10px;border-radius:12px;border:1.5px solid var(--green);background:transparent;color:var(--green);font:500 calc(19px * var(--s-headline,1)) var(--serif);cursor:pointer}
+  .sv2parts button.on{background:var(--green);color:var(--on-accent)}
+  .sv2shop{margin:8px auto 0;background:none;border:0;padding:6px;color:var(--ink);font:500 calc(15.5px * var(--s-body,1)) var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -1637,10 +1683,16 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 
   <!-- Plan -->
   <section class="screen" id="s-plan" data-title="Step by step" hidden>
+    <div class="sv2head" id="sv2Head"><div class="sv2top"><span class="sv2k" id="sv2K"></span><button type="button" class="sv2all" id="sv2All">All steps</button></div>
+      <div class="sv2bar" id="sv2Bar"></div><h2 class="sv2t" id="sv2T"></h2><p class="sv2s" id="sv2S"></p></div>
     <div class="steptabs" id="stepTabs" role="tablist"></div>
     <div class="stephead"><div class="k" id="stepK"></div><h2 id="stepTitle"></h2></div>
     <p class="stepwriting" id="stepWriting" hidden><span class="spin"></span>Adding the detailed how-to for each step. It appears here in a few seconds.</p>
     <div class="guidebox"><canvas id="guideCv" aria-label="Diagram of this step on your tree"></canvas><ul class="guidekey" id="guideKey" hidden></ul><div class="branchanim" id="branchAnim" hidden></div><span class="peek" id="peek" aria-hidden="true">Press and hold to see your photo</span><button class="zoombtn" id="zoomGuide" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6M10.5 7.5v6M7.5 10.5h6"/></svg></button></div>
+    <div class="sv2tabs" id="sv2Tabs" role="tablist"><button type="button" class="on" data-v="guide">Placement guide</button><button type="button" data-v="photo">Original photo</button></div>
+    <div class="sv2parts" id="sv2Parts" hidden><button type="button" data-p="crown">1 Crown</button><button type="button" data-p="base">2 Base</button></div>
+    <div class="sv2how" id="sv2How"><span class="sv2pic" id="sv2Pic"></span><div><h3 id="sv2HT"></h3><p id="sv2HP"></p></div></div>
+    <button type="button" class="sv2shop" id="sv2Shop" hidden></button>
     <div class="card stepcard">
       <p id="stepLead"></p>
       <ul class="legend" id="stepLegend"></ul>
@@ -3998,9 +4050,43 @@ async function drawStep() {
       $("#stepItems [data-another]").onclick = () => $("#restart").click();
     }
   }
-  $("#nextStep").textContent = key === "all" ? "Back to my tree" : (doneSteps.has(key) || goodSteps.has(key)) ? (stepIdx === total - 1 ? "See the finished tree" : "Next step") : (stepIdx === total - 1 ? "Done, see the finished tree" : "Done, next");
+  // Ivory look step layout (Kylie's mockups): STEP n OF N, a segmented bar, the step name large, one line of how, the picture
+  // with Placement guide / Original photo under it, the first instruction as a card with a photo, Shop and Mark step complete
+  {
+    const SV2_SUB = { fluff: "Open every branch, then fan out the tips.", lights: "Start at the trunk and work from the top down.", primary_picks: "Start full at the base. Go lighter toward the top.", ribbon: "Start near the top and alternate sides as you work down.", florals: "Nestle the flowers beside the ribbon, fuller low.", statement: "Hang the largest pieces set back toward the trunk.", medium: "Fill in around the large ones, mixing the sizes.", crown: "Wire the topper on, then finish the base.", all: "Every step together: the tree your plan creates." };
+    const isAll = key === "all", n = isAll ? total : stepIdx + 1;
+    $("#sv2K").textContent = isAll ? "Your finished tree" : `Step ${n} of ${total}`;
+    $("#sv2Bar").innerHTML = Array.from({ length: total }, (_, i) => `<i class="${i < n ? "on" : ""}"></i>`).join("");
+    const SV2_T = { fluff: "Shape the branches", lights: "Add the lights", primary_picks: "Add filler stems", ribbon: "Place the ribbon", florals: "Add floral accents", statement: "Place large ornaments", medium: "Place medium & small ornaments", crown: "Finish the crown & base", all: "Your finished tree" };
+    $("#sv2T").textContent = SV2_T[key] || guide.title(key); $("#sv2S").textContent = SV2_SUB[key] || "";
+    // The crown & base step: a Crown / Base switch, each with its own instruction (Kylie's step 7 mockup)
+    const crownIt = key === "crown" ? its.find(p => p.title && p.element !== "base") : null, baseIt = key === "crown" ? its.find(p => p.title && p.element === "base") : null;
+    const part = key === "crown" && crownIt && baseIt ? (window.__sv2part || "crown") : "";
+    $("#sv2Parts").hidden = !part;
+    $("#sv2Parts").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.p === part));
+    const first = part === "base" ? baseIt : part === "crown" ? crownIt : (its.find(p => p.title) || null), bl = part ? (buy.find(b => (part === "base") === /skirt|collar|basket|base/i.test(b.label || "")) || buy[0]) : buy[0];
+    const pic = bl ? ((/^(primary_picks|florals)$/.test(key) && fillPhoto(bl.label)) || (/^(ribbon|statement|medium|crown)$/.test(key) && shopPhoto(bl, key)) || "") : "";
+    $("#sv2Pic").style.backgroundImage = `url("${pic || after || photo || ""}")`; $("#sv2Pic").classList.toggle("zoom", !pic);
+    $("#sv2HT").textContent = (part ? "" : "1. ") + (first ? first.title : guide.title(key));
+    if (first) document.querySelectorAll("#stepItems .planitem").forEach(el => { const h = el.querySelector("h4"); if (h && h.textContent === first.title) el.classList.add("sv2dup"); });
+    $("#sv2HP").textContent = (first && first.how) || leadTxt || "";
+    $("#sv2How").hidden = isAll || collapsed || !($("#sv2HP").textContent);
+    document.querySelectorAll("#stepItems .planitem").forEach(el => el.classList.remove("sv2dup"));
+    $("#sv2Shop").hidden = isAll || !buy.length; $("#sv2Shop").textContent = "Shop " + (guide.title(key) || "").toLowerCase().replace(/^the /, "");
+    $("#sv2Tabs").hidden = isAll || anim;
+    $("#sv2Tabs").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === "guide"));
+  }
+  $("#nextStep").textContent = document.documentElement.classList.contains("theme-ivory") && key !== "all" ? (doneSteps.has(key) || goodSteps.has(key) ? (stepIdx === total - 1 ? "See the finished tree" : "Next step") : "Mark step complete") : key === "all" ? "Back to my tree" : (doneSteps.has(key) || goodSteps.has(key)) ? (stepIdx === total - 1 ? "See the finished tree" : "Next step") : (stepIdx === total - 1 ? "Done, see the finished tree" : "Done, next");
 }
 $("#prevStep").onclick = () => { stepIdx--; drawStep(); scrollTo(0, 0); };
+$("#sv2Parts").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; window.__sv2part = b.dataset.p; drawStep(); });
+$("#sv2All").onclick = () => document.documentElement.classList.toggle("sv2tabs-open");
+$("#sv2Shop").onclick = () => { const b = document.querySelector("#stepItems .buy"); if (b) b.scrollIntoView({ behavior: "smooth", block: "start" }); };
+$("#sv2Tabs").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b || !guide) return;
+  $("#sv2Tabs").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+  const ph = b.dataset.v === "photo"; $(".guidebox").classList.toggle("peeking", ph); guide.draw(guide.steps[stepIdx], ph);
+});
 $("#nextStep").onclick = () => {
   if (!guide) return;
   const key = guide.steps[stepIdx];
