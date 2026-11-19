@@ -4240,10 +4240,12 @@ async function watermarked(minW, maxW, q) {
   // Kylie: only their finished tree, with the logo in white in the corner (72%: 45% was too faint, Kylie). A soft shadow (not a fade) keeps it
   // readable on a light wall or floor without darkening the picture.
   if (logo) {
-    const lw = W * .3, lh = lw * logo.naturalHeight / logo.naturalWidth, pad = W * .045, x = W - pad - lw, y = H - pad - lh;
+    const lw = W * .36, lh = lw * logo.naturalHeight / logo.naturalWidth, pad = W * .045, x = W - pad - lw, y = H - pad - lh;
     const wc = document.createElement("canvas"); wc.width = Math.round(lw); wc.height = Math.round(lh); const wg = wc.getContext("2d");
     wg.drawImage(logo, 0, 0, wc.width, wc.height); wg.globalCompositeOperation = "source-in"; wg.fillStyle = "#fff"; wg.fillRect(0, 0, wc.width, wc.height);   // the logo in white
-    g.save(); g.globalAlpha = .72; g.shadowColor = "rgba(0,0,0,.6)"; g.shadowBlur = W * .012; g.shadowOffsetY = W * .002; g.drawImage(wc, x, y, lw, lh); g.restore();
+    const cx = x + lw / 2, cy = y + lh / 2, glow = g.createRadialGradient(cx, cy, 0, cx, cy, lw * .7);   // a soft dark glow behind it, so it reads on any background
+    glow.addColorStop(0, "rgba(10,14,22,.42)"); glow.addColorStop(1, "rgba(10,14,22,0)"); g.save(); g.fillStyle = glow; g.fillRect(cx - lw, cy - lw, lw * 2, lw * 2); g.restore();
+    g.save(); g.globalAlpha = .92; g.shadowColor = "rgba(0,0,0,.75)"; g.shadowBlur = W * .014; g.shadowOffsetY = W * .002; g.drawImage(wc, x, y, lw, lh); g.restore();
   }
   return new Promise(ok => c.toBlob(ok, "image/jpeg", q));
 }
