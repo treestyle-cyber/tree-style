@@ -27,7 +27,7 @@ window.LOOKS = [
       ["B0D47GGJHW", "Greenery", "Norfolk pine stems, 30 in", ["pine"], "sprig"],
       ["B0C99JNHPN", "Berries", "Red holly berry stems", ["red"], "berries"],
       ["B0H1HWNNTK", "Topper", "Extra large red velvet bow topper", ["red", "gold"], "bow"],
-      ["https://link.amazon/B00dj2qSd", "The tree", "Flocked artificial tree", ["white", "pine"], "sprig"],
+      ["https://a.co/d/0c5TI49e", "The tree", "Flocked mountain pine, 7.5 ft pre-lit", ["white", "pine"], "sprig"],
       ["B0HLQZVZM9", "Base", "Red and gold stacked gift box tree stand, 17.75 in", ["red", "gold"], "skirt"] ] },
   { id: "lodge", name: "Plaid Tidings", style: "classic",
     story: ["Tartan and navy velvet, laid together", "Navy tartan glitter finials", "Antique brass horns and bells"],
@@ -186,6 +186,6 @@ window.LOOKS = [
       ["q:hot pink feather christmas tree picks", "Sprays", "Hot pink feather picks", ["pink"], "sprig"],
       ["q:red berry christmas picks", "Berries", "Red berry clusters", ["red"], "berries"],
       ["q:silver disco ball christmas tree topper", "Topper", "Silver disco ball topper", ["silver"], "star"],
-      ["https://link.amazon/B00dj2qSd", "The tree", "Flocked artificial tree", ["white", "pine"], "sprig"],
+      ["https://a.co/d/0c5TI49e", "The tree", "Flocked mountain pine, 7.5 ft pre-lit", ["white", "pine"], "sprig"],
       ["q:silver sequin christmas tree skirt", "Base", "Silver sequin tree skirt", ["silver"], "skirt"] ] },
 ];
