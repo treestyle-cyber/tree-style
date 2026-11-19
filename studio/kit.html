@@ -184,12 +184,6 @@
           <div class="chips" id="helpChipsKit"></div>
         </section>
 
-        <section class="sec">
-          <h2>Step videos</h2>
-          <div class="where">The short demonstration clips in each step's instruction card (Kylie's own clips and any made in Studio → Photos). Hidden for now; turn them on here to show them again. The clips stay saved either way. A link can preview them without saving: add ?videos=1 to an app address.</div>
-          <div class="chips" id="vidChipsKit"></div>
-        </section>
-
         <section class="sec" id="iconSec">
           <h2>Icons</h2>
           <div class="where">The tab bar at the bottom of the app. Upload an SVG line drawing for each; any color is fine, because the app colors it (Midnight when selected, Walnut when not, from Colors). Draw them on the same square canvas with the same line weight so they read as one set.</div>
@@ -364,7 +358,6 @@ function render() {
   $("#looks").innerHTML = LOOKS.map(([v, n, d, sw]) => `<button class="lookopt ${(draft.look || "") === v ? "on" : ""}" data-look="${v}"><span class="sw">${sw.map(c => `<i style="background:${c}"></i>`).join("")}</span><b>${n}</b><small>${d}</small></button>`).join("");
   const nv = draft.nav || {};
   $("#navChips").innerHTML = [["", "Off (as now)"], ["on", "On"]].map(([v, l]) => `<button class="chip ${(nv.bar ? "on" : "") === v ? "on" : ""}" data-navbar="${v}">${l}</button>`).join("");
-  $("#vidChipsKit").innerHTML = [["", "Hidden (as now)"], ["on", "Show"]].map(([v, l]) => `<button class="chip ${(nv.videos ? "on" : "") === v ? "on" : ""}" data-stepvids="${v}">${l}</button>`).join("");
   $("#helpChipsKit").innerHTML = [["", "Off (as now)"], ["on", "On"]].map(([v, l]) => `<button class="chip ${(nv.help ? "on" : "") === v ? "on" : ""}" data-helpbot="${v}">${l}</button>`).join("");
   const ic = draft.icons || {};
   $("#icons").innerHTML = TABS.map(([k, name]) => { const o = ic[k] || origIcons[k] || {}; return `<div class="tile"><div class="pic"><svg viewBox="${esc(o.viewBox || "0 0 28 28")}" style="${o.weight ? "stroke-width:" + esc(o.weight) : ""}">${o.body ? TSKit.clean(o.body) : ""}</svg></div><b>${name}</b><small>${ic[k] ? "Your icon" : "Current icon"}</small><div class="acts"><label class="up">Upload SVG<input type="file" accept=".svg,image/svg+xml" hidden data-file="icon" data-k="${k}"></label><button class="reset" data-ir="${k}" ${ic[k] ? "" : "hidden"}>↺</button></div></div>`; }).join("");

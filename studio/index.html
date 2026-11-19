@@ -508,7 +508,7 @@ async function start() {
     } catch (err) { $("#refMsg").className = "msg err"; $("#refMsg").textContent = err.message; }
   };
   setupRibbonStyles(info.photos || {});
-  build(info.photos || {}); stepVideos(info.photos || {}, info.crops || {});
+  build(info.photos || {});   // step tutorial videos removed (Kylie, Nov 19)
   setupEss(info);
   offerPreviewPicks();
 }
@@ -633,7 +633,7 @@ function vidCrop(v, cr) {   // where a step video sits in its card: x,y = the po
   v.style.objectFit = "contain"; v.style.objectPosition = "50% 50%"; v.style.transformOrigin = "50% 50%";
   v.style.transform = `translate(${(.5 - x / 100) * cw}px, ${(.5 - y / 100) * ch}px) scale(${S})`;
 }
-const STEP_VIDS = { vid_fluff: "/brand/videos/step-shape.mp4", vid_primary_picks: "/brand/videos/step-filler.mp4", vid_crown: "/brand/videos/step-crown.mp4" };   // built into the app (Kylie's own clips); a clip kept here replaces it
+const STEP_VIDS = {};   // built into the app (Kylie's own clips); a clip kept here replaces it
 function stepVideos(current, crops = {}) {
   current = Object.assign({}, current, STEP_VIDS);   // Kylie's own clips win over clips made here
   if (!document.getElementById("vboxCss")) { const st = document.createElement("style"); st.id = "vboxCss"; st.textContent = ".vbox .frame .lbl{position:absolute;z-index:3}.vbox .frame{position:relative}"; document.head.appendChild(st); }

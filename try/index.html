@@ -25,7 +25,7 @@
 <script src="/brand-kit.js"></script>
 <script>
 // Brand photos chosen in the Studio replace the fabric textures (each spot keeps its texture until then)
-fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" + Date.now() : "")).then(r => r.json()).then(d => { const ph = d.photos || {}; window.__PH = ph; window.__CROPS = d.crops || {}; setTimeout(() => { if (window.__sv2key && window.sv2Video) { const pc = document.getElementById("sv2Pic"); if (pc && pc.offsetParent) sv2Video(window.__sv2key, (ph["how_" + window.__sv2key]) || ""); } const st = document.getElementById("s-styles"); if (st && !st.hidden && window.drawLookGallery) drawLookGallery(); }); if (Array.isArray(d.essentials) && d.essentials.length) window.__ESS = d.essentials; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); }
+fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" + Date.now() : "")).then(r => r.json()).then(d => { const ph = d.photos || {}; window.__PH = ph; window.__CROPS = d.crops || {}; setTimeout(() => { const st = document.getElementById("s-styles"); if (st && !st.hidden && window.drawLookGallery) drawLookGallery(); }); if (Array.isArray(d.essentials) && d.essentials.length) window.__ESS = d.essentials; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); }
   // The shopping list may already be drawn by now: draw it again so filler photos show (Kylie: they weren't showing up)
   if (Object.keys(ph).some(k => /^(fill|top|base|orn)_/.test(k))) { const redo = () => { try { if (typeof result !== "undefined" && result) fill(); if (document.getElementById("s-look") && !document.getElementById("s-look").hidden) drawLook(); } catch (e) {} }; if (document.readyState === "complete") redo(); else addEventListener("load", redo); } }).catch(() => {});
 </script>
@@ -1428,7 +1428,9 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .sv2tabs{justify-content:space-around;margin:4px 0 0;border-bottom:1px solid rgba(184,149,90,.45)}
   .sv2tabs button{background:none;border:0;padding:12px 6px 10px;color:var(--oat);font:500 calc(15px * var(--s-body,1)) var(--sans);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
   .sv2tabs button.on{color:var(--ink);font-weight:600;border-bottom-color:var(--green)}
-  .sv2how{grid-template-columns:42% 1fr;gap:16px;align-items:center;margin:18px 0 6px}
+  .sv2how{grid-template-columns:1fr;gap:0;align-items:center;margin:18px 0 6px;text-align:center}
+  .sv2how .sv2pic{display:none}   /* Kylie: no photo or video in the tip card; the tip is centered */
+  .sv2how > div{max-width:34em;margin:0 auto}
   .sv2pic{display:block;aspect-ratio:3/2;border-radius:12px;background:#2a2016 center/cover no-repeat;box-shadow:0 8px 18px -12px rgba(44,33,24,.6)}
   .sv2pic.zoom{background-size:260%}
   .sv2pic{position:relative;overflow:hidden}
@@ -1489,7 +1491,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .pinpulse[hidden],.guidebox.peeking .pinpulse{display:none}
   @keyframes pinPulse{0%{opacity:1;transform:translate(-50%,-50%) scale(.85)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.9)}}
   @media (prefers-reduced-motion:reduce){.pinpulse{animation:none;opacity:.8}}
-  .sv2next{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:0;background:none;border:0;color:var(--brass);font:600 calc(14px * var(--s-body,1)) var(--sans);cursor:pointer}
+  .sv2next{display:inline-flex;justify-content:center;align-items:center;gap:6px;margin-top:8px;padding:0;background:none;border:0;color:var(--brass);font:600 calc(14px * var(--s-body,1)) var(--sans);cursor:pointer}
   .sv2next[hidden]{display:none}
   .sv2next span{transition:transform .2s}
   .sv2next:hover span{transform:translateX(3px)}
@@ -4163,7 +4165,6 @@ async function drawStep() {
     const ph = window.__PH || {};
     const pic = ph["how_" + key] || (bl ? ((/^(primary_picks|florals)$/.test(key) && fillPhoto(bl.label)) || (/^(ribbon|statement|medium|crown)$/.test(key) && shopPhoto(bl, key)) || "") : "");
     $("#sv2Pic").style.backgroundImage = `url("${pic || after || photo || ""}")`; $("#sv2Pic").classList.toggle("zoom", !pic); $("#sv2Pic").dataset.pslot = "how_" + key;
-    sv2Video(key, pic);
     $("#sv2HT").textContent = (part ? "" : (ix + 1) + ". ") + cur[0];
     $("#sv2HP").textContent = cur[1] || leadTxt || "";
     const more = !part && ix < insts.length - 1;
@@ -4189,7 +4190,7 @@ $("#sv2Parts").addEventListener("click", e => { const b = e.target.closest("butt
 // Called when the step is drawn and again when the Studio's photo list arrives (Kylie: the video didn't show on first load,
 // because the step was drawn before the list came back)
 // Built-in step videos (Kylie's own clips). They take priority over a clip made in the Studio for the same step (Kylie re-sent her filler clip when an earlier auto-made one was showing)
-const STEP_VIDS = { fluff: "/brand/videos/step-shape.mp4", primary_picks: "/brand/videos/step-filler.mp4", crown: "/brand/videos/step-crown.mp4" };
+const STEP_VIDS = {};   // tutorial videos removed (Kylie, Nov 19); the earlier clips are in the git history
 function sv2Video(key, pic) {
   if (!key || !$("#sv2Pic")) return;
   const ph = window.__PH || {};
