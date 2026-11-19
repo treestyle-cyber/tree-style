@@ -1516,6 +1516,13 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .aimagic[disabled]{opacity:.7}
   .aimagic.busy svg{animation:magicspin 1.2s linear infinite}
   @keyframes magicspin{to{transform:rotate(360deg)}}
+  .keyq .extra{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:8px 12px 8px 8px;border-radius:16px;border:1px dashed rgba(184,156,107,.75);background:var(--paper)}
+  .keyq .extra small{display:block;margin-top:2px;line-height:1.35}
+  .keyq #keyThumb{position:relative;width:46px;height:46px;border-radius:12px;background-size:cover;background-position:center}
+  .keyq #keyThumb[data-n]:not([data-n=""])::after{content:attr(data-n);position:absolute;right:-6px;bottom:-6px;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:99px;background:#1c2433;color:#F3E2B6;font:700 11px/20px var(--sans);text-align:center;box-shadow:0 0 0 2px var(--paper)}
+  .keyq #keyPcs{display:none !important}
+  .keyq #keyClear{grid-column:3;font-size:12.5px;padding:0}
+  .keyq .extra:has(#keyClear:not([hidden])){grid-template-columns:auto 1fr auto auto}
   .shsheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;background:rgba(20,16,10,.45);animation:shfade .2s ease-out}
   .shsheet[hidden]{display:none}
   .shpanel{position:relative;width:100%;max-width:520px;box-sizing:border-box;background:#fbf6ee;border-radius:24px 24px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom));text-align:center;box-shadow:0 -14px 40px -18px rgba(30,20,10,.5);animation:shup .28s ease-out}
@@ -1806,6 +1813,15 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     <div class="q" id="stageQ" hidden><div class="lbl">Decorating</div><div class="seg"><label class="chip"><input type="radio" name="stage" value="partial"><span>Partway</span></label><label class="chip"><input type="radio" name="stage" value="finished"><span>Finished</span></label><input type="radio" name="stage" value="" checked hidden></div></div></div>
     <div class="q" id="likeQ" hidden><div class="lbl">A style you love <small>optional</small></div>
       <div class="sdrop" id="sDrop"><button type="button" class="sdropb" id="sDropB" aria-haspopup="listbox" aria-expanded="false"></button><div class="sdropl" id="sDropL" role="listbox" hidden></div></div></div>
+    <div class="q keyq" id="keyQ"><div class="lbl">Pieces you love <small>optional</small></div>
+      <div class="extra">
+        <span class="thumb" id="keyThumb">★</span>
+        <div><b>Add your own decor</b><small id="keySub">Grandma's ornaments, a favorite topper, an heirloom? Snap a photo and we'll style your tree around them.</small></div>
+        <label id="keyLbl">Add photos<input type="file" id="keyFile" accept="image/*" multiple hidden></label>
+        <button id="keyClear" hidden>Remove</button>
+      </div>
+      <div class="pcs" id="keyPcs" hidden></div>
+    </div>
     <p class="dnote">Not sure? Leave it blank and we'll read it from your photo.</p>
     <div class="err" id="detailsErr"></div>
   </section>
@@ -1826,14 +1842,6 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     <input type="text" id="theme" placeholder="Your theme (e.g. vintage blue and silver)" hidden>
     <p class="styleNote" id="styleNote"></p>
     <div class="card extrasCard">
-      <h3>Have pieces to build around?</h3>
-      <div class="extra">
-        <span class="thumb" id="keyThumb">★</span>
-        <div><b>Special pieces</b><small id="keySub">Heirlooms, favorite ornaments or a found object. Add up to 6 photos and we'll build the design around them.</small></div>
-        <label id="keyLbl">Add photos<input type="file" id="keyFile" accept="image/*" multiple hidden></label>
-        <button id="keyClear" hidden>Remove</button>
-      </div>
-      <div class="pcs" id="keyPcs" hidden></div>
       <div class="extra" id="inspoRow">
         <span class="thumb" id="inspoThumb">✦</span>
         <div><b>Inspiration photo</b><small>A tree you love from a store, magazine or Pinterest.</small></div>
@@ -3148,7 +3156,7 @@ document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   if (mode !== "design" && !val("style")) keep.checked = true;
   syncStyle();
   if (mode === "check") setRadio("style", "keep");   // every new check starts on Keep my style
-  $("#likeQ").hidden = mode === "design"; likeOpen(false); drawLike();   // Check my tree: "A style you love", starting on Keep my style
+  $("#likeQ").hidden = mode === "design"; likeOpen(false); drawLike(); $("#keyQ").hidden = false;   // Check my tree: "A style you love", starting on Keep my style
   $("#densityQ").hidden = false;
   show(mode === "design" ? "s-start" : "s-photo");
 });
@@ -3261,7 +3269,7 @@ document.addEventListener("click", e => { if (e.target.closest("[data-tell]")) $
 $("#navDetails").onclick = () => {
   // After the design is done, only height, kind and pre-lit still change anything (amounts, sizes, the lights step),
   // so the fullness and decorating-stage questions are left off here
-  rerunFromHub = true; $("#likeQ").hidden = true; $("#stageQ").hidden = true; $("#densityQ").hidden = true; $("#prelitQ").hidden = val("kind") === "natural";
+  rerunFromHub = true; $("#likeQ").hidden = true; $("#keyQ").hidden = true; $("#stageQ").hidden = true; $("#densityQ").hidden = true; $("#prelitQ").hidden = val("kind") === "natural";
   $("#detailsSub").textContent = "Fine-tune your shopping list and steps. Your preview stays the same.";
   $("#detailsSkip").textContent = "Cancel";
   show("s-details"); hTouched = false; hSet(Number($("#hVal").value) || 0, true);
@@ -3309,16 +3317,17 @@ async function addPieceFiles(input, list, onErr) {
 async function syncKey() {
   keyPhoto = await piecesBoard(keyList);
   const n = keyList.length, t = $("#keyThumb");
-  t.style.backgroundImage = n === 1 ? `url(${keyList[0]})` : ""; t.textContent = n === 1 ? "" : "★";   // 2+ photos show in the row below
+  const inQ = !!t.closest("#keyQ");   // on About your tree: the first photo with a count, no row of thumbnails
+  t.style.backgroundImage = n === 1 || (inQ && n) ? `url(${keyList[0]})` : ""; t.textContent = n === 1 || (inQ && n) ? "" : "★"; t.dataset.n = inQ && n > 1 ? "+" + (n - 1) : "";   // 2+ photos show in the row below
   $("#keyLbl").firstChild.textContent = n ? "Add more" : "Add photos"; $("#keyLbl").hidden = n >= MAX_PIECES;
   $("#keyClear").hidden = !n; $("#keyClear").textContent = n > 1 ? "Remove all" : "Remove";
-  $("#keySub").textContent = n ? `${n} photo${n > 1 ? "s" : ""} added${n < MAX_PIECES ? `. Add up to ${MAX_PIECES}.` : "."} We'll build the design around them.` : "Heirlooms, favorite ornaments or a found object. Add up to 6 photos and we'll build the design around them.";
+  $("#keySub").textContent = n ? `${n} piece${n > 1 ? "s" : ""} added. We'll style your tree around ${n > 1 ? "them" : "it"}.` : "Grandma's ornaments, an heirloom topper? Snap them and we'll style around them.";
   const pc = $("#keyPcs"); pc.hidden = n < 2;
   pc.innerHTML = keyList.map((u, i) => `<span style="background-image:url(${u})"><button type="button" data-i="${i}" aria-label="Remove photo ${i + 1}">×</button></span>`).join("");
 }
 function clearKey() { keyList = []; $("#keyFile").value = ""; syncKey(); }
 $("#keyPcs").addEventListener("click", e => { const b = e.target.closest("button[data-i]"); if (!b) return; keyList.splice(+b.dataset.i, 1); syncKey(); });
-$("#keyFile").addEventListener("change", async () => { $("#startErr").textContent = ""; await addPieceFiles($("#keyFile"), keyList, m => $("#startErr").textContent = m); syncKey(); });
+$("#keyFile").addEventListener("change", async () => { $("#startErr").textContent = ""; $("#detailsErr").textContent = ""; await addPieceFiles($("#keyFile"), keyList, m => { $("#startErr").textContent = m; $("#detailsErr").textContent = m; }); syncKey(); });
 $("#inspoFile").addEventListener("change", () => pickExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), d => inspoPhoto = d));
 $("#keyClear").onclick = () => clearKey();
 $("#inspoClear").onclick = () => clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d);
