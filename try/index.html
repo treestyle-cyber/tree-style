@@ -1433,6 +1433,22 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .sv2pic.zoom{background-size:260%}
   .sv2pic{position:relative;overflow:hidden}
   .guidebox{position:relative}
+  .stepkey{order:4;margin-top:-1px;padding:14px 16px 16px;background:#fbf6ee;border:1px solid rgba(184,156,107,.4);border-top:0;border-radius:0 0 16px 16px;color:#2c2118}
+  html.theme-ivory #s-plan .guidebox.haskey{border-radius:16px 16px 0 0}
+  .stepkey .ktitle{display:flex;align-items:center;gap:12px;margin:0 0 10px}
+  .stepkey .ktitle::before,.stepkey .ktitle::after{content:"";flex:1;height:1px;background:rgba(184,156,107,.6)}
+  .stepkey .ktitle span{font:500 calc(24px * var(--s-headline,1))/1 var(--serif);color:var(--ink,#1c2433)}
+  .stepkey .kcols.two{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+  .stepkey .kcols.two .kcol + .kcol{border-left:1px solid rgba(184,156,107,.45);padding-left:14px}
+  .stepkey .ksize{display:flex;align-items:center;gap:8px;margin:2px 0 6px}
+  .stepkey .ksize::before,.stepkey .ksize::after{content:"";flex:1;height:1px;background:rgba(184,156,107,.6)}
+  .stepkey .ksize span{background:#1c2433;color:#f6efe2;font:italic 500 calc(15px * var(--s-headline,1))/1 var(--serif);padding:4px 10px}
+  .stepkey ul{list-style:none;margin:0;padding:0}
+  .stepkey li{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(184,156,107,.28)}
+  .stepkey li:last-child{border-bottom:0}
+  .stepkey .kic{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff8e6 0,var(--kc,#B8913F) 28%,#1a1208 100%) center/cover no-repeat;box-shadow:0 2px 6px -2px rgba(30,20,10,.5),0 0 0 2px #fffaf0}
+  .stepkey .kname{font:500 calc(16px * var(--s-headline,1))/1.2 var(--serif)}
+  .stepkey .kqty{font:500 calc(16px * var(--s-headline,1))/1 var(--serif);white-space:nowrap}
   .pinpop{position:absolute;z-index:6;width:min(250px,78%);box-sizing:border-box;padding:12px 30px 12px 14px;border-radius:14px;background:#fffaf2;color:#2c2118;box-shadow:0 12px 30px -10px rgba(30,20,10,.55),0 0 0 1px rgba(184,156,107,.45);animation:pinpopin .18s ease-out;text-align:left}
   .pinpop::after{content:"";position:absolute;left:var(--ax,50%);bottom:-7px;width:14px;height:14px;margin-left:-7px;background:#fffaf2;transform:rotate(45deg);box-shadow:1px 1px 0 rgba(184,156,107,.45)}
   .pinpop.below::after{bottom:auto;top:-7px;box-shadow:-1px -1px 0 rgba(184,156,107,.45)}
@@ -1743,6 +1759,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     <div class="stephead"><div class="k" id="stepK"></div><h2 id="stepTitle"></h2></div>
     <p class="stepwriting" id="stepWriting" hidden><span class="spin"></span>Adding the detailed how-to for each step. It appears here in a few seconds.</p>
     <div class="guidebox"><canvas id="guideCv" aria-label="Diagram of this step on your tree"></canvas><ul class="guidekey" id="guideKey" hidden></ul><span class="pinpulse" id="pinPulse" hidden></span><div class="branchanim" id="branchAnim" hidden></div><span class="peek" id="peek" aria-hidden="true">Press and hold to see your photo</span><button class="zoombtn" id="zoomGuide" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6M10.5 7.5v6M7.5 10.5h6"/></svg></button></div>
+    <div class="stepkey" id="stepKeyPanel" hidden></div>
     <div class="sv2tabs" id="sv2Tabs" role="tablist"><button type="button" class="on" data-v="guide">Placement guide</button><button type="button" data-v="photo">Original photo</button></div>
     <div class="sv2parts" id="sv2Parts" hidden><button type="button" data-p="crown">1 Crown</button><button type="button" data-p="base">2 Base</button></div>
     <div class="sv2how" id="sv2How"><span class="sv2pic" id="sv2Pic"></span><div><h3 id="sv2HT"></h3><p id="sv2HP"></p><button type="button" class="sv2next" id="sv2Next" hidden>Next tip <span>→</span></button></div></div>
@@ -4054,7 +4071,7 @@ function getPhotoImg() {
 }
 async function drawStep() {
   if (!result) return;
-  closePinPop();
+  closePinPop(); if ($("#stepKeyPanel")) { $("#stepKeyPanel").hidden = true; $("#guideCv").parentElement.classList.remove("haskey"); }
   if (!guide) {
     try { guide = TreeGuide.create(await getPhotoImg(), $("#guideCv"), result, mode); }
     catch (e) { console.error(e); return; }
@@ -4160,7 +4177,7 @@ async function drawStep() {
     if (collapsed) { window.__sv2n = 0; $("#sv2Dots").innerHTML = ""; $("#sv2Hint").hidden = true; }
     $("#sv2Shop").hidden = isAll || !buy.length; $("#sv2Shop").textContent = "Shop " + ({ lights: "lights", primary_picks: "filler stems", ribbon: "ribbon", florals: "flowers", statement: "large ornaments", medium: "medium & small ornaments", crown: part === "base" ? "the base" : part === "crown" ? "the topper" : "topper & base" }[key] || (guide.title(key) || "").toLowerCase());
     $("#sv2Tabs").hidden = isAll || anim;
-    drawIcons(key); drawPins(key);
+    drawIcons(key); drawPins(key); drawKey(key);
     $("#sv2Tabs").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === "guide"));
   }
   $("#nextStep").textContent = document.documentElement.classList.contains("theme-ivory") && key !== "all" ? (doneSteps.has(key) || goodSteps.has(key) ? (stepIdx === total - 1 ? "See the finished tree" : "Next step") : "Mark step complete") : key === "all" ? "Back to my tree" : (doneSteps.has(key) || goodSteps.has(key)) ? (stepIdx === total - 1 ? "See the finished tree" : "Next step") : (stepIdx === total - 1 ? "Done, see the finished tree" : "Done, next");
@@ -4239,6 +4256,39 @@ function iconUrl(sp, key, buy) {
   if (sp.kind === "topper") { const b = pick(/topper|star|angel|finial|bow|crown|spray/i).find(b => !/skirt|collar|basket/i.test(b.label)) || buy[0]; return b ? shopPhoto(b, "crown") : ""; }
   if (sp.kind === "base") { const b = pick(/skirt|collar|basket|base/i)[0]; return b ? shopPhoto(b, "base") : ""; }
   return "";
+}
+// The key under the step picture (Kylie's mockup): each piece with its picture and how many, from the shopping list,
+// so the names and counts match it; ornaments are grouped by size ("8 in", "4 in")
+const KEY_TITLE = { primary_picks: "Filler key", ribbon: "Ribbon key", florals: "Flower key", statement: "Ornament key", medium: "Ornament key", crown: "Crown & base key" };
+function keyIcon(b, key) {
+  if (key === "statement" || key === "medium") return shopPhoto(b, key);
+  if (key === "ribbon") return shopPhoto(b, "ribbon");
+  if (key === "primary_picks" || key === "florals") return fillPhoto(b.label) || (key === "primary_picks" ? FILL_BUILTIN.pine || "" : "");
+  if (key === "crown") return shopPhoto(b, b.kind === "base" || /skirt|collar|basket/i.test(b.label || "") ? "base" : "crown");
+  return "";
+}
+function drawKey(key) {
+  const el = $("#stepKeyPanel"); if (!el) return;
+  const show = document.documentElement.classList.contains("theme-ivory") && guide && guide.spots && guide.spots(key).length && KEY_TITLE[key];
+  const items = show ? (guide.buy(key) || []).filter(b => b.color && !/^optional/i.test(b.qty || "") && b.label) : [];
+  el.hidden = !items.length; $("#guideCv").parentElement.classList.toggle("haskey", !!items.length);
+  if (!items.length) { el.innerHTML = ""; return; }
+  const qty = q => {
+    q = String(q || "").trim();
+    const bolts = /(\d+(?:\s*[–-]\s*\d+)?)\s*bolts?/i.exec(q); if (bolts) return bolts[1].replace(/\s*[–-]\s*/, "–") + (bolts[1] === "1" ? " bolt" : " bolts");   // ribbon: just the bolts
+    const m = /^(?:about\s+)?(\d+)(?:\s*(?:[–-]|to)\s*(\d+))?\b/i.exec(q); return m ? "×" + m[1] + (m[2] ? "–" + m[2] : "") : q;
+  };
+  const nice = l => l.replace(/\s*christmas\s*/i, " ").replace(/\s*wired ribbon\b/i, "").replace(/\s*\((?:laid on top|thin accent)\)/i, "").trim().replace(/^./, c => c.toUpperCase());
+  const row = (b, name) => { const u = keyIcon(b, key); return `<li><span class="kic" style="${u ? `background-image:url('${esc(u)}')` : `--kc:${esc(b.color)}`}"></span><span class="kname">${esc(name)}</span><span class="kqty">${esc(qty(b.qty) || (key === "crown" ? "×1" : ""))}</span></li>`; };
+  let body;
+  if (key === "statement" || key === "medium") {
+    const groups = {}, order = [];
+    items.forEach(b => { const m = /^(\d+(?:\.\d+)?)\s*(?:"|in\b|inch)/i.exec(b.label); const g = m ? m[1] + " in" : "More"; if (!groups[g]) { groups[g] = []; order.push(g); } groups[g].push(b); });
+    order.sort((a, b) => parseFloat(b) - parseFloat(a));
+    const clean = l => l.replace(/^\d+(?:\.\d+)?\s*(?:"|in\b|inch(es)?)\s*/i, "").replace(/\s*christmas\s*/i, " ").replace(/\s*ornaments?\b/i, "").replace(/,.*$/, "").trim().replace(/^./, c => c.toUpperCase()) || "Ornaments";
+    body = `<div class="kcols${order.length > 1 ? " two" : ""}">` + order.map(g => `<div class="kcol"><div class="ksize"><span>${esc(g)}</span></div><ul>${groups[g].map(b => row(b, clean(b.label))).join("")}</ul></div>`).join("") + `</div>`;
+  } else body = `<ul>${items.map(b => row(b, nice(b.label))).join("")}</ul>`;
+  el.innerHTML = `<div class="ktitle"><span>${esc(KEY_TITLE[key])}</span></div>${body}`;
 }
 function drawIcons(key) {
   if (!guide || !guide.spots || !document.documentElement.classList.contains("theme-ivory")) return;
