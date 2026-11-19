@@ -1857,7 +1857,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 
   <!-- Plan -->
   <section class="screen" id="s-plan" data-title="Step by step" hidden>
-    <div class="revtop" id="revTop" hidden><span class="reveye">Your finished tree</span><h2 id="revH">Beautifully done.</h2><span class="revrule" aria-hidden="true"><i></i><b>✦</b><i></i></span></div>
+    <div class="revtop" id="revTop" hidden><span class="reveye" id="revEye">Styled by you, with TreeStyle</span><h2 id="revH">Beautifully done.</h2><span class="revrule" aria-hidden="true"><i></i><b>✦</b><i></i></span></div>
     <div class="revbot" id="revBot" hidden><p id="revMsg"></p><div class="revbtns"><button type="button" class="btn" id="revShare"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Share</button><button type="button" class="btn ghost" id="revSave"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>Download</button></div><small class="revnote" id="revNote">Share a branded post to Instagram, Facebook or Pinterest, or download a high-resolution picture of your tree.</small><button type="button" class="revanother" id="revAnother">Style another tree</button>
       <div class="rvform" id="rvForm">
         <span class="reveye">How did it turn out?</span>
@@ -4237,13 +4237,13 @@ async function watermarked(minW, maxW, q) {
   const W = Math.round(Math.min(maxW, Math.max(minW, im.naturalWidth * 2))), H = Math.round(im.naturalHeight * W / im.naturalWidth);
   const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
   g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high"; g.drawImage(im, 0, 0, W, H);
-  // Kylie: only their finished tree, with the logo in white at 45% in the corner. A soft shadow (not a fade) keeps it
+  // Kylie: only their finished tree, with the logo in white in the corner (72%: 45% was too faint, Kylie). A soft shadow (not a fade) keeps it
   // readable on a light wall or floor without darkening the picture.
   if (logo) {
     const lw = W * .3, lh = lw * logo.naturalHeight / logo.naturalWidth, pad = W * .045, x = W - pad - lw, y = H - pad - lh;
     const wc = document.createElement("canvas"); wc.width = Math.round(lw); wc.height = Math.round(lh); const wg = wc.getContext("2d");
     wg.drawImage(logo, 0, 0, wc.width, wc.height); wg.globalCompositeOperation = "source-in"; wg.fillStyle = "#fff"; wg.fillRect(0, 0, wc.width, wc.height);   // the logo in white
-    g.save(); g.globalAlpha = .45; g.shadowColor = "rgba(0,0,0,.55)"; g.shadowBlur = W * .01; g.shadowOffsetY = W * .002; g.drawImage(wc, x, y, lw, lh); g.restore();
+    g.save(); g.globalAlpha = .72; g.shadowColor = "rgba(0,0,0,.6)"; g.shadowBlur = W * .012; g.shadowOffsetY = W * .002; g.drawImage(wc, x, y, lw, lh); g.restore();
   }
   return new Promise(ok => c.toBlob(ok, "image/jpeg", q));
 }
