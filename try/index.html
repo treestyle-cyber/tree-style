@@ -1509,6 +1509,13 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .qahelp[disabled]{opacity:.6}
   .qahelpmsg{margin:6px 0 0;min-height:0;font-size:calc(12.5px * var(--s-body,1));color:#8a7660}
   .qahelpmsg:empty{display:none}
+  .pbox{position:relative}
+  .pbox textarea{display:block;width:100%;box-sizing:border-box;padding-bottom:48px !important}
+  .aimagic{position:absolute;right:10px;bottom:10px;appearance:none;display:inline-flex;align-items:center;gap:6px;padding:7px 13px 7px 10px;border-radius:99px;border:1px solid transparent;background:linear-gradient(135deg,#2E4469,#141C2C) padding-box,linear-gradient(120deg,#9C7A3E,#F3DFA8 35%,#C9A35E 60%,#8E6C34) border-box;color:#F3E2B6;font:600 calc(12.5px * var(--s-body,1)) var(--sans);cursor:pointer;box-shadow:0 6px 14px -8px rgba(20,28,44,.7)}
+  .aimagic svg{color:#E8C77E}
+  .aimagic[disabled]{opacity:.7}
+  .aimagic.busy svg{animation:magicspin 1.2s linear infinite}
+  @keyframes magicspin{to{transform:rotate(360deg)}}
   .shsheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;background:rgba(20,16,10,.45);animation:shfade .2s ease-out}
   .shsheet[hidden]{display:none}
   .shpanel{position:relative;width:100%;max-width:520px;box-sizing:border-box;background:#fbf6ee;border-radius:24px 24px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom));text-align:center;box-shadow:0 -14px 40px -18px rgba(30,20,10,.5);animation:shup .28s ease-out}
@@ -2001,7 +2008,9 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
       <label class="pbtn" id="ornBtn"><span id="ornLbl">Add photos of your pieces</span><span class="x" id="ornClear" hidden>×</span><input type="file" id="pPhoto" accept="image/*" multiple hidden></label>
     </div>
     <div class="ask">
-      <textarea id="pText" rows="4" placeholder="e.g. Use my grandmother's blue glass ornaments, and make the ribbon softer"></textarea>
+      <div class="pbox"><textarea id="pText" rows="4" placeholder="e.g. Use my grandmother's blue glass ornaments, and make the ribbon softer"></textarea>
+        <button type="button" class="aimagic" id="pMagic" title="Let AI write your request"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/><path d="M18.5 14.5l.8 2.1 2.2.8-2.2.8-.8 2.3-.8-2.3-2.2-.8 2.2-.8z"/></svg><span>AI write it for me</span></button></div>
+      <p class="qahelpmsg" id="pMagicMsg"></p>
       <button class="btn" id="pSend">Update my tree</button>
     </div>
     <div class="err" id="pStatus"></div>
@@ -5631,6 +5640,22 @@ function helpDraw() {
 function qaGrow() { const t = $("#qaText"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight + 2, 160) + "px"; }
 $("#qaText").addEventListener("input", qaGrow);
 $("#qaText").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#quickAsk").requestSubmit ? $("#quickAsk").requestSubmit() : $("#qaSend").click(); } });
+// AI writes the change request (Kylie): used by the sheet's "Help me write it" and the Change something screen's
+// "AI write it for me". Their rough words (or none) plus their plan go to api/help.js; the request lands in the box to edit.
+async function aiWrite(box, msg, btn, label) {
+  if (!result) return;
+  if (SAMPLE) { msg.textContent = "AI writing is off in screen previews."; return; }
+  btn.disabled = true; btn.classList.add("busy"); btn.querySelector("span").textContent = "Writing…"; msg.textContent = "";
+  try {
+    const tree = { mode, style: val("style"), plan: (result.plan || []).map(p => ({ title: p.title })) };
+    const idea = box.value.trim().replace(/:\s*$/, "");   // a starter like "Take out" counts as their idea
+    const d = await api("/api/help", { write: { idea }, tree });
+    if (d && d.request) { box.value = d.request; box.dispatchEvent(new Event("input")); box.focus(); msg.textContent = "Here's a request you can send as it is, or change it first."; }
+    else msg.textContent = "Couldn't write one just now. Please try again.";
+  } catch (e) { msg.textContent = "Couldn't write one just now. Please try again."; }
+  finally { btn.disabled = false; btn.classList.remove("busy"); btn.querySelector("span").textContent = label; }
+}
+$("#pMagic").onclick = () => aiWrite($("#pText"), $("#pMagicMsg"), $("#pMagic"), "AI write it for me");
 // "Help me write it" (Kylie): AI turns their rough idea, or nothing, into one clear change request in the box for them to
 // read and edit before tapping Update. Nothing changes until they send it.
 $("#qaHelp").onclick = async () => {
