@@ -319,124 +319,136 @@
       // Each piece drawn as real ribbon (Kylie: "make the ribbon look more like ribbon"): a strip that turns and folds as it
       // falls, so its width swells and narrows, the face catching light where it's flat and darker where it turns; fine wired
       // edges; a narrower ribbon laid on top; tucked in at the start and finished with a dovetail cut where it ends.
-      const band = (run, w, rb, over, seed, tucked) => {
-        const pts = run.length > 2 ? run : [run[0], run[run.length - 1]], n = pts.length;
-        const ph = ((seed || 0) * .37) % 1;
-        const twist = t => Math.abs(Math.cos(Math.PI * (t * .95 + .3 + ph * .4)));   // one soft turn along each piece
-        const strip = (wid, col, edge) => {
-          const L = [], R = [], lit = [];
+      // Kylie: no cartoon ribbon. Each piece is drawn like a photo of real ribbon: a smooth strip that twists as it curls, so it
+      // narrows where it turns edge-on and shows its darker inside face beyond the turn; velvet shading and grain, faint wired
+      // edges, no outlines or halo; the whole ribbon layer gets a soft shadow so it sits in the branches.
+      const smooth = (P, N) => {   // Catmull-Rom resample, so every piece is a smooth curve
+        if (P.length < 3) { const [a, b] = [P[0], P[P.length - 1]]; return Array.from({ length: N }, (_, i) => [a[0] + (b[0] - a[0]) * i / (N - 1), a[1] + (b[1] - a[1]) * i / (N - 1)]); }
+        const out = [], m = P.length - 1;
+        for (let i = 0; i < N; i++) {
+          const f = i / (N - 1) * m, k = Math.min(m - 1, Math.floor(f)), t = f - k;
+          const p0 = P[Math.max(0, k - 1)], p1 = P[k], p2 = P[k + 1], p3 = P[Math.min(m, k + 2)];
+          out.push([0, 1].map(j => .5 * (2 * p1[j] + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t * t + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t * t * t)));
+        }
+        return out;
+      };
+      let grain = null;
+      const grainPat = () => {
+        if (grain) return grain;
+        const gc = layer(96, 96), gx = gc.getContext("2d"), id = gx.createImageData(96, 96);
+        for (let i = 0; i < id.data.length; i += 4) { const v = Math.random() * 255; id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = 255; }
+        gx.putImageData(id, 0, 0); return (grain = g.createPattern(gc, "repeat"));
+      };
+      // turns: how far the ribbon rotates along its length (0.5 = a half turn, the far part shows its inside face)
+      const band = (run, w, rb, over, seed, tucked, turns) => {
+        const pts = smooth(run, Math.max(24, Math.min(70, Math.round(run.length * 8)))), n = pts.length;
+        const ph = ((seed || 0) * .37) % 1, T = turns == null ? .35 : turns;
+        const rot = t => Math.cos(Math.PI * (T * 2 * t + (turns == null ? .15 + ph * .3 : 0)));   // signed: below 0 the inside face shows
+        const strip = (wid, col) => {
+          const L = [], R = [], c = [];
           for (let i = 0; i < n; i++) {
             const t = i / (n - 1), [x, y] = pts[i], [ax, ay] = pts[Math.max(0, i - 1)], [bx, by] = pts[Math.min(n - 1, i + 1)];
             let dx = bx - ax, dy = by - ay; const d = Math.hypot(dx, dy) || 1; dx /= d; dy /= d;
-            const tw = twist(t), start = Math.min(1, .35 + t * 6) * (tucked ? Math.min(1, .35 + (1 - t) * 6) : 1);
-            const hw = wid / 2 * (.7 + .3 * tw) * start;
-            L.push([x - dy * hw, y + dx * hw]); R.push([x + dy * hw, y - dx * hw]); lit.push(tw);
+            const r = rot(t), end = Math.min(1, .25 + t * 7) * (tucked ? Math.min(1, .25 + (1 - t) * 7) : 1);
+            const hw = wid / 2 * (.18 + .82 * Math.abs(r)) * end;
+            L.push([x - dy * hw, y + dx * hw]); R.push([x + dy * hw, y - dx * hw]); c.push(r);
           }
-          // the dovetail: the two corners run on a little, the middle is cut back in a V
-          const [ex, ey] = pts[n - 1], [px, py] = pts[n - 2] || pts[0]; let ux = ex - px, uy = ey - py; const ud = Math.hypot(ux, uy) || 1; ux /= ud; uy /= ud;
-          const tip = tucked ? 0 : wid * .38, Le = L[n - 1], Re = R[n - 1];
-          const outline = () => { g.beginPath(); L.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.lineTo(Le[0] + ux * tip, Le[1] + uy * tip); g.lineTo(ex - ux * tip * .15, ey - uy * tip * .15); g.lineTo(Re[0] + ux * tip, Re[1] + uy * tip); for (let i = n - 1; i >= 0; i--) g.lineTo(R[i][0], R[i][1]); g.closePath(); };
-          return { L, R, lit, outline, n, ux, uy, tip, Le, Re, ex, ey, col, edge };
+          const [ex, ey] = pts[n - 1], [px, py] = pts[n - 2]; let ux = ex - px, uy = ey - py; const ud = Math.hypot(ux, uy) || 1; ux /= ud; uy /= ud;
+          return { L, R, c, col, ux, uy, ex, ey, tip: tucked ? 0 : wid * .32 * Math.abs(c[n - 1]) + wid * .08 };
         };
+        const quad = (S, i) => { const { L, R } = S; g.beginPath(); g.moveTo(L[i][0], L[i][1]); g.lineTo(L[i + 1][0], L[i + 1][1]); g.lineTo(R[i + 1][0], R[i + 1][1]); g.lineTo(R[i][0], R[i][1]); g.closePath(); };
         const face = S => {
-          const { L, R, lit, col } = S;
-          S.outline(); g.save(); g.clip();
-          for (let i = 0; i < S.n - 1; i++) {
-            const k = (lit[i] + lit[i + 1]) / 2;
-            g.beginPath(); g.moveTo(L[i][0], L[i][1]); g.lineTo(L[i + 1][0], L[i + 1][1]); g.lineTo(R[i + 1][0], R[i + 1][1]); g.lineTo(R[i][0], R[i][1]); g.closePath();
-            g.fillStyle = shade(col, -.32 + .4 * k); g.fill(); g.strokeStyle = g.fillStyle; g.lineWidth = 1; g.stroke();
+          const { L, R, c, col } = S;
+          // inside face first (it sits behind), then the outside face over it
+          [false, true].forEach(front => {
+            for (let i = 0; i < n - 1; i++) {
+              const r = (c[i] + c[i + 1]) / 2; if ((r >= 0) !== front) continue;
+              const k = Math.abs(r);
+              quad(S, i);
+              g.fillStyle = front ? shade(col, -.3 + .42 * Math.pow(k, .8)) : shade(col, -.58 + .2 * k);
+              g.fill(); g.strokeStyle = g.fillStyle; g.lineWidth = .8; g.stroke();
+              // velvet sheen: a soft band of light across the part facing you
+              if (front && k > .55) {
+                const q = .32, ax = L[i][0] + (R[i][0] - L[i][0]) * q, ay = L[i][1] + (R[i][1] - L[i][1]) * q, bx = L[i + 1][0] + (R[i + 1][0] - L[i + 1][0]) * q, by = L[i + 1][1] + (R[i + 1][1] - L[i + 1][1]) * q;
+                g.beginPath(); g.moveTo(ax, ay); g.lineTo(bx, by); g.lineCap = "round";
+                g.lineWidth = Math.max(1, Math.hypot(L[i][0] - R[i][0], L[i][1] - R[i][1]) * .3); g.strokeStyle = shade(col, .35); g.globalAlpha = .16 * (k - .55) / .45 * 2; g.stroke(); g.globalAlpha = 1;
+              }
+            }
+          });
+          // the cut end: a dovetail, in the last segment's shade
+          if (S.tip) {
+            const Le = L[n - 1], Re = R[n - 1];
+            g.beginPath(); g.moveTo(Le[0], Le[1]); g.lineTo(Le[0] + S.ux * S.tip, Le[1] + S.uy * S.tip); g.lineTo(S.ex + S.ux * S.tip * .15, S.ey + S.uy * S.tip * .15); g.lineTo(Re[0] + S.ux * S.tip, Re[1] + S.uy * S.tip); g.lineTo(Re[0], Re[1]); g.closePath();
+            g.fillStyle = c[n - 1] >= 0 ? shade(col, -.3 + .42 * Math.abs(c[n - 1])) : shade(col, -.58); g.fill();
           }
-          // the tail past the last point takes the last shade
-          g.beginPath(); g.moveTo(S.Le[0], S.Le[1]); g.lineTo(S.Le[0] + S.ux * S.tip, S.Le[1] + S.uy * S.tip); g.lineTo(S.ex, S.ey); g.lineTo(S.Re[0] + S.ux * S.tip, S.Re[1] + S.uy * S.tip); g.lineTo(S.Re[0], S.Re[1]); g.closePath();
-          if (S.tip) { g.fillStyle = shade(col, -.32 + .4 * lit[S.n - 1]); g.fill(); }
-          // velvet catching the light: one soft highlight running near the upper edge, stronger where the ribbon faces you
-          for (let i = 0; i < S.n - 1; i++) {
-            const q = .28, ax = L[i][0] + (R[i][0] - L[i][0]) * q, ay = L[i][1] + (R[i][1] - L[i][1]) * q, bx = L[i + 1][0] + (R[i + 1][0] - L[i + 1][0]) * q, by = L[i + 1][1] + (R[i + 1][1] - L[i + 1][1]) * q;
-            g.beginPath(); g.moveTo(ax, ay); g.lineTo(bx, by); g.lineWidth = Math.max(1, Math.hypot(L[i][0] - R[i][0], L[i][1] - R[i][1]) * .14); g.lineCap = "butt";
-            g.strokeStyle = shade(col, .2 + .25 * lit[i]); g.globalAlpha = .25 + .45 * lit[i]; g.stroke();
-          }
-          g.globalAlpha = 1;
-          g.restore();
-          // fine wired edges
-          [L, R].forEach(E => { g.beginPath(); E.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.lineWidth = Math.max(1, w * .07); g.strokeStyle = S.edge; g.globalAlpha = .9; g.stroke(); g.globalAlpha = 1; });
-          // a crease where it folds over
-          for (let i = 1; i < S.n - 1; i++) if (lit[i] < lit[i - 1] && lit[i] <= lit[i + 1] && lit[i] < .3) { g.beginPath(); g.moveTo(L[i][0], L[i][1]); g.lineTo(R[i][0], R[i][1]); g.lineWidth = Math.max(.8, w * .035); g.strokeStyle = shade(col, -.5); g.globalAlpha = .55; g.stroke(); g.globalAlpha = 1; }
+          // velvet grain, only on the ribbon
+          g.save(); g.beginPath(); for (let i = 0; i < n - 1; i++) { g.moveTo(L[i][0], L[i][1]); g.lineTo(L[i + 1][0], L[i + 1][1]); g.lineTo(R[i + 1][0], R[i + 1][1]); g.lineTo(R[i][0], R[i][1]); g.closePath(); }
+          g.clip(); g.globalCompositeOperation = "overlay"; g.globalAlpha = .1; g.fillStyle = grainPat(); g.fillRect(0, 0, W, H); g.restore();
+          // faint wired edges where the outside face shows
+          [L, R].forEach(E => { for (let i = 0; i < n - 1; i++) { if (c[i] < .25) continue; g.beginPath(); g.moveTo(E[i][0], E[i][1]); g.lineTo(E[i + 1][0], E[i + 1][1]); g.lineWidth = Math.max(.6, w * .045); g.strokeStyle = shade(col, .3); g.globalAlpha = .45 * Math.min(1, c[i]); g.stroke(); } g.globalAlpha = 1; });
         };
-        g.lineCap = "round"; g.lineJoin = "round";
-        const base = strip(w, rb.color, shade(rb.color, .38));
-        base.outline(); g.lineWidth = outline * 3.2; g.strokeStyle = "#fff"; g.stroke();   // white halo so it reads over the branches
-        face(base);
-        if (over) face(strip(w * .48, over.color, shade(over.color, .4)));
+        g.lineJoin = "round";
+        face(strip(w, rb.color));
+        if (over) face(strip(w * .55, over.color));
       };
-      // A loop is a billow of ribbon (Kylie: it should look like ribbon): pinched where it tucks into the branches, swelling
-      // into a soft teardrop, the darker back of the ribbon showing through its opening, velvet shading with a soft sheen,
-      // fine wired edges, and the narrower ribbon laid along the front when the design layers one
-      const teardrop = (x0, x1, ht, hb, oy, pinch) => {
-        const L = x1 - x0;
-        g.moveTo(x0, oy - pinch);
-        g.bezierCurveTo(x0 + L * .32, oy - ht * 1.38, x1, oy - ht * 1.02, x1, oy);
-        g.bezierCurveTo(x1, oy + hb * 1.02, x0 + L * .32, oy + hb * 1.38, x0, oy + pinch);
-        g.closePath();
+      // A loop: the ribbon comes out of the branches, curls out and over, and tucks back in; it turns half over on the way,
+      // so the far side of the curl shows its darker inside, like ribbon in a photo
+      let loopSeed = 0;
+      const toWorld = (x, y, ang, pts) => pts.map(([a, b]) => [x + a * Math.cos(ang) - b * Math.sin(ang), y + a * Math.sin(ang) + b * Math.cos(ang)]);
+      const ribbonLoop = (x, y, ang, len, rb, over, wide) => {
+        // the loop is a real surface: its centre line arcs out of the branches and back, and the ribbon's width runs across
+        // it (D, slightly foreshortened). Where the curve turns past D the inside face shows, darker, like a photo of a curl.
+        len *= .6;
+        const sd = ++loopSeed % 2 ? 1 : -1, N = 48;
+        const w = Math.max(3.5, Math.min(wide || RW.base * .62, len * .36)), spread = len * .5;
+        const ca = Math.cos(ang), sa = Math.sin(ang);
+        const C = t => { const a = len * Math.sin(Math.PI * t) * (1 - .1 * t), b = sd * spread * (t - .5) * (1 - .25 * Math.sin(Math.PI * t)); return [x + a * ca - b * sa, y + a * sa + b * ca]; };
+        const da = ang + sd * 1.15, D = [Math.cos(da) * w * .85, Math.sin(da) * w * .85];
+        const P = Array.from({ length: N + 1 }, (_, i) => C(i / N));
+        const segs = [];
+        for (let i = 0; i < N; i++) {
+          const t = (i + .5) / N, [ax, ay] = P[i], [bx, by] = P[i + 1], tl = Math.hypot(bx - ax, by - ay) || 1;
+          const cr = ((bx - ax) * D[1] - (by - ay) * D[0]) / tl / Math.hypot(D[0], D[1]);   // which face, and how square-on
+          const e0 = Math.min(1, .3 + i / N * 6) * Math.min(1, .3 + (1 - i / N) * 6), e1 = Math.min(1, .3 + (i + 1) / N * 6) * Math.min(1, .3 + (1 - (i + 1) / N) * 6);
+          segs.push({ i, cr: cr * sd, e0, e1, t });
+        }
+        const quad = (S, f0, f1) => {
+          const [ax, ay] = P[S.i], [bx, by] = P[S.i + 1];
+          g.beginPath();
+          g.moveTo(ax + D[0] * f0 * S.e0, ay + D[1] * f0 * S.e0); g.lineTo(bx + D[0] * f0 * S.e1, by + D[1] * f0 * S.e1);
+          g.lineTo(bx + D[0] * f1 * S.e1, by + D[1] * f1 * S.e1); g.lineTo(ax + D[0] * f1 * S.e0, ay + D[1] * f1 * S.e0); g.closePath();
+        };
+        const paint = (S, col, f0, f1, edges) => {
+          const k = Math.abs(S.cr), front = S.cr >= 0;
+          quad(S, f0, f1);
+          const gr = g.createLinearGradient(P[S.i][0] + D[0] * f0, P[S.i][1] + D[1] * f0, P[S.i][0] + D[0] * f1, P[S.i][1] + D[1] * f1);
+          if (front) { gr.addColorStop(0, shade(col, -.22 + .3 * k)); gr.addColorStop(.35, shade(col, -.05 + .3 * k)); gr.addColorStop(1, shade(col, -.38 + .2 * k)); }
+          else { gr.addColorStop(0, shade(col, -.62)); gr.addColorStop(1, shade(col, -.45)); }
+          g.fillStyle = gr; g.fill(); g.strokeStyle = shade(col, front ? -.1 + .2 * k : -.55); g.lineWidth = .7; g.stroke();
+          if (edges && front) [f0, f1].forEach(f => {
+            const [ax, ay] = P[S.i], [bx, by] = P[S.i + 1];
+            g.beginPath(); g.moveTo(ax + D[0] * f * S.e0, ay + D[1] * f * S.e0); g.lineTo(bx + D[0] * f * S.e1, by + D[1] * f * S.e1);
+            g.lineWidth = Math.max(.6, w * .05); g.strokeStyle = shade(col, .32); g.globalAlpha = .5 * k; g.stroke(); g.globalAlpha = 1;
+          });
+        };
+        g.lineJoin = "round";
+        // inside face first, then the outside face over it; the narrower ribbon follows the same surface
+        [false, true].forEach(fr => segs.filter(S => (S.cr >= 0) === fr).forEach(S => {
+          paint(S, rb.color, -.5, .5, true);
+          if (over) paint(S, over.color, -.27, .27, true);
+        }));
+        // velvet grain over the loop
+        g.save(); g.beginPath(); segs.forEach(S => { const [ax, ay] = P[S.i], [bx, by] = P[S.i + 1]; g.moveTo(ax - D[0] * .5 * S.e0, ay - D[1] * .5 * S.e0); g.lineTo(bx - D[0] * .5 * S.e1, by - D[1] * .5 * S.e1); g.lineTo(bx + D[0] * .5 * S.e1, by + D[1] * .5 * S.e1); g.lineTo(ax + D[0] * .5 * S.e0, ay + D[1] * .5 * S.e0); g.closePath(); });
+        g.clip(); g.globalCompositeOperation = "overlay"; g.globalAlpha = .1; g.fillStyle = grainPat(); g.fillRect(0, 0, W, H); g.restore();
       };
-      const ribbonLoop = (x, y, ang, len, rb, over, wide, nested) => {
-        const len0 = len; len *= .74;
-        const col = rb.color, H = len * .34, bw = Math.max(3.5, Math.min(wide || RW.base * .6, H * .62));
-        const hx0 = len * .24, hx1 = len - bw * .62, ht = Math.max(1, H * .9 - bw * .5), hb = Math.max(1, H * .9 - bw * 1.05), hy = -bw * .22;
-        const hasHole = hx1 - hx0 > bw && hb > 1.5;
-        const outerP = () => { g.beginPath(); teardrop(0, len, H, H, 0, bw * .2); };
-        const holeP = () => teardrop(hx0, hx1, ht, hb, hy, bw * .06);
-        g.save(); g.translate(x, y); g.rotate(ang); g.lineJoin = "round"; g.lineCap = "round";
-        if (!nested) { outerP(); g.lineWidth = outline * 3; g.strokeStyle = "#fff"; g.stroke(); }
-        // the back of the ribbon, seen through the opening
-        if (hasHole) { g.beginPath(); holeP(); const gi = g.createLinearGradient(hx0, 0, hx1, 0); gi.addColorStop(0, shade(col, -.62)); gi.addColorStop(1, shade(col, -.3)); g.fillStyle = gi; g.globalAlpha = .7; g.fill(); g.globalAlpha = 1; }
-        // the ribbon itself: velvet, lit along its upper curve, deeper underneath
-        outerP(); if (hasHole) holeP();
-        const gb = g.createLinearGradient(0, -H, 0, H);
-        gb.addColorStop(0, shade(col, -.1)); gb.addColorStop(.18, shade(col, .2)); gb.addColorStop(.45, col); gb.addColorStop(.8, shade(col, -.12)); gb.addColorStop(1, shade(col, -.3));
-        g.fillStyle = gb; g.fill("evenodd");
-        g.save(); outerP(); if (hasHole) holeP(); g.clip("evenodd");
-        // shadow where it pinches into the branches
-        const gp = g.createRadialGradient(0, 0, 0, 0, 0, len * .42); gp.addColorStop(0, shade(col, -.55)); gp.addColorStop(1, "rgba(0,0,0,0)");
-        g.fillStyle = gp; g.globalAlpha = .75; g.fillRect(-len * .1, -H * 1.5, len * .6, H * 3); g.globalAlpha = 1;
-        // soft sheen running round the front of the loop
-        g.beginPath(); g.moveTo(len * .2, H * .62); g.bezierCurveTo(len * .55, H * 1.02, len * .93, H * .5, len - bw * .32, -H * .05);
-        g.lineWidth = bw * .38; g.strokeStyle = shade(col, .42); g.globalAlpha = .38; g.stroke();
-        g.beginPath(); g.moveTo(len * .3, -H * .82); g.bezierCurveTo(len * .55, -H * 1.0, len * .8, -H * .8, len * .9, -H * .5);
-        g.lineWidth = bw * .22; g.globalAlpha = .28; g.stroke(); g.globalAlpha = 1;
-        g.restore();
-        // fine wired edges
-        outerP(); g.lineWidth = Math.max(1, outline * .9); g.strokeStyle = shade(col, -.6); g.stroke();
-        if (hasHole) { g.beginPath(); holeP(); g.lineWidth = Math.max(.8, outline * .7); g.strokeStyle = shade(col, -.55); g.stroke(); }
-        g.beginPath(); g.moveTo(len * .18, -H * .78); g.bezierCurveTo(len * .45, -H * 1.18, len * .95, -H * .88, len - outline * 1.6, 0);
-        g.lineWidth = Math.max(.7, outline * .5); g.strokeStyle = shade(col, .45); g.globalAlpha = .65; g.stroke(); g.globalAlpha = 1;
-        g.restore();
-        // the narrower ribbon makes its own slightly smaller loop, nested in front of the wide one
-        if (over) ribbonLoop(x, y, ang + .1, len0 * .68, over, null, bw * .55, true);
-      };
-      // a tail: the ribbon end falling free in one soft curve, finished with a dovetail cut
       const ribbonTail = (x, y, ang, len, rb, over) => {
-        len *= .78;
-        const col = rb.color, bw = Math.max(4, RW.base * .55), w0 = bw * .28, w1 = bw * .48, bend = len * .1;
-        const path = () => {
-          g.beginPath(); g.moveTo(0, -w0);
-          g.bezierCurveTo(len * .35, -w0 - bend, len * .65, -w1 - bend * .6, len, -w1);
-          g.lineTo(len * .86, 0); g.lineTo(len, w1);
-          g.bezierCurveTo(len * .65, w1 - bend * .6, len * .35, w0 - bend, 0, w0); g.closePath();
-        };
-        g.save(); g.translate(x, y); g.rotate(ang); g.lineJoin = "round"; g.lineCap = "round";
-        path(); g.lineWidth = outline * 3; g.strokeStyle = "#fff"; g.stroke();
-        path(); const gb = g.createLinearGradient(0, -w1 - bend, 0, w1); gb.addColorStop(0, shade(col, .18)); gb.addColorStop(.5, col); gb.addColorStop(1, shade(col, -.28)); g.fillStyle = gb; g.fill();
-        g.save(); path(); g.clip();
-        const gp = g.createLinearGradient(0, 0, len * .4, 0); gp.addColorStop(0, shade(col, -.5)); gp.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gp; g.globalAlpha = .7; g.fillRect(0, -len, len * .4, len * 2); g.globalAlpha = 1;
-        g.restore();
-        if (over) { g.beginPath(); g.moveTo(len * .04, -bend * .2); g.bezierCurveTo(len * .35, -bend * .9, len * .6, -bend * .6, len * .8, -bend * .1); g.lineWidth = Math.max(1.6, bw * .3); g.lineCap = "butt"; g.strokeStyle = over.color; g.stroke(); }
-        path(); g.lineWidth = Math.max(1, outline * .9); g.strokeStyle = shade(col, -.6); g.stroke();
-        g.beginPath(); g.moveTo(len * .1, -w0 - bend * .4); g.bezierCurveTo(len * .4, -w0 - bend * 1.05, len * .7, -w1 - bend * .55, len * .97, -w1 + outline);
-        g.lineWidth = Math.max(.7, outline * .5); g.strokeStyle = shade(col, .45); g.globalAlpha = .65; g.stroke(); g.globalAlpha = 1;
-        g.restore();
+        len *= .7;
+        const w = Math.max(4, RW.base * .5), N = 20;
+        const pts = Array.from({ length: N + 1 }, (_, i) => { const t = i / N; return [len * t, len * .12 * Math.sin(Math.PI * t * 1.2)]; });
+        band(toWorld(x, y, ang, pts), w, rb, over, ++loopSeed, false, .3);
       };
       // small accent loops: same shape, narrower ribbon
-      const flatLoop = (x, y, ang, len, wid, rb) => ribbonLoop(x, y, ang, len * 1.05, rb, null, Math.max(3, RW.accent));
+      const flatLoop = (x, y, ang, len, wid, rb) => ribbonLoop(x, y, ang, len * 2.2, rb, null, Math.max(2.5, RW.accent * .9));
       if (scene.runsMain && scene.runsMain.length) {
         // OPEN trees: each piece of ribbon is a band with an arrow showing the drape
         if (RB.accent) (scene.runsAccent || []).forEach((run, i) => band(run, Math.max(3, RW.accent), RB.accent, null, i + 7));
@@ -453,7 +465,7 @@
         if (!sp) spots.push(sp = { x: L.x, y: L.y, loops: [] });
         sp.loops.push(L);
       });
-      if (RB.accent) { const keep = RW.base; RW.base = Math.max(3, RW.accent * 1.1); (scene.accentLoops || []).forEach(L => flatLoop(L.x, L.y, L.ang, L.len, L.wid, RB.accent)); RW.base = keep; }
+      if (RB.accent) { const keep = RW.base; RW.base = Math.max(3, RW.accent * 1.1); (scene.accentLoops || []).filter((L, i, A) => A.findIndex(M => Math.hypot(M.x - L.x, M.y - L.y) < 2) === i).forEach(L => flatLoop(L.x, L.y, L.ang, L.len, L.wid, RB.accent)); RW.base = keep; }   // one curl per spot
       if (ribbonPlan.kind === "cascade") {
         // Open trees: the bands are the instruction; flower-side loops are mentioned in the text only.
         ribbonPlan.flowerLoops = spots.length;
@@ -464,7 +476,7 @@
           const main = g, sc = layer(W, H), sg = sc.getContext("2d");
           g = sg;
           (scene.loops || []).filter(L => L.tail && L.x === sp.x && L.y === sp.y).slice(0, 1).forEach(L => ribbonTail(sp.x, sp.y, L.ang, L.len, RB.base, RB.overlay));
-          sp.loops.slice(0, 2).forEach(L => ribbonLoop(sp.x, sp.y, L.ang, L.len, RB.base, RB.overlay));
+          sp.loops.slice(0, 1).forEach(L => ribbonLoop(sp.x, sp.y, L.ang, L.len, RB.base, RB.overlay));
           const fr = Math.max(6, RW.base * .9), fade = sg.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, fr);
           fade.addColorStop(0, "rgba(0,0,0,.85)"); fade.addColorStop(1, "rgba(0,0,0,0)");
           sg.globalCompositeOperation = "destination-out"; sg.fillStyle = fade; sg.beginPath(); sg.arc(sp.x, sp.y, fr, 0, TAU); sg.fill();
@@ -482,7 +494,11 @@
         ribbonPlan.marks = groups.map(q => [q.x, q.y]);
         ribbonPlan.loopsPerSpot = groups.length ? Math.round(groups.reduce((a, q) => a + q.n, 0) / groups.length) : 0;
       }
-      ribbonPlan.layer = c;
+      // a soft shadow under the ribbon, so it sits in the branches instead of floating on the photo
+      const sh = layer(W, H), shg = sh.getContext("2d");
+      shg.shadowColor = "rgba(25,12,8,.5)"; shg.shadowBlur = Math.max(3, u * .9); shg.shadowOffsetY = Math.max(1.5, u * .35);
+      shg.drawImage(c, 0, 0);
+      ribbonPlan.layer = sh;
     }
     const layerFor = k => k === "ribbon" ? (ribbonPlan.layer || planL.ribbon) : planL[k];
     let afterImg = null;
