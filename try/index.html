@@ -1432,6 +1432,16 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .sv2pic{display:block;aspect-ratio:3/2;border-radius:12px;background:#2a2016 center/cover no-repeat;box-shadow:0 8px 18px -12px rgba(44,33,24,.6)}
   .sv2pic.zoom{background-size:260%}
   .sv2pic{position:relative;overflow:hidden}
+  .guidebox{position:relative}
+  .pinpop{position:absolute;z-index:6;width:min(250px,78%);box-sizing:border-box;padding:12px 30px 12px 14px;border-radius:14px;background:#fffaf2;color:#2c2118;box-shadow:0 12px 30px -10px rgba(30,20,10,.55),0 0 0 1px rgba(184,156,107,.45);animation:pinpopin .18s ease-out;text-align:left}
+  .pinpop::after{content:"";position:absolute;left:var(--ax,50%);bottom:-7px;width:14px;height:14px;margin-left:-7px;background:#fffaf2;transform:rotate(45deg);box-shadow:1px 1px 0 rgba(184,156,107,.45)}
+  .pinpop.below::after{bottom:auto;top:-7px;box-shadow:-1px -1px 0 rgba(184,156,107,.45)}
+  .pinpop small{display:block;font:600 calc(10.5px * var(--s-label,1)) var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#9a7a3e;margin-bottom:3px}
+  .pinpop b{display:block;font:500 calc(19px * var(--s-headline,1))/1.15 var(--serif);color:#2c2118}
+  .pinpop p{margin:5px 0 0;font-size:calc(13.5px * var(--s-body,1));line-height:1.4;color:#4a3a2c}
+  .pinpopx{position:absolute;top:6px;right:6px;width:24px;height:24px;border:0;border-radius:50%;background:transparent;color:#7a6650;font-size:18px;line-height:1;cursor:pointer}
+  @keyframes pinpopin{from{opacity:0;transform:translateY(4px) scale(.97)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.pinpop{animation:none}}
   .sv2pic video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
   .sv2pic.hasvid{background-image:none !important;background-color:#2a2016}
   .sv2how h3{margin:0 0 6px;font:500 calc(24px * var(--s-headline,1))/1.1 var(--serif);color:var(--ink)}
@@ -4044,6 +4054,7 @@ function getPhotoImg() {
 }
 async function drawStep() {
   if (!result) return;
+  closePinPop();
   if (!guide) {
     try { guide = TreeGuide.create(await getPhotoImg(), $("#guideCv"), result, mode); }
     catch (e) { console.error(e); return; }
@@ -4285,9 +4296,33 @@ $("#guideCv").addEventListener("click", e => {
   const hit = sv2PinHits.find(([px, py, rr]) => Math.hypot(px - x, py - y) <= rr); if (!hit) return;
   e.stopPropagation(); e.preventDefault();
   try { localStorage.setItem("ts_tips_tapped", "1"); } catch (err) {}
-  if (guide.steps[stepIdx] === "crown") window.__sv2part = hit[3] === 1 ? "base" : "crown"; else window.__sv2pin = hit[3];
-  drawStep();
+  if (guide.steps[stepIdx] === "crown") window.__sv2part = hit[3] === 1 ? "base" : "crown";
+  else if (guide.steps[stepIdx] === "ribbon" && sv2PinHits.length > 3) window.__sv2pin = hit[3] === 0 ? 0 : hit[3] === sv2PinHits.length - 1 ? 2 : 1;   // first spot, the ones between, the last
+  else window.__sv2pin = hit[3];
+  Promise.resolve(drawStep()).then(() => pinPop(hit));
 }, true);
+// A small window beside a tapped number with a quick summary of what to do there (Kylie)
+function pinPop(hit) {
+  closePinPop();
+  const cv = $("#guideCv"), box = cv.parentElement, key = guide.steps[stepIdx];
+  const title = $("#sv2HT").textContent.replace(/^\d+\.\s*/, ""), body = $("#sv2HP").textContent || "";
+  const first = (body.match(/^.*?[.!?](\s|$)/) || [body])[0].trim(), short = first.length > 150 ? first.slice(0, 147).replace(/\s+\S*$/, "") + "…" : first;
+  const n = hit[3] + 1, total = sv2PinHits.length;
+  const label = key === "ribbon" ? `Ribbon spot ${n} of ${total}` : key === "crown" ? (n === 1 ? "The crown" : "The base") : `Spot ${n}`;
+  const pop = document.createElement("div"); pop.className = "pinpop"; pop.id = "pinPop"; pop.setAttribute("role", "dialog");
+  pop.innerHTML = `<button type="button" class="pinpopx" aria-label="Close">×</button><small>${esc(label)}</small><b>${esc(title)}</b>${short ? `<p>${esc(short)}</p>` : ""}`;
+  box.appendChild(pop);
+  const rc = cv.getBoundingClientRect(), bx = box.getBoundingClientRect(), px = rc.left - bx.left + hit[0] * rc.width / cv.width, py = rc.top - bx.top + hit[1] * rc.height / cv.height;
+  const w = pop.offsetWidth, h = pop.offsetHeight, pad = 8, gap = hit[2] * rc.width / cv.width + 8;
+  const left = Math.min(bx.width - w - pad, Math.max(pad, px - w / 2));
+  const below = py - gap - h < pad;   // near the top: open under the number
+  pop.style.left = left + "px"; pop.style.top = (below ? py + gap : py - gap - h) + "px";
+  pop.style.setProperty("--ax", Math.min(w - 18, Math.max(18, px - left)) + "px"); pop.classList.toggle("below", below);
+  pop.querySelector(".pinpopx").onclick = e => { e.stopPropagation(); closePinPop(); };
+  setTimeout(() => document.addEventListener("pointerdown", pinPopAway, true));
+}
+function pinPopAway(e) { const p = $("#pinPop"); if (p && !p.contains(e.target)) closePinPop(); }
+function closePinPop() { const p = $("#pinPop"); if (p) p.remove(); document.removeEventListener("pointerdown", pinPopAway, true); }
 $("#sv2Dots").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; try { localStorage.setItem("ts_tips_tapped", "1"); } catch (err) {} window.__sv2pin = +b.dataset.i; drawStep(); });
 $("#sv2Next").onclick = () => { try { localStorage.setItem("ts_tips_tapped", "1"); } catch (err) {} window.__sv2pin = (window.__sv2pin || 0) + 1; drawStep(); };
 $("#sv2All").onclick = $("#barAll").onclick = () => document.documentElement.classList.toggle("sv2tabs-open");
