@@ -1473,6 +1473,23 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .glitem span{font-size:calc(14.5px * var(--s-body,1));color:var(--ink)}
   .glitem small{display:block;color:#8a7660;font-size:calc(12.5px * var(--s-body,1))}
   .glitem a{color:#7a5a2a;font:600 calc(13px * var(--s-body,1)) var(--sans);text-decoration:underline;text-underline-offset:3px}
+  .faq{padding:4px 0 34px;text-align:center}
+  .faq h2{margin:4px 0 6px;font:500 calc(36px * var(--s-headline,1))/1.1 var(--serif);color:var(--ink)}
+  .faqnote{margin:0 auto 18px;max-width:28em;font-size:calc(13px * var(--s-body,1));color:#8a7660}
+  .faqh{display:flex;align-items:center;gap:12px;margin:26px 0 8px;font:600 calc(11.5px * var(--s-label,1)) var(--sans);letter-spacing:.2em;text-transform:uppercase;color:#9a7a3e;text-align:left}
+  .faqh::after{content:"";flex:1;height:1px;background:rgba(184,156,107,.5)}
+  .faqi{text-align:left;background:#fffaf2;border-radius:14px;margin:0 0 8px;box-shadow:0 0 0 1px rgba(201,163,94,.35)}
+  .faqi summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 16px;font:500 calc(18px * var(--s-headline,1))/1.25 var(--serif);color:var(--ink)}
+  .faqi summary::-webkit-details-marker{display:none}
+  .faqi summary::after{content:"";flex:none;width:9px;height:9px;border-right:1.5px solid #9a7a3e;border-bottom:1.5px solid #9a7a3e;transform:rotate(45deg);transition:transform .2s;margin-top:-4px}
+  .faqi[open] summary::after{transform:rotate(225deg);margin-top:6px;margin-right:2px}
+  .faqi p{margin:0;padding:0 16px 16px;font-size:calc(14.5px * var(--s-body,1));line-height:1.55;color:#4a3a2c}
+  .faqdraft{display:inline-block;margin-right:6px;padding:1px 8px;border-radius:99px;background:#efe3c8;color:#7a5a2a;font:600 10.5px var(--sans);letter-spacing:.1em;text-transform:uppercase;vertical-align:1px}
+  .faqmore{margin:28px 0 0;padding:20px 16px;border-radius:16px;background:#fbf6ee;box-shadow:0 0 0 1px rgba(201,163,94,.45);display:grid;gap:6px;justify-items:center}
+  .faqmore b{font:500 calc(22px * var(--s-headline,1)) var(--serif);color:var(--ink)}
+  .faqmore span{font-size:calc(14px * var(--s-body,1));color:#5a4632}
+  .faqmore .btn{margin-top:8px}
+  .faqmore .acmsg{margin:4px 0 0;font-size:13px;color:#8a7660}
   .shsheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;background:rgba(20,16,10,.45);animation:shfade .2s ease-out}
   .shsheet[hidden]{display:none}
   .shpanel{position:relative;width:100%;max-width:520px;box-sizing:border-box;background:#fbf6ee;border-radius:24px 24px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom));text-align:center;box-shadow:0 -14px 40px -18px rgba(30,20,10,.5);animation:shup .28s ease-out}
@@ -1680,6 +1697,34 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   </section>
 
   <!-- Photo -->
+  <section class="screen" id="s-faq" data-title="Help and questions" hidden>
+    <div class="faq">
+      <span class="reveye">Help and questions</span>
+      <h2>Frequently asked questions</h2>
+      <p class="faqnote">Mock page: the answers marked "Draft for Eric" need his sign-off.</p>
+      <h3 class="faqh">Getting started</h3>
+      <details class="faqi"><summary>What does TreeStyle do?</summary><p>Snap a photo of your Christmas tree and TreeStyle looks at it with a designer's eye. You get a style score, a step-by-step plan, a shopping list and a preview of your finished tree.</p></details>
+      <details class="faqi"><summary>What's the difference between Check my tree and Design my tree?</summary><p>Check my tree works with what's already on your tree and suggests the finishing touches that lift it. Design my tree styles a tree from the start: your bare tree, the room it'll go in, or an idea you describe.</p></details>
+      <details class="faqi"><summary>What makes a good photo?</summary><p>Stand back so the whole tree is in view, top included. Shoot straight on, at about the middle of the tree, with the lights on and the room lights soft. A real photo works best, not a screenshot.</p></details>
+      <details class="faqi"><summary>Does it work for real trees?</summary><p>Yes. Real trees skip Shape the branches, and we design with their natural gaps rather than filling them.</p></details>
+      <h3 class="faqh">Your design</h3>
+      <details class="faqi"><summary>How does the style score work?</summary><p>We look at the tree the way a designer would: ribbon, fullness, balance, variety and the finishing touches, then give it a score out of 5. It's strict on purpose, so a 5 means designer-level work.</p></details>
+      <details class="faqi"><summary>Is the preview a real photo?</summary><p>No. The preview is an AI picture of your tree with the plan applied, so you can see where it's heading. Real pieces will vary a little in color and size.</p></details>
+      <details class="faqi"><summary>Can I change my design?</summary><p>Yes. Tap Change something on the preview to adjust colors, pieces or ribbon, or try another style. Undo takes you back a step.</p></details>
+      <details class="faqi"><summary>What if my tree is already decorated?</summary><p>That's what Check my tree is for. We keep what's working and only suggest what will make the biggest difference.</p></details>
+      <h3 class="faqh">Shopping</h3>
+      <details class="faqi"><summary>Where do the shopping links go?</summary><p>Most go to Amazon, either to a piece our favorite designers love or to a search for exactly what your plan calls for. You can buy the same pieces at Michaels, Hobby Lobby or anywhere you like.</p></details>
+      <details class="faqi"><summary>Does TreeStyle earn from purchases?</summary><p><span class="faqdraft">Draft</span> As an Amazon Associate, TreeStyle earns from qualifying purchases. It never changes what you pay.</p></details>
+      <details class="faqi"><summary>Why don't the product pictures match exactly?</summary><p>Our pictures show the color and finish of each piece, not the exact product. Tap Shop to see the product itself.</p></details>
+      <details class="faqi"><summary>How much will it cost?</summary><p><span class="faqdraft">Draft</span> It depends on your tree's size and how much you already own. The shopping list gives amounts, so you can buy only what you need.</p></details>
+      <h3 class="faqh">Sharing and privacy</h3>
+      <details class="faqi"><summary>Where are my trees saved?</summary><p><span class="faqdraft">Draft</span> For now, your trees are saved on this phone. Once accounts arrive, they'll be saved to your account too.</p></details>
+      <details class="faqi"><summary>How do I share my tree?</summary><p>On Your finished tree, tap Share to post a branded picture to Instagram, Facebook or Pinterest, or Download to keep a high-resolution copy.</p></details>
+      <details class="faqi"><summary>What happens when I share to the gallery?</summary><p>We look over every tree before it appears in Trees our community styled. Only your first name, your photo and your review are shown.</p></details>
+      <details class="faqi"><summary>Can I remove a review I shared?</summary><p><span class="faqdraft">Draft</span> Yes. Write to us and we'll take it down.</p></details>
+      <div class="faqmore"><b>Still have a question?</b><span>Ask your personal stylist, or write to us.</span><button type="button" class="btn ghost" data-acsoon>Contact us</button><p class="acmsg"></p></div>
+    </div>
+  </section>
   <section class="screen" id="s-getlook" data-title="Get this look" hidden>
     <div class="gl">
       <img class="glpic" id="glPic" alt="">
@@ -2034,7 +2079,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
       <button type="button" data-acsoon><span class="aci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 19.5c1.2-3.4 4-5 7-5s5.8 1.6 7 5"/></svg></span><span>Name and email</span><i>›</i></button>
       <button type="button" data-acsoon><span class="aci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="10.5" width="13" height="9" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg></span><span>Password</span><i>›</i></button>
       <button type="button" class="acmailrow" aria-pressed="false"><span class="aci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="m4.5 7 7.5 6 7.5-6"/></svg></span><span>Email me new looks and tips</span><em class="actog"></em></button>
-      <button type="button" data-acsoon><span class="aci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.4v.4"/><path d="M12 16.6h.01"/></svg></span><span>Help and questions</span><i>›</i></button>
+      <button type="button" data-faq><span class="aci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.4v.4"/><path d="M12 16.6h.01"/></svg></span><span>Help and questions</span><i>›</i></button>
     </div>
     <p class="acmsg" aria-live="polite"></p>
     <button class="btn acout" type="button" data-acsoon>Sign out</button>
@@ -3386,6 +3431,7 @@ fillTreeLoads();
 const AC_SOON = "Accounts are coming soon. This screen is a design preview.";
 document.addEventListener("click", e => {
   const go = e.target.closest("[data-acgo]"); if (go) { show(go.dataset.acgo, []); return; }
+  if (e.target.closest("[data-faq]")) { show("s-faq"); return; }   // Help and questions (mock FAQ)
   const soon = e.target.closest("[data-acsoon]");
   if (soon) { const m = soon.closest(".screen").querySelector(".acmsg"); if (m) m.textContent = AC_SOON; }
 });
@@ -5088,6 +5134,7 @@ async function sampleStart() {
   badge.style.cssText = "position:fixed;right:8px;top:8px;z-index:300;font:600 10px Inter,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;background:rgba(20,28,44,.85);color:#C5B28F;padding:4px 8px;border-radius:99px;pointer-events:none";
   document.body.appendChild(badge);
   if (name === "pass") { show("s-pass", []); if (q.get("v") === "wrong") { $("#passErr").textContent = "That password didn't work."; setTimeout(() => $("#passErr").scrollIntoView({ block: "center" }), 300); } reportPhotoSpots(); return true; }
+  if (name === "faq") { show("s-faq", []); reportPhotoSpots(); return true; }
   if (name === "signup" || name === "signin") { show("s-" + name, []); if (q.get("v") === "soon") document.querySelector("#s-" + name + " .acmsg").textContent = AC_SOON; reportPhotoSpots(); return true; }
   if (name === "intro") { show("s-home", []); $("#splash").hidden = false; reportPhotoSpots(); return true; }   // the opening screen, held still
   // The tree: the Studio's sample (its pictures fetched back into the page), or this browser's own
