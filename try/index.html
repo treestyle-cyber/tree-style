@@ -5771,7 +5771,7 @@ function helpDraw() {
   const av = role => role === "ai" ? `<span class="cav ours"><img src="/brand/logo-tree.png" alt=""></span>`
     : pic ? `<span class="cav" style="background-image:url('${pic.replace(/'/g, "%27")}')"></span>` : `<span class="cav">${me ? esc(me.charAt(0).toUpperCase()) : PERSON}</span>`;
   const msg = (role, html) => `<div class="cmsg ${role}"><span class="whorow">${av(role)}<span class="who">${role === "me" ? esc(me || "You") : "Eric"}</span></span><div class="bub ${role}">${html}</div></div>`;
-  log.innerHTML = (helpChat.length ? "" : msg("ai", `Hi! I'm your TreeStyle stylist. Ask me anything about decorating your tree${result ? ", and I'll answer for the plan you have" : ""}.`))
+  log.innerHTML = (helpChat.length ? "" : msg("ai", "Hi! I'm Eric, your TreeStyle stylist. Ask me anything about decorating your tree."))
     + helpChat.map(m => m.wait ? msg("ai", `<span class="typing" role="status" aria-label="Eric is typing"><i></i><i></i><i></i></span>`) : msg(m.role === "user" ? "me" : "ai", esc(m.text))).join("");
   $("#helpChips").innerHTML = helpChat.length ? "" : HELP_CHIPS.map(c => `<button type="button" data-ask="${esc(c)}">${esc(c)}</button>`).join("");
   requestAnimationFrame(() => { const last = log.lastElementChild; if (last && helpChat.length) last.scrollIntoView({ block: "end", behavior: "smooth" }); });
