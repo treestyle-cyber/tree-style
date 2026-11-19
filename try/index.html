@@ -25,7 +25,7 @@
 <script src="/brand-kit.js"></script>
 <script>
 // Brand photos chosen in the Studio replace the fabric textures (each spot keeps its texture until then)
-fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" + Date.now() : "")).then(r => r.json()).then(d => { const ph = d.photos || {}; window.__PH = ph; if (Array.isArray(d.essentials) && d.essentials.length) window.__ESS = d.essentials; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); }
+fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" + Date.now() : "")).then(r => r.json()).then(d => { const ph = d.photos || {}; window.__PH = ph; window.__CROPS = d.crops || {}; if (Array.isArray(d.essentials) && d.essentials.length) window.__ESS = d.essentials; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); }
   // The shopping list may already be drawn by now: draw it again so filler photos show (Kylie: they weren't showing up)
   if (Object.keys(ph).some(k => /^(fill|top|base|orn)_/.test(k))) { const redo = () => { try { if (typeof result !== "undefined" && result) fill(); if (document.getElementById("s-look") && !document.getElementById("s-look").hidden) drawLook(); } catch (e) {} }; if (document.readyState === "complete") redo(); else addEventListener("load", redo); } }).catch(() => {});
 </script>
@@ -4128,7 +4128,10 @@ async function drawStep() {
         if (pic) v.poster = pic;
         v.onerror = () => { v.remove(); $("#sv2Pic").classList.remove("hasvid"); };
         $("#sv2Pic").appendChild(v); $("#sv2Pic").classList.add("hasvid"); v.play().catch(() => {});
-      } }
+      }
+      // the crop chosen in the Studio: where the clip sits in the card, and how far it's zoomed in
+      const vv = $("#sv2Pic").querySelector("video"), cr = (window.__CROPS || {})["vid_" + key];
+      if (vv) { const x = cr ? cr.x : 50, y = cr ? cr.y : 50, z = cr ? cr.z : 1; vv.style.objectPosition = `${x}% ${y}%`; vv.style.transformOrigin = `${x}% ${y}%`; vv.style.transform = z > 1 ? `scale(${z})` : ""; } }
     $("#sv2HT").textContent = (part ? "" : (ix + 1) + ". ") + cur[0];
     $("#sv2HP").textContent = cur[1] || leadTxt || "";
     const more = !part && ix < insts.length - 1;

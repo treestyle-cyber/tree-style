@@ -5,6 +5,7 @@
 // GET  /api/brand?img=<slot>           -> the chosen image itself (used when the store is private)
 // POST /api/brand { action:"generate", prompt, aspect }   -> { image: dataURL }            (password)
 // POST /api/brand { action:"use", slot, image }           -> { url }                       (password)
+// POST /api/brand { action:"vid-crop", slot, x, y, z | reset } -> { crop }  where a step video sits in its card (password)
 // POST /api/brand { action:"use-clip", slot, clip }       -> { url }  a Reels clip (or uploaded video) as a step video (password)
 // GET  /api/brand?kit=1                -> { kit, updated }   the Brand kit (colors, fonts, buttons, background, icons, logos)
 // GET  /api/brand?kitfile=<path>       -> a file the Brand kit uses (font, logo, texture) when the store is private
@@ -70,6 +71,19 @@ async function essentialsList() {
   if (!blobConnected()) return null;
   const mine = IS_PREVIEW ? await newestJson("preview/brand/essentials/") : null;
   return (mine || await newestJson("brand/essentials/"))?.data || null;
+}
+// Step video crops (Kylie: adjust the crop of a video in its card): one small map { vid_<step>: { x, y, z } }, newest wins
+const CROP_DIR = "brand/vidcrop/";
+async function cropMap() {
+  if (!blobConnected()) return {};
+  const mine = IS_PREVIEW ? await newestJson("preview/" + CROP_DIR).catch(() => null) : null;
+  return (mine || await newestJson(CROP_DIR).catch(() => null))?.data || {};
+}
+async function saveCrops(map) { await put(envPath(`${CROP_DIR}${Date.now()}.json`), JSON.stringify(map), { ...tok(), access: "private", contentType: "application/json" }); }
+async function setCrop(slot, c) {
+  const m = await cropMap();
+  if (c) m[slot] = c; else if (m[slot]) delete m[slot]; else return;
+  await saveCrops(m);
 }
 const STEPS = ["", "lights", "primary_picks", "ribbon", "florals", "statement", "medium", "crown"];
 const clean = (v, n) => String(v ?? "").replace(/[<>]/g, "").trim().slice(0, n);
@@ -190,7 +204,8 @@ export default async function handler(req, res) {
       const essentials = await essentialsList().catch(() => null);
       const photos = {};
       for (const [k, b] of Object.entries(found)) photos[k] = /\.public\.blob\.vercel-storage\.com/.test(b.url) ? b.url : `/api/brand?img=${k}&v=${encodeURIComponent(b.uploadedAt)}`;
-      return res.status(200).json({ photos, storage: true, essentials: essentials || undefined });
+      const crops = Object.keys(photos).some(k => /^vid_/.test(k)) ? await cropMap().catch(() => ({})) : {};
+      return res.status(200).json({ photos, storage: true, essentials: essentials || undefined, crops });
     } catch (e) {
       return res.status(200).json({ photos: {}, storage: !!blobConnected(), error: String(e.message || e) });
     }
@@ -279,11 +294,15 @@ export default async function handler(req, res) {
       const pe = await newestJson("preview/brand/essentials/").catch(() => null), le = await newestJson("brand/essentials/").catch(() => null);
       const essNew = pe && (!le || t(pe.blob) > t(le.blob));
       if (essNew) slots.push("essentials");
+      const pc = await newestJson("preview/" + CROP_DIR).catch(() => null), lc = await newestJson(CROP_DIR).catch(() => null);
+      const cropNew = pc && (!lc || t(pc.blob) > t(lc.blob));
+      if (cropNew) slots.push("video crops");
       const pk = await newestIn("preview/" + KIT_DIR), lk = await newestIn(KIT_DIR);
       const kitNewer = !!pk && (!lk || t(pk) > t(lk));
       if (kitNewer) slots.push("brand kit");
       if (req.body.dry) return res.status(200).json({ slots });
       if (kitNewer) await putEither(`${KIT_DIR}${Date.now()}.json`, await readBlob(pk), "application/json");
+      if (cropNew) await put(`${CROP_DIR}${Date.now()}.json`, JSON.stringify(pc.data), { ...tok(), access: "private", contentType: "application/json" });
       if (essNew) await put(`brand/essentials/${Date.now()}.json`, JSON.stringify(pe.data), { ...tok(), access: "private", contentType: "application/json" });
       for (const b of picks) {
         const slot = b.pathname.split("/")[3];
@@ -297,6 +316,15 @@ export default async function handler(req, res) {
       }
       return res.status(200).json({ ok: true, slots });
     } catch (e) { return res.status(500).json({ error: String(e.message || e) }); }
+  }
+
+  if (action === "vid-crop") {
+    if (!/^vid_[a-z_]{1,16}$/.test(slot || "")) return res.status(400).json({ error: "Unknown video spot" });
+    if (!blobConnected()) return res.status(400).json({ error: "Storage isn't connected." });
+    const n = (v, lo, hi, d) => { v = Number(v); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, Math.round(v * 100) / 100)) : d; };
+    const c = req.body.reset ? null : { x: n(req.body.x, 0, 100, 50), y: n(req.body.y, 0, 100, 50), z: n(req.body.z, 1, 3, 1) };
+    try { await setCrop(slot, c); return res.status(200).json({ ok: true, crop: c }); }
+    catch (e) { return res.status(500).json({ error: String(e.message || e) }); }
   }
 
   // A step video: a clip made in Reels (saved under brand/videos/), copied into the slot so the app can play it
@@ -318,6 +346,7 @@ export default async function handler(req, res) {
       }
       if (!buf) return res.status(404).json({ error: "Couldn't read that clip" });
       const path = envPath(`brand/photos/${slot}/${Date.now()}.mp4`);
+      await setCrop(slot, null).catch(() => {});   // a new clip starts centered
       let b;
       try { b = await put(path, buf, { ...tok(), access: "public", contentType: "video/mp4" }); }
       catch (e) { b = await put(path, buf, { ...tok(), access: "private", contentType: "video/mp4" }); }
@@ -332,6 +361,7 @@ export default async function handler(req, res) {
     const img = vm ? { mediaType: "video/mp4", data: vm[2] } : parseDataUrl(image);
     if (!img) return res.status(400).json({ error: "Missing image" });
     const buf = Buffer.from(img.data, "base64");
+    if (vm) await setCrop(slot, null).catch(() => {});   // a new clip starts centered
     const path = envPath(`brand/photos/${slot}/${Date.now()}.${img.mediaType.includes("png") ? "png" : /video/.test(img.mediaType) ? "mp4" : "jpg"}`);   // a step video can be uploaded too (small clips)
     try {
       let b;
