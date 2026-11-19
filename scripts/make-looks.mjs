@@ -35,7 +35,7 @@ async function one(L) {
   const [look, plan] = await Promise.all([api("/api/evaluate", { ...body, part: "look" }), api("/api/evaluate", { ...body, part: "plan" })]);
   const result = Object.assign(look, plan);
   let map;
-  try { const cv = createCanvas(1, 1); TreeGuide.create(im, cv, result, "design").drawMap({ plainFlowers: process.env.VARIANT === "map2" }); map = await shrink("data:image/png;base64," + (await cv.encode("png")).toString("base64"), 1024, 80); log("map drawn"); }
+  try { const cv = createCanvas(1, 1); TreeGuide.create(im, cv, result, "design").drawMap(undefined, { plainFlowers: process.env.VARIANT === "map2" }); map = await shrink("data:image/png;base64," + (await cv.encode("png")).toString("base64"), 1024, 80); log("map drawn"); }
   catch (e) { log("map failed: " + e.message); }
   const shape = (result.plan || []).some(p => p.element === "fluff") || undefined;
   log("painting");
