@@ -1422,6 +1422,9 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .sv2how{grid-template-columns:42% 1fr;gap:16px;align-items:center;margin:18px 0 6px}
   .sv2pic{display:block;aspect-ratio:3/2;border-radius:12px;background:#2a2016 center/cover no-repeat;box-shadow:0 8px 18px -12px rgba(44,33,24,.6)}
   .sv2pic.zoom{background-size:260%}
+  .sv2pic{position:relative;overflow:hidden}
+  .sv2pic video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .sv2pic.hasvid{background-size:cover}
   .sv2how h3{margin:0 0 6px;font:500 calc(24px * var(--s-headline,1))/1.1 var(--serif);color:var(--ink)}
   .sv2how p{margin:0;color:var(--ink);font-size:calc(15px * var(--s-body,1));line-height:1.45;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
   .sv2parts{grid-template-columns:1fr 1fr;gap:12px;margin:16px 0 0}
@@ -4116,6 +4119,16 @@ async function drawStep() {
     const ph = window.__PH || {};
     const pic = ph["how_" + key] || (bl ? ((/^(primary_picks|florals)$/.test(key) && fillPhoto(bl.label)) || (/^(ribbon|statement|medium|crown)$/.test(key) && shopPhoto(bl, key)) || "") : "");
     $("#sv2Pic").style.backgroundImage = `url("${pic || after || photo || ""}")`; $("#sv2Pic").classList.toggle("zoom", !pic); $("#sv2Pic").dataset.pslot = "how_" + key;
+    // A step video from the Studio (Kylie: show a clip of the branches being unfolded and shaped) plays on a loop in the card, silent
+    { const vs = ph["vid_" + key], cur = $("#sv2Pic").querySelector("video");
+      if (!vs) { if (cur) cur.remove(); $("#sv2Pic").classList.remove("hasvid"); }
+      else if (!cur || cur.dataset.src !== vs) {
+        if (cur) cur.remove();
+        const v = document.createElement("video"); v.dataset.src = vs; v.src = vs; v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true; v.setAttribute("playsinline", ""); v.setAttribute("muted", ""); v.preload = "auto";
+        if (pic) v.poster = pic;
+        v.onerror = () => { v.remove(); $("#sv2Pic").classList.remove("hasvid"); };
+        $("#sv2Pic").appendChild(v); $("#sv2Pic").classList.add("hasvid"); v.play().catch(() => {});
+      } }
     $("#sv2HT").textContent = (part ? "" : (ix + 1) + ". ") + cur[0];
     $("#sv2HP").textContent = cur[1] || leadTxt || "";
     const more = !part && ix < insts.length - 1;

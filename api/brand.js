@@ -5,6 +5,7 @@
 // GET  /api/brand?img=<slot>           -> the chosen image itself (used when the store is private)
 // POST /api/brand { action:"generate", prompt, aspect }   -> { image: dataURL }            (password)
 // POST /api/brand { action:"use", slot, image }           -> { url }                       (password)
+// POST /api/brand { action:"use-clip", slot, clip }       -> { url }  a Reels clip (or uploaded video) as a step video (password)
 // GET  /api/brand?kit=1                -> { kit, updated }   the Brand kit (colors, fonts, buttons, background, icons, logos)
 // GET  /api/brand?kitfile=<path>       -> a file the Brand kit uses (font, logo, texture) when the store is private
 // POST /api/brand { action:"kit-save", kit }              -> { ok }                        (password)
@@ -21,7 +22,7 @@ import { checkPassword, parseDataUrl } from "../lib/util.js";
 
 const SLOTS = ["before", "after", "ribbonref", "ribbon_billows", "ribbon_cascades", "ribbon_layered", "ribbon_loops", "ribbon_bursts", "ribbon_curls", "velvet", "velvetberry", "hero", "homebg", "scan", "roomscan", "splash", "signin", "check", "design", "keep", "classic", "rustic", "modern", "elegant", "playful", "themed", "ess_hooks", "ess_wire", "ess_ties", "ess_remote", "ess_cord", "ess_scissors"];
 // Stylist's essentials cards each have a photo spot named ess_<card id>, so cards added in the Studio get one too
-const isSlot = s => SLOTS.includes(s) || /^ess_[a-z0-9]{1,24}$/.test(s) || /^(fill|top|base|orn)_[a-z]{1,16}$/.test(s) || /^how_[a-z_]{1,16}$/.test(s);   // fill_<kind>: filler photos
+const isSlot = s => SLOTS.includes(s) || /^ess_[a-z0-9]{1,24}$/.test(s) || /^(fill|top|base|orn)_[a-z]{1,16}$/.test(s) || /^how_[a-z_]{1,16}$/.test(s) || /^vid_[a-z_]{1,16}$/.test(s);   // vid_<step>: step video clips   // fill_<kind>: filler photos
 const MODELS = [process.env.GEMINI_IMAGE_MODEL, "gemini-3.1-flash-image-preview", "gemini-2.5-flash-image"].filter(Boolean);
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
 
@@ -290,7 +291,7 @@ export default async function handler(req, res) {
         const r = await get(b.pathname, { ...tok(), access: "private" }).catch(() => null);
         if (r && r.stream) buf = Buffer.from(await new Response(r.stream).arrayBuffer());
         else buf = Buffer.from(await (await fetch(b.url)).arrayBuffer());
-        const path = `brand/photos/${slot}/${Date.now()}.${/png/.test(b.contentType || "") ? "png" : "jpg"}`;
+        const path = `brand/photos/${slot}/${Date.now()}.${/png/.test(b.contentType || "") ? "png" : /video/.test(b.contentType || "") ? "mp4" : "jpg"}`;
         try { await put(path, buf, { ...tok(), access: "public", contentType: b.contentType || "image/jpeg" }); }
         catch (e) { await put(path, buf, { ...tok(), access: "private", contentType: b.contentType || "image/jpeg" }); }
       }
@@ -298,13 +299,40 @@ export default async function handler(req, res) {
     } catch (e) { return res.status(500).json({ error: String(e.message || e) }); }
   }
 
+  // A step video: a clip made in Reels (saved under brand/videos/), copied into the slot so the app can play it
+  if (action === "use-clip") {
+    if (!/^vid_[a-z_]{1,16}$/.test(slot || "")) return res.status(400).json({ error: "Unknown video spot" });
+    if (!blobConnected()) return res.status(400).json({ error: "Storage isn't connected." });
+    try {
+      const c = String(req.body.clip || ""); let buf = null;
+      const file = (/[?&]file=([^&]+)/.exec(c) || [])[1];
+      if (file) {
+        const pn = decodeURIComponent(file);
+        if (!/^(preview\/)?brand\/videos\/[\w/.-]+\.mp4$/.test(pn)) return res.status(400).json({ error: "Not a TreeStyle clip" });
+        const r = await get(pn, { ...tok(), access: "private" }).catch(() => null);
+        if (r && r.stream) buf = Buffer.from(await new Response(r.stream).arrayBuffer());
+      } else {
+        let u; try { u = new URL(c); } catch { return res.status(400).json({ error: "Missing clip" }); }
+        if (!/\.blob\.vercel-storage\.com$/.test(u.hostname) || !u.pathname.includes("/brand/videos/") || !/\.mp4$/.test(u.pathname)) return res.status(400).json({ error: "Not a TreeStyle clip" });
+        const r = await fetch(u.href); if (r.ok) buf = Buffer.from(await r.arrayBuffer());
+      }
+      if (!buf) return res.status(404).json({ error: "Couldn't read that clip" });
+      const path = envPath(`brand/photos/${slot}/${Date.now()}.mp4`);
+      let b;
+      try { b = await put(path, buf, { ...tok(), access: "public", contentType: "video/mp4" }); }
+      catch (e) { b = await put(path, buf, { ...tok(), access: "private", contentType: "video/mp4" }); }
+      return res.status(200).json({ ok: true, url: b.url });
+    } catch (e) { return res.status(500).json({ error: String(e.message || e) }); }
+  }
+
   if (action === "use") {
     if (!isSlot(slot)) return res.status(400).json({ error: "Unknown slot" });
     if (!blobConnected()) return res.status(400).json({ error: "Storage isn't connected yet. In Vercel: Storage → Create → Blob → connect it to this project, then Redeploy." });
-    const img = parseDataUrl(image);
+    const vm = /^vid_/.test(slot) ? /^data:(video\/[a-z0-9.+-]+);base64,(.+)$/i.exec(image || "") : null;
+    const img = vm ? { mediaType: "video/mp4", data: vm[2] } : parseDataUrl(image);
     if (!img) return res.status(400).json({ error: "Missing image" });
     const buf = Buffer.from(img.data, "base64");
-    const path = envPath(`brand/photos/${slot}/${Date.now()}.${img.mediaType.includes("png") ? "png" : "jpg"}`);
+    const path = envPath(`brand/photos/${slot}/${Date.now()}.${img.mediaType.includes("png") ? "png" : /video/.test(img.mediaType) ? "mp4" : "jpg"}`);   // a step video can be uploaded too (small clips)
     try {
       let b;
       try { b = await put(path, buf, { ...tok(), access: "public", contentType: img.mediaType }); }

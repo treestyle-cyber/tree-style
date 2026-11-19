@@ -508,7 +508,7 @@ async function start() {
     } catch (err) { $("#refMsg").className = "msg err"; $("#refMsg").textContent = err.message; }
   };
   setupRibbonStyles(info.photos || {});
-  build(info.photos || {});
+  build(info.photos || {}); stepVideos(info.photos || {});
   setupEss(info);
   offerPreviewPicks();
 }
@@ -609,8 +609,68 @@ async function offerPreviewPicks() {
 }
 start();
 
+// Step videos (Kylie: a clip of the branches being unfolded and shaped in the step card). Each "Step photo" card gets a
+// video spot (vid_<step>): Make a clip (Gemini, through Reels, counts toward the daily clip limit) or upload a short one.
+// Once kept, the app plays it silently on a loop in that step's card, in place of the photo.
+const VPROMPT = {
+  fluff: "Vertical 9:16. Close-up, locked-off camera. A woman's hands in a cream knit sweater shape the branches of an artificial Christmas tree: she unfolds a flattened branch from its shipping fold, bends it outward, then fans out its tips one by one, up and to the sides, so the branch fills its space and the gap closes. Several branches in turn, working from the trunk out. Warm white lights glow softly deeper in the tree, shallow depth of field, warm natural light, calm and unhurried. Only hands, no faces.",
+  lights: "Vertical 9:16. Close-up. A woman's hands in a cream knit sweater weave a strand of warm white string lights deep into fir branches near the trunk, then out along a branch and back in, working down the tree. Shallow depth of field, warm natural light, calm and unhurried. Only hands, no faces.",
+  primary_picks: "Vertical 9:16. Close-up. A hand in a cream knit sweater tucks greenery and berry stems deep into fir branches, angling the leaves outward, then fluffs them so they look grown in. Warm white lights glow softly, shallow depth of field, calm. Only hands, no faces.",
+  ribbon: "Vertical 9:16. Close-up. A hand in a cream knit sweater tucks the end of a wide burgundy velvet wired ribbon deep into fir branches, lets it billow out in a soft curl, then tucks the other end back in. Warm white lights glow softly, shallow depth of field, calm. Only hands, no faces.",
+  florals: "Vertical 9:16. Close-up. A hand in a cream knit sweater nestles a deep red velvet poinsettia stem into fir branches beside a curl of burgundy velvet ribbon and bends its petals open. Warm white lights glow softly, shallow depth of field, calm. Only hands, no faces.",
+  statement: "Vertical 9:16. Close-up. A hand in a cream knit sweater hangs a large matte glass ornament on an inner fir branch, set back toward the trunk, so branch tips frame it. Warm white lights glow softly, shallow depth of field, calm. Only hands, no faces.",
+  medium: "Vertical 9:16. Close-up. A hand in a cream knit sweater hangs small antique gold ornaments in open pockets of a decorated fir tree, mixing shapes. Warm white lights glow softly, shallow depth of field, calm. Only hands, no faces.",
+  crown: "Vertical 9:16. Close-up. Two hands in a cream knit sweater secure a gold starburst topper to the top stem of a decorated fir tree, then tuck a few stems around its base. Warm white lights glow softly, shallow depth of field, calm. Only hands, no faces."
+};
+function stepVideos(current) {
+  document.querySelectorAll('.slot[data-id^="how_"]').forEach(el => {
+    const key = el.dataset.id.slice(4), vid = "vid_" + key; if (el.querySelector(".vbox")) return;
+    const box = document.createElement("div"); box.className = "vbox"; box.dataset.vid = vid;
+    box.style.cssText = "border-top:1px solid var(--line);padding-top:12px;margin-top:6px;display:flex;flex-direction:column;gap:8px";
+    box.innerHTML = `<b>Step video (optional)</b><div class="where">Plays silently on a loop in this step's card instead of the photo. Make a clip (about a minute or two; counts toward today's clip limit) or upload a short one (under 4 MB).</div>
+      <div class="frames"><div class="frame cur" style="aspect-ratio:3 / 2"><span class="lbl">In use</span>${current[vid] ? `<video src="${current[vid]}" muted loop autoplay playsinline style="width:100%;height:100%;object-fit:cover"></video>` : "No video yet"}</div>
+      <div class="frame new vnew" style="aspect-ratio:3 / 2"><span class="lbl">New</span>Make a clip to see it here</div></div>
+      <textarea class="vprompt">${VPROMPT[key] || ""}</textarea>
+      <div class="row"><button class="btn ghost vgen">Make a clip</button><label class="btn ghost" style="cursor:pointer">Upload a clip<input type="file" class="vupl" accept="video/mp4,video/quicktime,video/*" hidden></label><button class="btn vuse" disabled>Use this clip</button></div>
+      <div class="msg vmsg"></div>`;
+    el.appendChild(box);
+    const nf = box.querySelector(".vnew"), msg = box.querySelector(".vmsg"), gen = box.querySelector(".vgen"), use = box.querySelector(".vuse");
+    let clip = null, upload = null;
+    const show = src => { nf.innerHTML = `<span class="lbl">New</span><video src="${src}" muted loop autoplay playsinline style="width:100%;height:100%;object-fit:cover"></video>`; use.disabled = false; msg.className = "msg vmsg"; msg.textContent = "Like it? Tap Use this clip."; };
+    gen.onclick = async () => {
+      gen.disabled = true; use.disabled = true; msg.className = "msg vmsg"; msg.textContent = "Making the clip… this can take a minute or two";
+      nf.innerHTML = '<span class="lbl">New</span><div class="spin"></div>';
+      try {
+        const r = await fetch("/api/video", { method: "POST", headers: { "content-type": "application/json", "x-test-password": password }, body: JSON.stringify({ action: "make", prompt: box.querySelector(".vprompt").value.trim(), label: "Step video: " + el.querySelector("h2").textContent.replace(/^Step photo: /, ""), resolution: "720p" }) });
+        const d = await r.json().catch(() => ({ error: "Server error " + r.status }));
+        if (!r.ok) throw new Error(d.error || "Error " + r.status);
+        clip = d.url; upload = null; show(clip); gen.textContent = "Make another";
+      } catch (e) { nf.innerHTML = '<span class="lbl">New</span>Try again'; msg.className = "msg vmsg err"; msg.textContent = e.message; }
+      finally { gen.disabled = false; }
+    };
+    box.querySelector(".vupl").onchange = async e => {
+      const f = e.target.files[0]; if (!f) return;
+      if (f.size > 4 * 1024 * 1024) { msg.className = "msg vmsg err"; msg.textContent = "That clip is over 4 MB. Trim it to a few seconds (or export it smaller) and try again."; return; }
+      upload = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); }); clip = null;
+      show(URL.createObjectURL(f));
+    };
+    use.onclick = async () => {
+      use.disabled = true; msg.className = "msg vmsg"; msg.textContent = "Saving…";
+      try {
+        if (clip) await call({ action: "use-clip", slot: vid, clip: new URL(clip, location.href).href });
+        else if (upload) await call({ action: "use", slot: vid, image: upload.replace(/^data:video\/quicktime/, "data:video/mp4") });
+        msg.className = "msg vmsg ok"; msg.textContent = "Saved. It plays in the step card now (allow about a minute).";
+        box.querySelector(".frame.cur").innerHTML = '<span class="lbl">In use</span>' + nf.innerHTML.replace('<span class="lbl">New</span>', "");
+      } catch (e) { msg.className = "msg vmsg err"; msg.textContent = e.message; use.disabled = false; }
+    };
+  });
+}
+
 // A link can open the Studio at one photo spot and start making a photo there: /studio/?make=check
+// (?make=vid_fluff starts the step video on the Shape the branches card)
 (function () {
+  const vm = (/[?&]make=vid_([a-z_]+)/.exec(location.search) || [])[1];
+  if (vm) { let n = 0; const t = setInterval(() => { const b = document.querySelector(`.vbox[data-vid="vid_${vm}"]`); if (b && !b.querySelector(".vgen").disabled) { clearInterval(t); b.scrollIntoView({ block: "center" }); b.style.outline = "2px solid #B89C6B"; b.querySelector(".vgen").click(); } else if (++n > 60) clearInterval(t); }, 500); return; }
   const id = (/[?&]make=([a-z0-9_]+)/.exec(location.search) || [])[1]; if (!id) return;
   let tries = 0;
   const t = setInterval(() => {
