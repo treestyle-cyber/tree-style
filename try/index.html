@@ -1353,7 +1353,8 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
      badge, labels with fine gold rules, gold line icons on the rows, a switch that fills with gold, Sign out as the brand button */
   #s-account{position:relative;padding-top:0}
   .acband{height:150px;margin:0 -18px;border-radius:0 0 28px 28px;background:linear-gradient(180deg,rgba(8,10,14,.25),rgba(8,10,14,.55)),var(--photo-splash, url(/brand/splash-bg.jpg)) center 35%/cover}
-  .achead{display:grid;justify-items:center;text-align:center;margin:-62px 0 24px;position:relative}
+  .acband{display:none !important}   /* Kylie: no photo band at the top of Profile */
+  .achead{display:grid;justify-items:center;text-align:center;margin:22px 0 24px;position:relative}
   .acav{position:relative;width:118px;height:118px;border-radius:50%;display:grid;place-items:center;cursor:pointer;
     background:linear-gradient(145deg,#5B3E26,#3E2A19);color:#F3E2B6;font:500 48px var(--serif);
     box-shadow:0 0 0 3px #F4EEE5,0 0 0 5px #C9A35E,0 12px 26px -10px rgba(0,0,0,.45)}
@@ -1381,9 +1382,6 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   html:not(.theme-ivory) .acav{box-shadow:0 0 0 3px var(--bg),0 0 0 5px #C9A35E}
   html:not(.theme-ivory) .acbadge{color:#E6CF98;background:rgba(201,163,94,.12)}
   /* the pine band runs up behind the top bar */
-  body:has(#s-account:not([hidden])) .appbar{position:fixed;left:0;right:0;background:transparent;border-color:transparent}
-  body:has(#s-account:not([hidden])) .appbar .barmono{filter:brightness(1.6)}
-  body:has(#s-account:not([hidden])) .appbar button{color:#F7F1E8}
   .acband{height:calc(190px + env(safe-area-inset-top))}
   html:not(.theme-ivory) .accam{box-shadow:0 0 0 3px var(--bg)}
   /* Step pictures: a small key in the top corner naming this step's marks */
