@@ -35,11 +35,11 @@ async function one(L) {
   const [look, plan] = await Promise.all([api("/api/evaluate", { ...body, part: "look" }), api("/api/evaluate", { ...body, part: "plan" })]);
   const result = Object.assign(look, plan);
   let map;
-  try { const cv = createCanvas(1, 1); TreeGuide.create(im, cv, result, "design").drawMap(); map = await shrink("data:image/png;base64," + (await cv.encode("png")).toString("base64"), 1024, 80); log("map drawn"); }
+  try { const cv = createCanvas(1, 1); TreeGuide.create(im, cv, result, "design").drawMap({ plainFlowers: process.env.VARIANT === "map2" }); map = await shrink("data:image/png;base64," + (await cv.encode("png")).toString("base64"), 1024, 80); log("map drawn"); }
   catch (e) { log("map failed: " + e.message); }
   const shape = (result.plan || []).some(p => p.element === "fluff") || undefined;
   log("painting");
-  const out = await api("/api/render", { image: photo, brief: result.render_brief, aspect, map, shape, generic: !!result.branded_theme || undefined });
+  const out = await api("/api/render", { image: photo, brief: result.render_brief, aspect, map, shape, generic: !!result.branded_theme || undefined, variant: process.env.VARIANT || undefined });
   const fin = await shrink(out.image, 1600, 90);
   fs.writeFileSync(`out/${L.id}.jpg`, Buffer.from(fin.split(",")[1], "base64"));
   fs.writeFileSync(`out/${L.id}.json`, JSON.stringify({ plan: result.plan, brief: result.render_brief }, null, 1));
