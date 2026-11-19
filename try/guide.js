@@ -359,20 +359,61 @@
       const flatLoop = (x, y, ang, len, wid, rb) => ribbonLoop(x, y, ang, len * .8, rb, null);
       if (scene.runsMain && scene.runsMain.length) {
         // OPEN trees: each piece of ribbon is a band with an arrow showing the drape
-        const band = (run, w, rb, over) => {
-          const path = () => { g.beginPath(); run.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); };
+        // Each piece drawn as real ribbon (Kylie: "make the ribbon look more like ribbon"): a strip that turns and folds as it
+        // falls, so its width swells and narrows, the face catching light where it's flat and darker where it turns; fine wired
+        // edges; a narrower ribbon laid on top; tucked in at the start and finished with a dovetail cut where it ends.
+        const band = (run, w, rb, over, seed) => {
+          const pts = run.length > 2 ? run : [run[0], run[run.length - 1]], n = pts.length;
+          const ph = ((seed || 0) * .37) % 1;
+          const twist = t => Math.abs(Math.cos(Math.PI * (t * .95 + .3 + ph * .4)));   // one soft turn along each piece
+          const strip = (wid, col, edge) => {
+            const L = [], R = [], lit = [];
+            for (let i = 0; i < n; i++) {
+              const t = i / (n - 1), [x, y] = pts[i], [ax, ay] = pts[Math.max(0, i - 1)], [bx, by] = pts[Math.min(n - 1, i + 1)];
+              let dx = bx - ax, dy = by - ay; const d = Math.hypot(dx, dy) || 1; dx /= d; dy /= d;
+              const tw = twist(t), start = Math.min(1, .35 + t * 6);
+              const hw = wid / 2 * (.7 + .3 * tw) * start;
+              L.push([x - dy * hw, y + dx * hw]); R.push([x + dy * hw, y - dx * hw]); lit.push(tw);
+            }
+            // the dovetail: the two corners run on a little, the middle is cut back in a V
+            const [ex, ey] = pts[n - 1], [px, py] = pts[n - 2] || pts[0]; let ux = ex - px, uy = ey - py; const ud = Math.hypot(ux, uy) || 1; ux /= ud; uy /= ud;
+            const tip = wid * .38, Le = L[n - 1], Re = R[n - 1];
+            const outline = () => { g.beginPath(); L.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.lineTo(Le[0] + ux * tip, Le[1] + uy * tip); g.lineTo(ex - ux * tip * .15, ey - uy * tip * .15); g.lineTo(Re[0] + ux * tip, Re[1] + uy * tip); for (let i = n - 1; i >= 0; i--) g.lineTo(R[i][0], R[i][1]); g.closePath(); };
+            return { L, R, lit, outline, n, ux, uy, tip, Le, Re, ex, ey, col, edge };
+          };
+          const face = S => {
+            const { L, R, lit, col } = S;
+            S.outline(); g.save(); g.clip();
+            for (let i = 0; i < S.n - 1; i++) {
+              const k = (lit[i] + lit[i + 1]) / 2;
+              g.beginPath(); g.moveTo(L[i][0], L[i][1]); g.lineTo(L[i + 1][0], L[i + 1][1]); g.lineTo(R[i + 1][0], R[i + 1][1]); g.lineTo(R[i][0], R[i][1]); g.closePath();
+              g.fillStyle = shade(col, -.32 + .4 * k); g.fill(); g.strokeStyle = g.fillStyle; g.lineWidth = 1; g.stroke();
+            }
+            // the tail past the last point takes the last shade
+            g.beginPath(); g.moveTo(S.Le[0], S.Le[1]); g.lineTo(S.Le[0] + S.ux * S.tip, S.Le[1] + S.uy * S.tip); g.lineTo(S.ex, S.ey); g.lineTo(S.Re[0] + S.ux * S.tip, S.Re[1] + S.uy * S.tip); g.lineTo(S.Re[0], S.Re[1]); g.closePath();
+            g.fillStyle = shade(col, -.32 + .4 * lit[S.n - 1]); g.fill();
+            // velvet catching the light: one soft highlight running near the upper edge, stronger where the ribbon faces you
+            for (let i = 0; i < S.n - 1; i++) {
+              const q = .28, ax = L[i][0] + (R[i][0] - L[i][0]) * q, ay = L[i][1] + (R[i][1] - L[i][1]) * q, bx = L[i + 1][0] + (R[i + 1][0] - L[i + 1][0]) * q, by = L[i + 1][1] + (R[i + 1][1] - L[i + 1][1]) * q;
+              g.beginPath(); g.moveTo(ax, ay); g.lineTo(bx, by); g.lineWidth = Math.max(1, Math.hypot(L[i][0] - R[i][0], L[i][1] - R[i][1]) * .14); g.lineCap = "butt";
+              g.strokeStyle = shade(col, .2 + .25 * lit[i]); g.globalAlpha = .25 + .45 * lit[i]; g.stroke();
+            }
+            g.globalAlpha = 1;
+            g.restore();
+            // fine wired edges
+            [L, R].forEach(E => { g.beginPath(); E.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.lineWidth = Math.max(1, w * .07); g.strokeStyle = S.edge; g.globalAlpha = .9; g.stroke(); g.globalAlpha = 1; });
+            // a crease where it folds over
+            for (let i = 1; i < S.n - 1; i++) if (lit[i] < lit[i - 1] && lit[i] <= lit[i + 1] && lit[i] < .3) { g.beginPath(); g.moveTo(L[i][0], L[i][1]); g.lineTo(R[i][0], R[i][1]); g.lineWidth = Math.max(.8, w * .035); g.strokeStyle = shade(col, -.5); g.globalAlpha = .55; g.stroke(); g.globalAlpha = 1; }
+          };
           g.lineCap = "round"; g.lineJoin = "round";
-          path(); g.lineWidth = w + outline * 3.2; g.strokeStyle = "#fff"; g.stroke();
-          path(); g.lineWidth = w + outline * 1.2; g.strokeStyle = shade(rb.color, -.55); g.stroke();
-          path(); g.lineWidth = w; g.strokeStyle = rb.color; g.stroke();
-          if (over) { path(); g.lineWidth = w * .45; g.strokeStyle = over.color; g.stroke(); }
-          const [x1, y1] = run[run.length - 1], [x0, y0] = run[run.length - 6] || run[0], a = Math.atan2(y1 - y0, x1 - x0), ah = Math.max(6, w * .7);
-          g.beginPath(); g.moveTo(x1 + Math.cos(a) * ah, y1 + Math.sin(a) * ah); g.lineTo(x1 + Math.cos(a + 2.4) * ah, y1 + Math.sin(a + 2.4) * ah); g.lineTo(x1 + Math.cos(a - 2.4) * ah, y1 + Math.sin(a - 2.4) * ah); g.closePath();
-          g.fillStyle = "#fff"; g.fill();
+          const base = strip(w, rb.color, shade(rb.color, .38));
+          base.outline(); g.lineWidth = outline * 3.2; g.strokeStyle = "#fff"; g.stroke();   // white halo so it reads over the branches
+          face(base);
+          if (over) face(strip(w * .48, over.color, shade(over.color, .4)));
         };
-        if (RB.accent) (scene.runsAccent || []).forEach(run => band(run, Math.max(3, RW.accent), RB.accent, null));
+        if (RB.accent) (scene.runsAccent || []).forEach((run, i) => band(run, Math.max(3, RW.accent), RB.accent, null, i + 7));
         const runs = scene.runsMain.slice().sort((a, b) => a[0][1] - b[0][1]);
-        runs.forEach(run => band(run, Math.max(5, RW.base), RB.base, RB.overlay));
+        runs.forEach((run, i) => band(run, Math.max(5, RW.base), RB.base, RB.overlay, i));
         ribbonPlan.marks = runs.map(r => [r[0][0], r[0][1]]);
         ribbonPlan.runs = runs;
         ribbonPlan.kind = "cascade";
