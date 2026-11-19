@@ -553,6 +553,44 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   .src small{font-size:13px;color:#D9CCC0;max-width:24em}
   .ideatxt{width:100%;font:16px/1.5 var(--sans);padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);resize:vertical}
   .roommark{margin-top:14px}
+  /* designer chat */
+  .src.talk{min-height:118px;box-shadow:0 16px 28px -18px rgba(0,0,0,.7),inset 0 0 0 1.5px var(--gold)}
+  .srctag{font:600 10.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-style:normal}
+  .talklink{appearance:none;display:flex;align-items:center;gap:12px;width:100%;margin:12px 0 4px;padding:12px 14px;border-radius:14px;border:1px solid rgba(184,156,107,.5);background:rgba(184,156,107,.08);color:var(--ivory);font:15px/1.35 var(--sans);text-align:left;cursor:pointer}
+  .talklink b{color:var(--gold);font-weight:600}
+  .tlmic{flex:none;width:34px;height:34px;border-radius:50%;background:var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23141C2C' stroke-width='2' stroke-linecap='round'%3E%3Crect x='9' y='3' width='6' height='11' rx='3'/%3E%3Cpath d='M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21'/%3E%3C/svg%3E") center/18px no-repeat}
+  .chathead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+  .chathead .sub{margin:0;font-size:14.5px}
+  .voicebtn{appearance:none;flex:none;display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;border:1.5px solid var(--gold);background:transparent;color:var(--ivory);font:600 13.5px var(--sans);cursor:pointer}
+  .voicebtn[aria-pressed=true]{background:var(--gold);color:var(--midnight)}
+  .vdot{width:9px;height:9px;border-radius:50%;background:var(--gold)}
+  .voicebtn[aria-pressed=true] .vdot{background:var(--midnight);animation:vpulse 1.2s ease-in-out infinite}
+  .vdot.on{animation:vpulse 1.2s ease-in-out infinite}
+  @keyframes vpulse{50%{opacity:.35;transform:scale(.8)}}
+  .chatlog .msg{font-size:16px;line-height:1.45}
+  .chatlog .msg.ai{background:rgba(243,238,231,.07);border-color:rgba(184,156,107,.35);color:var(--ivory)}
+  .chatlog .msg.me{background:var(--gold);color:var(--midnight)}
+  .msg.typing{display:flex;gap:5px;padding:14px 16px}
+  .msg.typing i{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:vpulse 1s ease-in-out infinite}
+  .msg.typing i:nth-child(2){animation-delay:.15s} .msg.typing i:nth-child(3){animation-delay:.3s}
+  .cchoices{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px}
+  .cchoices button{appearance:none;border:1.5px solid rgba(184,156,107,.6);background:transparent;color:var(--ivory);border-radius:999px;padding:10px 15px;font:500 15px var(--sans);cursor:pointer}
+  .cchoices button:hover{border-color:var(--gold);background:rgba(184,156,107,.1)}
+  .cchoices button:disabled{opacity:.45}
+  .cbrief{margin:6px 0 16px;padding:16px 18px;border-radius:16px;border:1.5px solid var(--gold);background:rgba(184,156,107,.08)}
+  .cbrief p{margin:6px 0 14px;font:400 19px/1.35 var(--serif);color:var(--ivory)}
+  .cbrief .btn{width:100%}
+  .cbrief small{display:block;text-align:center;margin-top:8px;color:var(--muted);font-size:13px}
+  .cbar{display:flex;align-items:flex-end;gap:8px;padding:8px;border-radius:22px;background:var(--bg);box-shadow:0 0 0 1px var(--line),0 10px 30px -10px rgba(0,0,0,.6)}
+  .cbar textarea{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:16px/1.4 var(--sans);padding:10px 8px;resize:none;max-height:140px;outline:none}
+  .cmic,.csend{appearance:none;flex:none;width:44px;height:44px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer}
+  .cmic{background:var(--gold);color:var(--midnight)}
+  .cmic.on{background:var(--ivory);animation:vpulse 1.2s ease-in-out infinite}
+  .csend{background:transparent;color:var(--gold);box-shadow:inset 0 0 0 1.5px rgba(184,156,107,.6)}
+  .cmic svg,.csend svg{width:22px;height:22px}
+  .clisten{display:flex;align-items:center;gap:8px;justify-content:center;margin:10px 0 0;color:var(--gold);font:500 14px var(--sans)}
+  .talkover{appearance:none;display:block;margin:14px auto 0;border:0;background:none;color:var(--muted);font:500 14px var(--sans);text-decoration:underline;cursor:pointer}
+  #s-chat{padding-bottom:10px}
   .roomtree{margin-top:16px}
   .changepill{display:flex;justify-content:center;width:100%;max-width:524px;margin:14px auto 0;cursor:pointer}
   #s-photo.room label.drop{display:none}
@@ -934,6 +972,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   <section class="screen" id="s-start" data-title="Design my tree" hidden>
     <h1>How would you like to start?</h1>
     <p class="sub">No tree up yet? No problem. Start from your room, or just an idea.</p>
+    <button class="src talk" id="talkStart" style="--img:var(--photo-elegant, url(/brand/velvet-berry.jpg))"><em class="srctag">New · by voice or text</em><b>Talk it through with a designer</b><small>Not sure where to begin? Answer a few easy questions and we'll shape the idea together</small></button>
     <button class="src" data-src="idea" style="--img:url(/brand/pattern-damask.jpg)"><b>Start from an idea</b><small>Describe the look, and add a photo of anything that inspires you</small></button>
     <button class="src" data-src="room" style="--img:var(--photo-velvet, url(/brand/velvet-midnight.jpg))"><b>The room it'll go in</b><small>Photograph the space, then tap where the tree will stand</small></button>
     <button class="src" data-src="tree" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><b>My bare tree</b><small>It's up, with or without lights</small></button>
@@ -944,6 +983,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
     <h1>Describe your dream tree</h1>
     <p class="sub">Colors, a mood, a theme, a memory. The more you tell us, the better.</p>
     <textarea id="ideaText" class="ideatxt" rows="4" placeholder="e.g. A winter woodland tree with birds, pinecones and deep green velvet ribbon"></textarea>
+    <button class="talklink" id="talkIdea" type="button"><span class="tlmic" aria-hidden="true"></span><span><b>Not sure what to say?</b> Talk it through with a designer</span></button>
     <div class="card extrasCard">
       <div class="extra">
         <span class="thumb" id="ideaThumb">✦</span>
@@ -962,6 +1002,30 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
       <div class="rmhint">Tap where the tree will stand</div>
       <div class="rmwrap" id="ideaRmWrap"><img id="ideaRmImg" alt="Your room"><i id="ideaRmDot"></i></div>
     </div>
+  </section>
+
+  <!-- Design: the designer chat (Eric, Nov 19: testers didn't know what to say, so a designer asks) -->
+  <section class="screen" id="s-chat" data-title="Your designer" hidden>
+    <div class="chathead">
+      <p class="sub">Tap an answer, type, or talk. We'll shape the idea together.</p>
+      <button class="voicebtn" id="cVoice" type="button" aria-pressed="false" hidden><span class="vdot"></span><span id="cVoiceLbl">Talk with me</span></button>
+    </div>
+    <div class="log chatlog" id="cLog" aria-live="polite"></div>
+    <div class="cchoices" id="cChoices"></div>
+    <div class="cbrief" id="cBrief" hidden>
+      <div class="hubk">Your design brief</div>
+      <p id="cBriefText"></p>
+      <button class="btn" id="cUse" type="button">Design this tree  →</button>
+      <small>You can still edit it on the next screen.</small>
+    </div>
+    <div class="cbar">
+      <textarea id="cText" rows="1" placeholder="Type your answer…" aria-label="Your answer"></textarea>
+      <button class="cmic" id="cMic" type="button" aria-label="Talk" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></button>
+      <button class="csend" id="cSend" type="button" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </div>
+    <p class="clisten" id="cListen" hidden><span class="vdot on"></span><span id="cListenTxt">Listening…</span></p>
+    <div class="err" id="cErr"></div>
+    <button class="talkover" id="cRestart" type="button" hidden>Start over</button>
   </section>
 
   <!-- Photo -->
@@ -1012,6 +1076,7 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   <section class="screen" id="s-style" data-title="Style" data-foot="go" hidden>
     <h1>Pick a style</h1>
     <p class="sub">A starting point, not a box. Your tree, your way.</p>
+    <button class="talklink" id="talkStyle" type="button" hidden><span class="tlmic" aria-hidden="true"></span><span><b>Not sure which?</b> Talk it through with a designer</span></button>
     <div class="sgrid">
       <label class="scard"><input type="radio" name="style" value="keep" checked><span><i class="sp" style="background-image:var(--photo-keep, url(/brand/walnut.jpg))"></i><b>Keep my style</b><small>Refine what you have</small></span></label>
       <label class="scard"><input type="radio" name="style" value="classic"><span><i class="sp" style="background-image:var(--photo-classic, url(/brand/velvet-berry.jpg))"></i><b>Traditional</b><small>Nostalgic and warm</small></span></label>
@@ -2121,6 +2186,7 @@ function paint(isBack) {
   if (id === "s-plan") drawStep();
   if (id === "s-results") sweep();
   if (id === "s-home") showResume();
+  if (id !== "s-chat" && talk) setTalk(false);   // leaving the designer chat stops the voice
   saveSoon();
   scrollTo(0, 0);
 }
@@ -2159,6 +2225,7 @@ document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   if (mode !== "design" && !val("style")) keep.checked = true;
   syncStyle();
   $("#densityQ").hidden = false;
+  $("#talkStyle").hidden = mode !== "design";
   show(mode === "design" ? "s-start" : "s-photo");
 });
 // Photo tips: short, with an icon each. Shown once as a pop-up before the first photo, then inside the empty photo box.
@@ -2247,8 +2314,170 @@ $("#detailsSkip").onclick = () => { if (rerunFromHub) { history.back(); return; 
 function useIdeaAsStyle() {
   const t = $("#ideaText").value.trim();
   const st = document.querySelector('input[name=style][value=' + (t ? "themed" : "keep") + ']'); if (st) st.checked = true;
-  $("#theme").value = t ? t.slice(0, 200) : "";
+  $("#theme").value = t ? t.slice(0, 600) : "";   // room for a brief from the designer chat
   syncStyle();
+}
+/* ---------------- the designer chat ----------------
+   Testers on Design my tree didn't know what to say (Eric, Nov 19). A designer asks one easy question at a time,
+   with tappable answers, typing, or talking (the phone's own speech recognition and voice), then writes the brief.
+   From the start or idea screen the brief becomes their idea; from the style screen it becomes a Themed style. */
+const CHAT_OPEN = { say: "Hi, I'm your TreeStyle designer. Let's dream up your tree together. When you walk into the room this year, how do you want it to feel?", choices: ["Cozy and nostalgic", "Glamorous and glowing", "Fun and colorful", "Calm and natural", "I'm not sure yet"] };
+let dchat = { turns: [], from: "idea", brief: "", busy: false, choices: [] };
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const canSpeak = "speechSynthesis" in window;
+let talk = false, rec = null, listening = false, heard = "", speakTimer = null;
+$("#cVoice").hidden = !SR; $("#cMic").hidden = !SR;
+
+function openChat(from) {
+  const fresh = dchat.from !== from || !dchat.turns.length;
+  dchat.from = from;
+  if (fresh) startChat();
+  show("s-chat");
+  setTimeout(() => { if (!talk && matchMedia("(hover:hover)").matches) $("#cText").focus({ preventScroll: true }); }, 300);
+}
+function startChat() {
+  stopListening(); stopSpeaking();
+  dchat.turns = []; dchat.brief = ""; $("#cLog").innerHTML = ""; $("#cBrief").hidden = true; $("#cErr").textContent = ""; $("#cRestart").hidden = true;
+  designerSays(CHAT_OPEN);
+}
+$("#talkStart").onclick = () => openChat("idea");
+$("#talkIdea").onclick = () => openChat("idea");
+$("#talkStyle").onclick = () => openChat("style");
+$("#cRestart").onclick = () => startChat();
+
+function chatBubble(who, text) {
+  const m = document.createElement("div"); m.className = "msg " + who; m.textContent = text;
+  $("#cLog").append(m); m.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  return m;
+}
+function designerSays(r) {
+  dchat.turns.push({ role: "designer", text: r.say });
+  chatBubble("ai", r.say);
+  dchat.choices = r.choices || [];
+  $("#cChoices").innerHTML = dchat.choices.map((c, i) => `<button type="button" data-i="${i}">${esc(c)}</button>`).join("");
+  if (r.ready && r.brief) { dchat.brief = r.brief; $("#cBriefText").textContent = r.brief; $("#cBrief").hidden = false; }
+  $("#cRestart").hidden = dchat.turns.length < 3;
+  setTimeout(() => ($("#cBrief").hidden ? $("#cChoices") : $("#cBrief")).scrollIntoView({ block: "nearest", behavior: "smooth" }), 60);
+  if (talk) speak(r.say, () => { if (talk && !dchat.busy) startListening(); });
+}
+$("#cChoices").addEventListener("click", e => { const b = e.target.closest("button"); if (b) chatSend(dchat.choices[+b.dataset.i]); });
+$("#cSend").onclick = () => chatSend($("#cText").value);
+$("#cText").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); chatSend($("#cText").value); } });
+$("#cText").addEventListener("input", () => { const t = $("#cText"); t.style.height = "auto"; t.style.height = Math.min(140, t.scrollHeight) + "px"; });
+
+async function chatSend(text) {
+  text = String(text || "").trim();
+  if (!text || dchat.busy) return;
+  stopListening(); stopSpeaking();
+  $("#cText").value = ""; $("#cText").style.height = "";
+  $("#cErr").textContent = ""; $("#cChoices").innerHTML = ""; $("#cBrief").hidden = true;
+  dchat.turns.push({ role: "me", text }); chatBubble("me", text);
+  dchat.busy = true;
+  const dots = chatBubble("ai typing", ""); dots.innerHTML = "<i></i><i></i><i></i>";
+  try {
+    const known = { idea: dchat.from === "idea" ? $("#ideaText").value.trim() : "", style: dchat.from === "style" ? val("style") : "", hasTree: dchat.from === "style" || src === "tree" };
+    const r = await api("/api/designer", { turns: dchat.turns, start: dchat.from, known });
+    dots.remove(); dchat.busy = false;
+    designerSays(r);
+  } catch (e) {
+    dots.remove(); dchat.busy = false;
+    dchat.turns.pop(); $("#cLog").lastElementChild?.remove();
+    $("#cText").value = text;
+    $("#cErr").textContent = "That didn't go through. Tap send to try again.";
+    $("#cChoices").innerHTML = dchat.choices.map((c, i) => `<button type="button" data-i="${i}">${esc(c)}</button>`).join("");
+  }
+}
+
+// The brief goes where they came from, ready to edit
+$("#cUse").onclick = () => {
+  if (!dchat.brief) return;
+  stopListening(); stopSpeaking(); setTalk(false);
+  if (dchat.from === "style") {
+    const st = document.querySelector("input[name=style][value=themed]"); if (st) st.checked = true;
+    $("#theme").value = dchat.brief; syncStyle();
+    if (stack[stack.length - 2] === "s-style") history.back(); else show("s-style");
+  } else {
+    if (src !== "idea") { src = "idea"; photo = null; photoImg = null; clearIdeaRoom(); clearRoomTree(); $("#roomMark").hidden = true; emptyDrop(); }
+    baseKey = "";
+    $("#ideaText").value = dchat.brief; $("#inspoRow").hidden = true;
+    if (stack[stack.length - 2] === "s-idea") history.back(); else show("s-idea");
+    setTimeout(() => $("#ideaText").scrollIntoView({ block: "center", behavior: "smooth" }), 320);
+  }
+  setFoot();
+};
+
+// ---- voice: talk mode reads the designer's words aloud, then listens for the answer ----
+function setTalk(on) {
+  talk = !!on && !!SR;
+  $("#cVoice").setAttribute("aria-pressed", String(talk));
+  $("#cVoiceLbl").textContent = talk ? "Talking · tap to stop" : "Talk with me";
+  if (!talk) { stopListening(); stopSpeaking(); }
+}
+$("#cVoice").onclick = () => {
+  if (talk) { setTalk(false); return; }
+  setTalk(true);
+  unlockVoice();
+  // read the latest question, then listen
+  const last = [...dchat.turns].reverse().find(t => t.role === "designer");
+  if (last && !dchat.busy) speak(last.text, () => talk && startListening()); else if (!dchat.busy) startListening();
+};
+$("#cMic").onclick = () => {
+  if (listening) { stopListening(true); return; }
+  unlockVoice(); stopSpeaking(); startListening();
+};
+function bestVoice() {
+  const vs = canSpeak ? speechSynthesis.getVoices().filter(v => /^en(-|_)/i.test(v.lang)) : [];
+  const score = v => (/premium|enhanced|natural|neural/i.test(v.name) ? 10 : 0) + (/samantha|ava|allison|serena|karen|google us english|zoe|joelle/i.test(v.name) ? 5 : 0) + (/en.US/i.test(v.lang) ? 2 : 0) + (v.localService ? 1 : 0);
+  return vs.sort((a, b) => score(b) - score(a))[0] || null;
+}
+if (canSpeak) speechSynthesis.onvoiceschanged = () => {};
+let voiceUnlocked = false;
+function unlockVoice() {   // iPhones only let a page speak after a tap
+  if (!canSpeak || voiceUnlocked) return;
+  try { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; speechSynthesis.speak(u); voiceUnlocked = true; } catch {}
+}
+function speak(text, done) {
+  if (!canSpeak || !talk) { done && done(); return; }
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text), v = bestVoice();
+    if (v) u.voice = v; u.lang = v ? v.lang : "en-US"; u.rate = 1.02; u.pitch = 1;
+    let finished = false; const fin = () => { if (finished) return; finished = true; clearTimeout(speakTimer); done && done(); };
+    u.onend = fin; u.onerror = fin;
+    clearTimeout(speakTimer); speakTimer = setTimeout(fin, 1500 + text.length * 75);   // some phones never say they finished
+    speechSynthesis.speak(u);
+  } catch { done && done(); }
+}
+function stopSpeaking() { clearTimeout(speakTimer); if (canSpeak) try { speechSynthesis.cancel(); } catch {} }
+function startListening() {
+  if (!SR || listening || dchat.busy) return;
+  try {
+    const r = rec = new SR(); r.lang = "en-US"; r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
+    heard = ""; listening = true;
+    $("#cMic").classList.add("on"); $("#cListen").hidden = false; $("#cListenTxt").textContent = "Listening…";
+    r.onresult = e => {
+      if (rec !== r) return;
+      let txt = ""; for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript;
+      heard = txt.trim(); $("#cText").value = heard; $("#cListenTxt").textContent = heard ? "Got it. Pause when you're done…" : "Listening…";
+    };
+    r.onerror = e => {
+      if (rec !== r) return;
+      if (e.error === "not-allowed" || e.error === "service-not-allowed") { $("#cErr").textContent = "The microphone is off for this site. Allow it in your browser settings, or type instead."; setTalk(false); }
+    };
+    r.onend = () => {
+      if (rec !== r) return;   // an older listen that was cancelled
+      const wasListening = listening; listening = false; rec = null;
+      $("#cMic").classList.remove("on"); $("#cListen").hidden = true;
+      if (wasListening && heard) chatSend(heard);
+    };
+    r.start();
+  } catch { listening = false; $("#cMic").classList.remove("on"); $("#cListen").hidden = true; }
+}
+function stopListening(send) {
+  if (!rec) { listening = false; return; }
+  if (!send) { listening = false; heard = ""; }
+  try { send ? rec.stop() : rec.abort(); } catch {}
+  if (!send) { rec = null; $("#cMic").classList.remove("on"); $("#cListen").hidden = true; }
 }
 // Height choices are bands; quantities use the middle of the band, and we show the band itself
 const HEIGHT_BANDS = { 4: "4 ft or less", 5.5: "5–6 ft", 7.5: "7–8 ft", 9.5: "9–10 ft", 11.5: "11–12 ft", 14: "13 ft+" };
