@@ -225,7 +225,7 @@ const essCard = (e, photos) => { const pic = photos && photos["ess_" + e.id];
   return `<article class="card"><div class="swatch">${pic ? `<img class="hookpic" src="${esc(pic)}" alt="">` : essIcon}</div>
   <div class="body"><b>${esc(e.label)}</b>${e.qty ? `<p class="note">${esc(e.qty)}</p>` : ""}${shopBtn(essUrl(e))}</div></article>`; };
 
-const lookPiece = ([asin, role, name, cols, kind]) => `<li>${svg(kind, cols).replace('width="96" height="72"', 'width="48" height="36"')}<div class="pn"><small>${esc(role)}</small><span>${esc(name)}</span></div>${shopBtn(asin.startsWith("q:") ? search(asin.slice(2)) : dp(asin))}</li>`;   // "q:words": a tagged store search
+const lookPiece = ([asin, role, name, cols, kind]) => `<li>${svg(kind, cols).replace('width="96" height="72"', 'width="48" height="36"')}<div class="pn"><small>${esc(role)}</small><span>${esc(name)}</span></div>${shopBtn(asin.startsWith("q:") ? search(asin.slice(2)) : /^https?:/.test(asin) ? asin : dp(asin))}</li>`;   // "q:words": a tagged store search; a full link (Eric's own amazon short link) is used as it is
 const lookHtml = L => `<article class="look"><div class="lookpic" data-look="${L.id}"><p class="soon">TreeStyle is styling this tree.</p></div>
   <div class="lookbody"><div class="eyebrow">Sneak peek · ${L.pieces.length} pieces to shop early</div><h3>${esc(L.name)}</h3><p>${esc(L.blurb)}</p><ul class="plist">${L.pieces.map(lookPiece).join("")}</ul></div></article>`;
 // The gallery: one card per look (photo, name); tapping opens the full look with every piece in a sheet
@@ -250,7 +250,7 @@ const add = (type, card, asin, cols) => { if (seen.has(asin)) return; seen.add(a
   const c = COLORS.find(g => g.of.includes(cols[0])) || COLORS.find(g => cols.some(k => g.of.includes(k))); if (c) ALL.push({ color:c.id, type, html:card }); };
 RIBBON.forEach(r => r.items.forEach(it => add("ribbon", ribbonCard(it), it[0], it[3])));
 CATS.forEach(c => c.items.forEach(it => add(c.id, itemCard(c.kind)(it), it[0], it[3])));
-LOOKS.forEach(L => L.pieces.forEach(([asin, role, name, cols, kind]) => { const t = ROLE(role); if (!t || asin.startsWith("q:")) return;
+LOOKS.forEach(L => L.pieces.forEach(([asin, role, name, cols, kind]) => { const t = ROLE(role); if (!t || asin.startsWith("q:") || /^https?:/.test(asin)) return;
   const w = (name.match(/(\d+(?:\.\d+)?) in\b/) || [])[1];
   add(t, t === "ribbon" && w ? ribbonCard([asin, name.replace(/,? ?\d+(?:\.\d+)? in\b/, ""), w + " in", cols, ["From " + L.name], ""]) : itemCard(kind)([asin, name, "From " + L.name, cols, []]), asin, cols); }));
 const colorHtml = g => { const rows = TYPES.map(([t, label]) => { const items = ALL.filter(x => x.color === g.id && x.type === t); return items.length ?
