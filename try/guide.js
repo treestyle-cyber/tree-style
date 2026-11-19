@@ -300,7 +300,8 @@
     try {
       const id = dg.getImageData(0, 0, W, H), dd = id.data;
       // Softly faded rather than darkened: mostly desaturated, a little lifted toward warm ivory, so the marks stand out without the picture going dim
-      for (let i = 0; i < dd.length; i += 4) { const y = .3 * dd[i] + .59 * dd[i + 1] + .11 * dd[i + 2]; dd[i] = (dd[i] * .3 + y * .7) * .7 + 243 * .12; dd[i + 1] = (dd[i + 1] * .3 + y * .7) * .7 + 238 * .12; dd[i + 2] = (dd[i + 2] * .3 + y * .7) * .7 + 231 * .12; }
+      // Kylie: the grey wash made the photo hard to read. Keep its own colors, gently softened under a light ivory veil, so it still looks like their tree and the marks stand out
+      for (let i = 0; i < dd.length; i += 4) { const y = .3 * dd[i] + .59 * dd[i + 1] + .11 * dd[i + 2]; dd[i] = (dd[i] * .78 + y * .22) * .7 + 246 * .3; dd[i + 1] = (dd[i + 1] * .78 + y * .22) * .7 + 241 * .3; dd[i + 2] = (dd[i + 2] * .78 + y * .22) * .7 + 233 * .3; }
       dg.putImageData(id, 0, 0);
     } catch (e) { dg.fillStyle = "rgba(0,0,0,.45)"; dg.fillRect(0, 0, W, H); }
     planL.dim = dim;
@@ -480,8 +481,8 @@
         const lay = layerFor(k); if (!lay) return;
         const pos = steps.indexOf(k === "small" ? "medium" : k === "small_picks" ? "primary_picks" : k);
         if (key === "all") { o.drawImage(lay, 0, 0); return; }
-        if (pos < curPos) { o.globalAlpha = curPos - pos <= 1 ? .22 : .14; o.drawImage(lay, 0, 0); o.globalAlpha = 1; }   // earlier steps fade back so this one reads clearly
-        else if (pos === curPos) {
+        // only this step is drawn (Kylie: the faint earlier steps underneath made each picture busy and hard to follow)
+        if (pos === curPos) {
           if (k !== "lights") { o.save(); o.shadowColor = "rgba(255,255,255,1)"; o.shadowBlur = Math.max(4, u * .6); o.drawImage(lay, 0, 0); o.restore(); }
           o.drawImage(lay, 0, 0);
         }

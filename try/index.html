@@ -1377,6 +1377,11 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   body:has(#s-account:not([hidden])) .appbar button{color:#F7F1E8}
   .acband{height:calc(190px + env(safe-area-inset-top))}
   html:not(.theme-ivory) .accam{box-shadow:0 0 0 3px var(--bg)}
+  /* Step pictures: a small key in the top corner naming this step's marks */
+  .guidekey{position:absolute;left:10px;top:10px;max-width:calc(100% - 20px);list-style:none;margin:0;padding:8px 12px;display:grid;gap:5px;border-radius:12px;background:rgba(255,252,247,.9);box-shadow:0 4px 14px rgba(44,33,24,.18);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);pointer-events:none}
+  .guidekey[hidden],.guidebox.peeking .guidekey,.guidebox.anim .guidekey{display:none}
+  .guidekey li{display:flex;align-items:center;gap:8px;font:600 calc(12.5px * var(--s-body,1))/1.25 var(--sans);color:#2C2118}
+  .guidekey b{width:13px;height:13px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
 </style>
 </head>
 <body>
@@ -1635,7 +1640,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     <div class="steptabs" id="stepTabs" role="tablist"></div>
     <div class="stephead"><div class="k" id="stepK"></div><h2 id="stepTitle"></h2></div>
     <p class="stepwriting" id="stepWriting" hidden><span class="spin"></span>Adding the detailed how-to for each step. It appears here in a few seconds.</p>
-    <div class="guidebox"><canvas id="guideCv" aria-label="Diagram of this step on your tree"></canvas><div class="branchanim" id="branchAnim" hidden></div><span class="peek" id="peek" aria-hidden="true">Press and hold to see your photo</span><button class="zoombtn" id="zoomGuide" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6M10.5 7.5v6M7.5 10.5h6"/></svg></button></div>
+    <div class="guidebox"><canvas id="guideCv" aria-label="Diagram of this step on your tree"></canvas><ul class="guidekey" id="guideKey" hidden></ul><div class="branchanim" id="branchAnim" hidden></div><span class="peek" id="peek" aria-hidden="true">Press and hold to see your photo</span><button class="zoombtn" id="zoomGuide" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6M10.5 7.5v6M7.5 10.5h6"/></svg></button></div>
     <div class="card stepcard">
       <p id="stepLead"></p>
       <ul class="legend" id="stepLegend"></ul>
@@ -1903,7 +1908,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </div>
 
 <script src="/try/engine.js?v=20261117c"></script>
-<script src="/try/guide.js?v=20261117d"></script>
+<script src="/try/guide.js?v=20261119a"></script>
 <script>
 // Screen preview (Studio → Screens): /try/?screen-preview&s=<screen> opens that screen straight away with the
 // Studio's sample tree (or ?screen-preview=mine, this browser's own last tree). Nothing links here from the app.
@@ -3968,6 +3973,10 @@ async function drawStep() {
   const buy = guide.buy(key), lg = buy.length ? [] : guide.legend(key);
   $("#stepLegend").hidden = !lg.length || collapsed;
   $("#stepLegend").innerHTML = lg.map(l => `<li><b style="background:${l.color}"></b>${esc(l.text)}</li>`).join("");
+  // A small key on the picture itself: what this step's marks are (Kylie: make the step pictures easy to understand)
+  const gk = key === "all" || collapsed || anim ? [] : guide.legend(key).slice(0, 4);
+  $("#guideKey").hidden = !gk.length;
+  $("#guideKey").innerHTML = gk.map(l => `<li><b style="background:${l.color}"></b>${esc(l.text)}</li>`).join("");
   let items = "";
   if (goodSteps.has(key)) items += `<div class="goodstep"><b>Already looking great</b><span>Your ${key === "lights" ? "lights" : "branches"} scored ${catScore(key)} out of 10, so you can skip this step.</span>${collapsed ? `<button data-opengood>Show the step anyway</button>` : ""}</div>`;
   if (collapsed) { $("#stepItems").innerHTML = items; $("#stepItems").querySelector("[data-opengood]").onclick = () => { openGood.add(key); drawStep(); }; }
