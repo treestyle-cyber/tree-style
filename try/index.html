@@ -4079,7 +4079,7 @@ function nearestPhoto(set, hex, label) {
 }
 function shopPhoto(b, key) {
   const l = String(b.label || "").toLowerCase(), ph = window.__PH || {};
-  if (key === "ribbon") { if (/candy|peppermint/.test(l) || /stripe/.test(l) && /red/.test(l) && /white/.test(l)) return "/brand/ribbons/candy-stripe.jpg"; if (/plaid|tartan|check/.test(l)) return "/brand/ribbons/plaid-green.jpg"; const n = nearestPhoto("ribbons", b.color, l); return n ? `/brand/ribbons/${n}.jpg` : ""; }
+  if (key === "ribbon") { const n = ribbonPick(l, "", "", b.color, l.length); return n ? `/brand/ribbons/${n}.jpg` : ""; }
   if (key === "statement" || key === "medium") {
     const shape = /teardrop|\bdrop/.test(l) ? "teardrop" : /finial/.test(l) ? "finial" : /icicle/.test(l) ? "icicle" : "";
     if (shape) return ph["orn_" + shape] || "";   // shaped ornaments: their own Studio photo spot
@@ -5467,16 +5467,31 @@ function ornamentPhoto(p) {
   for (const k of c) if (map[k]) return map[k];
   return "";
 }
-function ribbonPhoto(p) {
-  const c = p.colors, n = p.name.toLowerCase(), f = p.fin;
-  if (/plaid|tartan|check/.test(f + " " + n)) return "plaid-green";
-  if (/candy|peppermint/.test(n) || /stripe/.test(f + " " + n) && /red/.test(c) && /white/.test(c + " " + n)) return "candy-stripe";   // red and white candy stripes
-  if (/burgundy|wine/.test(c)) return "burgundy-gold";
-  if (/(^|,)red/.test(c)) return ["red", "red-2", "red-3"][parseInt(p.asin.slice(-2), 36) % 3];
-  if (/sage|olive|moss|dusty green/.test(c + " " + n)) return "sage";
-  const first = c.split(",")[0];
-  return { green: "emerald", navy: "navy", blue: "blue", "dusty blue": "blue", gold: "gold", champagne: "champagne", ivory: "ivory", white: "ivory", cream: "ivory", silver: "silver", gray: "silver", brown: "brown", pink: "pink", "rose gold": "pink", copper: "copper" }[first] || "";
+// Which ribbon photo shows a ribbon (Kylie: pictures must match the product). Amazon's own product photos are only allowed
+// through its Creators API, so these are our photos, chosen by the pattern and the color the product's NAME gives first
+// ("Ivory Satin, gold glitter" is ivory; "Navy Velvet" is navy), then its tags. Patterns: red-green tartan, blue-green plaid,
+// red buffalo check, black-and-white check, candy cane velvet stripes, and crosswise red-and-white grosgrain stripes.
+const RIB_WORDS = [["burgundy", "burgundy-gold"], ["wine", "burgundy-gold"], ["maroon", "burgundy-gold"], ["red", "red"], ["sage", "sage"], ["olive", "sage"], ["moss", "sage"], ["dusty green", "sage"], ["emerald", "emerald"], ["hunter", "emerald"], ["green", "emerald"], ["navy", "navy"], ["blue", "blue"], ["champagne", "champagne"], ["ivory", "ivory"], ["cream", "ivory"], ["white", "ivory"], ["gold", "gold"], ["camel", "brown"], ["silver", "silver"], ["gray", "silver"], ["grey", "silver"], ["brown", "brown"], ["copper", "copper"], ["rose gold", "pink"], ["pink", "pink"], ["blush", "pink"]];
+function ribbonPick(name, colors, fin, hex, salt) {
+  const n = String(name || "").toLowerCase(), c = String(colors || "").toLowerCase(), all = n + " " + c + " " + String(fin || "").toLowerCase();
+  const has = w => new RegExp("\\b" + w + "\\b").test(n + " " + c);
+  if (/plaid|tartan|check|gingham|harlequin/.test(all)) {
+    if (/buffalo/.test(all) && !has("green") && !has("blue") || has("red") && has("black")) return "buffalo-red";
+    if (has("black") && has("white") || /courtly/.test(n)) return "check-bw";
+    if ((has("blue") || has("navy")) && !/harlequin/.test(n)) return "plaid-blue";
+    if (has("green") || has("red")) return "plaid-green";
+  }
+  // printed picture ribbons (gingerbread, nutcrackers, Santa hats, cookies): no photo of ours shows them, so the drawing stays
+  if (/gingerbread|nutcracker|santa|cookie|snowm[ae]n|reindeer|\bprint\b|novelty|elf\b|grinch|peppermints/.test(n) && !/stripe|candy cane/.test(n)) return "";
+  if (/stripe|candy cane/.test(n + " " + String(fin || "").toLowerCase()) && has("red") && (has("white") || /candy cane/.test(n))) return /grosgrain|\b1(\.5)?\s*in|\b1(\.5)?"/.test(n) || /grosgrain/.test(all) ? "stripe-red-white" : "candy-stripe";
+  let pick = "", at = 1e9;
+  for (const [w, ph] of RIB_WORDS) { const m = new RegExp("\\b" + w + "\\b").exec(n); if (m && m.index < at) { at = m.index; pick = ph; } }
+  if (!pick) for (const [w, ph] of RIB_WORDS) { if (new RegExp("\\b" + w + "\\b").test(c)) { pick = ph; break; } }
+  if (pick === "red") return ["red", "red-2", "red-3"][Math.abs(salt || 0) % 3];
+  if (pick) return pick;
+  return hex ? nearestPhoto("ribbons", hex, n) : "";
 }
+function ribbonPhoto(p) { return ribbonPick(p.name, p.colors, p.fin, "", parseInt(p.asin.slice(-2), 36)); }
 function drawLook() {
   $("#lookChips").innerHTML = LOOK_STYLES.map(([k, n]) => `<button data-look="${k}" class="${k === lookStyle ? "on" : ""}">${n}</button>`).join("");
   const all = PICKS.map(r => ({ asin: r[0], step: r[1], name: r[2], colors: r[3] || "", fin: r[4] || "" })).filter(p => !/black/.test(p.colors));
