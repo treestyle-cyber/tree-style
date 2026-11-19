@@ -3126,6 +3126,7 @@ document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   if (mode === "design" && keep.checked) keep.checked = false;
   if (mode !== "design" && !val("style")) keep.checked = true;
   syncStyle();
+  if (mode === "check") setRadio("style", "keep");   // every new check starts on Keep my style
   $("#likeQ").hidden = mode === "design"; likeOpen(false); drawLike();   // Check my tree: "A style you love", starting on Keep my style
   $("#densityQ").hidden = false;
   show(mode === "design" ? "s-start" : "s-photo");
@@ -3214,7 +3215,8 @@ $("#roomTreeFile").addEventListener("change", () => pickExtra($("#roomTreeFile")
 $("#roomTreeClear").onclick = () => { clearRoomTree(); baseKey = ""; };
 $("#detailsSkip").onclick = () => { if (rerunFromHub) { history.back(); return; } factsSet = false; if (mode === "design" && src === "idea") { useIdeaAsStyle(); run(); } else if (mode === "design" && chosenLook) run(); else if (mode === "check") checkInOwnStyle(); else show("s-style"); };
 // Check my tree has no style screen (Eric, Nov 15): a check always works in the tree's own style; a new look belongs in Design my tree
-function checkInOwnStyle() { const st = document.querySelector('input[name=style][value=keep]'); if (st) st.checked = true; run(); }
+// (Kylie's "A style you love" menu on About your tree can pick another; it starts on Keep my style for each new check)
+function checkInOwnStyle() { if (!LIKE_STYLES.some(x => x[0] === val("style"))) { const st = document.querySelector('input[name=style][value=keep]'); if (st) st.checked = true; } run(); }
 // From an idea, their own words are the style: "themed", with the description as the theme
 function useIdeaAsStyle() {
   const t = $("#ideaText").value.trim();
