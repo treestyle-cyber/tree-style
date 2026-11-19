@@ -74,6 +74,10 @@
             <textarea id="ideaText" rows="4" style="font:15px var(--sans);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink)" placeholder="e.g. A tree inspired by this print"></textarea></label>
         </div>
       </div>
+      <div id="piecesBox" hidden>
+        <p class="meta" style="margin:14px 0 6px">Their own pieces (both columns get the same photos, up to 6):</p>
+        <div class="photos" id="pcPhotos"></div>
+      </div>
       <div class="opts">
         <label>Mode<select id="mode"><option value="check">Check my tree</option><option value="design" selected>Design my tree</option><option value="idea">Start from an idea</option></select></label>
         <label>Style<select id="style"><option value="all" selected>Every style</option><option value="keep">Keep my style</option><option value="classic">Traditional</option><option value="rustic">Rustic</option><option value="modern">Modern</option><option value="elegant">Elegant</option><option value="playful">Playful</option></select></label>
@@ -91,6 +95,7 @@
 <div id="big" hidden><img alt=""></div>
 <input type="file" id="file" accept="image/*" multiple hidden>
 <input type="file" id="inspoFile" accept="image/*" hidden>
+<input type="file" id="pcFile" accept="image/*" multiple hidden>
 
 <script src="/try/engine.js?v=20261117c"></script>
 <script src="/try/guide.js?v=20261117d"></script>
@@ -139,6 +144,26 @@ function drawInspo() {
   const a = $("#inspoSlot .add"); if (a) a.onclick = () => $("#inspoFile").click();
 }
 $("#inspoFile").onchange = async e => { const f = e.target.files[0]; if (f) { inspo = await prep(f); try { localStorage.setItem("ts_lab_inspo", inspo); } catch {} drawInspo(); } e.target.value = ""; };
+let pcs = []; try { pcs = JSON.parse(localStorage.getItem("ts_lab_pieces") || "[]"); } catch {}
+const savePcs = () => { try { localStorage.setItem("ts_lab_pieces", JSON.stringify(pcs)); } catch {} };
+function drawPcs() {
+  $("#pcPhotos").innerHTML = pcs.map((p, i) => `<div class="ph"><img src="${p}" alt=""><button data-i="${i}" aria-label="Remove">×</button></div>`).join("") + (pcs.length < 6 ? `<div class="add" id="pcAdd">+ Add photos of their pieces</div>` : "");
+  document.querySelectorAll("#pcPhotos .ph button").forEach(b => b.onclick = () => { pcs.splice(+b.dataset.i, 1); savePcs(); drawPcs(); });
+  const a = $("#pcAdd"); if (a) a.onclick = () => $("#pcFile").click();
+}
+$("#pcFile").onchange = async e => { for (const f of [...e.target.files].slice(0, 6 - pcs.length)) pcs.push(await prep(f)); savePcs(); drawPcs(); e.target.value = ""; };
+// The app's own board: several photos side by side as one image, as the app sends them
+async function piecesBoard(list) {
+  if (!list.length) return null;
+  if (list.length === 1) return list[0];
+  const ims = await Promise.all(list.map(loadImg));
+  const cols = list.length <= 4 ? 2 : 3, rows = Math.ceil(list.length / cols), cell = 600, gap = 10, c = document.createElement("canvas"), g = c.getContext("2d");
+  c.width = cols * cell + (cols + 1) * gap; c.height = rows * cell + (rows + 1) * gap;
+  g.fillStyle = "#EDEBE6"; g.fillRect(0, 0, c.width, c.height);
+  ims.forEach((im, i) => { const x = gap + (i % cols) * (cell + gap), y = gap + Math.floor(i / cols) * (cell + gap), k = Math.min(cell / im.width, cell / im.height), w = im.width * k, h = im.height * k; g.drawImage(im, x + (cell - w) / 2, y + (cell - h) / 2, w, h); });
+  return c.toDataURL("image/jpeg", 0.86);
+}
+const PIECES_TEST = new URLSearchParams(location.search).get("test") === "pieces";
 function facts(mode) {
   const f = { kind: $("#fKind").value, height: Number($("#fHeight").value) || 0, density: $("#fDensity").value, stage: mode === "check" ? $("#fStage").value : "" };
   return (f.kind || f.height || f.density || f.stage) ? f : undefined;
@@ -170,8 +195,9 @@ const TESTS = {
   ribbon6: { title: "Test: six ribbon styles, the plan picks one", variant: "ribbon6" },
   shape2: { title: "Test: shaping opens branches, adds none", variant: "shape2", samePlan: true },
   map2: { title: "Test: flower spots without the yellow center", variant: "map2", samePlan: true },
+  pieces: { title: "Test: their own pieces, exactly as photographed", variant: "pieces" },
 };
-const DESC = { crown: "Testing the topper: the left plans with one added principle: the crown is finished with a real topper sold as one (a finial, starburst, star, angel, bow topper, spray topper...), chosen for the style and sized to the tree, named on the shopping list and painted plainly; their own topper stays only if it holds its own from across the room. Everything else is the live rules. The right is the live app. Run as Check my tree with Keep my style. Open with /lab?test=crown.", diagram: "Testing flat circles and dots: both columns paint the same plan. The left sends the placement map as a diagram (the tree outline on plain paper, a small colored cross and a label for each piece) instead of colored discs over the photo; the right is the live app. Same positions, so the picture still matches the steps. Open with /lab?test=diagram.", nomap: "Testing flat circles and dots: both columns paint the same plan. The left sends the image model only the written instructions; the right (live) also sends the placement map, whose round ornament spots sometimes get painted as flat discs. Open with /lab?test=nomap.", clarify: "Testing the clarified wording from your designer's brief on the live rules: the biggest ornaments partway in and still visible; no black unless the person, style or theme calls for it; build on the strongest color, no near-matches, tonal on purpose is fine; same tree, with branches opened but never added and kept pieces staying put in their color. The statement ribbon, ornament counts and everything else are the live rules. Open with /lab?test=clarify.", strip: "Testing a new look for a decorated tree: pick the new style above. The left column takes every decoration off their own tree in one step, then designs the new style on that bare tree. The right column is the live app checking the photo in that style. (The simpler-rules test was retired Nov 15: the live rules won.)", simple: "Testing your designer's brief: the left column follows the simpler rules (four steps, six ribbon styles, generous where the tree needs it, shaping that adds no branches, the eight hard limits). The right column is the live app. Run as Check my tree with Keep my style.", ribbon6: "Testing ribbon styles: the left column's plan picks one of your six ribbon styles and the picture copies that style's photo (shown above each test picture). The right column is the live app with your single ribbon photo.", shape2: "Testing branch shaping: both columns paint the same plan; the left opens the branches without adding any.", map2: "Testing flower spots: both columns paint the same plan; the left draws flower spots without the yellow center." };
+const DESC = { pieces: "Testing their own pieces (Kylie): add photos of pieces they own below. The left counts every piece in the photos, gives each its own plan item described exactly (shape, real size, colors, design, finish), places each where it is seen first, and tells the image model to copy each one exactly, put every one on the tree and check before finishing. The right is the live app with the same photos. Everything else is the live rules. Live unchanged until Eric picks.", crown: "Testing the topper: the left plans with one added principle: the crown is finished with a real topper sold as one (a finial, starburst, star, angel, bow topper, spray topper...), chosen for the style and sized to the tree, named on the shopping list and painted plainly; their own topper stays only if it holds its own from across the room. Everything else is the live rules. The right is the live app. Run as Check my tree with Keep my style. Open with /lab?test=crown.", diagram: "Testing flat circles and dots: both columns paint the same plan. The left sends the placement map as a diagram (the tree outline on plain paper, a small colored cross and a label for each piece) instead of colored discs over the photo; the right is the live app. Same positions, so the picture still matches the steps. Open with /lab?test=diagram.", nomap: "Testing flat circles and dots: both columns paint the same plan. The left sends the image model only the written instructions; the right (live) also sends the placement map, whose round ornament spots sometimes get painted as flat discs. Open with /lab?test=nomap.", clarify: "Testing the clarified wording from your designer's brief on the live rules: the biggest ornaments partway in and still visible; no black unless the person, style or theme calls for it; build on the strongest color, no near-matches, tonal on purpose is fine; same tree, with branches opened but never added and kept pieces staying put in their color. The statement ribbon, ornament counts and everything else are the live rules. Open with /lab?test=clarify.", strip: "Testing a new look for a decorated tree: pick the new style above. The left column takes every decoration off their own tree in one step, then designs the new style on that bare tree. The right column is the live app checking the photo in that style. (The simpler-rules test was retired Nov 15: the live rules won.)", simple: "Testing your designer's brief: the left column follows the simpler rules (four steps, six ribbon styles, generous where the tree needs it, shaping that adds no branches, the eight hard limits). The right column is the live app. Run as Check my tree with Keep my style.", ribbon6: "Testing ribbon styles: the left column's plan picks one of your six ribbon styles and the picture copies that style's photo (shown above each test picture). The right column is the live app with your single ribbon photo.", shape2: "Testing branch shaping: both columns paint the same plan; the left opens the branches without adding any.", map2: "Testing flower spots: both columns paint the same plan; the left draws flower spots without the yellow center." };
 const COLS = [TESTS[new URLSearchParams(location.search).get("test")] || TESTS.strip, { title: "Live app", variant: undefined }];
 const ALL_STYLES = [["classic", "Traditional"], ["rustic", "Rustic"], ["modern", "Modern"], ["elegant", "Elegant"], ["playful", "Playful"], ["keep", "Keep my style"]];
 async function runOne(src, idx, mode, style, extra = {}, label = "") {
@@ -179,6 +205,7 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
   row.className = "row";
   const col = (title, id) => `<div class="col"><h3>${title}</h3><div id="${id}-badge"></div><div class="pic" id="${id}-pic"><div class="spin"></div></div><div class="meta" id="${id}-meta"></div><details><summary>Instructions sent to the image model</summary><pre id="${id}-brief">…</pre></details><details><summary>Placement map</summary><div id="${id}-map"></div></details></div>`;
   row.innerHTML = `<div class="col"><h3>${label || "Tree " + (idx + 1)}</h3><div class="pic"><img src="${extra.inspo || src}" alt=""></div>${extra.inspo ? `<div class="meta">The bare tree both versions designed:</div><div class="pic"><img src="${src}" alt=""></div>` : ""}</div>` + COLS.map((c, k) => col(c.title, (k ? "p" : "c") + idx)).join("");
+  if (extra.pieces) row.querySelector(".col").insertAdjacentHTML("beforeend", `<div class="meta" style="margin-top:8px">Their pieces, as sent:</div><div class="pic"><img src="${extra.pieces}" alt=""></div>`);
   $("#out").appendChild(row);
   const im = await loadImg(src), r = im.width / im.height, aspect = ASPECTS.reduce((a, b) => Math.abs(b[1] - r) < Math.abs(a[1] - r) ? b : a)[0];
   let look = {};
@@ -201,7 +228,7 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
       // same branch-shaping rule as the app
       // same as the app: never a real tree, never when Fullness scored 8+, else when it scored 7 or less or the plan shapes the branches
       const fc = (result.categories || []).find(c => c.name === "Fullness"), dn = extra.facts?.density, shape = result.tree?.kind !== "natural" && dn !== "open" && (dn === "unshaped" || (fc ? Number(fc.score) <= 7 : (result.plan || []).some(x => x.element === "fluff")));
-      const out = await api("/api/render", { image: src, brief: result.render_brief, aspect, map, mapKind: (variant === "map2" || variant === "ribbon6" || variant === "simple" || variant === "nomap") ? undefined : "diagram", variant, shape: shape || undefined, ribbonStyle: (variant === "ribbon6" || variant === "simple") ? result.mockup?.ribbon_technique : undefined, removeFirst: (variant === "ribbon6" || variant === "simple") ? result.remove_first || undefined : undefined });
+      const out = await api("/api/render", { image: src, brief: result.render_brief, aspect, map, pieces: extra.pieces, mapKind: (variant === "map2" || variant === "ribbon6" || variant === "simple" || variant === "nomap") ? undefined : "diagram", variant, shape: shape || undefined, ribbonStyle: (variant === "ribbon6" || variant === "simple") ? result.mockup?.ribbon_technique : undefined, removeFirst: (variant === "ribbon6" || variant === "simple") ? result.remove_first || undefined : undefined });
       $(`#${id}-pic`).innerHTML = `<img src="${out.image}" alt="">`;
       const STEP_LABEL = { ribbon: "Ribbon:", primary_picks: "Greenery:", florals: "Flowers:", statement: "Large ornaments:", medium: "Ornaments:", small_picks: "Picks:", crown: "Top:", base: "Base:", lights: "Lights:" };
       const used = (result.plan || []).map(p => Object.assign(String(p.shop || "").match(/^\[([A-Z0-9]{10})\]\s*(.*)/) || [], { el: p.element })).filter(m => m[1]);
@@ -234,16 +261,18 @@ async function runOne(src, idx, mode, style, extra = {}, label = "") {
 $("#go").onclick = async () => {
   const mode = $("#mode").value, style = $("#style").value;
   if (mode === "idea") return runIdea();
-  const f = facts(mode);
+  if (PIECES_TEST && !pcs.length) { $("#note").textContent = "Add photos of their pieces first."; return; }
+  const board = PIECES_TEST ? await piecesBoard(pcs) : null;
+  const f0 = facts(mode), f = f0 || board ? { ...(f0 ? { facts: f0 } : {}), ...(board ? { pieces: board } : {}) } : null;
   if (style === "all") {
     $("#go").disabled = true; $("#out").innerHTML = "";
     let k = 0;
-    for (let i = 0; i < photos.length; i++) for (const [st, name] of ALL_STYLES) await runOne(photos[i], k++, mode, st, f ? { facts: f } : {}, name + (photos.length > 1 ? ` · tree ${i + 1}` : ""));
+    for (let i = 0; i < photos.length; i++) for (const [st, name] of ALL_STYLES) await runOne(photos[i], k++, mode, st, f || {}, name + (photos.length > 1 ? ` · tree ${i + 1}` : ""));
     $("#go").disabled = false; return;
   }
   if (!photos.length) { $("#note").textContent = "Add at least one tree photo first."; return; }
   $("#go").disabled = true; $("#out").innerHTML = "";
-  for (let i = 0; i < photos.length; i++) await runOne(photos[i], i, mode, style, f ? { facts: f } : {});
+  for (let i = 0; i < photos.length; i++) await runOne(photos[i], i, mode, style, f || {});
   $("#go").disabled = false;
 };
 async function runIdea() {
@@ -267,7 +296,7 @@ $("#big").onclick = () => $("#big").hidden = true;
 
 function gate() { $("#lab").hidden = true; $("#gate").hidden = false; }
 $("#gateForm").onsubmit = e => { e.preventDefault(); password = $("#pw").value.trim(); try { sessionStorage.setItem("ts_pw", password); } catch {} start(); };
-function start() { const tk = new URLSearchParams(location.search).get("test"); $("#testDesc").textContent = DESC[TESTS[tk] ? tk : "strip"]; if (tk === "nomap" || tk === "diagram" || tk === "crown") { $("#mode").value = "check"; $("#style").value = "keep"; } else if (!TESTS[tk] || tk === "strip") { $("#mode").value = "check"; $("#style").value = "rustic"; } if (!password) return gate(); $("#gate").hidden = true; $("#lab").hidden = false; drawPhotos(); drawInspo(); syncMode(); }
+function start() { const tk = new URLSearchParams(location.search).get("test"); $("#testDesc").textContent = DESC[TESTS[tk] ? tk : "strip"]; if (tk === "nomap" || tk === "diagram" || tk === "crown" || tk === "pieces") { $("#mode").value = "check"; $("#style").value = "keep"; } else if (!TESTS[tk] || tk === "strip") { $("#mode").value = "check"; $("#style").value = "rustic"; } if (!password) return gate(); $("#gate").hidden = true; $("#lab").hidden = false; drawPhotos(); drawInspo(); $("#piecesBox").hidden = !PIECES_TEST; if (PIECES_TEST) drawPcs(); syncMode(); }
 start();
 </script>
 </body>

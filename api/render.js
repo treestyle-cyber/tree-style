@@ -1,5 +1,6 @@
 // POST { image: dataURL, brief: string, aspect: "3:4" etc. }
 // Edits the photo with Google's Gemini image model and returns { image: dataURL }.
+import { PIECES_REF, PIECES_CHECK } from "../lib/pieces.js";
 import { checkPassword, parseDataUrl } from "../lib/util.js";
 
 const MODELS = [
@@ -81,7 +82,7 @@ RIBBON RULES (important): ribbon never forms a continuous line, stripe, swag or 
 The result must look like an ordinary real photograph of the same tree in the same room, not an illustration, with no circles, rings, outlines or other markings drawn on it.`;
 }
 
-async function callGemini(model, img, prompt, aspect, pieces, map, ref, plainFlowers, refNote = RIBBON_REF_NOTE, diagram = false) {
+async function callGemini(model, img, prompt, aspect, pieces, map, ref, plainFlowers, refNote = RIBBON_REF_NOTE, diagram = false, piecesRef = "") {
   // (map is skipped for small revisions: the current preview already shows the placements)
   const generationConfig = { responseModalities: ["IMAGE"] };
   if (aspect) generationConfig.imageConfig = { aspectRatio: aspect };
@@ -94,7 +95,7 @@ async function callGemini(model, img, prompt, aspect, pieces, map, ref, plainFlo
         { inline_data: { mime_type: img.mediaType, data: img.data } },
         ...(map && diagram ? [{ text: "Placement diagram (a guide, not a photo): a drawing of this tree's outline as a dashed triangle on plain paper, with a small colored cross and a short label at each spot where an addition goes (the ribbon spots, flowers, and each ornament with its color and size). It lines up with the photo, so a cross at a spot in the diagram means that piece goes at the same spot on the tree. A cross marks where a piece is seen from the front, not that it sits on the surface: ornaments hang within the branches, and the large ones (marked \"set in\") are set partway in toward the trunk with branch tips in front of them and around them, so they look nestled into the tree, never perched on the outside. Each one marked is still painted and still clearly seen, partly behind branch tips but never hidden away, so a color with two or three extra-large ornaments shows all of them spread across the tree, never one lone standout. The spots are deliberately uneven, the way a designer places them: keep them where they are, and don't mirror pieces left and right, line them up in pairs at the same height, or frame anything with a matching piece on each side. Use it only for positions: the finished photo contains no crosses, lines, dashes, labels, text or markings of any kind, only real, photorealistic decorations. Follow its positions and spacing so the result matches the homeowner's step-by-step guide, and don't add groupings or extra pieces the diagram and instructions don't show. If the written instructions and the diagram disagree about where something goes, follow the diagram." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : []),
         ...(map && !diagram ? [{ text: "Placement map (reference only, do not edit or copy its drawing style): the same photo with soft colored blobs showing WHERE each addition goes: " + (refNote === RIBBON_REF_NOTE ? "ovals in the ribbon color = a spot where a piece of wide ribbon spills or billows out of the branches (never a bow);" : "ovals in the ribbon color = a spot where ribbon goes, in the ribbon style described;") + " small blobs in the accent ribbon color = small accent loops; " + (plainFlowers ? "blobs in the flower color = flowers" : "blobs with a yellow center = flowers") + "; round blobs = ornaments in that color at that size. The blobs are position hints only: the finished photo must contain NO circles, rings, outlines, dots, blobs, labels or markings of any kind, only real decorations. Follow its positions and spacing so the result matches the homeowner's step-by-step guide, and don't add groupings or extra pieces the map and instructions don't show. If the written instructions and the map disagree about where something goes, follow the map." }, { inline_data: { mime_type: map.mediaType, data: map.data } }] : []),
-        ...(pieces ? [{ text: "Reference only (do not edit this one): the homeowner's own special pieces (it may be a board of several photos side by side; the board itself is not part of the scene). Show these exact pieces on the tree where the instructions place them." }, { inline_data: { mime_type: pieces.mediaType, data: pieces.data } }] : []),
+        ...(pieces ? [{ text: piecesRef || "Reference only (do not edit this one): the homeowner's own special pieces (it may be a board of several photos side by side; the board itself is not part of the scene). Show these exact pieces on the tree where the instructions place them." }, { inline_data: { mime_type: pieces.mediaType, data: pieces.data } }] : []),
         ...(ref ? [{ text: refNote }, { inline_data: { mime_type: ref.mediaType, data: ref.data } }] : [])
       ] }],
       generationConfig
@@ -185,7 +186,10 @@ export default async function handler(req, res) {
   const clarify = variant === "clarify" && !revision;
   const basePrompt = simple ? simplePrompt(brief, !!shape, rs) + (generic ? GENERIC : "") : clearOld + editPrompt(brief, revision, !!shape && !revision, variant === "shape2") + (generic ? GENERIC : "") + (variant === "v2" ? LAB_CHECK : "") + shapeText + showNew;
   // Lab "clarify": the live picture instructions with the clarified wording, and shaping that opens branches but adds none
-  const prompt = clarify ? clarifyPicture(editPrompt(brief, revision, !!shape, true) + (generic ? GENERIC : "") + shapeText) : basePrompt;
+  // Lab "pieces" (Kylie, Nov 19): their own pieces copied exactly, every one on the tree
+  const piecesLab = variant === "pieces" && !revision && pc;
+  const prompt0 = clarify ? clarifyPicture(editPrompt(brief, revision, !!shape, true) + (generic ? GENERIC : "") + shapeText) : basePrompt;
+  const prompt = piecesLab ? prompt0 + PIECES_CHECK : prompt0;
   if (generic) retried = true;
   // Lab "ribbon6": when the plan says old ribbon or garland runs across the tree, take it off in its own small edit first
   // (Eric, Nov 14: asked inside the full decorating instructions, the model kept leaving it on), then decorate that picture.
@@ -198,9 +202,9 @@ export default async function handler(req, res) {
     else console.error("RIBBON_CLEAR_FAILED", c.status, JSON.stringify(c.body?.candidates?.[0]?.finishReason || c.body?.error?.message || "").slice(0, 200));
   }
   for (const model of models) {
-    let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rrefSent, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap);
+    let out = await callGemini(model, img, prompt, ar, pc, revision ? null : mp, rrefSent, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap, piecesLab ? PIECES_REF : "");
     // Some models reject imageConfig; retry once without it.
-    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, prompt, null, pc, revision ? null : mp, rrefSent, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap);
+    if (!out.ok && out.status === 400 && ar) out = await callGemini(model, img, prompt, null, pc, revision ? null : mp, rrefSent, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap, piecesLab ? PIECES_REF : "");
     if (!out.ok) {
       lastErr = out.body?.error?.message || `Gemini error ${out.status}`;
       // Model not available, or no quota for it on this account: try the next one
@@ -217,7 +221,7 @@ export default async function handler(req, res) {
       const fluke = /NO_IMAGE|no image returned/i.test(String(why));
       if (!retried && (fluke || /SAFETY|PROHIBIT|RECITATION|BLOCK|IMAGE_OTHER|OTHER|copyright|trademark/i.test(String(why)))) {
         retried = true;
-        const again = await callGemini(model, img, fluke ? prompt : prompt + GENERIC, ar, pc, revision ? null : mp, rrefSent, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap);
+        const again = await callGemini(model, img, fluke ? prompt : prompt + GENERIC, ar, pc, revision ? null : mp, rrefSent, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap, piecesLab ? PIECES_REF : "");
         const p2 = again.body?.candidates?.[0]?.content?.parts || [], pic2 = p2.find(p => p.inlineData || p.inline_data);
         if (again.ok && pic2) { let d2 = pic2.inlineData || pic2.inline_data; let marksFixed = false; if (mp && !revision) ({ d: d2, fixed: marksFixed } = await cleanMarks(model, d2, ar)); return res.status(200).json({ image: `data:${d2.mimeType || d2.mime_type || "image/png"};base64,${d2.data}`, _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !fluke, retried: true } }); }
         console.error("RENDER_REFUSED_AGAIN", JSON.stringify({ model, why: String(again.body?.candidates?.[0]?.finishReason || again.status).slice(0, 200) }));
