@@ -203,6 +203,12 @@ const ESSENTIALS = [
   { id:"scissors", label:"Fabric scissors", qty:"Crisp, clean ribbon tails", q:"fabric scissors" },
 ];
 
+// The trees: the tree each look is built on. A full link is used as it is; "q:words" is a tagged store search.
+const TREES = [
+  { href:"https://link.amazon/B00dj2qSd", name:"Flocked artificial tree", note:"Snowy white tips with green underneath", look:"check", cols:["#F4F1EA","#3F6B47"] },
+  { href:"q:black artificial christmas tree pre lit 7.5 ft", name:"Black pre-lit artificial tree", note:"Black branches, warm white lights", look:"black", cols:["#5A5A62","#202024"] },
+];
+
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const band = (cols, w, look) => {
   const c = cols.map(k => HEX[k] || k), h = Math.round(14 + parseFloat(w) * 7);
@@ -216,6 +222,10 @@ const ribbonCard = ([asin, name, w, cols, tags, look]) => `<article class="card"
 const itemCard = kind => ([asin, name, detail, cols, tags]) => `<article class="card"><div class="swatch">${svg(/\bbow\b/i.test(name) ? "bow" : kind, cols)}</div>
   <div class="body"><b>${esc(name)}</b>${tagsHtml([detail, ...tags])}${shopBtn(dp(asin))}</div></article>`;
 
+const treeSvg = ([tip, base]) => `<svg width="64" height="72" viewBox="0 0 64 72"><path d="M32 4 L52 54 H12 Z" fill="${base}" stroke="#C9A961" stroke-opacity=".35" stroke-width="1"/><path d="M32 4 L45 36 H19 Z M32 20 L49 50 H15 Z" fill="${tip}" opacity=".55"/><rect x="28" y="54" width="8" height="10" rx="1" fill="#6B4A33"/><circle cx="32" cy="5" r="3" fill="#C9A961"/></svg>`;
+const treeCard = t => { const L = LOOKS.find(x => x.id === t.look);
+  return `<article class="card"><div class="swatch">${treeSvg(t.cols)}</div>
+  <div class="body"><b>${esc(t.name)}</b><p class="note">${esc(t.note)}</p>${L ? `<p class="note">The tree in <a href="#look-${L.id}">${esc(L.name)}</a></p>` : ""}${shopBtn(t.href.startsWith("q:") ? search(t.href.slice(2)) : t.href)}</div></article>`; };
 const essUrl = e => {
   const asin = (String(e.link || "").match(/\/(?:dp|gp\/product|gp\/aw\/d)\/([A-Z0-9]{10})/i) || [])[1];
   return asin ? dp(asin.toUpperCase()) : search(e.q || e.label);   // an amzn.to link would carry the old tag, so it falls back to a search
@@ -256,10 +266,11 @@ LOOKS.forEach(L => L.pieces.forEach(([asin, role, name, cols, kind]) => { const 
 const colorHtml = g => { const rows = TYPES.map(([t, label]) => { const items = ALL.filter(x => x.color === g.id && x.type === t); return items.length ?
   `<h3 class="kind">${label}</h3><div class="row">${items.map(x => x.html).join("")}</div>` : ""; }).join("");
   return rows ? `<section class="set" id="${g.id}"><h2><i class="dot" style="background:${g.dot}"></i>${esc(g.name)}</h2><p>${esc(g.blurb)}</p>${rows}</section>` : ""; };
-const NAV = [...(LOOKS.length ? [{ id:"looks", name:"Shop the look", dot:"#C9A961" }] : []), { id:"essentials", name:"Stylist's essentials", dot:"#B8954F" }];
+const NAV = [...(LOOKS.length ? [{ id:"looks", name:"Shop the look", dot:"#C9A961" }] : []), { id:"trees", name:"The trees", dot:"#3F6B47" }, { id:"essentials", name:"Stylist's essentials", dot:"#B8954F" }];
 document.getElementById("nav").innerHTML = NAV.map(s => `<a href="#${s.id}"><i style="background:${s.dot}"></i>${esc(s.name)}</a>`).join("");
 document.getElementById("sets").innerHTML =
   (LOOKS.length ? `<section class="set" id="looks"><h2>Shop the look</h2><p>Designed with the TreeStyle app. Tap a tree to shop every piece early.</p><div class="lookgrid">${LOOKS.map(L => lookCard(L)).join("")}</div></section><div class="divider"></div>` : "")
+  + `<section class="set" id="trees"><h2>The trees</h2><p>Every look starts with the right tree.</p><div class="grid">${TREES.map(treeCard).join("")}</div></section><div class="divider"></div>`
   + `<section class="set" id="essentials"><h2>Stylist's essentials</h2><p>Every stylist keeps these on hand.</p><div class="grid" id="essGrid"></div></section>`;
 // The looks now cover each color, so older color and category links open the matching look (or the gallery)
 { const OLD = { red:"look-red", green:"look-green", gold:"look-gold", silver:"look-winter", blue:"look-lodge" };
