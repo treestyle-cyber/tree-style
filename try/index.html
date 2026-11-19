@@ -4159,12 +4159,12 @@ $("#sv2Parts").addEventListener("click", e => { const b = e.target.closest("butt
 // A step video from the Studio (Kylie: show a clip of the branches being unfolded and shaped) plays on a loop in the card, silent.
 // Called when the step is drawn and again when the Studio's photo list arrives (Kylie: the video didn't show on first load,
 // because the step was drawn before the list came back)
-// Built-in step videos (Kylie's own clips), used until a clip is kept for that step in the Studio
+// Built-in step videos (Kylie's own clips). They take priority over a clip made in the Studio for the same step (Kylie re-sent her filler clip when an earlier auto-made one was showing)
 const STEP_VIDS = { fluff: "/brand/videos/step-shape.mp4", primary_picks: "/brand/videos/step-filler.mp4", crown: "/brand/videos/step-crown.mp4" };
 function sv2Video(key, pic) {
   if (!key || !$("#sv2Pic")) return;
   const ph = window.__PH || {};
-  { const vs = key === "crown" && window.__sv2part === "base" ? "" : (ph["vid_" + key] || STEP_VIDS[key]), cur = $("#sv2Pic").querySelector("video");
+  { const vs = key === "crown" && window.__sv2part === "base" ? "" : (STEP_VIDS[key] || ph["vid_" + key]), cur = $("#sv2Pic").querySelector("video");
       if (!vs) { if (cur) cur.remove(); $("#sv2Pic").classList.remove("hasvid"); }
       else if (!cur || cur.dataset.src !== vs) {
         if (cur) cur.remove();

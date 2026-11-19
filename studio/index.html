@@ -635,7 +635,7 @@ function vidCrop(v, cr) {   // where a step video sits in its card: x,y = the po
 }
 const STEP_VIDS = { vid_fluff: "/brand/videos/step-shape.mp4", vid_primary_picks: "/brand/videos/step-filler.mp4", vid_crown: "/brand/videos/step-crown.mp4" };   // built into the app (Kylie's own clips); a clip kept here replaces it
 function stepVideos(current, crops = {}) {
-  current = Object.assign({}, STEP_VIDS, current);
+  current = Object.assign({}, current, STEP_VIDS);   // Kylie's own clips win over clips made here
   if (!document.getElementById("vboxCss")) { const st = document.createElement("style"); st.id = "vboxCss"; st.textContent = ".vbox .frame .lbl{position:absolute;z-index:3}.vbox .frame{position:relative}"; document.head.appendChild(st); }
   document.querySelectorAll('.slot[data-id^="how_"]').forEach(el => {
     const key = el.dataset.id.slice(4), vid = "vid_" + key; if (el.querySelector(".vbox")) return;
@@ -653,6 +653,10 @@ function stepVideos(current, crops = {}) {
       <div class="row"><button class="btn ghost vgen">Make a clip</button><label class="btn ghost" style="cursor:pointer">Upload a clip<input type="file" class="vupl" accept="video/mp4,video/quicktime,video/*" hidden></label><button class="btn vuse" disabled>Use this clip</button></div>
       <div class="msg vmsg"></div>`;
     el.appendChild(box);
+    if (STEP_VIDS[vid]) {   // a built-in clip (Kylie's own): crop and size it here; a new clip for this step goes to Claude to build in
+      box.querySelector(".vgen").closest(".row").hidden = true; box.querySelector(".vprompt").hidden = true; box.querySelector(".vnew").hidden = true;
+      box.querySelector(".where").textContent = "Kylie's own clip is built into the app for this step. Drag and size it below to adjust the crop. To replace it, send the new clip to Claude.";
+    }
     const nf = box.querySelector(".vnew"), msg = box.querySelector(".vmsg"), gen = box.querySelector(".vgen"), use = box.querySelector(".vuse");
     // ---- crop: drag the In use video to move it, slider to zoom; saved per step ----
     const curF = box.querySelector(".frame.cur"), zoomI = box.querySelector(".vzoom"), cSave = box.querySelector(".vcsave");
