@@ -4331,7 +4331,17 @@ const hiRes = () => watermarked(2400, 3600, .95);   // their tree alone, with th
 function saveBlob(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
 $("#revSave").onclick = async () => {
   const b = $("#revSave"), t = b.innerHTML; b.disabled = true; b.lastChild.textContent = "Preparing…";
-  try { const blob = await hiRes(); saveBlob(blob, "my-tree-treestyle.jpg"); $("#revNote").textContent = "Saved in high resolution. Look for my-tree-treestyle.jpg in your downloads or photos."; }
+  try {
+    const blob = await hiRes();
+    // On a phone, the phone's own sheet offers every place to keep it: Save Image (Photos), Save to Files, Drive, AirDrop… (Kylie)
+    const file = new File([blob], "my-tree-treestyle.jpg", { type: "image/jpeg" });
+    if ((matchMedia("(pointer: coarse)").matches || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent)) && navigator.canShare && navigator.canShare({ files: [file] })) {
+      $("#revNote").textContent = "Choose where to keep it: Save Image puts it in Photos, Save to Files in Files.";
+      try { await navigator.share({ files: [file], title: "My tree, styled with TreeStyle" }); $("#revNote").textContent = "Saved in high resolution."; return; }
+      catch (err) { if (err.name === "AbortError") { $("#revNote").textContent = "Tap Download again whenever you'd like to save it."; return; } }
+    }
+    saveBlob(blob, "my-tree-treestyle.jpg"); $("#revNote").textContent = "Saved in high resolution. Look for my-tree-treestyle.jpg in your downloads.";
+  }
   catch (e) { $("#revNote").textContent = "Couldn't make the image. Please try again."; }
   finally { b.innerHTML = t; b.disabled = false; }
 };
