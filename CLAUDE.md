@@ -336,3 +336,4 @@ Read this first in every session. It holds what the team has decided and why, so
 - 2026-11-19: The chat's typing ornaments are smaller (Kylie, twice): 5 px balls (were 11 px) with short threads and a gentle bob, in a compact bubble.
 - 2026-11-19: The stylist's name in the chat reads "Eric" (Kylie; briefly "Eric, your personal stylist"). Since the answers come from AI, the note under the chat now says "Answers are written by AI, using Eric's design rules." Eric to confirm he's happy to have his name on the chat.
 - 2026-11-19: The chat's greeting reads "Hi! I'm Eric, your TreeStyle stylist. Ask me anything about decorating your tree." (Kylie's words; the old ending about answering for their plan is gone, though answers still use their plan when there is one).
+- 2026-11-19: The chat's header no longer has the round logo beside "Need a hand?…" (Kylie); Eric's small tree picture beside each answer stays.
