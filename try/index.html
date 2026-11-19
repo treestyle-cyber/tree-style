@@ -1212,6 +1212,32 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   html.theme-ivory body:has(#s-help:not([hidden])) .appbar{background:#1F3A2C}
   html.theme-ivory body:has(#s-help:not([hidden])) .appbar .barmono{filter:none}
   html.theme-ivory body:has(#s-help:not([hidden])) .appbar button,html.theme-ivory body:has(#s-help:not([hidden])) #navBack{color:#F3EEE7}
+  /* Chat in the brand blue (Kylie, Nov 19): deep blue gradient, white text, names in bold gold gradient, a typing animation */
+  html:root body:has(#s-help:not([hidden])){background:#141C2C}
+  html:root body:has(#s-help:not([hidden])) .appbar{background:#2E4469}
+  html:root body:has(#s-help:not([hidden])) .appbar .barmono{filter:none}
+  html:root body:has(#s-help:not([hidden])) .appbar button,html:root body:has(#s-help:not([hidden])) #navBack{color:#fff}
+  html:root #s-help.screen{background:linear-gradient(180deg,#2E4469 0%,#1D2B45 50%,#141C2C 100%) fixed;margin:-16px -20px 0;padding:16px 20px 24px;color:#fff}
+  html:root #s-help.screen h1,html:root #s-help.screen .helphead p{color:#fff}
+  html:root #s-help.screen .helphead .hav{background:rgba(255,255,255,.1);border:1px solid rgba(232,199,126,.55)}
+  html:root #s-help.screen .chatlog .cmsg{display:grid;gap:4px;max-width:84%}
+  html:root #s-help.screen .chatlog .cmsg.me{justify-self:end;justify-items:end}
+  html:root #s-help.screen .chatlog .cmsg.ai{justify-self:start;justify-items:start}
+  html:root #s-help.screen .chatlog .who{font:700 12.5px var(--sans);letter-spacing:.06em;background:linear-gradient(100deg,#9C7A3C 0%,#E8C77E 30%,#FFF1C8 50%,#D9B25F 70%,#A8823F 100%);-webkit-background-clip:text;background-clip:text;color:transparent;padding:0 4px}
+  html:root #s-help.screen .chatlog .bub{max-width:none;color:#fff}
+  html:root #s-help.screen .chatlog .bub.me{color:#fff;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22)}
+  html:root #s-help.screen .chatlog .bub.ai{color:#fff;background:rgba(10,16,30,.38);border:1px solid rgba(232,199,126,.32)}
+  html:root #s-help.screen .helpchips button{color:#fff;border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.06)}
+  html:root #s-help.screen .helpform{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(8px)}
+  html:root #s-help.screen .helpform input{color:#fff}
+  html:root #s-help.screen .helpform input::placeholder{color:rgba(255,255,255,.6)}
+  html:root #s-help.screen .helpform button{background:linear-gradient(135deg,#B8955A,#E8C77E 50%,#B8955A);color:#141C2C}
+  html:root #s-help.screen .helpnote{color:rgba(255,255,255,.65)}
+  .chatlog .typing{display:inline-flex;gap:5px;align-items:center;padding:4px 2px;height:20px}
+  .chatlog .typing i{width:8px;height:8px;border-radius:50%;background:#E8C77E;animation:tdot 1.2s ease-in-out infinite;opacity:.35}
+  .chatlog .typing i:nth-child(2){animation-delay:.18s} .chatlog .typing i:nth-child(3){animation-delay:.36s}
+  @keyframes tdot{0%,60%,100%{transform:translateY(0);opacity:.35}30%{transform:translateY(-6px);opacity:1}}
+  @media (prefers-reduced-motion: reduce){.chatlog .typing i{animation:none;opacity:.8}}
 
   /* A floating ? at the bottom right opens the stylist chat (only when the Need help? stylist is on).
      It rises above the Next bar, the bottom bar and the Shop the Look banner when they show. */
@@ -5728,8 +5754,10 @@ const HELP_CHIPS = ["How do I add the ribbon?", "How many ornaments does my tree
 let helpChat = [];
 function helpDraw() {
   const log = $("#helpLog");
-  log.innerHTML = (helpChat.length ? "" : `<div class="bub ai">Hi! I'm your TreeStyle stylist. Ask me anything about decorating your tree${result ? ", and I'll answer for the plan you have" : ""}.</div>`)
-    + helpChat.map(m => `<div class="bub ${m.role === "user" ? "me" : "ai"}${m.wait ? " wait" : ""}">${esc(m.text)}</div>`).join("");
+  let me = ""; try { me = (localStorage.getItem("ts_review_name") || "").trim(); } catch (e) {}
+  const msg = (role, html) => `<div class="cmsg ${role}"><span class="who">${role === "me" ? esc(me || "You") : "Your stylist"}</span><div class="bub ${role}">${html}</div></div>`;
+  log.innerHTML = (helpChat.length ? "" : msg("ai", `Hi! I'm your TreeStyle stylist. Ask me anything about decorating your tree${result ? ", and I'll answer for the plan you have" : ""}.`))
+    + helpChat.map(m => m.wait ? msg("ai", `<span class="typing" role="status" aria-label="Your stylist is typing"><i></i><i></i><i></i></span>`) : msg(m.role === "user" ? "me" : "ai", esc(m.text))).join("");
   $("#helpChips").innerHTML = helpChat.length ? "" : HELP_CHIPS.map(c => `<button type="button" data-ask="${esc(c)}">${esc(c)}</button>`).join("");
   requestAnimationFrame(() => { const last = log.lastElementChild; if (last && helpChat.length) last.scrollIntoView({ block: "end", behavior: "smooth" }); });
 }
