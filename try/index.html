@@ -25,7 +25,7 @@
 <script src="/brand-kit.js"></script>
 <script>
 // Brand photos chosen in the Studio replace the fabric textures (each spot keeps its texture until then)
-fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" + Date.now() : "")).then(r => r.json()).then(d => { const ph = d.photos || {}; window.__PH = ph; if (Array.isArray(d.essentials) && d.essentials.length) window.__ESS = d.essentials; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); }
+fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" + Date.now() : "")).then(r => r.json()).then(d => { const ph = d.photos || {}; window.__PH = ph; setTimeout(() => { const st = document.getElementById("s-styles"); if (st && !st.hidden && window.drawLookGallery) drawLookGallery(); }); if (Array.isArray(d.essentials) && d.essentials.length) window.__ESS = d.essentials; for (const [k, u] of Object.entries(ph)) { document.documentElement.style.setProperty("--photo-" + k, `url("${u}")`); document.documentElement.classList.add("ph-" + k); }
   // The shopping list may already be drawn by now: draw it again so filler photos show (Kylie: they weren't showing up)
   if (Object.keys(ph).some(k => /^(fill|top|base|orn)_/.test(k))) { const redo = () => { try { if (typeof result !== "undefined" && result) fill(); if (document.getElementById("s-look") && !document.getElementById("s-look").hidden) drawLook(); } catch (e) {} }; if (document.readyState === "complete") redo(); else addEventListener("load", redo); } }).catch(() => {});
 </script>
@@ -952,6 +952,15 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   }
 
   /* Bottom navigation bar and Shop the Look (Kylie's design; off until switched on in the Studio's Brand kit) */
+  /* Style tab: the look gallery, two tall photo cards per row */
+  .lookgal{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0 6px}
+  .lookgal button{appearance:none;border:1px solid var(--line);background:var(--card,rgba(255,255,255,.04));border-radius:16px;padding:0 0 12px;overflow:hidden;text-align:left;cursor:pointer;color:inherit;display:grid;gap:4px}
+  .lookgal .lgpic{display:block;aspect-ratio:4/5;background:rgba(0,0,0,.2)}
+  .lookgal img{width:100%;height:100%;object-fit:cover;display:block}
+  .lookgal b{font:500 calc(19px * var(--s-headline,1))/1.15 var(--serif);padding:6px 12px 0}
+  .lookgal small{font-size:12.5px;opacity:.75;padding:0 12px;line-height:1.3}
+  .lookgal button.busy{opacity:.55;pointer-events:none}
+  .lgmore{font:500 20px/1.2 var(--serif);margin:22px 0 8px}
   .navbar,.lookbar{display:none}
   html.has-nav body.navroot .navbar{display:grid}
   html.has-nav body.navroot.onhome .lookbar{display:flex}
@@ -1792,8 +1801,10 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   </section>
   <!-- Tab pages (shown by the bottom navigation bar) -->
   <section class="screen tabpage" id="s-styles" data-title="Styles" hidden>
-    <h1>Find your style</h1>
-    <p class="sub">Tap a style to design your tree in it.</p>
+    <h1>Find your look</h1>
+    <p class="sub">Pick a tree you love, snap a photo of yours, and we'll style your tree to match.</p>
+    <div class="lookgal" id="lookGallery"></div>
+    <h2 class="lgmore">Or start from a style</h2>
     <div class="stylegrid2" id="styleCards"></div>
   </section>
   <section class="screen tabpage" id="s-saved" data-title="Saved" hidden>
@@ -1998,6 +2009,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 
 <script src="/try/engine.js?v=20261117c"></script>
 <script src="/try/guide.js?v=20261119i"></script>
+<script src="/picks-looks.js"></script>
 <script>
 // Screen preview (Studio → Screens): /try/?screen-preview&s=<screen> opens that screen straight away with the
 // Studio's sample tree (or ?screen-preview=mine, this browser's own last tree). Nothing links here from the app.
@@ -2730,6 +2742,7 @@ function essRotate(id) {
 
 let password = ""; try { password = sessionStorage.getItem("ts_pw") || ""; } catch {}
 let factsSet = false, keyList = [], keyPhoto = null, inspoPhoto = null, rerunFromHub = false;
+let chosenLook = null;   // a tree picked from the Style tab's gallery: their own tree is styled to match it ({ id, name, brief })
 let src = "tree", roomTree = null, roomPhoto = null, roomMark = [.5, .8], ideaPhoto = null, baseKey = "";   // design starting point
 let mode = "check", photo = null, photoAspect = "3:4", result = null, after = null, stepIdx = 0, doneSteps = new Set();
 
@@ -2780,6 +2793,8 @@ const FOOT = {
     ? ({ label: "Update my shopping list and steps", act: () => { factsSet = true; applyFacts(); } })
     : mode === "design" && src === "idea"
     ? ({ label: "Design my tree", act: () => { factsSet = true; useIdeaAsStyle(); run(); } })
+    : mode === "design" && chosenLook
+    ? ({ label: "Style my tree", act: () => { factsSet = true; run(); } })
     : mode === "check" ? ({ label: "See my tree's potential", act: () => { factsSet = true; checkInOwnStyle(); } })
     : ({ label: "Next", act: () => { factsSet = true; show("s-style"); } }),
   go: () => !val("style") ? { label: "Pick a style to continue", disabled: true } : ({ label: mode === "design" ? "Design my tree" : "See my tree's potential", act: run }),
@@ -2874,7 +2889,7 @@ const PHOTO_COPY = {
   check: { h: "Add a photo of your tree as it is now", sub: "Fully decorated or only partway there: both work. We'll take it from where you are.", tips: ["Stand back so the whole tree, including the top, is in the shot.", "Turn the tree lights on. Daytime or evening both work."] }
 };
 document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
-  mode = b.dataset.mode; rerunFromHub = false; factsSet = false;
+  mode = b.dataset.mode; rerunFromHub = false; factsSet = false; chosenLook = null;
   clearKey();
   clearExtra($("#inspoFile"), $("#inspoThumb"), $("#inspoLbl"), $("#inspoClear"), "✦", d => inspoPhoto = d);
   src = "tree"; clearIdeaRoom(); clearRoomTree(); ideaPhoto = null; baseKey = ""; photo = null; photoImg = null; $("#roomMark").hidden = true;
@@ -2944,7 +2959,7 @@ function photoChecked() {
 }
 // Design: pick a starting point
 document.querySelectorAll(".src").forEach(b => b.onclick = () => {
-  src = b.dataset.src; baseKey = ""; photo = null; photoImg = null; clearIdeaRoom(); clearRoomTree(); $("#roomMark").hidden = true;
+  src = b.dataset.src; chosenLook = null; baseKey = ""; photo = null; photoImg = null; clearIdeaRoom(); clearRoomTree(); $("#roomMark").hidden = true;
   emptyDrop();
   $("#inspoRow").hidden = src === "idea";   // the idea screen has its own inspiration photo
   if (src === "idea") { show("s-idea"); return; }
@@ -2973,7 +2988,7 @@ $("#rmWrap").addEventListener("click", e => { const r = $("#rmImg").getBoundingC
 function clearRoomTree() { clearExtra($("#roomTreeFile"), $("#roomTreeThumb"), $("#roomTreeLbl"), $("#roomTreeClear"), "▲", d => roomTree = d); }
 $("#roomTreeFile").addEventListener("change", () => pickExtra($("#roomTreeFile"), $("#roomTreeThumb"), $("#roomTreeLbl"), $("#roomTreeClear"), d => { roomTree = d; baseKey = ""; }));
 $("#roomTreeClear").onclick = () => { clearRoomTree(); baseKey = ""; };
-$("#detailsSkip").onclick = () => { if (rerunFromHub) { history.back(); return; } factsSet = false; if (mode === "design" && src === "idea") { useIdeaAsStyle(); run(); } else if (mode === "check") checkInOwnStyle(); else show("s-style"); };
+$("#detailsSkip").onclick = () => { if (rerunFromHub) { history.back(); return; } factsSet = false; if (mode === "design" && src === "idea") { useIdeaAsStyle(); run(); } else if (mode === "design" && chosenLook) run(); else if (mode === "check") checkInOwnStyle(); else show("s-style"); };
 // Check my tree has no style screen (Eric, Nov 15): a check always works in the tree's own style; a new look belongs in Design my tree
 function checkInOwnStyle() { const st = document.querySelector('input[name=style][value=keep]'); if (st) st.checked = true; run(); }
 // From an idea, their own words are the style: "themed", with the description as the theme
@@ -3322,7 +3337,7 @@ async function run() {
   if (!photo) return;
   $("#startErr").textContent = $("#detailsErr").textContent = "";
   const L = startLoading(mode === "design" ? "Designing your tree" : "Looking at your tree", mode === "design" ? DESIGN_STEPS : CHECK_STEPS, 12, photo);
-  evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined, inspo: mode === "design" ? (inspoPhoto || ideaPhoto || undefined) : undefined, imagined: mode === "design" && src !== "tree" && !roomTree || undefined };
+  evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined, inspo: mode === "design" ? (inspoPhoto || ideaPhoto || undefined) : undefined, look: mode === "design" && chosenLook ? { name: chosenLook.name, brief: chosenLook.brief } : undefined, imagined: mode === "design" && src !== "tree" && !roomTree || undefined };
   planT0 = Date.now();
   const myPlan = api("/api/evaluate", { ...evalBody, part: "plan" });
   myPlan.catch(() => {});
@@ -4619,7 +4634,7 @@ function navPaint(id) {
   document.body.classList.toggle("onhome", id === "s-home");
   const tab = id === "s-look" ? "s-shop" : id === "s-account" ? "s-profile" : id;
   document.querySelectorAll("#navbar button").forEach(b => { if (b.dataset.nav === tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
-  if (id === "s-styles") drawStyleCards();
+  if (id === "s-styles") { drawLookGallery(); drawStyleCards(); }
   if (id === "s-saved") drawSaved();
   if (id === "s-look") drawLook();
 }
@@ -4788,6 +4803,37 @@ function runGuides() {
 document.querySelectorAll(".snapcam video").forEach(v => v.addEventListener("playing", runGuides));
 
 $("#navSignOut").onclick = () => { password = ""; try { sessionStorage.removeItem("ts_pw"); } catch {} show("s-pass", []); };
+// ---- The look gallery (Style tab, Eric Nov 18): the Shop the Look trees from /picks. Pick one, snap your own tree, and
+// TreeStyle styles your tree to match it (Design my tree from their tree, with the look's photo as the inspiration and its
+// design brief as the direction). Only looks that have their photo show.
+function galleryLooks() { const ph = window.__PH || {}; return (window.LOOKS || []).filter(L => ph["look_" + L.id]).map(L => Object.assign({ pic: ph["look_" + L.id] }, L)); }
+function drawLookGallery() {
+  const list = galleryLooks(), el = $("#lookGallery"); if (!el) return;
+  el.innerHTML = list.length ? list.map(L => `<button type="button" data-look="${L.id}"><span class="lgpic"><img src="${L.pic}" alt="" loading="lazy"></span><b>${L.name}</b><small>${(L.story || [])[0] || ""}</small></button>`).join("")
+    : `<p class="muted">The looks are on their way.</p>`;
+}
+// The look's photo, as a picture the plan and the preview can see (downsized like their own photos)
+function lookPhotoData(url) {
+  return new Promise((ok, no) => { const i = new Image(); i.crossOrigin = "anonymous";
+    i.onload = () => { try { const k = Math.min(1, 1280 / Math.max(i.naturalWidth, i.naturalHeight)), c = document.createElement("canvas"); c.width = Math.round(i.naturalWidth * k); c.height = Math.round(i.naturalHeight * k); c.getContext("2d").drawImage(i, 0, 0, c.width, c.height); ok(c.toDataURL("image/jpeg", .88)); } catch (e) { no(e); } };
+    i.onerror = no; i.src = url; });
+}
+$("#lookGallery").onclick = async e => {
+  const b = e.target.closest("button[data-look]"); if (!b) return;
+  const L = galleryLooks().find(x => x.id === b.dataset.look); if (!L) return;
+  b.classList.add("busy");
+  let pic = null; try { pic = await lookPhotoData(L.pic); } catch {}
+  b.classList.remove("busy");
+  if (!pic) { alert("Couldn't open that look's picture. Try again in a moment."); return; }
+  document.querySelector('.choice[data-mode="design"]').click();   // a fresh design
+  chosenLook = { id: L.id, name: L.name, brief: L.theme || L.blurb || "" };
+  inspoPhoto = pic;
+  setRadio("style", L.style || "classic"); syncStyle();
+  src = "tree"; $("#inspoRow").hidden = true;
+  setPhotoCopy("design");
+  $("#photoSub").textContent = `We'll style it as “${L.name}”. A bare tree works best; anything already on it that isn't part of the look comes off in the preview.`;
+  show("s-photo", ["s-home", "s-styles"]);
+};
 function drawStyleCards() {
   $("#styleCards").innerHTML = STYLE_PICK.concat([["themed", "Themed", "One story, your idea"]]).map(([v, name, sub]) => {
     const card = document.querySelector(`input[name=style][value=${v}] + span .sp`);
