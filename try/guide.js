@@ -473,7 +473,9 @@
 
     let placed = [];
     const viewScale = () => clamp(W / Math.max(200, cv.clientWidth || 360), 1, 6);
+    let quiet = false;   // Ivory step screens: the instruction card carries the tips, so no text pills on the picture
     function pill(o, x, y, text, opts) {
+      if (quiet) return;
       opts = opts || {};
       const fs = Math.round(15 * viewScale()), pad = fs * .8;
       o.save(); o.font = `600 ${fs}px Inter, system-ui, sans-serif`;
@@ -697,7 +699,23 @@
       if (key === "all") return lead("all");
       return "";
     }
-    return { steps, title: k => STEP_TITLE[k], draw, drawMap: opts => drawMap(ctx, opts), lead, note, legend, itemsFor, buy, data, setAfter: im => { afterImg = im; } };
+    // Numbered spots for the Ivory step screens (Kylie's mockups): up to three places on the picture, each matched to an
+    // instruction card. Filler is numbered from the base up (start low and full); the others from the top down.
+    function pins(key) {
+      const S = scene, spread = (pts, n, up) => { pts = pts.slice().sort((a, b) => up ? b[1] - a[1] : a[1] - b[1]); if (pts.length <= n) return pts; return Array.from({ length: n }, (_, i) => pts[Math.round(i * (pts.length - 1) / (n - 1))]); };
+      const orn = sz => data.ornaments.filter(b => sz.includes(b.size)).map(b => [b.x * W, b.y * H]);
+      let pts = [];
+      if (key === "fluff") pts = spread(S.moments.filter(m => m.size >= 2).map(m => [m.x, m.y]), 3);
+      else if (key === "lights") pts = [1 / 6, .5, 5 / 6].map(f => { const y = G.A[1] + G.treeH * f; return [G.centerAt(y) - G.halfWidthAt(y) * .45, y]; });
+      else if (key === "primary_picks") pts = spread(S.moments.map(m => [m.x, m.y]), 3, true);
+      else if (key === "florals") pts = spread(S.all.filter(m => m.floral).map(m => [m.x, m.y]), 3);
+      else if (key === "statement") pts = spread(orn(["xl", "l"]), 3);
+      else if (key === "medium") pts = spread(orn(["m", "s"]), 3);
+      else if (key === "crown") pts = [[G.A[0], G.A[1] + G.treeH * .05], [(G.L[0] + G.R[0]) / 2 + G.treeH * .12, G.L[1] - G.treeH * .03]];
+      return pts.filter(p => p && isFinite(p[0]) && isFinite(p[1]));
+    }
+
+    return { steps, title: k => STEP_TITLE[k], draw, pins, setQuiet: v => { quiet = !!v; }, drawMap: opts => drawMap(ctx, opts), lead, note, legend, itemsFor, buy, data, setAfter: im => { afterImg = im; } };
   }
 
   window.TreeGuide = { create, normalize, shoppingList };

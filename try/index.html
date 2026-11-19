@@ -1428,6 +1428,24 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .sv2parts button{padding:10px;border-radius:12px;border:1.5px solid var(--green);background:transparent;color:var(--green);font:500 calc(19px * var(--s-headline,1)) var(--serif);cursor:pointer}
   .sv2parts button.on{background:var(--green);color:var(--on-accent)}
   .sv2shop{margin:8px auto 0;background:none;border:0;padding:6px;color:var(--ink);font:500 calc(15.5px * var(--s-body,1)) var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+  /* Ivory step screens, the rest of Kylie's mockups: numbered instruction dots, and a top bar with the TreeStyle name,
+     a plain back arrow and All steps, with a fine gold rule under it */
+  .barword,#barAll{display:none}
+  html.theme-ivory body:has(#s-plan:not([hidden])) .appbar{grid-template-columns:minmax(80px,1fr) auto minmax(80px,1fr);border-bottom:1px solid rgba(184,149,90,.55)}
+  html.theme-ivory body:has(#s-plan:not([hidden])) .appbar .title{display:flex;align-items:center;justify-content:center;gap:10px}
+  html.theme-ivory body:has(#s-plan:not([hidden])) .barword{display:inline;font:500 calc(28px * var(--s-headline,1))/1 var(--serif);color:var(--ink)}
+  html.theme-ivory body:has(#s-plan:not([hidden])) #navBack{box-shadow:none;padding:0;width:44px}
+  html.theme-ivory body:has(#s-plan:not([hidden])) #navBack::after{content:none}
+  html.theme-ivory body:has(#s-plan:not([hidden])) #navBack svg{width:26px;height:26px}
+  html.theme-ivory body:has(#s-plan:not([hidden])) #navHome{display:none}
+  html.theme-ivory body:has(#s-plan:not([hidden])) #barAll{display:block;width:auto;height:auto;border-radius:0;justify-self:end;white-space:nowrap;background:none;border:0;padding:6px 0;color:var(--ink);font:500 calc(15px * var(--s-body,1)) var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+  html.theme-ivory #s-plan .sv2all{display:none}
+  html.theme-ivory #s-plan .sv2dots{display:flex;order:6;justify-content:center;gap:8px;margin:6px 0 0}
+  .sv2dots{display:none}
+  .sv2dots:empty{display:none !important}
+  .sv2dots button{width:30px;height:30px;border-radius:50%;border:1.5px solid rgba(184,149,90,.6);background:transparent;color:var(--oat);font:600 13px var(--sans);cursor:pointer}
+  .sv2dots button.on{background:#141C2C;border-color:#141C2C;color:#fff}
+  html.theme-ivory #s-plan .guidebox canvas{cursor:pointer}
 </style>
 </head>
 <body>
@@ -1436,7 +1454,8 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 
 <header class="appbar" id="appbar">
   <button id="navBack" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-  <div class="title"><img class="barmono" src="/brand/logo-icon.png" alt="TreeStyle"><span id="appTitle" class="sr"></span></div>
+  <div class="title"><img class="barmono" src="/brand/logo-icon.png" alt="TreeStyle"><span class="barword" aria-hidden="true">TreeStyle</span><span id="appTitle" class="sr"></span></div>
+  <button id="barAll" type="button">All steps</button>
   <button id="navHome" aria-label="Start over"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></svg></button>
 </header>
 
@@ -1692,6 +1711,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     <div class="sv2tabs" id="sv2Tabs" role="tablist"><button type="button" class="on" data-v="guide">Placement guide</button><button type="button" data-v="photo">Original photo</button></div>
     <div class="sv2parts" id="sv2Parts" hidden><button type="button" data-p="crown">1 Crown</button><button type="button" data-p="base">2 Base</button></div>
     <div class="sv2how" id="sv2How"><span class="sv2pic" id="sv2Pic"></span><div><h3 id="sv2HT"></h3><p id="sv2HP"></p></div></div>
+    <div class="sv2dots" id="sv2Dots"></div>
     <button type="button" class="sv2shop" id="sv2Shop" hidden></button>
     <div class="card stepcard">
       <p id="stepLead"></p>
@@ -1960,7 +1980,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </div>
 
 <script src="/try/engine.js?v=20261117c"></script>
-<script src="/try/guide.js?v=20261119e"></script>
+<script src="/try/guide.js?v=20261119g"></script>
 <script>
 // Screen preview (Studio → Screens): /try/?screen-preview&s=<screen> opens that screen straight away with the
 // Studio's sample tree (or ?screen-preview=mine, this browser's own last tree). Nothing links here from the app.
@@ -4006,10 +4026,11 @@ async function drawStep() {
   $("#stepTabs").innerHTML = steps.map((k, i) => `<button role="tab" data-i="${i}" class="${i === stepIdx ? "on" : ""} ${doneSteps.has(k) || goodSteps.has(k) ? "done" : ""}"><i>${k === "all" ? "★" : doneSteps.has(k) || goodSteps.has(k) ? "✓" : i + 1}</i>${esc(guide.title(k))}</button>`).join("");
   $("#stepTabs").querySelectorAll("button").forEach(b => b.onclick = () => { stepIdx = +b.dataset.i; drawStep(); });
   const on = $("#stepTabs .on"); if (on) on.scrollIntoView({ block: "nearest", inline: "center" });
-  guide.draw(key, false);
+  if (guide.setQuiet) guide.setQuiet(document.documentElement.classList.contains("theme-ivory"));
+  guide.draw(key, false);   // the numbered spots go on once the instruction card is set, below
   // shaping the branches is shown, not pointed at: a branch unfolding, then its tips. Not when the branches already scored
   // well (the step says "Already looking great"), unless they open the step anyway
-  const anim = key === "fluff" && !(goodSteps.has(key) && !openGood.has(key));
+  const anim = key === "fluff" && !(goodSteps.has(key) && !openGood.has(key)) && !document.documentElement.classList.contains("theme-ivory");   // Ivory: the photo with numbered gaps (Kylie's mockup)
   $(".guidebox").classList.toggle("anim", anim); $("#branchAnim").hidden = !anim;
   if (anim && !$("#branchAnim").firstChild) $("#branchAnim").innerHTML = branchSvg(result?.tree?.kind === "natural");
   const nd = steps.filter(k => doneSteps.has(k) || goodSteps.has(k)).length;
@@ -4064,28 +4085,84 @@ async function drawStep() {
     const part = key === "crown" && crownIt && baseIt ? (window.__sv2part || "crown") : "";
     $("#sv2Parts").hidden = !part;
     $("#sv2Parts").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.p === part));
-    const first = part === "base" ? baseIt : part === "crown" ? crownIt : (its.find(p => p.title) || null), bl = part ? (buy.find(b => (part === "base") === /skirt|collar|basket|base/i.test(b.label || "")) || buy[0]) : buy[0];
-    const pic = bl ? ((/^(primary_picks|florals)$/.test(key) && fillPhoto(bl.label)) || (/^(ribbon|statement|medium|crown)$/.test(key) && shopPhoto(bl, key)) || "") : "";
-    $("#sv2Pic").style.backgroundImage = `url("${pic || after || photo || ""}")`; $("#sv2Pic").classList.toggle("zoom", !pic);
-    $("#sv2HT").textContent = (part ? "" : "1. ") + (first ? first.title : guide.title(key));
-    if (first) document.querySelectorAll("#stepItems .planitem").forEach(el => { const h = el.querySelector("h4"); if (h && h.textContent === first.title) el.classList.add("sv2dup"); });
-    $("#sv2HP").textContent = (first && first.how) || leadTxt || "";
+    if (window.__sv2key !== key) { window.__sv2key = key; window.__sv2pin = 0; }
+    const pinPts = (!isAll && guide.pins) ? guide.pins(key) : [];
+    let insts;
+    if (part) insts = [[(part === "base" ? baseIt : crownIt).title, (part === "base" ? baseIt : crownIt).how]];
+    else {
+      insts = its.filter(p => p.title).map(p => [p.title, p.how || ""]);
+      const want = Math.min(3, Math.max(pinPts.length || 3, insts.length ? 1 : 1));
+      for (const t of (SV2_TIPS[key] || [])) { if (insts.length >= want) break; if (!insts.some(x => x[0].toLowerCase() === t[0].toLowerCase())) insts.push(t); }
+      insts = insts.slice(0, 3);
+    }
+    const ix = part ? 0 : Math.min(window.__sv2pin || 0, Math.max(0, insts.length - 1));
+    window.__sv2insts = insts; window.__sv2n = part ? 0 : insts.length;
+    const cur = insts[ix] || [guide.title(key), leadTxt || ""];
+    const bl = part ? (buy.find(b => (part === "base") === /skirt|collar|basket|base/i.test(b.label || "")) || buy[0]) : buy[0];
+    const ph = window.__PH || {};
+    const pic = ph["how_" + key] || (bl ? ((/^(primary_picks|florals)$/.test(key) && fillPhoto(bl.label)) || (/^(ribbon|statement|medium|crown)$/.test(key) && shopPhoto(bl, key)) || "") : "");
+    $("#sv2Pic").style.backgroundImage = `url("${pic || after || photo || ""}")`; $("#sv2Pic").classList.toggle("zoom", !pic); $("#sv2Pic").dataset.pslot = "how_" + key;
+    $("#sv2HT").textContent = (part ? "" : (ix + 1) + ". ") + cur[0];
+    $("#sv2HP").textContent = cur[1] || leadTxt || "";
+    $("#sv2Dots").innerHTML = !part && insts.length > 1 ? insts.map((_, i) => `<button type="button" data-i="${i}" class="${i === ix ? "on" : ""}" aria-label="Instruction ${i + 1}">${i + 1}</button>`).join("") : "";
+    document.querySelectorAll("#stepItems .planitem").forEach(el => { const h = el.querySelector("h4"); el.classList.toggle("sv2dup", !!h && insts.some(x => x[0] === h.textContent)); });
     $("#sv2How").hidden = isAll || collapsed || !($("#sv2HP").textContent);
-    document.querySelectorAll("#stepItems .planitem").forEach(el => el.classList.remove("sv2dup"));
-    $("#sv2Shop").hidden = isAll || !buy.length; $("#sv2Shop").textContent = "Shop " + (guide.title(key) || "").toLowerCase().replace(/^the /, "");
+    $("#sv2Shop").hidden = isAll || !buy.length; $("#sv2Shop").textContent = "Shop " + ({ lights: "lights", primary_picks: "filler stems", ribbon: "ribbon", florals: "flowers", statement: "large ornaments", medium: "medium & small ornaments", crown: part === "base" ? "the base" : part === "crown" ? "the topper" : "topper & base" }[key] || (guide.title(key) || "").toLowerCase());
     $("#sv2Tabs").hidden = isAll || anim;
+    drawPins(key);
     $("#sv2Tabs").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === "guide"));
   }
   $("#nextStep").textContent = document.documentElement.classList.contains("theme-ivory") && key !== "all" ? (doneSteps.has(key) || goodSteps.has(key) ? (stepIdx === total - 1 ? "See the finished tree" : "Next step") : "Mark step complete") : key === "all" ? "Back to my tree" : (doneSteps.has(key) || goodSteps.has(key)) ? (stepIdx === total - 1 ? "See the finished tree" : "Next step") : (stepIdx === total - 1 ? "Done, see the finished tree" : "Done, next");
 }
 $("#prevStep").onclick = () => { stepIdx--; drawStep(); scrollTo(0, 0); };
 $("#sv2Parts").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; window.__sv2part = b.dataset.p; drawStep(); });
-$("#sv2All").onclick = () => document.documentElement.classList.toggle("sv2tabs-open");
+// Tips to round out each step's instructions so the numbered spots each have one (Kylie's mockups); the plan's own come first
+const SV2_TIPS = {
+  fluff: [["Fan out the tips", "Spread each tip up and outward, so the branch fills its space."], ["Open the inner branches", "Work from the trunk out, bending each branch away from the one below it."], ["Fill the gaps", "Bend a nearby branch across any spot you can see through."]],
+  lights: [["Start at the trunk", "Plug in at the base and run the first strand up the trunk to the top."], ["Weave out to the tips", "Wrap each branch from the inside out and back, so lights sit deep and at the tips."], ["Step back and check", "Look from across the room and fill any dark patches."]],
+  primary_picks: [["Start at the base", "Tuck stems deep into the branches, with the leaves angled outward."], ["Work up and around", "Keep the stems winding back and forth, never in a line."], ["Go lighter at the top", "Use smaller, fewer stems as you near the top."]],
+  ribbon: [["Tuck the first piece", "Anchor one end inside the tree, let the ribbon fall, then tuck the other end back in."], ["Alternate sides", "Work down the tree, moving left and right so it winds like a hidden vine."], ["Hide every end", "Tuck each end deep into the branches and secure it with paddle wire."]],
+  florals: [["Nestle the first flower", "Slide the stem inward until the bloom rests against the branches."], ["Gather a few lower", "Let the flowers grow a little fuller toward the bottom."], ["Balance the sides", "Step back and even out the weight left and right."]],
+  statement: [["Set it back", "Hang the largest ornament on a sturdy inner branch, just behind the outer tips."], ["Repeat each color", "Place each color two or three times in a loose triangle."], ["Spread the weight", "Keep the biggest pieces balanced across the whole tree."]],
+  medium: [["Fill the pockets", "Hang them in the open spaces just behind the branch tips."], ["Mix the sizes", "Set small ones beside larger ones so there's something to discover everywhere."], ["Bring a few forward", "Let a handful hang near the tips to add depth."]],
+};
+let sv2PinHits = [];
+function drawGuide(key, peek) {
+  guide.draw(key, peek);
+  if (!peek) drawPins(key); else sv2PinHits = [];
+}
+// The numbered spots on the picture (Ivory look): the active one gets a light halo, tap one to see its instruction
+function drawPins(key) {
+  sv2PinHits = [];
+  if (!guide || !guide.pins || !document.documentElement.classList.contains("theme-ivory") || key === "all" || key === "ribbon") return;
+  const cv = $("#guideCv"), g = cv.getContext("2d"), pts = guide.pins(key), r = Math.max(10, cv.width * .03);
+  const n = key === "crown" ? pts.length : Math.min(pts.length, window.__sv2n || 0);
+  const active = key === "crown" ? ((window.__sv2part || "crown") === "base" ? 1 : 0) : (window.__sv2pin || 0);
+  for (let i = 0; i < n; i++) {
+    const [px, py] = pts[i], x = Math.min(cv.width - r * 1.4, px + r * 1.3), y = Math.max(r * 1.4, py - r * 1.3);
+    g.save();
+    if (i === active) { g.beginPath(); g.arc(x, y, r * 1.55, 0, Math.PI * 2); g.fillStyle = "rgba(255,248,230,.85)"; g.fill(); }
+    g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fillStyle = "#141C2C"; g.fill(); g.lineWidth = Math.max(2, r * .16); g.strokeStyle = i === active ? "#D9BC7E" : "#fff"; g.stroke();
+    g.fillStyle = "#fff"; g.font = `700 ${Math.round(r * 1.05)}px Inter, system-ui, sans-serif`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(String(i + 1), x, y + r * .05);
+    g.restore();
+    sv2PinHits.push([x, y, r * 1.8, i]);
+  }
+}
+$("#guideCv").addEventListener("click", e => {
+  if (!sv2PinHits.length || !guide) return;
+  const cv = $("#guideCv"), rc = cv.getBoundingClientRect(), x = (e.clientX - rc.left) * cv.width / rc.width, y = (e.clientY - rc.top) * cv.height / rc.height;
+  const hit = sv2PinHits.find(([px, py, rr]) => Math.hypot(px - x, py - y) <= rr); if (!hit) return;
+  e.stopPropagation(); e.preventDefault();
+  if (guide.steps[stepIdx] === "crown") window.__sv2part = hit[3] === 1 ? "base" : "crown"; else window.__sv2pin = hit[3];
+  drawStep();
+}, true);
+$("#sv2Dots").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; window.__sv2pin = +b.dataset.i; drawStep(); });
+$("#sv2All").onclick = $("#barAll").onclick = () => document.documentElement.classList.toggle("sv2tabs-open");
 $("#sv2Shop").onclick = () => { const b = document.querySelector("#stepItems .buy"); if (b) b.scrollIntoView({ behavior: "smooth", block: "start" }); };
 $("#sv2Tabs").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b || !guide) return;
   $("#sv2Tabs").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
-  const ph = b.dataset.v === "photo"; $(".guidebox").classList.toggle("peeking", ph); guide.draw(guide.steps[stepIdx], ph);
+  const ph = b.dataset.v === "photo"; $(".guidebox").classList.toggle("peeking", ph); drawGuide(guide.steps[stepIdx], ph);
 });
 $("#nextStep").onclick = () => {
   if (!guide) return;
@@ -4095,8 +4172,8 @@ $("#nextStep").onclick = () => {
 };
 // Press and hold the picture to see your own photo; a short wait so a scroll or a tap doesn't flash it
 let peekT = 0, peeking = false;
-const peekOn = () => { peekT = setTimeout(() => { if (!guide) return; peeking = true; $(".guidebox").classList.add("peeking"); guide.draw(guide.steps[stepIdx], true); }, 160); };
-const peekOff = () => { clearTimeout(peekT); if (!peeking) return; peeking = false; $(".guidebox").classList.remove("peeking"); guide && guide.draw(guide.steps[stepIdx], false); };
+const peekOn = () => { peekT = setTimeout(() => { if (!guide) return; peeking = true; $(".guidebox").classList.add("peeking"); drawGuide(guide.steps[stepIdx], true); }, 160); };
+const peekOff = () => { clearTimeout(peekT); if (!peeking) return; peeking = false; $(".guidebox").classList.remove("peeking"); guide && drawGuide(guide.steps[stepIdx], false); };
 $("#guideCv").addEventListener("pointerdown", peekOn);
 ["pointerup", "pointerleave", "pointercancel"].forEach(ev => $("#guideCv").addEventListener(ev, peekOff));
 $("#guideCv").addEventListener("contextmenu", e => e.preventDefault());
