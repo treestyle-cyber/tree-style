@@ -2135,7 +2135,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     <div class="chatlog" id="helpLog"></div>
     <div class="helpchips" id="helpChips"></div>
     <form class="helpform" id="helpForm"><input id="helpText" type="text" placeholder="Type a message…" autocomplete="off" maxlength="600"><button aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button></form>
-    <p class="helpnote">Your stylist gives advice. To change your design, tap Change something on your results.</p>
+    <p class="helpnote">Answers are written by AI, using Eric's design rules. To change your design, tap Change something on your results.</p>
   </section>
   <!-- Tab pages (shown by the bottom navigation bar) -->
   <section class="screen tabpage" id="s-styles" data-title="Styles" hidden>
@@ -5770,9 +5770,9 @@ function helpDraw() {
   const PERSON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>';
   const av = role => role === "ai" ? `<span class="cav ours"><img src="/brand/logo-tree.png" alt=""></span>`
     : pic ? `<span class="cav" style="background-image:url('${pic.replace(/'/g, "%27")}')"></span>` : `<span class="cav">${me ? esc(me.charAt(0).toUpperCase()) : PERSON}</span>`;
-  const msg = (role, html) => `<div class="cmsg ${role}"><span class="whorow">${av(role)}<span class="who">${role === "me" ? esc(me || "You") : "Your stylist"}</span></span><div class="bub ${role}">${html}</div></div>`;
+  const msg = (role, html) => `<div class="cmsg ${role}"><span class="whorow">${av(role)}<span class="who">${role === "me" ? esc(me || "You") : "Eric, your personal stylist"}</span></span><div class="bub ${role}">${html}</div></div>`;
   log.innerHTML = (helpChat.length ? "" : msg("ai", `Hi! I'm your TreeStyle stylist. Ask me anything about decorating your tree${result ? ", and I'll answer for the plan you have" : ""}.`))
-    + helpChat.map(m => m.wait ? msg("ai", `<span class="typing" role="status" aria-label="Your stylist is typing"><i></i><i></i><i></i></span>`) : msg(m.role === "user" ? "me" : "ai", esc(m.text))).join("");
+    + helpChat.map(m => m.wait ? msg("ai", `<span class="typing" role="status" aria-label="Eric, your personal stylist, is typing"><i></i><i></i><i></i></span>`) : msg(m.role === "user" ? "me" : "ai", esc(m.text))).join("");
   $("#helpChips").innerHTML = helpChat.length ? "" : HELP_CHIPS.map(c => `<button type="button" data-ask="${esc(c)}">${esc(c)}</button>`).join("");
   requestAnimationFrame(() => { const last = log.lastElementChild; if (last && helpChat.length) last.scrollIntoView({ block: "end", behavior: "smooth" }); });
 }
