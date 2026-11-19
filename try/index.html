@@ -1234,6 +1234,12 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   html:root #s-help.screen .helpform button{background:linear-gradient(135deg,#B8955A,#E8C77E 50%,#B8955A);color:#141C2C}
   html:root #s-help.screen .helpnote{color:rgba(255,255,255,.65)}
   /* the typing sign is three little gold ornaments, each on its thread, bobbing in turn */
+  .chatlog .whorow{display:inline-flex;align-items:center;gap:7px}
+  .chatlog .cmsg.me .whorow{flex-direction:row-reverse}
+  .chatlog .cav{width:28px;height:28px;border-radius:50%;flex:none;display:grid;place-items:center;background:#1D2B45 center/cover no-repeat;border:1.5px solid #D9B25F;box-shadow:0 1px 4px rgba(0,0,0,.3);color:#E8C77E;font:600 13px var(--sans);overflow:hidden}
+  .chatlog .cav svg{width:16px;height:16px}
+  .chatlog .cav.ours{background:radial-gradient(circle at 50% 40%,#2E4469,#141C2C)}
+  .chatlog .cav.ours img{height:19px;width:auto}
   .chatlog .typing{display:inline-flex;gap:9px;align-items:flex-end;padding:10px 4px 2px;height:30px}
   .chatlog .typing i{position:relative;width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#FFF6D8 0 10%,#F1D592 24%,#D9B25F 52%,#9C7A3C 100%);box-shadow:0 1px 3px rgba(0,0,0,.35),0 0 6px rgba(232,199,126,.35);transform-origin:50% -9px;animation:tdot 1.3s ease-in-out infinite}
   .chatlog .typing i::before{content:"";position:absolute;left:50%;top:-3px;width:4px;height:3px;margin-left:-2px;border-radius:1px 1px 0 0;background:linear-gradient(90deg,#9C7A3C,#F1D592,#9C7A3C)}
@@ -5758,7 +5764,12 @@ let helpChat = [];
 function helpDraw() {
   const log = $("#helpLog");
   let me = ""; try { me = (localStorage.getItem("ts_review_name") || "").trim(); } catch (e) {}
-  const msg = (role, html) => `<div class="cmsg ${role}"><span class="who">${role === "me" ? esc(me || "You") : "Your stylist"}</span><div class="bub ${role}">${html}</div></div>`;
+  let pic = ""; try { pic = localStorage.getItem("ts_profile_photo") || ""; } catch (e) {}
+  // a round picture beside each name (Kylie): theirs is their profile photo (else their initial, else a person), ours the tree logo
+  const PERSON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>';
+  const av = role => role === "ai" ? `<span class="cav ours"><img src="/brand/logo-icon.png" alt=""></span>`
+    : pic ? `<span class="cav" style="background-image:url('${pic.replace(/'/g, "%27")}')"></span>` : `<span class="cav">${me ? esc(me.charAt(0).toUpperCase()) : PERSON}</span>`;
+  const msg = (role, html) => `<div class="cmsg ${role}"><span class="whorow">${av(role)}<span class="who">${role === "me" ? esc(me || "You") : "Your stylist"}</span></span><div class="bub ${role}">${html}</div></div>`;
   log.innerHTML = (helpChat.length ? "" : msg("ai", `Hi! I'm your TreeStyle stylist. Ask me anything about decorating your tree${result ? ", and I'll answer for the plan you have" : ""}.`))
     + helpChat.map(m => m.wait ? msg("ai", `<span class="typing" role="status" aria-label="Your stylist is typing"><i></i><i></i><i></i></span>`) : msg(m.role === "user" ? "me" : "ai", esc(m.text))).join("");
   $("#helpChips").innerHTML = helpChat.length ? "" : HELP_CHIPS.map(c => `<button type="button" data-ask="${esc(c)}">${esc(c)}</button>`).join("");
