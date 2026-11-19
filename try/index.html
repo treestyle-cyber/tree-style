@@ -4144,6 +4144,8 @@ async function drawStep() {
     $("#sv2Dots").innerHTML = !part && insts.length > 1 ? insts.map((_, i) => `<button type="button" data-i="${i}" class="${i === ix ? "on" : ""}" aria-label="Instruction ${i + 1}">${i + 1}</button>`).join("") : "";
     document.querySelectorAll("#stepItems .planitem").forEach(el => { const h = el.querySelector("h4"); el.classList.toggle("sv2dup", !!h && insts.some(x => x[0] === h.textContent)); });
     $("#sv2How").hidden = isAll || collapsed || !($("#sv2HP").textContent);
+    // a step that's already looking great is folded away: no tips, numbers or spots until "Show the step anyway" (they showed without their card)
+    if (collapsed) { window.__sv2n = 0; $("#sv2Dots").innerHTML = ""; $("#sv2Hint").hidden = true; }
     $("#sv2Shop").hidden = isAll || !buy.length; $("#sv2Shop").textContent = "Shop " + ({ lights: "lights", primary_picks: "filler stems", ribbon: "ribbon", florals: "flowers", statement: "large ornaments", medium: "medium & small ornaments", crown: part === "base" ? "the base" : part === "crown" ? "the topper" : "topper & base" }[key] || (guide.title(key) || "").toLowerCase());
     $("#sv2Tabs").hidden = isAll || anim;
     drawPins(key);
