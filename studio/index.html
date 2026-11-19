@@ -730,10 +730,15 @@ function stepVideos(current, crops = {}) {
       await waitFor(() => document.querySelector(".vbox .vgen"));
       const boxes = vm ? [document.querySelector(`.vbox[data-vid="vid_${vm}"]`)].filter(Boolean)
         : [...document.querySelectorAll(".vbox")].filter(b => !b.querySelector(".frame.cur video"));
-      let made = 0;
-      for (const b of boxes) { if (await makeKeep(b)) made++; else break; }
+      let made = 0; const failed = [];
+      const name = b => b.closest(".slot").querySelector("h2").textContent.replace(/^Step photo: /, "");
+      for (const b of boxes) {
+        if (await makeKeep(b)) { made++; continue; }
+        const why = b.querySelector(".vmsg").textContent; failed.push(`${name(b)}: ${why}`);
+        if (/limit/i.test(why)) { boxes.slice(boxes.indexOf(b) + 1).forEach(x => failed.push(`${name(x)}: not tried (today's clip limit)`)); break; }   // the daily limit stops the rest; other failures move on to the next step
+      }
       const note = document.createElement("div"); note.className = "adopt";
-      note.innerHTML = `<b>${made ? `Made and kept ${made} step video${made === 1 ? "" : "s"}` : "No step video was made"}</b><span>${made ? "They play in the step cards now (allow about a minute)." : boxes.length ? "See the message on the step card for why." : "Every step already has a video."}</span>`;
+      note.innerHTML = `<b>${made ? `Made and kept ${made} step video${made === 1 ? "" : "s"}` : "No step video was made"}</b><span>${made ? "They play in the step cards now (allow about a minute)." : boxes.length ? "" : "Every step already has a video."}${failed.length ? "<br>Not made: " + failed.map(f => f.replace(/[<>]/g, "")).join("<br>") + "<br>Open this link again to try those (it skips steps that already have a video)." : ""}</span>`;
       document.querySelector("#studio").prepend(note); note.scrollIntoView({ block: "start" });
     })();
     return;
