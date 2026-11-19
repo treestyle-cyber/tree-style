@@ -339,8 +339,9 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   /* quick change under the preview */
   .quickask{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin:12px 0}
   .quickask label{display:block;font-weight:600;margin-bottom:8px;color:var(--green)}
-  .qarow{display:flex;gap:8px}
-  .qarow input{flex:1;min-width:0;border-radius:12px;padding:12px 14px}
+  .qarow{display:flex;gap:8px;align-items:flex-end}
+  .qarow input,.qarow textarea{flex:1;min-width:0;border-radius:12px;padding:12px 14px}
+  .qarow textarea{resize:none;overflow:hidden;font:inherit;line-height:1.4;max-height:9.5em;overflow-y:auto}
   .qarow .btn{padding:12px 16px}
   .qahint{font-size:calc(13px * var(--s-body,1));color:var(--muted);margin-top:8px}
 
@@ -1503,6 +1504,11 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .sdropl button+button{margin-top:2px}
   .sdropl button.on{background:rgba(184,156,107,.16)}
   .sdropl button.on::after{content:"✓";color:var(--gold,#9a7a3e);font-weight:600;padding-right:6px}
+  .qahelp{appearance:none;display:inline-flex;align-items:center;gap:7px;margin:10px 0 0;padding:7px 14px 7px 11px;border-radius:99px;border:1px solid rgba(184,156,107,.6);background:linear-gradient(135deg,rgba(243,226,182,.35),rgba(201,163,94,.12));color:#7a5a2a;font:600 calc(13px * var(--s-body,1)) var(--sans);cursor:pointer}
+  .qahelp svg{color:#B08A45}
+  .qahelp[disabled]{opacity:.6}
+  .qahelpmsg{margin:6px 0 0;min-height:0;font-size:calc(12.5px * var(--s-body,1));color:#8a7660}
+  .qahelpmsg:empty{display:none}
   .shsheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;background:rgba(20,16,10,.45);animation:shfade .2s ease-out}
   .shsheet[hidden]{display:none}
   .shpanel{position:relative;width:100%;max-width:520px;box-sizing:border-box;background:#fbf6ee;border-radius:24px 24px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom));text-align:center;box-shadow:0 -14px 40px -18px rgba(30,20,10,.5);animation:shup .28s ease-out}
@@ -2121,10 +2127,12 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     <p class="sheetsub">Tell us in your own words. We'll redo the plan and the preview, and keep this version too.</p>
     <form class="quickask" id="quickAsk">
       <div class="qarow">
-        <input type="text" id="qaText" placeholder="e.g. More flowers, or go purple" autocomplete="off" enterkeyhint="send" aria-label="What would you change?">
+        <textarea id="qaText" rows="1" placeholder="e.g. More flowers, or go purple" autocomplete="off" enterkeyhint="send" aria-label="What would you change?"></textarea>
         <button class="btn" id="qaSend" aria-label="Update my tree">Update</button>
       </div>
     </form>
+    <button type="button" class="qahelp" id="qaHelp"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/><path d="M18.5 14.5l.8 2.1 2.2.8-2.2.8-.8 2.3-.8-2.3-2.2-.8 2.2-.8z"/></svg><span>Help me write it</span></button>
+    <p class="qahelpmsg" id="qaHelpMsg"></p>
     <div class="ideas" id="ideas"></div>
     <div class="sheetmore">
       <button data-start="I want to work this color into the tree: ">Work in a color</button>
@@ -5032,7 +5040,7 @@ $("#quickAsk").addEventListener("submit", e => {
   e.preventDefault();
   const req = $("#qaText").value.trim();
   if (!req) { $("#qaText").focus(); return; }
-  $("#qaText").value = ""; closeRestyle();
+  $("#qaText").value = ""; qaGrow(); closeRestyle();
   $("#pText").value = req;   // shows in the design partner's history as their own words
   partnerSend(req, null);
 });
@@ -5619,6 +5627,24 @@ function helpDraw() {
   $("#helpChips").innerHTML = helpChat.length ? "" : HELP_CHIPS.map(c => `<button type="button" data-ask="${esc(c)}">${esc(c)}</button>`).join("");
   requestAnimationFrame(() => { const last = log.lastElementChild; if (last && helpChat.length) last.scrollIntoView({ block: "end", behavior: "smooth" }); });
 }
+// The change box grows with what's in it (a written request is a few lines), and Enter still sends it
+function qaGrow() { const t = $("#qaText"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight + 2, 160) + "px"; }
+$("#qaText").addEventListener("input", qaGrow);
+$("#qaText").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#quickAsk").requestSubmit ? $("#quickAsk").requestSubmit() : $("#qaSend").click(); } });
+// "Help me write it" (Kylie): AI turns their rough idea, or nothing, into one clear change request in the box for them to
+// read and edit before tapping Update. Nothing changes until they send it.
+$("#qaHelp").onclick = async () => {
+  const b = $("#qaHelp"), msg = $("#qaHelpMsg"), box = $("#qaText"); if (!result) return;
+  if (SAMPLE) { msg.textContent = "Writing help is off in screen previews."; return; }
+  b.disabled = true; b.querySelector("span").textContent = "Writing…"; msg.textContent = "";
+  try {
+    const tree = { mode, style: val("style"), plan: (result.plan || []).map(p => ({ title: p.title })) };
+    const d = await api("/api/help", { write: { idea: box.value.trim() }, tree });
+    if (d && d.request) { box.value = d.request; qaGrow(); box.focus(); msg.textContent = "Here's a request you can send as it is, or change it first."; }
+    else msg.textContent = "Couldn't write one just now. Please try again.";
+  } catch (e) { msg.textContent = "Couldn't write one just now. Please try again."; }
+  finally { b.disabled = false; b.querySelector("span").textContent = "Help me write it"; }
+};
 async function helpAsk(q) {
   q = String(q || "").trim(); if (!q) return;
   helpChat = helpChat.filter(m => !m.wait); helpChat.push({ role: "user", text: q }, { role: "assistant", text: "Thinking…", wait: true }); helpDraw();
