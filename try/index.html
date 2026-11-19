@@ -1418,6 +1418,23 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .revbtns .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin:0;padding:15px 12px;text-transform:uppercase;letter-spacing:.14em;font:600 calc(14px * var(--s-body,1)) var(--sans)}
   .revnote{display:block;margin:10px 0 0;color:var(--oat,#8a7660);font-size:calc(12.5px * var(--s-body,1))}
   .revanother{appearance:none;border:0;background:none;margin:14px 0 0;color:#7a5a2a;font:600 calc(14px * var(--s-body,1)) var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+  .shsheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;background:rgba(20,16,10,.45);animation:shfade .2s ease-out}
+  .shsheet[hidden]{display:none}
+  .shpanel{position:relative;width:100%;max-width:520px;box-sizing:border-box;background:#fbf6ee;border-radius:24px 24px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom));text-align:center;box-shadow:0 -14px 40px -18px rgba(30,20,10,.5);animation:shup .28s ease-out}
+  .shx{position:absolute;top:10px;right:12px;width:34px;height:34px;border:0;border-radius:50%;background:transparent;font-size:24px;color:#6a5640;cursor:pointer}
+  .shthumb{display:block;width:96px;height:120px;object-fit:cover;margin:12px auto 18px;border-radius:12px;box-shadow:0 0 0 1px rgba(201,163,94,.8),0 10px 22px -12px rgba(30,20,10,.6)}
+  .shicons{display:flex;justify-content:center;gap:18px}
+  .shicons button[hidden]{display:none}
+  .shicons button{appearance:none;border:0;background:none;display:grid;justify-items:center;gap:8px;font:600 calc(12.5px * var(--s-body,1)) var(--sans);color:#3a2c1f;cursor:pointer;padding:4px 0}
+  .shicons button[disabled]{opacity:.5}
+  .shic{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;box-shadow:0 8px 16px -10px rgba(30,20,10,.6)}
+  .shic.ig{background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285AEB 90%)}
+  .shic.fb{background:#1877F2}
+  .shic.pin{background:#E60023}
+  .shic.more{background:#efe6d6;color:#5a4632}
+  .shmsg{min-height:1.4em;margin:16px 0 0;font-size:calc(13.5px * var(--s-body,1));line-height:1.45;color:#5a4632}
+  @keyframes shfade{from{opacity:0}}
+  @keyframes shup{from{transform:translateY(30px);opacity:0}}
   @keyframes revup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   @keyframes revshine{to{transform:translateX(120%)}}
   @keyframes revtw{0%,100%{opacity:0;transform:scale(.4) rotate(0)}45%{opacity:1;transform:scale(1) rotate(20deg)}70%{opacity:.2}}
@@ -1777,7 +1794,19 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   <!-- Plan -->
   <section class="screen" id="s-plan" data-title="Step by step" hidden>
     <div class="revtop" id="revTop" hidden><span class="reveye">Your finished tree</span><h2 id="revH">Beautifully done.</h2><span class="revrule" aria-hidden="true"><i></i><b>✦</b><i></i></span></div>
-    <div class="revbot" id="revBot" hidden><p id="revMsg"></p><div class="revbtns"><button type="button" class="btn" id="revShare"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Share</button><button type="button" class="btn ghost" id="revSave"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>Download</button></div><small class="revnote" id="revNote">Shares to Instagram, Facebook, Messages and more. The image carries the TreeStyle logo.</small><button type="button" class="revanother" id="revAnother">Style another tree</button></div>
+    <div class="revbot" id="revBot" hidden><p id="revMsg"></p><div class="revbtns"><button type="button" class="btn" id="revShare"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Share</button><button type="button" class="btn ghost" id="revSave"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>Download</button></div><small class="revnote" id="revNote">Share to Instagram, Facebook or Pinterest, or download a high-resolution image with the TreeStyle mark.</small><button type="button" class="revanother" id="revAnother">Style another tree</button></div>
+    <div class="shsheet" id="shSheet" hidden role="dialog" aria-label="Share your tree"><div class="shpanel">
+      <button type="button" class="shx" id="shClose" aria-label="Close">×</button>
+      <span class="reveye">Share your tree</span>
+      <img class="shthumb" id="shThumb" alt="">
+      <div class="shicons">
+        <button type="button" data-net="instagram"><span class="shic ig"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.1" fill="#fff" stroke="none"/></svg></span>Instagram</button>
+        <button type="button" data-net="facebook"><span class="shic fb"><svg viewBox="0 0 24 24" width="26" height="26" fill="#fff"><path d="M13.6 21v-7.6h2.6l.4-3h-3V8.5c0-.9.3-1.5 1.5-1.5h1.6V4.3c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H8v3h2.6V21z"/></svg></span>Facebook</button>
+        <button type="button" data-net="pinterest"><span class="shic pin"><svg viewBox="0 0 24 24" width="26" height="26" fill="#fff"><path d="M12.2 2.5C7 2.5 4.3 6.2 4.3 9.3c0 1.9.7 3.5 2.2 4.1.2.1.5 0 .5-.3l.2-.9c.1-.3 0-.4-.2-.6-.4-.5-.7-1.2-.7-2.1 0-2.8 2.1-5.2 5.4-5.2 2.9 0 4.6 1.8 4.6 4.2 0 3.1-1.4 5.8-3.5 5.8-1.1 0-2-.9-1.7-2.1.3-1.4 1-2.9 1-3.9 0-.9-.5-1.6-1.5-1.6-1.2 0-2.1 1.2-2.1 2.8 0 1 .3 1.7.3 1.7l-1.4 6c-.4 1.8-.1 4 0 4.2 0 .1.2.2.3.1.1-.2 1.4-1.8 1.9-3.4l.7-2.8c.4.7 1.4 1.3 2.6 1.3 3.4 0 5.7-3.1 5.7-7.2 0-3.1-2.6-6-6.6-6z"/></svg></span>Pinterest</button>
+        <button type="button" data-net="more" id="shMore"><span class="shic more"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></svg></span>More</button>
+      </div>
+      <p class="shmsg" id="shMsg"></p>
+    </div></div>
     <div class="sv2head" id="sv2Head"><div class="sv2top"><span class="sv2k" id="sv2K"></span><button type="button" class="sv2all" id="sv2All">All steps</button></div>
       <div class="sv2bar" id="sv2Bar"></div><h2 class="sv2t" id="sv2T"></h2><p class="sv2s" id="sv2S"></p></div>
     <div class="steptabs" id="stepTabs" role="tablist"></div>
@@ -4118,24 +4147,79 @@ function revealSetup(key, steps) {
     box.appendChild(sp);
   });
 }
-async function revImage() { return await markedImage().catch(() => null); }
-$("#revShare").onclick = async () => {
-  const b = $("#revShare"); b.disabled = true;
-  try {
-    const blob = await revImage(), file = blob && new File([blob], "my-tree-treestyle.jpg", { type: "image/jpeg" });
-    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-      try { await navigator.share({ files: [file], title: "My tree, styled with TreeStyle", text: "My tree, styled with TreeStyle ✨" }); return; } catch (e) { if (e.name === "AbortError") return; }
-    }
-    // no share sheet here (most computers): save it instead, and say so
-    const a = document.createElement("a"); a.href = blob ? URL.createObjectURL(blob) : after; a.download = "my-tree-treestyle.jpg"; a.click();
-    $("#revNote").textContent = "Sharing isn't available in this browser, so we saved the image for you to post.";
-  } finally { b.disabled = false; }
-};
+// The finished tree as a high-resolution image with the TreeStyle logo as a watermark on the picture (Kylie):
+// at least 2400 px wide (twice the preview's own size, up to 3600), the gold logo over a soft dark fade at the
+// bottom, and a small "AI preview" note beside it, as on every other TreeStyle image of a preview
+async function watermarked(minW, maxW, q) {
+  const load = u => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = u; });
+  const im = await load(after); let logo = null; try { logo = await load("/brand/logo-horizontal.png"); } catch {}
+  try { await document.fonts.load("500 40px Inter"); } catch {}
+  const W = Math.round(Math.min(maxW, Math.max(minW, im.naturalWidth * 2))), H = Math.round(im.naturalHeight * W / im.naturalWidth);
+  const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high"; g.drawImage(im, 0, 0, W, H);
+  const fade = g.createLinearGradient(0, H * .8, 0, H); fade.addColorStop(0, "rgba(10,12,16,0)"); fade.addColorStop(1, "rgba(10,12,16,.58)"); g.fillStyle = fade; g.fillRect(0, H * .8, W, H * .2);
+  if (logo) {
+    const lw = W * .34, lh = lw * logo.naturalHeight / logo.naturalWidth, pad = W * .04;
+    g.save(); g.shadowColor = "rgba(0,0,0,.55)"; g.shadowBlur = W * .012; g.globalAlpha = .95; g.drawImage(logo, W - pad - lw, H - pad - lh, lw, lh); g.restore();
+    g.font = `500 ${Math.round(W * .017)}px Inter, sans-serif`; g.fillStyle = "rgba(247,241,232,.82)"; g.textBaseline = "bottom"; g.fillText("AI preview", pad, H - pad);
+  }
+  return new Promise(ok => c.toBlob(ok, "image/jpeg", q));
+}
+const hiRes = () => watermarked(2400, 3600, .95);
+function saveBlob(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
 $("#revSave").onclick = async () => {
-  const b = $("#revSave"); b.disabled = true;
-  try { const blob = await revImage(); const a = document.createElement("a"); a.href = blob ? URL.createObjectURL(blob) : after; a.download = "my-tree-treestyle.jpg"; a.click(); $("#revNote").textContent = "Saved. Look for my-tree-treestyle.jpg in your downloads or photos."; }
-  finally { b.disabled = false; }
+  const b = $("#revSave"), t = b.innerHTML; b.disabled = true; b.lastChild.textContent = "Preparing…";
+  try { const blob = await hiRes(); saveBlob(blob, "my-tree-treestyle.jpg"); $("#revNote").textContent = "Saved in high resolution. Look for my-tree-treestyle.jpg in your downloads or photos."; }
+  catch (e) { $("#revNote").textContent = "Couldn't make the image. Please try again."; }
+  finally { b.innerHTML = t; b.disabled = false; }
 };
+// Share: Instagram, Facebook, Pinterest (and More, the phone's own share sheet)
+let shareUp = null;   // the uploaded picture, once per tree
+function shareMsg(t) { $("#shMsg").textContent = t || ""; }
+$("#revShare").onclick = () => {
+  if ($("#shSheet").parentElement !== document.body) document.body.appendChild($("#shSheet"));   // full screen, above everything
+  $("#shThumb").src = after; shareMsg(""); $("#shMore").hidden = !navigator.share; $("#shSheet").hidden = false;
+};
+$("#shClose").onclick = () => { $("#shSheet").hidden = true; };
+$("#shSheet").addEventListener("click", e => { if (e.target.id === "shSheet") $("#shSheet").hidden = true; });
+async function shareFile() { const blob = await watermarked(1600, 2160, .9); return { blob, file: new File([blob], "my-tree-treestyle.jpg", { type: "image/jpeg" }) }; }
+async function uploadShare() {
+  if (shareUp && shareUp.after === after) return shareUp;
+  const { blob } = await shareFile();
+  const data = await new Promise(ok => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.readAsDataURL(blob); });
+  const r = await fetch("/api/share", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image: data }) });
+  const d = await r.json().catch(() => ({})); if (!r.ok || !d.page) throw new Error(d.error || "Couldn't upload the picture");
+  return (shareUp = { after, ...d });
+}
+$("#shSheet .shicons").addEventListener("click", async e => {
+  const bt = e.target.closest("button[data-net]"); if (!bt) return;
+  const net = bt.dataset.net, caption = "My tree, styled with TreeStyle ✨ #TreeStyle #christmastree #christmasdecor";
+  const btns = [...$("#shSheet .shicons").querySelectorAll("button")]; btns.forEach(b => b.disabled = true);
+  try {
+    if (net === "instagram" || net === "more") {
+      // Instagram has no web share link: the phone's share sheet sends the picture to it (or anywhere else)
+      shareMsg("Preparing your picture…");
+      const { blob, file } = await shareFile();
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        shareMsg(net === "instagram" ? "Choose Instagram in the list that opens." : "");
+        try { await navigator.share({ files: [file], title: "My tree, styled with TreeStyle", text: caption }); shareMsg(""); } catch (err) { if (err.name !== "AbortError") throw err; shareMsg(""); }
+      } else { saveBlob(blob, "my-tree-treestyle.jpg"); shareMsg("Saved to your device. Open Instagram, tap +, and choose the picture to post it."); }
+      return;
+    }
+    if (SAMPLE) { shareMsg("Sharing to Facebook and Pinterest is off in screen previews."); return; }   // previews save nothing
+    // Facebook and Pinterest post from a web address: open their window now (so it isn't blocked), then point it at the picture
+    const win = window.open("", "_blank");
+    shareMsg("Preparing your picture…");
+    const up = await uploadShare();
+    const url = net === "facebook"
+      ? "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(up.page) + "&quote=" + encodeURIComponent(caption)
+      : "https://www.pinterest.com/pin/create/button/?url=" + encodeURIComponent(up.page) + "&media=" + encodeURIComponent(up.image) + "&description=" + encodeURIComponent(caption);
+    if (win) win.location.href = url; else location.href = url;
+    shareMsg("");
+  } catch (err) {
+    shareMsg("Couldn't share just now. Try Download and post the picture yourself.");
+  } finally { btns.forEach(b => b.disabled = false); }
+});
 $("#revAnother").onclick = () => $("#restart").click();
 async function drawStep() {
   if (!result) return;
