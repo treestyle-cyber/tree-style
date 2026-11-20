@@ -2519,10 +2519,8 @@ $("#buyPass").onclick = async () => {
   } catch (e) { $("#holErr").textContent = e.message; b.disabled = false; }
 };
 // Back from Stripe Checkout
-async function returnFromCheckout() {
-  const q = new URLSearchParams(location.search), paid = q.get("paid");
+async function returnFromCheckout(paid) {   // paid: read from the address before the app changes it
   if (!paid) return;
-  history.replaceState(null, "", "/try/");
   await acct.ready;
   const note = $("#paidNote");
   if (paid === "cancelled") return;
@@ -3611,7 +3609,7 @@ async function startApp() {
   await acct.ready;
   if (!password && !acct.on) { show("s-pass", []); return; }
   const back = new URLSearchParams(location.search).get("paid");
-  if (back) { show("s-home", []); returnFromCheckout(); return; }
+  if (back) { show("s-home", []); returnFromCheckout(back); return; }
   // Refreshing a tree screen (/try/plan, /try/shop…) reopens your saved tree right there;
   // opening /try/ always starts at Home, which offers "Pick up where you left off".
   const want = "s-" + (location.pathname.replace(/^\/try\/?/, "").split("/")[0] || "home");
