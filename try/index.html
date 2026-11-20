@@ -2430,7 +2430,7 @@ syncStyle();
 // (Stripe Checkout). The server decides what's allowed; this only asks people to sign in or buy at the right moment.
 // Until Clerk is set up in Vercel, /api/account says accounts are off and the app keeps the test password.
 const acct = { on: false, info: null, me: null, clerk: null, loadErr: false };
-const CLERK_LOOK = { variables: { colorPrimary: "#B89C6B", colorBackground: "#141C2C", colorText: "#F3EEE7", colorTextSecondary: "#D9CCC0", colorInputBackground: "#1E2738", colorInputText: "#F3EEE7", borderRadius: "14px", fontFamily: "Inter, system-ui, sans-serif" } };
+const CLERK_LOOK = { variables: { colorPrimary: "#B89C6B", colorPrimaryForeground: "#141C2C", colorBackground: "#141C2C", colorForeground: "#F3EEE7", colorMutedForeground: "#D9CCC0", colorNeutral: "#F3EEE7", colorInput: "#1E2738", colorInputForeground: "#F3EEE7", colorText: "#F3EEE7", colorTextSecondary: "#D9CCC0", colorInputBackground: "#1E2738", colorInputText: "#F3EEE7", borderRadius: "14px", fontFamily: "Inter, system-ui, sans-serif" } };   // Clerk 6 names, plus the older names
 acct.ready = (async () => {
   try {
     const info = acct.info = await fetch("/api/account", { cache: "no-store" }).then(r => r.json());
