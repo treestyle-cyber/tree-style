@@ -2437,9 +2437,12 @@ acct.ready = (async () => {
     acct.on = !!(info.accounts && info.publishableKey);
     if (!acct.on) return;
     const pk = info.publishableKey, fapi = atob(pk.split("_")[2] || "").replace(/\$$/, "");
-    await new Promise((ok, no) => { const sc = document.createElement("script"); sc.async = true; sc.crossOrigin = "anonymous"; sc.dataset.clerkPublishableKey = pk; sc.src = `https://${fapi}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`; sc.onload = ok; sc.onerror = no; document.head.append(sc); });
+    // Clerk 6 ships the sign-in window (@clerk/ui) separately from the core (@clerk/clerk-js); load the window first
+    const addScript = (src, pkAttr) => new Promise((ok, no) => { const sc = document.createElement("script"); sc.async = true; sc.crossOrigin = "anonymous"; if (pkAttr) sc.dataset.clerkPublishableKey = pk; sc.src = src; sc.onload = ok; sc.onerror = no; document.head.append(sc); });
+    await addScript(`https://${fapi}/npm/@clerk/ui@1/dist/ui.browser.js`);
+    await addScript(`https://${fapi}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`, true);
     // routerPush/Replace do nothing: signing in must never reload the page (the photo and plan live in memory)
-    await window.Clerk.load({ appearance: CLERK_LOOK, routerPush: () => {}, routerReplace: () => {} });
+    await window.Clerk.load({ appearance: CLERK_LOOK, ui: { ClerkUI: window.__internal_ClerkUICtor }, routerPush: () => {}, routerReplace: () => {} });
     acct.clerk = window.Clerk;
     acct.clerk.addListener(({ user }) => {
       if (user && signinWait) { const f = signinWait; signinWait = null; try { acct.clerk.closeSignIn(); } catch {} refreshMe().catch(() => {}).finally(() => f(true)); }
