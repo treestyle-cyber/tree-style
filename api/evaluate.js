@@ -4,7 +4,8 @@
 // POST { image, revise: { current, request, history, style, theme, mode, tree }, extra?: dataURL }
 //   -> the design partner: a revised plan based on the homeowner's request.
 import { GUIDE, GUIDE_OLD_STYLES, CATS, STYLES } from "../lib/guide.js";
-import { checkPassword, parseDataUrl, extractJson } from "../lib/util.js";
+import { parseDataUrl, extractJson } from "../lib/util.js";
+import { gate } from "../lib/account.js";
 import { picksRule } from "../lib/picks.js";
 import { EVAL_SCHEMA, LOOK_SCHEMA, PLAN_SCHEMA, REVISE_SCHEMA, DETAILS_SCHEMA } from "../lib/schema.js";
 
@@ -221,7 +222,8 @@ async function callClaudeOnce(images, text, maxTokens, schema) {
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
-  if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
+  // Signed in, with a free preview left or a Holiday Pass. Step instructions for a tree they already have only need sign-in.
+  if (!(await gate(req, res, { needsAllowance: !(req.body || {}).details }))) return;
   if (!process.env.ANTHROPIC_API_KEY) return res.status(500).json({ error: "ANTHROPIC_API_KEY is not set in Vercel" });
 
   const { image, mode = "check", style = "keep", theme = "", revise, extra, facts, pieces, inspo, details, part, variant } = req.body || {};

@@ -529,6 +529,19 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
   @media (min-width:700px){ .tiles{grid-template-columns:1fr 1fr} }
   .tilenote{text-align:center;color:var(--muted);font-size:14px;max-width:26em;margin:20px auto 0}
   #s-pass form{max-width:420px;margin:0 auto}
+  /* sign-in and Holiday Pass */
+  #s-signin .acts,#s-holiday .acts{display:grid;gap:10px;max-width:420px;margin:0 auto}
+  #s-signin .acts .btn,#s-holiday .acts .btn{width:100%;padding:16px}
+  .linkbtn{background:none;border:0;color:var(--muted);font:inherit;font-size:14px;text-decoration:underline;cursor:pointer;padding:10px}
+  .passlist{list-style:none;padding:0;margin:0 auto 22px;max-width:420px;display:grid;gap:12px}
+  .passlist li{display:flex;gap:12px;align-items:flex-start;line-height:1.45}
+  .passlist li::before{content:"";flex:none;width:8px;height:8px;margin-top:8px;border-radius:50%;background:var(--gold)}
+  .passprice{text-align:center;font:400 44px/1 var(--serif);color:var(--ivory);margin:4px 0 4px}
+  .passprice small{display:block;font:500 13px/1.4 var(--sans, Inter, system-ui, sans-serif);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+  .finepr{text-align:center;color:var(--muted);font-size:13px;margin:4px 0 0}
+  .acctline{text-align:center;color:var(--muted);font-size:13.5px;margin:18px auto 0}
+  .acctline button{background:none;border:0;color:var(--gold);font:inherit;text-decoration:underline;cursor:pointer;padding:4px}
+  .paidnote{text-align:center;color:var(--ivory);background:rgba(184,156,107,.16);border:1px solid rgba(184,156,107,.45);border-radius:14px;padding:12px 14px;margin:0 auto 16px;max-width:30em}
   /* style cards: taller, label centered like the board */
   .sgrid{gap:12px}
   .scard span{aspect-ratio:4/5;min-height:0;align-items:center;text-align:center;padding:16px 10px;border-radius:16px}
@@ -911,6 +924,39 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
     <div class="err" id="passErr"></div>
   </section>
 
+  <!-- Sign in (before the first preview) -->
+  <section class="screen" id="s-signin" data-title="" hidden>
+    <div class="kicker">Almost there</div>
+    <h2 class="ttl">Sign in to see your tree</h2>
+    <p class="sub" id="signinSub">We'll email you a 6-digit code. No password to remember, and your trees stay with your account.</p>
+    <div class="acts">
+      <button class="btn" id="signinBtn">Continue with email</button>
+      <button class="linkbtn" id="signinLater">Not now</button>
+    </div>
+    <div class="err" id="signinErr"></div>
+  </section>
+
+  <!-- Holiday Pass -->
+  <section class="screen" id="s-holiday" data-title="" hidden>
+    <div class="kicker">Holiday Pass</div>
+    <h2 class="ttl" id="holTitle">Keep designing all season</h2>
+    <p class="sub" id="holSub">You've used your free previews. Your trees and plans are saved.</p>
+    <div id="holOffer">
+      <div class="passprice"><span id="holPrice">$19.99</span><small>One payment · no subscription</small></div>
+      <ul class="passlist">
+        <li>Unlimited tree previews through <span class="holUntil">January 15</span></li>
+        <li>Every change, new style and redesign you want to try</li>
+        <li>Step-by-step plans and shopping lists for every tree</li>
+      </ul>
+      <div class="acts">
+        <button class="btn" id="buyPass">Get the Holiday Pass</button>
+        <button class="linkbtn" id="holLater">Not now</button>
+      </div>
+      <p class="finepr">Secure checkout by Stripe.</p>
+    </div>
+    <div class="err" id="holErr"></div>
+  </section>
+
   <!-- Home -->
   <section class="screen" id="s-home" data-title="" hidden>
     <div class="hero"><div class="lockup"><img class="logos" src="/brand/logo-stacked.png" alt="TreeStyle · The art of styling"></div><div class="hl"><span class="rule"></span><h1>A more beautiful tree starts here.</h1></div></div>
@@ -922,12 +968,14 @@ fetch("/api/brand").then(r => r.json()).then(d => { const ph = d.photos || {}; w
         <div class="resumebtns"><button class="btn" id="resumeBtn">Pick up where you left off</button><button class="btn ghost" id="resumeNew">Start a new tree</button></div>
       </div>
     </div>
+    <p class="paidnote" id="paidNote" hidden></p>
     <h2 class="ttl">What would you like to do?</h2>
     <p class="promise">A designer's rating, a step-by-step plan, a shopping list and a picture of your finished tree.</p>
     <div class="tiles">
       <button class="choice tile" data-mode="check" style="--img:var(--photo-check, url(/brand/velvet-berry.jpg))"><div class="tpic"></div><div class="tlbl"><span><em>Already decorating?</em><b>Check my tree</b><small>A designer's rating and the fixes that matter most</small></span><i>→</i></div></button>
       <button class="choice tile" data-mode="design" style="--img:var(--photo-design, url(/brand/walnut.jpg))"><div class="tpic"></div><div class="tlbl"><span><em>Starting fresh?</em><b>Design my tree</b><small>A complete design, even before your tree is up</small></span><i>→</i></div></button>
     </div>
+    <p class="acctline" id="acctLine" hidden></p>
   </section>
 
   <!-- Design: how to start -->
@@ -2377,6 +2425,110 @@ function syncStyle() { const s = val("style"); $("#styleNote").textContent = STY
 document.querySelectorAll("input[name=style]").forEach(r => r.addEventListener("change", syncStyle));
 syncStyle();
 
+/* ---------------- accounts & the Holiday Pass ---------------- */
+// Sign-in is Clerk (an emailed code, no passwords). New accounts get a few free previews, then the Holiday Pass
+// (Stripe Checkout). The server decides what's allowed; this only asks people to sign in or buy at the right moment.
+// Until Clerk is set up in Vercel, /api/account says accounts are off and the app keeps the test password.
+const acct = { on: false, info: null, me: null, clerk: null, loadErr: false };
+const CLERK_LOOK = { variables: { colorPrimary: "#B89C6B", colorBackground: "#141C2C", colorText: "#F3EEE7", colorTextSecondary: "#D9CCC0", colorInputBackground: "#1E2738", colorInputText: "#F3EEE7", borderRadius: "14px", fontFamily: "Inter, system-ui, sans-serif" } };
+acct.ready = (async () => {
+  try {
+    const info = acct.info = await fetch("/api/account", { cache: "no-store" }).then(r => r.json());
+    acct.on = !!(info.accounts && info.publishableKey);
+    if (!acct.on) return;
+    const pk = info.publishableKey, fapi = atob(pk.split("_")[2] || "").replace(/\$$/, "");
+    await new Promise((ok, no) => { const sc = document.createElement("script"); sc.async = true; sc.crossOrigin = "anonymous"; sc.dataset.clerkPublishableKey = pk; sc.src = `https://${fapi}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`; sc.onload = ok; sc.onerror = no; document.head.append(sc); });
+    // routerPush/Replace do nothing: signing in must never reload the page (the photo and plan live in memory)
+    await window.Clerk.load({ appearance: CLERK_LOOK, routerPush: () => {}, routerReplace: () => {} });
+    acct.clerk = window.Clerk;
+    acct.clerk.addListener(({ user }) => {
+      if (user && signinWait) { const f = signinWait; signinWait = null; try { acct.clerk.closeSignIn(); } catch {} refreshMe().catch(() => {}).finally(() => f(true)); }
+    });
+    if (acct.clerk.user) await refreshMe();
+  } catch (e) { console.error("accounts", e); acct.loadErr = true; }
+  showAcct();
+})();
+async function authToken() { try { return acct.clerk && acct.clerk.session ? (await acct.clerk.session.getToken()) || "" : ""; } catch { return ""; } }
+async function acctCall(method, body) {
+  const tok = await authToken();
+  const r = await fetch("/api/account", { method, cache: "no-store", headers: { "content-type": "application/json", ...(tok ? { authorization: "Bearer " + tok } : {}) }, body: body ? JSON.stringify(body) : undefined });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(d.error || `Error ${r.status}`); e.status = r.status; throw e; }
+  return d;
+}
+async function refreshMe() { const d = await acctCall("GET"); acct.me = d.me || null; showAcct(); return acct.me; }
+const untilWords = iso => new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", timeZone: "America/Los_Angeles" });
+function showAcct() {
+  const line = $("#acctLine"), me = acct.me;
+  if (!acct.on || !me) { line.hidden = true; return; }
+  const left = me.staff ? "Unlimited previews" : me.passUntil ? `Holiday Pass · through ${untilWords(me.passUntil)}` : me.freeLeft ? `${me.freeLeft} free preview${me.freeLeft === 1 ? "" : "s"} left` : "Free previews used";
+  line.innerHTML = `${esc(left)}${!me.staff && !me.passUntil ? ` · <button id="acctPass">Get the Holiday Pass</button>` : ""} · <button id="acctOut">Sign out</button>`;
+  line.hidden = false;
+  if ($("#acctPass")) $("#acctPass").onclick = () => openPass("pass_required", true);
+  $("#acctOut").onclick = async () => { try { await acct.clerk.signOut(); } catch {} acct.me = null; showAcct(); };
+}
+// Before anything that paints a preview: signed in, and a free preview or the pass left. False means stop here.
+async function ensureAccess() {
+  await acct.ready;
+  if (!acct.on) return true;
+  if (acct.loadErr || !acct.clerk) { $("#startErr").textContent = $("#detailsErr").textContent = "Sign-in couldn't load. Check your connection and refresh the page."; return false; }
+  if (!acct.clerk.user && !(await askSignIn())) return false;
+  let me = null; try { me = await refreshMe(); } catch { return true; }   // can't check: let the server decide
+  if (!me || me.allowed) return true;
+  openPass(me.reason); return false;
+}
+let signinWait = null, signinP = null;
+function askSignIn() {
+  if (signinP && stack[stack.length - 1] === "s-signin") return signinP;
+  if (signinWait) { const f = signinWait; signinWait = null; f(false); }
+  const n = acct.info?.freeLimit || 2;
+  $("#signinSub").textContent = `We'll email you a 6-digit code. No password to remember. Your first ${n} previews are free.`;
+  $("#signinErr").textContent = "";
+  signinP = new Promise(ok => { signinWait = ok; }).then(v => { signinP = null; if (stack[stack.length - 1] === "s-signin") history.back(); return v; });
+  show("s-signin");
+  return signinP;
+}
+$("#signinBtn").onclick = () => { try { acct.clerk.openSignIn({}); } catch (e) { $("#signinErr").textContent = "Sign-in couldn't open. Refresh the page and try again."; } };
+$("#signinLater").onclick = () => { if (signinWait) { const f = signinWait; signinWait = null; f(false); } else history.back(); };
+function openPass(reason, browsing) {
+  const n = acct.info?.freeLimit || 2, cap = reason === "daily_cap", ended = reason === "pass_ended";
+  $("#holTitle").textContent = cap ? "That's a lot of trees for one day" : ended ? "Your Holiday Pass has ended" : "Keep designing all season";
+  $("#holSub").textContent = cap ? "Your Holiday Pass resets overnight. Come back tomorrow to keep designing." : ended ? "Thank you for styling with TreeStyle this season." : browsing ? `Your first ${n} previews are free. After that, the Holiday Pass keeps you designing all season.` : `You've used your ${n} free previews. Your trees and plans are saved.`;
+  $("#holOffer").hidden = cap || ended;
+  $("#holPrice").textContent = acct.info?.price || "$19.99";
+  document.querySelectorAll(".holUntil").forEach(el => el.textContent = untilWords(acct.info?.passUntil || "2027-01-16T07:59:59Z"));
+  $("#holErr").textContent = ""; $("#buyPass").disabled = false;
+  if (stack[stack.length - 1] !== "s-holiday") show("s-holiday");
+}
+$("#holLater").onclick = () => history.back();
+$("#buyPass").onclick = async () => {
+  const b = $("#buyPass"); b.disabled = true; $("#holErr").textContent = "";
+  try {
+    if (!acct.clerk?.user && !(await askSignIn())) { b.disabled = false; return; }
+    const d = await acctCall("POST", { action: "checkout" });
+    if (d.already) { await refreshMe(); history.back(); return; }
+    location.href = d.url;   // Stripe's checkout page; it comes back to /try/?paid=…
+  } catch (e) { $("#holErr").textContent = e.message; b.disabled = false; }
+};
+// Back from Stripe Checkout
+async function returnFromCheckout() {
+  const q = new URLSearchParams(location.search), paid = q.get("paid");
+  if (!paid) return;
+  history.replaceState(null, "", "/try/");
+  await acct.ready;
+  const note = $("#paidNote");
+  if (paid === "cancelled") return;
+  note.hidden = false; note.textContent = "Confirming your Holiday Pass…";
+  for (let i = 0; i < 4; i++) {
+    try {
+      const d = await acctCall("POST", { action: "confirm", session: paid });
+      if (d.me && d.me.passUntil) { acct.me = d.me; showAcct(); note.textContent = `Your Holiday Pass is on, through ${untilWords(d.me.passUntil)}. Happy styling!`; return; }
+    } catch (e) { if (e.status === 403) { note.textContent = "That payment is on a different account. Sign in with the email you paid with."; return; } }
+    await new Promise(ok => setTimeout(ok, 2500));
+  }
+  note.textContent = "Thanks! Your payment is going through. Your pass turns on within a minute; refresh if it doesn't.";
+}
+
 /* ---------------- API ---------------- */
 // Phones (iPhones especially) can freeze the page when someone switches apps, which drops a request in flight.
 // If that happens, wait until they're back and quietly ask again (once), instead of showing an error.
@@ -2387,13 +2539,17 @@ async function api(path, body, again) {
   const h0 = hides, away = () => !again && (hides !== h0 || document.hidden);
   let r, data = {};
   try {
-    r = await fetch(path, { method: "POST", headers: { "content-type": "application/json", "x-test-password": password }, body: JSON.stringify(body) });
+    const tok = await authToken();
+    r = await fetch(path, { method: "POST", headers: { "content-type": "application/json", "x-test-password": password, ...(tok ? { authorization: "Bearer " + tok } : {}) }, body: JSON.stringify(body) });
     try { data = await r.json(); } catch (e) { if (away()) throw e; data = { error: `Server error ${r.status}` }; }
   } catch (err) {
     if (away()) { await whenVisible(); return api(path, body, true); }   // the connection dropped while they were away: ask again once they're back
     throw err;
   }
+  if (r.status === 401 && data.code === "sign_in" && acct.on && !body.__signedIn) { if (await askSignIn()) return api(path, { ...body, __signedIn: true }, again); }
+  if (r.status === 402 && acct.on) { openPass(data.code); const e = new Error(data.error || "Holiday Pass needed"); e.status = 402; e.paywall = true; throw e; }
   if (!r.ok) { const e = new Error(data.error || `Error ${r.status}`); e.status = r.status; throw e; }
+  if (path === "/api/render" && acct.on) refreshMe().catch(() => {});   // one fewer free preview
   return data;
 }
 
@@ -2503,11 +2659,13 @@ async function makeBase() {
     LB.done(); return true;
   } catch (e) {
     LB.done(true);
-    if (e.status === 401) { try { sessionStorage.removeItem("ts_pw"); } catch {} show("s-pass", []); return false; }
+    if (e.paywall) return false;
+    if (e.status === 401 && !acct.on) { try { sessionStorage.removeItem("ts_pw"); } catch {} show("s-pass", []); return false; }
     $("#startErr").textContent = $("#detailsErr").textContent = "We couldn't set up your tree: " + e.message; return false;
   }
 }
 async function run() {
+  if (!(await ensureAccess())) return;   // signed in, with a free preview or the Holiday Pass
   if (mode === "design" && src !== "tree") { if (!(await makeBase())) return; }
   if (!photo) return;
   $("#startErr").textContent = $("#detailsErr").textContent = "";
@@ -2522,7 +2680,8 @@ async function run() {
     rerunFromHub = false;
   } catch (e) {
     L.done(true);
-    if (e.status === 401) { try { sessionStorage.removeItem("ts_pw"); } catch {} $("#passErr").textContent = "That password didn't work."; show("s-pass", []); return; }
+    if (e.paywall) return;
+    if (e.status === 401 && !acct.on) { try { sessionStorage.removeItem("ts_pw"); } catch {} $("#passErr").textContent = "That password didn't work."; show("s-pass", []); return; }
     $("#startErr").textContent = $("#detailsErr").textContent = "Something went wrong: " + e.message;
     if (rerunFromHub) { $("#detailsSub").textContent = "That didn't go through: " + e.message; }
     return;
@@ -3319,6 +3478,7 @@ $("#quickAsk").addEventListener("submit", e => {
 async function partnerSend(req, label, opts = {}) {
   if (!result || busy) return;
   if (previewP) { $("#pStatus").textContent = "One moment: your first preview is still painting."; await previewP; $("#pStatus").textContent = ""; }
+  if (!(await ensureAccess())) return;   // each change paints a new preview
   busy = true; $("#pSend").disabled = true; document.querySelectorAll("#ideas button").forEach(b => b.disabled = true);
   $("#pStatus").textContent = "";
   const sentColor = pickedColor, sentOrn = ornPhoto, sentOrnList = ornList.slice();
@@ -3361,6 +3521,7 @@ async function partnerSend(req, label, opts = {}) {
     L.done(true);
     if (sentColor) { $("#pColor").value = sentColor; $("#pColor").dispatchEvent(new Event("input")); }
     if (sentOrn) { ornList = sentOrnList; syncOrn(); }
+    if (e.paywall) return;
     $("#pStatus").textContent = "That didn't go through: " + e.message;
     if (!stack.includes("s-partner")) show("s-partner");
   } finally {
@@ -3439,7 +3600,10 @@ $("#resumeBtn").onclick = async () => {
 $("#resumeNew").onclick = () => { $("#resume").hidden = true; document.querySelector(".tiles").scrollIntoView({ block: "center", behavior: "smooth" }); };
 // Coming back within a few hours lands right back on the tree; after that, the home screen offers it.
 async function startApp() {
-  if (!password) { show("s-pass", []); return; }
+  await acct.ready;
+  if (!password && !acct.on) { show("s-pass", []); return; }
+  const back = new URLSearchParams(location.search).get("paid");
+  if (back) { show("s-home", []); returnFromCheckout(); return; }
   // Refreshing a tree screen (/try/plan, /try/shop…) reopens your saved tree right there;
   // opening /try/ always starts at Home, which offers "Pick up where you left off".
   const want = "s-" + (location.pathname.replace(/^\/try\/?/, "").split("/")[0] || "home");
