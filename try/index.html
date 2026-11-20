@@ -2442,7 +2442,10 @@ acct.ready = (async () => {
     await addScript(`https://${fapi}/npm/@clerk/ui@1/dist/ui.browser.js`);
     await addScript(`https://${fapi}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`, true);
     // routerPush/Replace do nothing: signing in must never reload the page (the photo and plan live in memory)
-    await window.Clerk.load({ appearance: CLERK_LOOK, ui: { ClerkUI: window.__internal_ClerkUICtor }, routerPush: () => {}, routerReplace: () => {} });
+    // If Clerk ever does leave the page (its hosted pages), it comes back to the app, never the waitlist at "/"
+    const back = location.origin + "/try/";
+    await window.Clerk.load({ appearance: CLERK_LOOK, ui: { ClerkUI: window.__internal_ClerkUICtor }, routerPush: () => {}, routerReplace: () => {},
+      signInFallbackRedirectUrl: back, signUpFallbackRedirectUrl: back, afterSignOutUrl: back });
     acct.clerk = window.Clerk;
     acct.clerk.addListener(({ user }) => {
       if (user && signinWait) { const f = signinWait; signinWait = null; try { acct.clerk.closeSignIn(); } catch {} refreshMe().catch(() => {}).finally(() => f(true)); }
@@ -2491,7 +2494,9 @@ function askSignIn() {
   show("s-signin");
   return signinP;
 }
-$("#signinBtn").onclick = () => { try { acct.clerk.openSignIn({}); } catch (e) { $("#signinErr").textContent = "Sign-in couldn't open. Refresh the page and try again."; } };
+// withSignUp: a new email signs up right in this window (the "Sign up" link used to leave for Clerk's hosted page,
+// which then dropped people on the waitlist page)
+$("#signinBtn").onclick = () => { try { acct.clerk.openSignIn({ withSignUp: true, forceRedirectUrl: location.href, signUpForceRedirectUrl: location.href }); } catch (e) { $("#signinErr").textContent = "Sign-in couldn't open. Refresh the page and try again."; } };
 $("#signinLater").onclick = () => { if (signinWait) { const f = signinWait; signinWait = null; f(false); } else history.back(); };
 function openPass(reason, browsing) {
   const n = acct.info?.freeLimit || 2, cap = reason === "daily_cap", ended = reason === "pass_ended";
