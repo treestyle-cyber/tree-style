@@ -766,14 +766,22 @@
       try {
         const gw = 72, gh = Math.max(24, Math.round(gw * H / W)), c = layer(gw, gh), x = c.getContext("2d", { willReadFrequently: true });
         x.drawImage(img, 0, 0, gw, gh); const d = x.getImageData(0, 0, gw, gh).data;
-        let m = new Uint8Array(gw * gh);
+        let m = new Uint8Array(gw * gh); const hueG = new Uint8Array(gw * gh);
         for (let i = 0; i < gw * gh; i++) {
           const r = d[i * 4] / 255, g = d[i * 4 + 1] / 255, b = d[i * 4 + 2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), v = mx, sat = mx ? (mx - mn) / mx : 0;
           let h = 0; if (mx > mn) { h = mx === r ? ((g - b) / (mx - mn)) % 6 : mx === g ? (b - r) / (mx - mn) + 2 : (r - g) / (mx - mn) + 4; h = (h * 60 + 360) % 360; }
+          if (h >= 62 && h <= 178 && sat > .14 && v > .07 && v < .9) hueG[i] = 1;   // truly green (not just dark), for the check below
           m[i] = (h >= 62 && h <= 178 && sat > .14 && v > .07 && v < .9) || (v < .2 && g >= r * .95 && g >= b * .9 && v > .04) ? 1 : 0;
         }
         const grow = (src, on) => { const out = new Uint8Array(src.length); for (let yy = 0; yy < gh; yy++) for (let xx = 0; xx < gw; xx++) { let k = on ? 0 : 1; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const X = xx + dx, Y = yy + dy; const val = X < 0 || Y < 0 || X >= gw || Y >= gh ? 0 : src[Y * gw + X]; if (on && val) k = 1; if (!on && !val) k = 0; } out[yy * gw + xx] = k; } return out; };
         m = grow(grow(grow(m, true), true), false);   // close the gaps ornaments and lights leave
+        // Only a green tree can be found by its color. A snowy, white, black, gold or silver tree would leave the
+        // plants in the room as the greenest thing in the picture, so when the tree in the plan's outline isn't
+        // mostly green (or the plan says it's flocked), the spots stay exactly as planned.
+        if (data.tree.flocked) return treeMask;
+        let inCone = 0, greenIn = 0;
+        for (let yy = 0; yy < gh; yy++) for (let xx = 0; xx < gw; xx++) { const px = (xx + .5) * W / gw, py = (yy + .5) * H / gh; if (py >= G.A[1] && py <= G.L[1] && Math.abs(px - G.centerAt(py)) <= G.halfWidthAt(py) * .8) { inCone++; if (hueG[yy * gw + xx]) greenIn++; } }
+        if (!inCone || greenIn / inCone < .35) return treeMask;
         // the biggest connected patch, preferring one that overlaps the plan's outline of the tree
         const lab = new Int32Array(gw * gh).fill(-1), comps = [];
         for (let i = 0; i < gw * gh; i++) {
