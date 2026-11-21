@@ -71,7 +71,8 @@ async function load() {
       <div><div class="meta">${esc(when)}${e.name ? " · " + esc(e.name) : ""} · ${esc(e.mode === "design" ? "Design" : "Check")} · ${esc(e.style || "")}${e.theme ? " (" + esc(e.theme) + ")" : ""}${e.version > 1 ? " · version " + e.version : ""}${e.overall != null ? " · scored " + Math.max(1, Math.round(e.overall / 20 * 2) / 2) + "/5" : ""}</div>
       <div>${e.rating ? `<span class="orn">${o}</span>` : ""}${e.pay ? `<span class="pay ${esc(e.pay)}">Pay: ${esc(e.pay)}</span>` : ""}</div>
       ${e.headline ? `<div class="meta" style="margin-top:6px">“${esc(e.headline)}”</div>` : ""}
-      ${e.comment ? `<p class="comment">${esc(e.comment)}</p>` : ""}</div></div>`;
+      ${e.comment ? `<p class="comment">${esc(e.comment)}</p>` : ""}
+      ${e.email ? `<div class="meta" style="margin-top:6px">${esc(e.email)}</div>` : ""}</div></div>`;
   }).join("");
 }
 $("#pf").addEventListener("submit", e => { e.preventDefault(); pw = $("#pw").value; load(); });
