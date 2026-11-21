@@ -2396,7 +2396,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </div>
 
 <script src="/try/engine.js?v=20261117c"></script>
-<script src="/try/guide.js?v=20261120c"></script>
+<script src="/try/guide.js?v=20261120d"></script>
 <script src="/picks-looks.js"></script>
 <script>
 // Screen preview (Studio → Screens): /try/?screen-preview&s=<screen> opens that screen straight away with the
@@ -5142,24 +5142,25 @@ function pieceIcon(g, type, x, y, r, col) {
   col = hex6(col) || (type === "leaves" ? "#3E6B45" : type === "flower" ? "#A3151F" : type === "base" ? "#6E1A2C" : "#C9A24B");
   const edge = Math.max(1.4, r * .11), dark = shadeHex(col, -.35), lite = shadeHex(col, .35);
   const finish = () => { g.lineJoin = "round"; g.lineWidth = edge * 2.2; g.strokeStyle = "rgba(255,252,244,.95)"; g.stroke(); g.lineWidth = edge * .55; g.strokeStyle = dark; g.stroke(); };
+  const paint = () => { g.lineJoin = "round"; g.lineWidth = edge * 2.4; g.strokeStyle = "rgba(255,252,244,.96)"; g.stroke(); g.shadowColor = "transparent"; fillShape(); g.lineWidth = edge * .55; g.strokeStyle = dark; g.stroke(); };   // white edge outside only, then the color, then a fine dark line
   const fillShape = () => { const gr = g.createLinearGradient(x - r, y - r, x + r * .6, y + r); gr.addColorStop(0, lite); gr.addColorStop(.55, col); gr.addColorStop(1, dark); g.fillStyle = gr; g.fill(); };
   g.save(); g.shadowColor = "rgba(20,12,6,.35)"; g.shadowBlur = r * .35; g.shadowOffsetY = r * .1;
   const cap = (cy, w) => { g.beginPath(); g.rect(x - w / 2, cy - r * .16, w, r * .2); g.fillStyle = "#C9A24B"; g.fill(); g.lineWidth = edge * .6; g.strokeStyle = "rgba(255,252,244,.95)"; g.stroke(); };
   g.beginPath();
-  if (type === "ball") { g.arc(x, y + r * .08, r * .82, 0, Math.PI * 2); fillShape(); g.shadowColor = "transparent"; finish(); cap(y - r * .74, r * .38); g.beginPath(); g.arc(x - r * .3, y - r * .2, r * .16, 0, Math.PI * 2); g.fillStyle = "rgba(255,255,255,.6)"; g.fill(); }
-  else if (type === "drop") { g.moveTo(x, y - r * .7); g.bezierCurveTo(x + r * .7, y - r * .1, x + r * .5, y + r * .55, x, y + r); g.bezierCurveTo(x - r * .5, y + r * .55, x - r * .7, y - r * .1, x, y - r * .7); fillShape(); g.shadowColor = "transparent"; finish(); cap(y - r * .72, r * .28); }
-  else if (type === "finial" || type === "finialtop") { const k = type === "finialtop" ? 1.15 : 1; g.moveTo(x, y - r * .55 * k); g.bezierCurveTo(x + r * .55, y - r * .35, x + r * .5, y + r * .1, x + r * .12, y + r * .25); g.lineTo(x, y + r * 1.05 * k); g.lineTo(x - r * .12, y + r * .25); g.bezierCurveTo(x - r * .5, y + r * .1, x - r * .55, y - r * .35, x, y - r * .55 * k); fillShape(); g.shadowColor = "transparent"; finish(); cap(y - r * .6 * k, r * .26); }
-  else if (type === "flower") { const n = 6; for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / n; g.moveTo(x, y); g.quadraticCurveTo(x + Math.cos(a - .5) * r * .95, y + Math.sin(a - .5) * r * .95, x + Math.cos(a) * r, y + Math.sin(a) * r); g.quadraticCurveTo(x + Math.cos(a + .5) * r * .95, y + Math.sin(a + .5) * r * .95, x, y); } fillShape(); g.shadowColor = "transparent"; finish(); g.beginPath(); g.arc(x, y, r * .2, 0, Math.PI * 2); g.fillStyle = "#E8C34A"; g.fill(); }
-  else if (type === "star") { for (let i = 0; i <= 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .42 : r; g[i ? "lineTo" : "moveTo"](x + Math.cos(a) * rr, y + Math.sin(a) * rr); } fillShape(); g.shadowColor = "transparent"; finish(); }
-  else if (type === "angel") { g.moveTo(x, y - r * .35); g.lineTo(x + r * .55, y + r); g.lineTo(x - r * .55, y + r); g.closePath(); g.moveTo(x + r * .2, y - r * .1); g.quadraticCurveTo(x + r * 1.05, y - r * .7, x + r * .9, y + r * .3); g.moveTo(x - r * .2, y - r * .1); g.quadraticCurveTo(x - r * 1.05, y - r * .7, x - r * .9, y + r * .3); fillShape(); g.shadowColor = "transparent"; finish(); g.beginPath(); g.arc(x, y - r * .58, r * .22, 0, Math.PI * 2); g.fillStyle = col; g.fill(); finish(); }
-  else if (type === "bow") { g.moveTo(x, y); g.bezierCurveTo(x - r * 1.1, y - r * .9, x - r * 1.1, y + r * .5, x, y); g.bezierCurveTo(x + r * 1.1, y - r * .9, x + r * 1.1, y + r * .5, x, y); g.moveTo(x - r * .1, y); g.lineTo(x - r * .5, y + r); g.lineTo(x - r * .2, y + r * .85); g.lineTo(x + r * .05, y); g.lineTo(x + r * .5, y + r); g.lineTo(x + r * .2, y + r * .85); fillShape(); g.shadowColor = "transparent"; finish(); }
-  else if (type === "base") { g.moveTo(x - r * 1.2, y + r * .35); g.quadraticCurveTo(x, y - r * .55, x + r * 1.2, y + r * .35); g.quadraticCurveTo(x, y + r * .95, x - r * 1.2, y + r * .35); fillShape(); g.shadowColor = "transparent"; finish(); }
+  if (type === "ball") { g.arc(x, y + r * .08, r * .82, 0, Math.PI * 2); paint(); cap(y - r * .74, r * .38); g.beginPath(); g.arc(x - r * .3, y - r * .2, r * .16, 0, Math.PI * 2); g.fillStyle = "rgba(255,255,255,.6)"; g.fill(); }
+  else if (type === "drop") { g.moveTo(x, y - r * .7); g.bezierCurveTo(x + r * .7, y - r * .1, x + r * .5, y + r * .55, x, y + r); g.bezierCurveTo(x - r * .5, y + r * .55, x - r * .7, y - r * .1, x, y - r * .7); paint(); cap(y - r * .72, r * .28); }
+  else if (type === "finial" || type === "finialtop") { const k = type === "finialtop" ? 1.15 : 1; g.moveTo(x, y - r * .55 * k); g.bezierCurveTo(x + r * .55, y - r * .35, x + r * .5, y + r * .1, x + r * .12, y + r * .25); g.lineTo(x, y + r * 1.05 * k); g.lineTo(x - r * .12, y + r * .25); g.bezierCurveTo(x - r * .5, y + r * .1, x - r * .55, y - r * .35, x, y - r * .55 * k); paint(); cap(y - r * .6 * k, r * .26); }
+  else if (type === "flower") { const n = 6; for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / n; g.moveTo(x, y); g.quadraticCurveTo(x + Math.cos(a - .5) * r * .95, y + Math.sin(a - .5) * r * .95, x + Math.cos(a) * r, y + Math.sin(a) * r); g.quadraticCurveTo(x + Math.cos(a + .5) * r * .95, y + Math.sin(a + .5) * r * .95, x, y); } paint(); g.beginPath(); g.arc(x, y, r * .2, 0, Math.PI * 2); g.fillStyle = "#E8C34A"; g.fill(); }
+  else if (type === "star") { for (let i = 0; i <= 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .42 : r; g[i ? "lineTo" : "moveTo"](x + Math.cos(a) * rr, y + Math.sin(a) * rr); } paint(); }
+  else if (type === "angel") { g.moveTo(x, y - r * .35); g.lineTo(x + r * .55, y + r); g.lineTo(x - r * .55, y + r); g.closePath(); g.moveTo(x + r * .2, y - r * .1); g.quadraticCurveTo(x + r * 1.05, y - r * .7, x + r * .9, y + r * .3); g.moveTo(x - r * .2, y - r * .1); g.quadraticCurveTo(x - r * 1.05, y - r * .7, x - r * .9, y + r * .3); paint(); g.beginPath(); g.arc(x, y - r * .58, r * .22, 0, Math.PI * 2); g.fillStyle = col; g.fill(); finish(); }
+  else if (type === "bow") { g.moveTo(x, y); g.bezierCurveTo(x - r * 1.1, y - r * .9, x - r * 1.1, y + r * .5, x, y); g.bezierCurveTo(x + r * 1.1, y - r * .9, x + r * 1.1, y + r * .5, x, y); g.moveTo(x - r * .1, y); g.lineTo(x - r * .5, y + r); g.lineTo(x - r * .2, y + r * .85); g.lineTo(x + r * .05, y); g.lineTo(x + r * .5, y + r); g.lineTo(x + r * .2, y + r * .85); paint(); }
+  else if (type === "base") { g.moveTo(x - r * 1.2, y + r * .35); g.quadraticCurveTo(x, y - r * .55, x + r * 1.2, y + r * .35); g.quadraticCurveTo(x, y + r * .95, x - r * 1.2, y + r * .35); paint(); }
   else {   // leaves, berries, spray: a stem with its pieces
     const stem = () => { g.beginPath(); g.moveTo(x - r * .55, y + r * .85); g.quadraticCurveTo(x - r * .1, y + r * .1, x + r * .45, y - r * .8); g.lineCap = "round"; g.lineWidth = edge * 2.6; g.strokeStyle = "rgba(255,252,244,.95)"; g.stroke(); g.lineWidth = edge * .9; g.strokeStyle = type === "leaves" ? dark : "#6B5232"; g.stroke(); };
     g.shadowColor = "transparent"; stem();
     const at = [[-.32, .45], [.05, .05], [.3, -.42], [-.1, -.25], [.25, .3]];
-    if (type === "leaves") at.forEach(([u, v], i) => { const cx = x + u * r, cy = y + v * r, a = (i % 2 ? .9 : -.9) - .6; g.beginPath(); g.ellipse(cx, cy, r * .42, r * .17, a, 0, Math.PI * 2); fillShape(); finish(); });
-    else at.concat(type === "berries" ? [[.45, -.1], [-.05, -.6]] : [[.5, -.75], [.1, -.7], [-.4, .1]]).forEach(([u, v]) => { g.beginPath(); g.arc(x + u * r, y + v * r, r * (type === "berries" ? .2 : .13), 0, Math.PI * 2); fillShape(); finish(); });
+    if (type === "leaves") at.forEach(([u, v], i) => { const cx = x + u * r, cy = y + v * r, a = (i % 2 ? .9 : -.9) - .6; g.beginPath(); g.ellipse(cx, cy, r * .42, r * .17, a, 0, Math.PI * 2); paint(); });
+    else at.concat(type === "berries" ? [[.45, -.1], [-.05, -.6]] : [[.5, -.75], [.1, -.7], [-.4, .1]]).forEach(([u, v]) => { g.beginPath(); g.arc(x + u * r, y + v * r, r * (type === "berries" ? .2 : .13), 0, Math.PI * 2); paint(); });
   }
   g.restore();
 }
@@ -5205,7 +5206,7 @@ function drawIcons(key) {
   sps.slice().sort((a, b) => (a.kind === "topper" || a.kind === "base") - (b.kind === "topper" || b.kind === "base") || (R[b.size] || .04) - (R[a.size] || .04)).forEach(sp => {
     let type, col = sp.color, r;
     if (sp.kind === "ornament") { type = sp.shape === "drop" ? "drop" : sp.shape === "finial" ? "finial" : "ball"; r = W * (R[sp.size] || .032); }
-    else if (sp.kind === "filler" || sp.kind === "floral") { const b = fill.length ? fill[(sp.i || 0) % fill.length] : null; type = iconKind(b ? b.label : "", sp.kind); col = (b && b.color) || sp.color; r = W * (.03 + .004 * (sp.size || 2)); }   // the kinds take turns, so every filler kind shows on the tree
+    else if (sp.kind === "filler" || sp.kind === "floral") { const b = fill.length ? fill[(sp.i || 0) % fill.length] : null; type = iconKind(b ? b.label : "", sp.kind); col = (b && b.color) || sp.color; r = W * (.036 + .005 * (sp.size || 2)); }   // the kinds take turns, so every filler kind shows on the tree
     else if (sp.kind === "topper") { const b = buy.find(b => b.kind !== "base" && !/skirt|collar|basket/i.test(b.label)); type = iconKind(b ? b.label : "", "topper"); col = (b && b.color) || "#C9A24B"; r = W * .055; }
     else if (sp.kind === "base") { const b = buy.find(b => b.kind === "base" || /skirt|collar|basket/i.test(b.label)); type = "base"; col = (b && b.color) || "#6E1A2C"; r = W * .07; }
     else return;

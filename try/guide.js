@@ -570,7 +570,7 @@
       rg.drawImage(halo, 0, 0); rg.globalCompositeOperation = "destination-out"; rg.drawImage(inner, 0, 0);   // white edge outside the shape
       rg.globalCompositeOperation = "source-over"; rg.drawImage(line, 0, 0);
       rg.globalCompositeOperation = "destination-out"; rg.drawImage(inner, 0, 0);   // the colored line sits just outside the shape
-      o.save(); o.globalAlpha = .22; o.drawImage(inner, 0, 0); o.restore();   // a light wash of the ribbon color inside
+      o.save(); o.globalAlpha = .32; o.drawImage(inner, 0, 0); o.restore();   // a light wash of the ribbon color inside
       o.drawImage(ring, 0, 0);
     }
     function draw(key, peek) {
