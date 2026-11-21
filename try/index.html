@@ -3316,7 +3316,7 @@ document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   if (mode !== "design" && !val("style")) keep.checked = true;
   syncStyle();
   if (mode === "check") setRadio("style", "keep");   // every new check starts on Keep my style
-  $("#keyQ").hidden = false;
+  $("#keyQ").hidden = mode !== "design";   // Pieces you love: Design my tree only; a check adds pieces later in Change something
   $("#densityQ").hidden = false;
   show(mode === "design" ? "s-start" : "s-photo");
 });
