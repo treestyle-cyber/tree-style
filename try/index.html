@@ -1565,18 +1565,6 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .faqmore span{font-size:calc(14px * var(--s-body,1));color:#5a4632}
   .faqmore .btn{margin-top:8px}
   .faqmore .acmsg{margin:4px 0 0;font-size:13px;color:#8a7660}
-  .sdrop{position:relative}
-  .sdropb{appearance:none;width:100%;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:8px 14px 8px 8px;border-radius:16px;border:1px solid var(--line);background:var(--paper);cursor:pointer;text-align:left;color:var(--ink);font:inherit}
-  .sdropb::after{content:"";width:8px;height:8px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);margin:-4px 6px 0 0;opacity:.7;transition:transform .2s}
-  .sdrop.open .sdropb::after{transform:rotate(225deg);margin-top:4px}
-  .sdrop .sdi{width:48px;height:48px;border-radius:12px;background:#d8cdb8 center/cover no-repeat;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
-  .sdrop b{display:block;font:500 calc(17px * var(--s-headline,1))/1.15 var(--serif)}
-  .sdrop small{display:block;margin-top:2px;font-size:calc(12.5px * var(--s-body,1));line-height:1.35;opacity:.75}
-  .sdropl{position:absolute;left:0;right:0;bottom:calc(100% + 6px);z-index:30;max-height:min(62vh,520px);overflow:auto;padding:6px;border-radius:16px;background:var(--paper);box-shadow:0 0 0 1px var(--line),0 18px 36px -14px rgba(30,20,10,.45)}
-  .sdropl button{appearance:none;width:100%;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:8px;border:0;border-radius:12px;background:none;cursor:pointer;text-align:left;color:var(--ink);font:inherit}
-  .sdropl button+button{margin-top:2px}
-  .sdropl button.on{background:rgba(184,156,107,.16)}
-  .sdropl button.on::after{content:"✓";color:var(--gold,#9a7a3e);font-weight:600;padding-right:6px}
   .qahelp{appearance:none;display:inline-flex;align-items:center;gap:7px;margin:10px 0 0;padding:7px 14px 7px 11px;border-radius:99px;border:1px solid rgba(184,156,107,.6);background:linear-gradient(135deg,rgba(243,226,182,.35),rgba(201,163,94,.12));color:#7a5a2a;font:600 calc(13px * var(--s-body,1)) var(--sans);cursor:pointer}
   .qahelp svg{color:#B08A45}
   .qahelp[disabled]{opacity:.6}
@@ -1949,8 +1937,6 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
       <input type="radio" name="height" id="hVal" value="" checked hidden></div>
     <div class="q" id="densityQ"><div class="lbl">Branches</div><div class="seg"><label class="chip"><input type="radio" name="density" value="dense"><span>Full</span></label><label class="chip"><input type="radio" name="density" value="open"><span>Sparse style</span></label><label class="chip"><input type="radio" name="density" value="unshaped"><span>Not shaped</span></label><input type="radio" name="density" value="" checked hidden></div></div>
     <div class="q" id="stageQ" hidden><div class="lbl">Decorating</div><div class="seg"><label class="chip"><input type="radio" name="stage" value="partial"><span>Partway</span></label><label class="chip"><input type="radio" name="stage" value="finished"><span>Finished</span></label><input type="radio" name="stage" value="" checked hidden></div></div></div>
-    <div class="q" id="likeQ" hidden><div class="lbl">A style you love <small>optional</small></div>
-      <div class="sdrop" id="sDrop"><button type="button" class="sdropb" id="sDropB" aria-haspopup="listbox" aria-expanded="false"></button><div class="sdropl" id="sDropL" role="listbox" hidden></div></div></div>
     <div class="q keyq" id="keyQ"><div class="lbl">Pieces you love <small>optional</small></div>
       <div class="extra">
         <span class="thumb" id="keyThumb">★</span>
@@ -3330,7 +3316,7 @@ document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   if (mode !== "design" && !val("style")) keep.checked = true;
   syncStyle();
   if (mode === "check") setRadio("style", "keep");   // every new check starts on Keep my style
-  $("#likeQ").hidden = mode === "design"; likeOpen(false); drawLike(); $("#keyQ").hidden = false;   // Check my tree: "A style you love", starting on Keep my style
+  $("#keyQ").hidden = false;
   $("#densityQ").hidden = false;
   show(mode === "design" ? "s-start" : "s-photo");
 });
@@ -3418,8 +3404,7 @@ $("#roomTreeFile").addEventListener("change", () => pickExtra($("#roomTreeFile")
 $("#roomTreeClear").onclick = () => { clearRoomTree(); baseKey = ""; };
 $("#detailsSkip").onclick = () => { if (rerunFromHub) { history.back(); return; } factsSet = false; if (mode === "design" && src === "idea") { useIdeaAsStyle(); run(); } else if (mode === "design" && chosenLook) run(); else if (mode === "check") checkInOwnStyle(); else show("s-style"); };
 // Check my tree has no style screen (Eric, Nov 15): a check always works in the tree's own style; a new look belongs in Design my tree
-// (Kylie's "A style you love" menu on About your tree can pick another; it starts on Keep my style for each new check)
-function checkInOwnStyle() { if (!LIKE_STYLES.some(x => x[0] === val("style"))) { const st = document.querySelector('input[name=style][value=keep]'); if (st) st.checked = true; } run(); }
+function checkInOwnStyle() { const st = document.querySelector('input[name=style][value=keep]'); if (st) st.checked = true; run(); }
 // From an idea, their own words are the style: "themed", with the description as the theme
 function useIdeaAsStyle() {
   const t = $("#ideaText").value.trim();
@@ -3443,7 +3428,7 @@ document.addEventListener("click", e => { if (e.target.closest("[data-tell]")) $
 $("#navDetails").onclick = () => {
   // After the design is done, only height, kind and pre-lit still change anything (amounts, sizes, the lights step),
   // so the fullness and decorating-stage questions are left off here
-  rerunFromHub = true; $("#likeQ").hidden = true; $("#keyQ").hidden = true; $("#stageQ").hidden = true; $("#densityQ").hidden = true; $("#prelitQ").hidden = val("kind") === "natural";
+  rerunFromHub = true; $("#keyQ").hidden = true; $("#stageQ").hidden = true; $("#densityQ").hidden = true; $("#prelitQ").hidden = val("kind") === "natural";
   $("#detailsSub").textContent = "Fine-tune your shopping list and steps. Your preview stays the same.";
   $("#detailsSkip").textContent = "Cancel";
   show("s-details"); hTouched = false; hSet(Number($("#hVal").value) || 0, true);
@@ -4281,20 +4266,6 @@ function setSeg(m) {
 }
 document.querySelectorAll("#seg button").forEach(b => b.onclick = () => setSeg(b.dataset.m));
 // Try another style: pick a different style and we redesign the whole tree in it (a new version; the current one stays)
-// "A style you love" on About your tree (Kylie): an optional menu with each style's picture and description. Checks keep
-// the tree's own style unless they pick one (Eric's rule stays the default); the choice goes to the plan as the style.
-const LIKE_STYLES = [["keep", "Keep my style", "Refine what you have, in the style it already has"], ["classic", "Traditional", "Nostalgic and warm: rich reds and greens, glass ornaments, velvet ribbon"], ["rustic", "Rustic", "Cozy and natural: plaid, burlap, wood, pinecones and berries"], ["modern", "Modern", "Calm and graphic: a tight palette, clean shapes, little or no ribbon"], ["elegant", "Elegant", "Rich and luminous: metallics, jeweled ribbon, crystal and pearl"], ["playful", "Playful", "Bold and joyful: candy colors, stripes, whimsical pieces"]];
-const likePic = v => { const sp = document.querySelector(`input[name=style][value=${v}] + span .sp`); return sp ? sp.style.backgroundImage : ""; };
-function drawLike() {
-  const cur = LIKE_STYLES.find(x => x[0] === val("style")) || LIKE_STYLES[0];
-  const row = ([v, n, d]) => `<i class="sdi" style="background-image:${likePic(v)}"></i><span><b>${n}</b><small>${d}</small></span>`;
-  $("#sDropB").innerHTML = row(cur);
-  $("#sDropL").innerHTML = LIKE_STYLES.map(x => `<button type="button" role="option" data-v="${x[0]}" class="${x[0] === cur[0] ? "on" : ""}" aria-selected="${x[0] === cur[0]}">${row(x)}</button>`).join("");
-}
-function likeOpen(on) { $("#sDropL").hidden = !on; $("#sDrop").classList.toggle("open", on); $("#sDropB").setAttribute("aria-expanded", on); }
-$("#sDropB").onclick = e => { e.stopPropagation(); likeOpen($("#sDropL").hidden); };
-$("#sDropL").onclick = e => { const b = e.target.closest("[data-v]"); if (!b) return; setRadio("style", b.dataset.v); syncStyle(); drawLike(); likeOpen(false); };
-document.addEventListener("click", e => { if (!e.target.closest("#sDrop")) likeOpen(false); });
 const STYLE_PICK = [["classic", "Traditional", "Nostalgic and warm"], ["rustic", "Rustic", "Cozy and natural"], ["modern", "Modern", "Calm and graphic"], ["elegant", "Elegant", "Rich and luminous"], ["playful", "Playful", "Bold and joyful"]];
 function openSheet(id) { const sh = $(id); sh.hidden = false; requestAnimationFrame(() => sh.classList.add("on")); }
 function closeSheet(id) { const sh = $(id); if (sh.hidden) return; sh.classList.remove("on"); setTimeout(() => sh.hidden = true, 280); }
