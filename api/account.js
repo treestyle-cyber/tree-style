@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     if (action === "confirm") {
       const s = await getCheckout(String(session || ""));
       if (s.client_reference_id !== who.id) return res.status(403).json({ error: "That payment belongs to a different account." });
-      if (s.payment_status !== "paid") return res.status(200).json({ pending: true, me: pub(who) });
+      if (!["paid", "no_payment_required"].includes(s.payment_status)) return res.status(200).json({ pending: true, me: pub(who) });
       const st = await grantPass(who.id, s.id);
       return res.status(200).json({ me: pub({ ...who, ...st }) });
     }

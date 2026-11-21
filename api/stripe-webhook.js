@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   catch (e) { console.error("STRIPE_WEBHOOK_REJECTED", String(e?.message || e)); return res.status(400).json({ error: "Invalid signature" }); }
 
   const s = event.data?.object || {};
-  if ((event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") && s.payment_status === "paid") {
+  if ((event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") && ["paid", "no_payment_required"].includes(s.payment_status)) {
     const userId = s.client_reference_id || s.metadata?.clerk_user;
     if (!userId) { console.error("STRIPE_WEBHOOK_NO_USER", s.id); return res.status(200).json({ received: true }); }
     try { await grantPass(userId, s.id); }
