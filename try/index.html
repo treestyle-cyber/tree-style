@@ -1660,7 +1660,11 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .stepkey .ksize::before,.stepkey .ksize::after{content:"";flex:1;height:1px;background:rgba(184,156,107,.6)}
   .stepkey .ksize span{background:#1c2433;color:#f6efe2;font:italic 500 calc(15px * var(--s-headline,1))/1 var(--serif);padding:4px 10px}
   .stepkey ul{list-style:none;margin:0;padding:0}
-  .stepkey li{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(184,156,107,.28)}
+  .stepkey li{display:grid;grid-template-columns:auto auto 1fr auto;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(184,156,107,.28)}
+  .stepkey li.have .kname{opacity:.55;text-decoration:line-through;text-decoration-color:rgba(44,33,24,.35)}
+  .stepkey .kname small{display:block;margin-top:3px;font:500 calc(13px * var(--s-body,1))/1.3 var(--sans);color:#6b5a45}
+  .stepkey .kshop{font:600 calc(11.5px * var(--s-label,1)) var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--on-accent,#fff);background:var(--gold);padding:8px 13px;border-radius:99px;white-space:nowrap;text-decoration:none}
+  .stepkey .kshop.reuse{background:none;color:#8a7a62;letter-spacing:.04em;text-transform:none;padding:0;font-weight:500}
   .stepkey li:last-child{border-bottom:0}
   .stepkey .kic.ico{background:#fffaf0 center/86% no-repeat}
   .stepkey .kic.rib{border-radius:6px;background:linear-gradient(160deg,color-mix(in srgb,var(--kc) 70%,#fff) 0,var(--kc) 45%,color-mix(in srgb,var(--kc) 70%,#000) 100%)}
@@ -4941,7 +4945,8 @@ async function drawStep() {
   if (key === "primary_picks" || (key === "florals" && !steps.includes("primary_picks")))
     items += `<div class="newto"><b>New to stems?</b> They're short branches of greenery, flowers or berries on a bendable wire. You tuck them into the tree and wrap the wire around a branch. Stores call them "picks," so search for that when you shop.</div>`;
   resetPicks();
-  if (buy.length) items += (factsSet ? "" : estNote(result)) + `<div class="buy"><div class="buyh">What to buy</div>${buy.map(b => buyRow(b, key)).join("")}</div>`;
+  const keyShops = document.documentElement.classList.contains("theme-ivory") && guide.spots && guide.spots(key).length && KEY_TITLE[key];   // the key under the picture is where they shop this step
+  if (buy.length) items += (factsSet ? "" : estNote(result)) + (keyShops ? "" : `<div class="buy"><div class="buyh">What to buy</div>${buy.map(b => buyRow(b, key)).join("")}</div>`);
   items += its.map(p => `<div class="planitem"><h4>${esc(p.title)}</h4>${p.how ? `<p>${esc(p.how)}</p>` : ""}</div>`).join("");
   items += essForStep(key);
   $("#stepItems").innerHTML = items;
@@ -5175,7 +5180,7 @@ function keyIcon(b, key) {
 function drawKey(key) {
   const el = $("#stepKeyPanel"); if (!el) return;
   const show = document.documentElement.classList.contains("theme-ivory") && guide && guide.spots && guide.spots(key).length && KEY_TITLE[key];
-  const items = show ? (guide.buy(key) || []).filter(b => b.color && !/^optional/i.test(b.qty || "") && b.label) : [];
+  const items = show ? (guide.buy(key) || []).filter(b => b.label) : [];   // every piece of the step: the key is also where they shop it
   el.hidden = !items.length; $("#guideCv").parentElement.classList.toggle("haskey", !!items.length);
   if (!items.length) { el.innerHTML = ""; return; }
   const qty = q => {
@@ -5184,16 +5189,19 @@ function drawKey(key) {
     const m = /^(?:about\s+)?(\d+)(?:\s*(?:[–-]|to)\s*(\d+))?\b/i.exec(q); return m ? "×" + m[1] + (m[2] ? "–" + m[2] : "") : q;
   };
   const nice = l => l.replace(/\s*christmas\s*/i, " ").replace(/\s*wired ribbon\b/i, "").replace(/\s*\((?:laid on top|thin accent)\)/i, "").trim().replace(/^./, c => c.toUpperCase());
+  // One row per piece (Eric: the key and What to buy said the same thing, and the key looked shoppable): tick it off,
+  // the same icon as on the picture, the name and how many, and Shop
   const row = (b, name) => {
-    const u = key === "ribbon" ? "" : keyIcon(b, key);
-    return `<li><span class="kic${u ? " ico" : " rib"}" style="${u ? `background-image:url('${esc(u)}')` : `--kc:${esc(b.color)}`}"></span><span class="kname">${esc(name)}</span><span class="kqty">${esc(qty(b.qty) || (key === "crown" ? "×1" : ""))}</span></li>`; };
+    const u = key === "ribbon" ? "" : keyIcon(b, key), k = b.kind || key, have = gotItems.has(b.label), p = b.q ? creatorPick(b, k) : null;
+    const amt = /^optional/i.test(b.qty || "") ? b.qty : qty(b.qty) || (key === "crown" ? "×1" : "");
+    return `<li class="${have ? "have" : ""}"><button type="button" class="got${have ? " on" : ""}" data-got="${esc(b.label)}" aria-label="Got it: ${esc(b.label)}"></button><span class="kic${u ? " ico" : " rib"}" style="${u ? `background-image:url('${esc(u)}')` : `--kc:${esc(b.color || "#7A1F2B")}`}"></span><span class="kname">${esc(name)}${amt || p ? `<small>${esc(amt)}${p ? `${amt ? " · " : ""}Our pick: ${esc(p.name)}` : ""}</small>` : ""}</span>${b.q ? `<a class="kshop" href="${shopFor(b, k)}" target="_blank" rel="noopener sponsored">Shop</a>` : `<span class="kshop reuse">From earlier</span>`}</li>`; };
   let body;
   if (key === "statement" || key === "medium") {
     const groups = {}, order = [];
     items.forEach(b => { const m = /^(\d+(?:\.\d+)?)\s*(?:"|in\b|inch)/i.exec(b.label); const g = m ? m[1] + " in" : "More"; if (!groups[g]) { groups[g] = []; order.push(g); } groups[g].push(b); });
     order.sort((a, b) => parseFloat(b) - parseFloat(a));
     const clean = l => l.replace(/^\d+(?:\.\d+)?\s*(?:"|in\b|inch(es)?)\s*/i, "").replace(/\s*christmas\s*/i, " ").replace(/\s*ornaments?\b/i, "").replace(/,.*$/, "").trim().replace(/^./, c => c.toUpperCase()) || "Ornaments";
-    body = `<div class="kcols${order.length > 1 ? " two" : ""}">` + order.map(g => `<div class="kcol"><div class="ksize"><span>${esc(g)}</span></div><ul>${groups[g].map(b => row(b, clean(b.label))).join("")}</ul></div>`).join("") + `</div>`;
+    body = `<div class="kcols">` + order.map(g => `<div class="kcol"><div class="ksize"><span>${esc(g)}</span></div><ul>${groups[g].map(b => row(b, clean(b.label))).join("")}</ul></div>`).join("") + `</div>`;
   } else body = `<ul>${items.map(b => row(b, nice(b.label))).join("")}</ul>`;
   el.innerHTML = `<div class="ktitle"><span>${esc(KEY_TITLE[key])}</span></div>${body}`;
 }
@@ -5269,7 +5277,15 @@ function closePinPop() { const p = $("#pinPop"); if (p) p.remove(); document.rem
 $("#sv2Dots").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; try { localStorage.setItem("ts_tips_tapped", "1"); } catch (err) {} window.__sv2pin = +b.dataset.i; drawStep(); });
 $("#sv2Next").onclick = () => { try { localStorage.setItem("ts_tips_tapped", "1"); } catch (err) {} window.__sv2pin = (window.__sv2pin || 0) + 1; drawStep(); };
 $("#sv2All").onclick = $("#barAll").onclick = () => document.documentElement.classList.toggle("sv2tabs-open");
-$("#sv2Shop").onclick = () => { const b = document.querySelector("#stepItems .buy"); if (b) b.scrollIntoView({ behavior: "smooth", block: "start" }); };
+$("#sv2Shop").onclick = () => { const k = $("#stepKeyPanel"), b = k && !k.hidden ? k : document.querySelector("#stepItems .buy"); if (b) b.scrollIntoView({ behavior: "smooth", block: "center" }); };
+// Ticking a piece off in the key under the step picture (same list as the shopping list, so both stay in step)
+$("#stepKeyPanel").addEventListener("click", e => {
+  const g = e.target.closest("[data-got]"); if (!g) return;
+  const k = g.dataset.got; gotItems.has(k) ? gotItems.delete(k) : gotItems.add(k);
+  const on = gotItems.has(k); g.classList.toggle("on", on); g.parentElement.classList.toggle("have", on);
+  document.querySelectorAll("#shop [data-got]").forEach(x => { if (x.dataset.got === k) { x.classList.toggle("on", on); x.parentElement.classList.toggle("have", on); } });
+  syncGot(); saveSoon();
+});
 $("#sv2Tabs").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b || !guide) return;
   $("#sv2Tabs").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
