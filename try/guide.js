@@ -591,7 +591,7 @@
       // Ivory look (Kylie's step mockups): every step after shaping shows their finished tree, the preview, with only the
       // numbered spots on top (drawn by the app); the drawn pieces stay as the fallback until the preview exists
       // Ivory look (Kylie): their own photo in full color; the app lays a picture of each piece on its spot (spots())
-      if (iconSteps && spots(key).length) { o.drawImage(img, 0, 0, W, H); if (key === "ribbon") ribbonOutline(o); return; }
+      if (iconSteps && spots(key).length) { o.drawImage(img, 0, 0, W, H); return; }   // ribbon: numbered dots only; the close-up from the preview shows its shape (ribbonOutline kept for reference)
       if (usesAfter(key)) {
         const k2 = Math.max(W / afterImg.naturalWidth, H / afterImg.naturalHeight), aw = afterImg.naturalWidth * k2, ah = afterImg.naturalHeight * k2;
         o.drawImage(afterImg, (W - aw) / 2, (H - ah) / 2, aw, ah);
@@ -889,7 +889,7 @@
       return iconSteps && key !== "crown" && key !== "ribbon" ? pts.map(([x, y]) => onTree(x, y)) : pts;   // ribbon numbers stay on the ribbon outlines   // the numbers sit on the same (on-tree) spots as the icons
     }
 
-    return { steps, title: k => STEP_TITLE[k], draw, pins, setQuiet: v => { quiet = !!v; }, drawMap: opts => drawMap(ctx, opts), lead, note, legend, itemsFor, buy, data, usesAfter, spots, unit: () => G.unit, setIconSteps: v => { iconSteps = !!v; }, setPhotoSteps: v => { photoSteps = !!v; }, setAfter: im => { afterImg = im; } };
+    return { steps, title: k => STEP_TITLE[k], draw, pins, setQuiet: v => { quiet = !!v; }, drawMap: opts => drawMap(ctx, opts), lead, note, legend, itemsFor, buy, data, usesAfter, spots, unit: () => G.unit, setIconSteps: v => { iconSteps = !!v; }, setPhotoSteps: v => { photoSteps = !!v; }, setAfter: im => { afterImg = im; }, after: () => afterImg };
   }
 
   window.TreeGuide = { create, normalize, shoppingList };

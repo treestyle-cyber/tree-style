@@ -1679,6 +1679,10 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .pinpop p{margin:5px 0 0;font-size:calc(13.5px * var(--s-body,1));line-height:1.4;color:#4a3a2c}
   .pinpopx{position:absolute;top:6px;right:6px;width:24px;height:24px;border:0;border-radius:50%;background:transparent;color:#7a6650;font-size:18px;line-height:1;cursor:pointer}
   @keyframes pinpopin{from{opacity:0;transform:translateY(4px) scale(.97)}to{opacity:1;transform:none}}
+  .pinpop.zoomed{width:min(240px,74%);padding-top:10px}
+  .pinzoom{position:relative;margin:0 -16px 9px -4px}
+  .pinzoom canvas{display:block;width:100%;aspect-ratio:1;border-radius:10px;box-shadow:0 0 0 1px rgba(184,156,107,.5)}
+  .pinzoom span{position:absolute;left:8px;bottom:8px;padding:3px 8px;border-radius:99px;background:rgba(20,28,44,.72);color:#fff;font:600 10px var(--sans);letter-spacing:.08em;text-transform:uppercase}
   @media (prefers-reduced-motion:reduce){.pinpop{animation:none}}
   .sv2pic video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
   .sv2pic.hasvid{background-image:none !important;background-color:#2a2016}
@@ -2400,7 +2404,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </div>
 
 <script src="/try/engine.js?v=20261117c"></script>
-<script src="/try/guide.js?v=20261120f"></script>
+<script src="/try/guide.js?v=20261120g"></script>
 <script src="/picks-looks.js"></script>
 <script>
 // Screen preview (Studio → Screens): /try/?screen-preview&s=<screen> opens that screen straight away with the
@@ -5234,7 +5238,7 @@ function drawPins(key) {
     g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fillStyle = "#141C2C"; g.fill(); g.lineWidth = Math.max(2, r * .16); g.strokeStyle = i === active ? "#D9BC7E" : "#fff"; g.stroke();
     g.fillStyle = "#fff"; g.font = `700 ${Math.round(r * 1.05)}px Inter, system-ui, sans-serif`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(String(i + 1), x, y + r * .05);
     g.restore();
-    sv2PinHits.push([x, y, r * 1.8, i]);
+    sv2PinHits.push([x, y, r * 1.8, i, px, py]);
   }
   // a soft pulsing ring on the next spot, so they know there's more to see (Kylie)
   const nextI = key === "crown" ? (active === 0 ? 1 : -1) : active + 1, nh = sv2PinHits.find(h => h[3] === nextI), pu = $("#pinPulse");
@@ -5262,15 +5266,35 @@ function pinPop(hit) {
   const label = key === "ribbon" ? `Ribbon spot ${n} of ${total}` : key === "crown" ? (n === 1 ? "The crown" : "The base") : `Spot ${n}`;
   const pop = document.createElement("div"); pop.className = "pinpop"; pop.id = "pinPop"; pop.setAttribute("role", "dialog");
   pop.innerHTML = `<button type="button" class="pinpopx" aria-label="Close">×</button><small>${esc(label)}</small><b>${esc(title)}</b>${short ? `<p>${esc(short)}</p>` : ""}`;
+  const zoom = pinCloseUp(hit, key); if (zoom) { pop.classList.add("zoomed"); pop.insertBefore(zoom, pop.querySelector("small")); }
   box.appendChild(pop);
   const rc = cv.getBoundingClientRect(), bx = box.getBoundingClientRect(), px = rc.left - bx.left + hit[0] * rc.width / cv.width, py = rc.top - bx.top + hit[1] * rc.height / cv.height;
   const w = pop.offsetWidth, h = pop.offsetHeight, pad = 8, gap = hit[2] * rc.width / cv.width + 8;
   const left = Math.min(bx.width - w - pad, Math.max(pad, px - w / 2));
   const below = py - gap - h < pad;   // near the top: open under the number
-  pop.style.left = left + "px"; pop.style.top = (below ? py + gap : py - gap - h) + "px";
+  pop.style.left = left + "px"; pop.style.top = Math.max(pad, Math.min(bx.height - h - pad, below ? py + gap : py - gap - h)) + "px";
   pop.style.setProperty("--ax", Math.min(w - 18, Math.max(18, px - left)) + "px"); pop.classList.toggle("below", below);
   pop.querySelector(".pinpopx").onclick = e => { e.stopPropagation(); closePinPop(); };
   setTimeout(() => document.addEventListener("pointerdown", pinPopAway, true));
+}
+// A magnified close-up of that spot cut from their own preview, so they see exactly how the piece looks there (Eric)
+function pinCloseUp(hit, key) {
+  const im = guide && guide.after && guide.after(); if (!im || !im.naturalWidth || hit[4] == null) return null;
+  const cv = $("#guideCv"), W = cv.width, H = cv.height;
+  const k2 = Math.max(W / im.naturalWidth, H / im.naturalHeight), ox = (W - im.naturalWidth * k2) / 2, oy = (H - im.naturalHeight * k2) / 2;
+  const half = W * (key === "ribbon" ? .15 : key === "crown" ? .14 : .11);   // canvas px around the spot; ribbon needs room for its whole fall
+  let cx = hit[4], cy = hit[5] + (key === "ribbon" ? half * .35 : 0);   // ribbon spills downward from where it's tucked
+  cx = Math.min(W - half, Math.max(half, cx)); cy = Math.min(H - half, Math.max(half, cy));
+  const sx = (cx - half - ox) / k2, sy = (cy - half - oy) / k2, ss = half * 2 / k2;
+  const z = document.createElement("canvas"), D = 440; z.width = z.height = D;
+  const zg = z.getContext("2d");
+  try { zg.drawImage(im, sx, sy, ss, ss, 0, 0, D, D); } catch (e) { return null; }
+  // a soft ring where the piece is
+  const mx = (hit[4] - (cx - half)) / (half * 2) * D, my = (hit[5] - (cy - half)) / (half * 2) * D;
+  zg.beginPath(); zg.arc(mx, my, D * .13, 0, Math.PI * 2); zg.lineWidth = 3; zg.strokeStyle = "rgba(255,248,230,.9)"; zg.setLineDash([9, 7]); zg.stroke();
+  const wrap = document.createElement("div"); wrap.className = "pinzoom";
+  wrap.appendChild(z); const t = document.createElement("span"); t.textContent = "From your preview"; wrap.appendChild(t);
+  return wrap;
 }
 function pinPopAway(e) { const p = $("#pinPop"); if (p && !p.contains(e.target)) closePinPop(); }
 function closePinPop() { const p = $("#pinPop"); if (p) p.remove(); document.removeEventListener("pointerdown", pinPopAway, true); }
