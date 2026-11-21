@@ -331,6 +331,8 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .hrow button.on{color:var(--ivory);font-size:calc(20px * var(--s-body,1))}
   .hwheel.set .hrow button.on{color:var(--midnight);font-weight:600}
   .dnote{font-size:calc(13px * var(--s-body,1));color:var(--muted);text-align:center;margin:18px 0 0}
+  #densityQ .qhint{display:block;margin-top:6px;font-size:calc(12.5px * var(--s-body,1));line-height:1.35;color:var(--muted)}
+  @media (max-height:620px){#densityQ .qhint{display:none}}
   .q .lbl{font-weight:600;margin-bottom:8px}
   .q .hint2{font-size:calc(13px * var(--s-body,1));color:var(--muted);margin:6px 2px 0}
   .skip{display:block;margin:18px auto 0;background:none;border:0;color:var(--muted);font:500 calc(14px * var(--s-body,1)) var(--sans);text-decoration:underline;cursor:pointer}
@@ -1935,7 +1937,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     <div class="q"><div class="lbl">Height <small id="hNote">feet · swipe to set</small></div>
       <div class="hwheel" id="hWheel"><div class="hrow" id="hRow"><button type="button" data-ft="3">3</button><button type="button" data-ft="4">4</button><button type="button" data-ft="5">5</button><button type="button" data-ft="6">6</button><button type="button" data-ft="7">7</button><button type="button" data-ft="8">8</button><button type="button" data-ft="9">9</button><button type="button" data-ft="10">10</button><button type="button" data-ft="11">11</button><button type="button" data-ft="12">12</button><button type="button" data-ft="13">13</button><button type="button" data-ft="14">14</button><button type="button" data-ft="15">15</button><button type="button" data-ft="16">16</button></div></div>
       <input type="radio" name="height" id="hVal" value="" checked hidden></div>
-    <div class="q" id="densityQ"><div class="lbl">Branches</div><div class="seg"><label class="chip"><input type="radio" name="density" value="dense"><span>Full</span></label><label class="chip"><input type="radio" name="density" value="open"><span>Sparse style</span></label><label class="chip"><input type="radio" name="density" value="unshaped"><span>Not shaped</span></label><input type="radio" name="density" value="" checked hidden></div></div>
+    <div class="q" id="densityQ"><div class="lbl">Branches</div><div class="seg"><label class="chip"><input type="radio" name="density" value="dense"><span>Full</span></label><label class="chip"><input type="radio" name="density" value="open"><span>Open, spaced</span></label><label class="chip"><input type="radio" name="density" value="unshaped"><span>Not shaped</span></label><input type="radio" name="density" value="" checked hidden></div><small class="qhint">Open, spaced: like a noble or alpine. We'll keep the space and fill it with ornaments.</small></div>
     <div class="q" id="stageQ" hidden><div class="lbl">Decorating</div><div class="seg"><label class="chip"><input type="radio" name="stage" value="partial"><span>Partway</span></label><label class="chip"><input type="radio" name="stage" value="finished"><span>Finished</span></label><input type="radio" name="stage" value="" checked hidden></div></div></div>
     <div class="q keyq" id="keyQ"><div class="lbl">Pieces you love <small>optional</small></div>
       <div class="extra">
@@ -3420,7 +3422,7 @@ function syncTell(r) {
   $("#tellCard").hidden = factsSet; $("#tellDone").hidden = !factsSet;
   if (factsSet) {
     const k = val("kind"), dn = val("density");
-    const bits = [Number(val("height")) ? val("height") + " ft" : null, k === "natural" ? "real" : k === "artificial" ? "artificial" : null, dn === "open" ? "a sparse style" : dn === "unshaped" ? "not shaped yet" : dn === "dense" ? "full branches" : null].filter(Boolean);
+    const bits = [Number(val("height")) ? val("height") + " ft" : null, k === "natural" ? "real" : k === "artificial" ? "artificial" : null, dn === "open" ? "open, spaced branches" : dn === "unshaped" ? "not shaped yet" : dn === "dense" ? "full branches" : null].filter(Boolean);
     $("#tellDone").innerHTML = `Using your tree details${bits.length ? ": " + bits.join(", ") : ""}.<button data-tell>Edit</button>`;
   }
 }
