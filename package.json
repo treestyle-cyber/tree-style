@@ -2,8 +2,11 @@
   "name": "tree-style",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
-    "@vercel/blob": "2.8.2"
+    "@vercel/blob": "2.8.2",
+    "@clerk/backend": "3.31.3"
   }
 }

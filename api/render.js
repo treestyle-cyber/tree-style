@@ -1,7 +1,8 @@
 // POST { image: dataURL, brief: string, aspect: "3:4" etc. }
 // Edits the photo with Google's Gemini image model and returns { image: dataURL }.
 import { PIECES_REF, PIECES_CHECK } from "../lib/pieces.js";
-import { checkPassword, parseDataUrl } from "../lib/util.js";
+import { parseDataUrl } from "../lib/util.js";
+import { gate, countPreview } from "../lib/account.js";
 
 const MODELS = [
   process.env.GEMINI_IMAGE_MODEL,
@@ -134,8 +135,10 @@ async function cleanMarks(model, d, ar) {
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
-  if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
+  const who = await gate(req, res); if (!who) return;   // signed in, with a free preview left or a Holiday Pass
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
+  // Only a preview that actually came back counts toward the free ones (failures and "Paint it again" after one never do)
+  const painted = async payload => { await countPreview(who); return res.status(200).json(payload); };
 
   const { image, brief, aspect, pieces, map, revision, shape, variant, generic, ribbonStyle, removeFirst, mapKind } = req.body || {};
   // The placement map is a diagram (outline, crosses, labels on plain paper) when the page drew it that way (live since Nov 17); an older cached page still sends marks over the photo
@@ -223,14 +226,14 @@ export default async function handler(req, res) {
         retried = true;
         const again = await callGemini(model, img, fluke ? prompt : prompt + GENERIC, ar, pc, revision ? null : mp, rrefSent, variant === "map2" || variant === "ribbon6" || variant === "simple", refNote, diagramMap, piecesLab ? PIECES_REF : "");
         const p2 = again.body?.candidates?.[0]?.content?.parts || [], pic2 = p2.find(p => p.inlineData || p.inline_data);
-        if (again.ok && pic2) { let d2 = pic2.inlineData || pic2.inline_data; let marksFixed = false; if (mp && !revision) ({ d: d2, fixed: marksFixed } = await cleanMarks(model, d2, ar)); return res.status(200).json({ image: `data:${d2.mimeType || d2.mime_type || "image/png"};base64,${d2.data}`, _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !fluke, retried: true } }); }
+        if (again.ok && pic2) { let d2 = pic2.inlineData || pic2.inline_data; let marksFixed = false; if (mp && !revision) ({ d: d2, fixed: marksFixed } = await cleanMarks(model, d2, ar)); return painted({ image: `data:${d2.mimeType || d2.mime_type || "image/png"};base64,${d2.data}`, _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !fluke, retried: true } }); }
         console.error("RENDER_REFUSED_AGAIN", JSON.stringify({ model, why: String(again.body?.candidates?.[0]?.finishReason || again.status).slice(0, 200) }));
       }
       return res.status(502).json({ error: `No image came back (${why})`, model });
     }
     let d = pic.inlineData || pic.inline_data, marksFixed = false;
     if (mp && !revision) ({ d, fixed: marksFixed } = await cleanMarks(model, d, ar));
-    return res.status(200).json({
+    return painted({
       image: `data:${d.mimeType || d.mime_type || "image/png"};base64,${d.data}`,
       _meta: { model, seconds: Math.round((Date.now() - started) / 100) / 10, shaped: !!shape && !revision, edited: !!revision, generic: !!generic, ribbonRef: refUsed, cleared, marksFixed }
     });

@@ -3,7 +3,8 @@
 //      (tree: optional photo of their own tree; then it's that tree, taken down to bare, that stands in the room)
 // POST { kind: "idea", idea, inspo, facts }      -> a bare tree in a room that suits the idea
 // -> { image: dataURL }. The rest of the app then works on this photo exactly as on a real tree photo.
-import { checkPassword, parseDataUrl } from "../lib/util.js";
+import { parseDataUrl } from "../lib/util.js";
+import { gate } from "../lib/account.js";
 
 const MODELS = [process.env.GEMINI_IMAGE_MODEL, "gemini-3.1-flash-image-preview", "gemini-2.5-flash-image"].filter(Boolean);
 const ASPECTS = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9"];
@@ -43,7 +44,7 @@ async function gemini(parts, aspect) {
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
-  if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
+  if (!(await gate(req, res))) return;   // signed in, with a free preview left or a Holiday Pass
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY is not set in Vercel" });
   const { kind, image, marker, tree, idea, inspo, facts, aspect } = req.body || {};
   const t = treeWords(facts);

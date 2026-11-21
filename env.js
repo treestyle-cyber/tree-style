@@ -2,9 +2,9 @@
 // The practice app shows a banner across the top of every page; the real app's Studio, Lab and Review pages
 // show one too, so it is always clear which one is being changed. Customers on the real app never see it.
 (function () {
-  var LIVE = "tree-style.vercel.app";
+  var LIVE = "treestyle.net";   // the live site's address (tree-style.vercel.app and www.treestyle.net lead here too)
   var PREVIEW = "tree-style-git-practice-tree-style.vercel.app";   // the one practice app
-  var h = location.hostname, isLive = h === LIVE, isPrev = h !== LIVE && /^tree-style-.+-tree-style\.vercel\.app$/.test(h);   // branch links and one-build links alike
+  var h = location.hostname, isLive = h === LIVE || h === "www.treestyle.net" || h === "tree-style.vercel.app", isPrev = !isLive && /^tree-style-.+-tree-style\.vercel\.app$/.test(h);   // branch links and one-build links alike
   // Preview copies need no password (the server lets them through), so skip the password screen there
   if (isPrev && !/-git-main-/.test(h)) try { if (!sessionStorage.getItem("ts_pw")) sessionStorage.setItem("ts_pw", "preview"); } catch (e) {}
   if (!isLive && !isPrev) return;
