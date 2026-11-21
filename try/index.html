@@ -5098,15 +5098,16 @@ async function cutGrid(src, cols, rows, n) {
   const cw = im.naturalWidth / cols, ch = im.naturalHeight / rows, out = [];
   for (let k = 0; k < n; k++) {
     const S = 320, c = document.createElement("canvas"); c.width = c.height = S; const g = c.getContext("2d", { willReadFrequently: true });
-    const cx = (k % cols) * cw, cy = Math.floor(k / cols) * ch, side = Math.min(cw, ch), ox = cx + (cw - side) / 2, oy = cy + (ch - side) / 2;
+    const cx = (k % cols) * cw, cy = Math.floor(k / cols) * ch, side = Math.min(cw, ch) * .96, ox = cx + (cw - side) / 2, oy = cy + (ch - side) / 2;   // a little inside the cell, clear of any faint grid lines
     g.fillStyle = "#fff"; g.fillRect(0, 0, S, S); g.drawImage(im, ox, oy, side, side, 0, 0, S, S);
     const id = g.getImageData(0, 0, S, S), d = id.data, bg = new Uint8Array(S * S), st = [];
-    const white = i => { const r = d[i * 4], gg = d[i * 4 + 1], b = d[i * 4 + 2], mx = Math.max(r, gg, b), mn = Math.min(r, gg, b); return mn > 222 && mx - mn < 22; };
-    for (let i = 0; i < S; i++) [i, (S - 1) * S + i, i * S, i * S + S - 1].forEach(p => { if (!bg[p] && white(p)) { bg[p] = 1; st.push(p); } });
+    // white and the soft grey studio shadow count as background; the shadow fades out instead of staying as a pale plate
+    const white = i => { const r = d[i * 4], gg = d[i * 4 + 1], b = d[i * 4 + 2], mx = Math.max(r, gg, b), mn = Math.min(r, gg, b); return mn > 196 && mx - mn < 20; };
+    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { if (x > 3 && y > 3 && x < S - 4 && y < S - 4) continue; const p = y * S + x; if (!bg[p] && white(p)) { bg[p] = 1; st.push(p); } }
     while (st.length) { const p = st.pop(), x = p % S, y = (p / S) | 0; [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => { const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= S || Y >= S) return; const q = Y * S + X; if (!bg[q] && white(q)) { bg[q] = 1; st.push(q); } }); }
     let x0 = S, y0 = S, x1 = -1, y1 = -1, solid = 0;
     for (let p = 0; p < S * S; p++) {
-      if (bg[p]) { d[p * 4 + 3] = 0; continue; }
+      if (bg[p]) { const mn = Math.min(d[p * 4], d[p * 4 + 1], d[p * 4 + 2]); d[p * 4 + 3] = mn >= 238 ? 0 : Math.round((238 - mn) / 42 * 90); d[p * 4] = d[p * 4 + 1] = d[p * 4 + 2] = 60; continue; }   // white goes; a grey shadow stays as a faint shadow
       const x = p % S, y = (p / S) | 0, edge = (x && bg[p - 1]) || (x < S - 1 && bg[p + 1]) || (y && bg[p - S]) || (y < S - 1 && bg[p + S]);
       if (edge) d[p * 4 + 3] = 150;   // soften the cut edge
       solid++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
