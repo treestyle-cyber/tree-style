@@ -3317,7 +3317,7 @@ document.querySelectorAll(".choice").forEach(b => b.onclick = () => {
   syncStyle();
   if (mode === "check") setRadio("style", "keep");   // every new check starts on Keep my style
   $("#keyQ").hidden = mode !== "design";   // Pieces you love: Design my tree only; a check adds pieces later in Change something
-  $("#densityQ").hidden = false;
+  $("#densityQ").hidden = false; syncKind();
   show(mode === "design" ? "s-start" : "s-photo");
 });
 // Photo tips: short, with an icon each. Shown once as a pop-up before the first photo, then inside the empty photo box.
@@ -3438,7 +3438,14 @@ function facts() {
   return { kind: val("kind") || "", prelit: val("kind") !== "natural" ? (val("prelit") || "") : "", height: Number(val("height")) || 0, density: val("density") || "", stage: mode === "check" ? (val("stage") || "") : "" };
 }
 // Pre-lit only applies to artificial trees, so a real tree hides the question
-document.querySelectorAll("input[name=kind]").forEach(r => r.addEventListener("change", () => { $("#prelitQ").hidden = val("kind") === "natural"; }));
+// "Not shaped" only makes sense for an artificial tree straight out of the box (Eric), so it shows once Artificial is picked
+function syncKind() {
+  $("#prelitQ").hidden = val("kind") === "natural";
+  const ns = document.querySelector("input[name=density][value=unshaped]"); if (!ns) return;
+  const art = val("kind") === "artificial"; ns.closest("label").hidden = !art;
+  if (!art && ns.checked) setRadio("density", "");
+}
+document.querySelectorAll("input[name=kind]").forEach(r => r.addEventListener("change", syncKind));
 // What they told us about the tree wins over the photo: a pre-lit tree needs no lights step, a real one no shaping
 function treeFacts(t) {
   const f = facts(); if (!t || !f) return;
@@ -5468,7 +5475,7 @@ async function restoreSaved(st) {
   try {
     mode = st.mode; src = st.src || "tree"; factsSet = !!st.factsSet;
     const f = st.form || {}; ["kind", "density", "stage", "style"].forEach(n => setRadio(n, f[n] ?? "")); $("#hVal").value = f.height ? String(Math.round(Number(f.height))) : ""; $("#theme").value = f.theme || ""; syncStyle();
-    $("#stageQ").hidden = true; $("#densityQ").hidden = false; $("#inspoRow").hidden = mode !== "design"; setPhotoCopy(mode === "design" ? (src === "room" ? "room" : "design") : "check");
+    $("#stageQ").hidden = true; $("#densityQ").hidden = false; syncKind(); $("#inspoRow").hidden = mode !== "design"; setPhotoCopy(mode === "design" ? (src === "room" ? "room" : "design") : "check");
     photo = st.photo; photoAspect = st.photoAspect || "3:4"; photoImg = null; keyPhoto = st.keyPhoto || null; keyList = keyPhoto ? [keyPhoto] : []; baseKey = "";
     $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="pcap"><span>Is the whole tree in view, top included?</span><b>Change photo</b></div>`; photoChecked();
     result = lookResult = st.result; after = st.after || null; planState = "ready"; planP = null;
