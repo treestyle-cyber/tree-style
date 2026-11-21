@@ -47,9 +47,11 @@ export default async function handler(req, res) {
     if (!p.includes(DIR) || req.query.k !== sig(p)) return res.status(403).end();
     const hit = (await list({ ...tok(), prefix: p, limit: 1 }).catch(() => ({ blobs: [] }))).blobs[0];
     if (!hit) return res.status(404).end();
-    res.setHeader("content-type", hit.contentType || "image/jpeg");
+    const buf = await read(hit);
     res.setHeader("cache-control", "private, max-age=86400");
-    return res.status(200).send(await read(hit));
+    if (req.query.b64) { res.setHeader("content-type", "text/plain"); return res.status(200).send(Buffer.from(buf).toString("base64")); }   // for support tools that can only read text
+    res.setHeader("content-type", hit.contentType || "image/jpeg");
+    return res.status(200).send(buf);
   }
 
   if (req.method === "GET") {
