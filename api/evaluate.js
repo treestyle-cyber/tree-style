@@ -12,6 +12,7 @@ import { RIBBON6_RULE, ribbonStyleKey } from "../lib/ribbonstyles.js";
 import { SIMPLE_GUIDE, PROCESS, HARD_LIMITS } from "../lib/simple.js";
 import { CLARIFY_GUIDE, clarifyBrief } from "../lib/clarify.js";
 import { CROWN_RULE, CROWN_TOPPER_NOTE, CROWN_BRIEF } from "../lib/crown.js";
+import { FOCAL_RULE, FOCAL_PLAN_NOTE, FOCAL_BRIEF } from "../lib/focal.js";
 import { PIECES_NOTE, PIECES_RULE, PIECES_BRIEF } from "../lib/pieces.js";
 
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
@@ -62,6 +63,7 @@ mockup.picks.small: small accents are not only berries: small flowers, crystal o
 function briefRules(mode, variant) {
   if (variant === "clarify") return clarifyBrief(BRIEF_RULES(mode, variant));
   if (variant === "crown") return BRIEF_RULES(mode, variant) + CROWN_BRIEF;
+  if (variant === "focal") return BRIEF_RULES(mode, variant) + FOCAL_BRIEF;
   if (variant === "pieces") return BRIEF_RULES(mode, variant) + PIECES_BRIEF;
   if (variant !== "simple") return BRIEF_RULES(mode, variant);
   let b = BRIEF_RULES(mode, "ribbon6");
@@ -71,6 +73,7 @@ function briefRules(mode, variant) {
 }
 function planNotes(mode, variant) {
   let n = PLAN_NOTES(mode, true);
+  if (variant === "focal") return n + "\n" + FOCAL_PLAN_NOTE;
   if (variant === "crown") {
     const old = n.slice(n.indexOf("mockup.topper.style:"), n.indexOf("\n", n.indexOf("mockup.topper.style:")));
     if (!old.startsWith("mockup.topper.style:")) throw new Error("crown: topper note not found");
@@ -121,7 +124,7 @@ ${CATS.map(c => `- ${c[0]}: ${c[2]}`).join("\n")}
 
   return `You are an expert Christmas tree designer helping someone who loves Christmas but is not a designer.
 
-${variant === "simple" ? SIMPLE_GUIDE + "\n\n" + PROCESS + "\n\n" + HARD_LIMITS : variant === "clarify" ? CLARIFY_GUIDE : variant === "crown" ? GUIDE + "\n\n" + CROWN_RULE : variant === "pieces" ? GUIDE + "\n\n" + PIECES_RULE : variant === "old" ? GUIDE_OLD_STYLES : GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) && variant !== "ribbon6" && variant !== "simple" ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}${(variant === "ribbon6" || variant === "simple") && part !== "look" ? "\n\n" + RIBBON6_RULE : ""}${variant === "picks" && part !== "look" ? "\n\n" + picksRule() : ""}
+${variant === "simple" ? SIMPLE_GUIDE + "\n\n" + PROCESS + "\n\n" + HARD_LIMITS : variant === "clarify" ? CLARIFY_GUIDE : variant === "crown" ? GUIDE + "\n\n" + CROWN_RULE : variant === "focal" ? GUIDE + "\n\n" + FOCAL_RULE : variant === "pieces" ? GUIDE + "\n\n" + PIECES_RULE : variant === "old" ? GUIDE_OLD_STYLES : GUIDE}\n\n${VARIETY}${DESIGN_RIBBON(mode) && variant !== "ribbon6" && variant !== "simple" ? "\n\n" + DESIGN_RIBBON(mode) : ""}${variant === "v2" && LAB_RULE ? "\n\n" + LAB_RULE : ""}${(variant === "ribbon6" || variant === "simple") && part !== "look" ? "\n\n" + RIBBON6_RULE : ""}${variant === "picks" && part !== "look" ? "\n\n" + picksRule() : ""}
 
 ${task}
 
