@@ -3929,6 +3929,7 @@ async function run() {
   runPending = true;
   const ok = await ensureAccess().finally(() => { runPending = false; idb.set(PENDING_KEY, null); });   // no reload happened: drop the save
   if (!ok) return;   // signed in, with a free preview or the Holiday Pass
+  logId = null; logKey = "";   // a new tree gets its own log
   if (mode === "design" && src !== "tree") { if (!(await makeBase())) return; }
   if (!photo) return;
   $("#startErr").textContent = $("#detailsErr").textContent = "";
@@ -5309,7 +5310,7 @@ $("#fbSend").onclick = async () => {
     await api("/api/feedback", {
       rating: fbRating, pay, comment, name: $("#fbName").value.trim(),
       mode, style: val("style"), theme: $("#theme").value.trim(), overall: result?.overall ?? null, version: current + 1, headline: result?.headline || "",
-      photo: await thumb(photo, 480), after: await thumb(after, 480)
+      photo: await thumb(photo, 480), after: await thumb(after, 480), logId: logId || ""
     });
     $("#fbForm").hidden = true; $("#fbThanks").hidden = false;
   } catch (e) { $("#fbErr").textContent = "Couldn't send: " + e.message; }
@@ -5467,7 +5468,31 @@ function saveSoon() {
       form: { kind: val("kind") || "", height: val("height") || "", density: val("density") || "", stage: val("stage") || "", style: val("style") || "keep", theme: $("#theme").value },
       versions, current, chat, stepIdx, doneSteps: [...doneSteps], got: [...gotItems], screen: SAVE_SCREENS.includes(scr) ? scr : "s-results"
     });
+    logTree();
   }, 400);
+}
+// Tree log (Eric, Nov 20): each finished preview is kept on our side with everything that made it (photo, answers, score,
+// plan, steps data, picture instructions, every version), so a complaint can be looked into without asking for a screenshot.
+// Sent quietly after each new picture; it never asks anyone to sign in and never shows an error.
+let logId = null, logKey = "", logSentPhoto = false;
+async function logTree() {
+  if (SAMPLE || !result || !after) return;
+  const key = after.length + ":" + current + ":" + versions.length;
+  if (key === logKey) return; logKey = key;
+  try {
+    if (!logId) { logId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8); logSentPhoto = false; }
+    const record = {
+      id: logId, at: Date.now(), mode, src, factsSet, photoAspect, result, chat, current, stepIdx: 0, doneSteps: [], got: [], screen: "s-results",
+      form: { kind: val("kind") || "", height: val("height") || "", density: val("density") || "", stage: val("stage") || "", style: val("style") || "keep", theme: $("#theme").value },
+      versions: versions.map(v => Object.assign({}, v, { after: null })),
+      app: { look: document.documentElement.classList.contains("theme-ivory") ? "ivory" : "dark", w: innerWidth, h: innerHeight, ua: navigator.userAgent.slice(0, 160) }
+    };
+    const body = { record, after: await thumb(after, 1280, .85) };
+    if (!logSentPhoto) { body.photo = await thumb(photo, 1280, .85); if (keyPhoto) body.keyPhoto = await thumb(keyPhoto, 1000, .8); }
+    const tk = await authToken();
+    const r = await fetch("/api/treelog", { method: "POST", headers: { "content-type": "application/json", "x-test-password": password, ...(tk ? { authorization: "Bearer " + tk } : {}) }, body: JSON.stringify(body) });
+    if (r.ok) logSentPhoto = true; else logKey = "";
+  } catch (e) { logKey = ""; }
 }
 const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 2 ? "just now" : m < 60 ? `${m} minutes ago` : m < 120 ? "an hour ago" : m < 1440 ? `${Math.round(m / 60)} hours ago` : m < 2880 ? "yesterday" : `${Math.round(m / 1440)} days ago`; };
 async function showResume() {
@@ -5550,6 +5575,15 @@ async function sampleStart() {
   let st = null;
   try {
     if (q.get("screen-preview") === "mine") st = await idb.get(SAVE_KEY);
+    else if (q.get("log")) {   // a customer's tree from the tree log (Review → Customer trees)
+      const r = await fetch("/api/treelog?id=" + encodeURIComponent(q.get("log")), { headers: { "x-test-password": password } });
+      st = r.ok ? (await r.json()).record : null;
+      if (st) {
+        const toData = async u => { if (!u || /^data:/.test(u)) return u; try { const b = await (await fetch(u)).blob(); return await new Promise(ok => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.readAsDataURL(b); }); } catch (e) { return u; } };
+        st.photo = await toData(st.photo); st.after = await toData(st.after); st.keyPhoto = await toData(st.keyPhoto);
+        for (const v of st.versions || []) v.after = await toData(v.after);
+      }
+    }
     else {
       const d = await (await fetch("/api/brand?sample=1" + (q.get("t") === "design" ? "&kind=design" : ""))).json();
       st = d.sample || null;

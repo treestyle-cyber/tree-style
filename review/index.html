@@ -38,6 +38,7 @@
 <main>
   <a class="brand" href="/"><img class="logoh" src="/brand/logo-horizontal.png" alt="TreeStyle · The art of styling"></a>
   <h1>Tester feedback</h1>
+  <p style="margin:0"><a href="/review/trees.html">Customer trees: every preview with what made it →</a></p>
   <form id="pf" class="row" style="margin-top:10px">
     <input type="password" id="pw" placeholder="Test password" style="flex:1;max-width:320px">
     <button class="btn">Show feedback</button>
@@ -76,7 +77,8 @@ var load = async function () {
       <div><div class="meta">${esc(when)}${e.name ? " · " + esc(e.name) : ""} · ${esc(e.mode === "design" ? "Design" : "Check")} · ${esc(e.style || "")}${e.theme ? " (" + esc(e.theme) + ")" : ""}${e.version > 1 ? " · version " + e.version : ""}${e.overall != null ? " · scored " + Math.max(1, Math.round(e.overall / 20 * 2) / 2) + "/5" : ""}</div>
       <div>${e.rating ? `<span class="orn">${o}</span>` : ""}${e.pay ? `<span class="pay ${esc(e.pay)}">Pay: ${esc(e.pay)}</span>` : ""}</div>
       ${e.headline ? `<div class="meta" style="margin-top:6px">“${esc(e.headline)}”</div>` : ""}
-      ${e.comment ? `<p class="comment">${esc(e.comment)}</p>` : ""}</div></div>`;
+      ${e.comment ? `<p class="comment">${esc(e.comment)}</p>` : ""}
+      ${e.email || e.logId ? `<div class="meta" style="margin-top:6px">${esc(e.email || "")}${e.logId ? ` · <a href="/review/trees.html?id=${encodeURIComponent(e.logId)}">Open their tree →</a>` : ""}</div>` : ""}</div></div>`;
   }).join("");
 }
 // Gallery reviews: approve or remove what customers share (Kylie's community row)

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>TreeStyle · Customer trees</title>
+<script src="/env.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" type="image/png" href="/brand/favicon.png">
+<style>
+  main{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+  h1{font-size:40px;margin:6px 0 4px}
+  h2{font-size:28px;margin:22px 0 8px}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0 18px}
+  .bar input[type=search]{flex:1;min-width:200px;max-width:360px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;text-align:left;padding:0;color:inherit;font:inherit}
+  .card img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;background:#222}
+  .card div{padding:10px 12px;font-size:13px;line-height:1.4}
+  .card b{display:block;font-size:14px;word-break:break-all}
+  .muted{color:var(--muted)}
+  .pics{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:760px}
+  .pics img{width:100%;border-radius:10px;background:#222}
+  .pics span{display:block;font-size:12px;color:var(--muted);margin:4px 0}
+  .box{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0}
+  .box pre{white-space:pre-wrap;word-break:break-word;font:13px/1.5 ui-monospace,Menlo,monospace;margin:6px 0 0}
+  .links{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+  .links a{font:600 13px var(--sans);padding:7px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;color:inherit}
+  table{border-collapse:collapse;font-size:14px}
+  td{padding:3px 12px 3px 0;vertical-align:top}
+  .ver{display:flex;gap:10px;flex-wrap:wrap}
+  .ver figure{margin:0;width:150px;font-size:12px}
+  .ver img{width:150px;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:#222}
+</style>
+</head>
+<body>
+<main>
+  <a class="brand" href="/"><img class="logoh" src="/brand/logo-horizontal.png" alt="TreeStyle · The art of styling"></a>
+  <h1>Customer trees</h1>
+  <p class="muted" style="margin:0">Every finished preview, with what made it. Open one to see their screens as they saw them. <a href="/review/">Ratings and gallery →</a></p>
+  <form id="pf" class="bar" hidden>
+    <input type="password" id="pw" placeholder="Test password" style="max-width:320px">
+    <button class="btn">Show trees</button>
+  </form>
+  <div class="bar" id="tools" hidden><input type="search" id="q" placeholder="Search by email, style or headline"><span class="muted" id="count"></span></div>
+  <div class="err" id="err"></div>
+  <div class="grid" id="grid"></div>
+  <section id="one" hidden></section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const when = s => { const d = new Date(s); return isNaN(d) ? "" : d.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); };
+const of5 = o => o == null || o === "" ? "" : Math.max(1, Math.round(Number(o) / 20 * 2) / 2);
+const STYLE = { keep: "Their own style", classic: "Traditional", rustic: "Rustic", modern: "Modern", elegant: "Elegant", playful: "Playful", themed: "Themed" };
+let pw = ""; try { pw = sessionStorage.getItem("ts_pw") || ""; } catch {}
+let trees = [];
+const get = async u => { const r = await fetch(u, { headers: { "x-test-password": pw } }); if (r.status === 401) { $("#pf").hidden = false; throw new Error("Enter the test password."); } const d = await r.json(); if (!r.ok) throw new Error(d.error || "Error " + r.status); return d; };
+function draw() {
+  const q = $("#q").value.trim().toLowerCase();
+  const rows = trees.filter(t => !q || [t.email, t.style, t.theme, t.headline, t.mode].join(" ").toLowerCase().includes(q));
+  $("#count").textContent = `${rows.length} tree${rows.length === 1 ? "" : "s"}`;
+  $("#grid").innerHTML = rows.map(t => `<button class="card" data-id="${esc(t.id)}"><img src="${esc(t.thumb || "")}" alt="" loading="lazy"><div><b>${esc(t.email || "no email")}</b>${esc(when(t.at))}<br>${t.mode === "design" ? "Design my tree" : "Check my tree"} · ${esc(STYLE[t.style] || t.style || "")}${t.overall != null ? ` · ${of5(t.overall)} of 5` : ""}<br><span class="muted">${t.versions} version${t.versions === 1 ? "" : "s"}</span></div></button>`).join("") || '<p class="muted">No trees yet. They appear here after someone gets a preview.</p>';
+}
+async function list() {
+  $("#err").textContent = ""; $("#grid").innerHTML = '<p class="muted">Loading…</p>';
+  try { trees = (await get("/api/treelog?list=1")).trees || []; $("#tools").hidden = false; $("#pf").hidden = true; draw(); }
+  catch (e) { $("#grid").innerHTML = ""; $("#err").textContent = e.message; }
+}
+async function open(id) {
+  $("#grid").hidden = $("#tools").hidden = true; const box = $("#one"); box.hidden = false; box.innerHTML = '<p class="muted">Loading…</p>'; scrollTo(0, 0);
+  try {
+    const { record: r, saves } = await get("/api/treelog?id=" + encodeURIComponent(id));
+    const res = r.result || {}, f = r.form || {}, app = r.app || {};
+    const sp = s => `/try/?screen-preview&log=${encodeURIComponent(id)}&s=${s}${app.look === "ivory" ? "&look=ivory" : ""}`;
+    const steps = (res.plan || []).length ? Array.from({ length: 8 }, (_, i) => `<a href="${sp("plan")}&step=${i + 1}" target="_blank">Step ${i + 1}</a>`).join("") : "";
+    const facts = [["Started", r.mode === "design" ? `Design my tree (${r.src || "tree"})` : "Check my tree"], ["Style", STYLE[f.style] || f.style || ""], ["Theme or idea", f.theme], ["Real or artificial", f.kind || "read from photo"], ["Height", f.height ? f.height + " ft" : "read from photo"], ["Branches", { dense: "Full", open: "Open, spaced", unshaped: "Not shaped" }[f.density] || "read from photo"], ["Answered the questions", r.factsSet ? "yes" : "skipped"], ["Look", app.look], ["Screen", app.w ? `${app.w} × ${app.h}` : ""], ["Phone", app.ua]];
+    box.innerHTML = `
+      <p><a href="#" id="backList">← All trees</a></p>
+      <h2 style="margin-top:6px">${esc(r.email || "no email")}</h2>
+      <p class="muted" style="margin:0">${esc(when(r.saved))} · ${saves} save${saves === 1 ? "" : "s"} · id ${esc(id)}</p>
+      <div class="links"><a href="${sp("results")}" target="_blank">Results as they saw it</a><a href="${sp("score")}" target="_blank">How it scored</a><a href="${sp("shop")}" target="_blank">Shopping list</a>${steps}</div>
+      <div class="pics"><div><span>Their photo</span><img src="${esc(r.photo || "")}" alt=""></div><div><span>Preview (version ${(r.current || 0) + 1})</span><img src="${esc(r.after || "")}" alt=""></div></div>
+      ${r.keyPhoto ? `<div class="box"><b>Their own pieces</b><br><img src="${esc(r.keyPhoto)}" alt="" style="max-width:260px;border-radius:8px;margin-top:6px"></div>` : ""}
+      <div class="box"><b>About their tree</b><table style="margin-top:6px">${facts.filter(x => x[1]).map(([k, v]) => `<tr><td class="muted">${esc(k)}</td><td>${esc(v)}</td></tr>`).join("")}</table></div>
+      <div class="box"><b>Score: ${of5(res.overall)} of 5</b> <span class="muted">(${esc(res.overall ?? "")} of 100)</span> · ${esc(res.headline || "")}<table style="margin-top:6px">${(res.categories || []).map(c => `<tr><td>${esc(c.name)}</td><td>${esc(c.score)}</td><td class="muted">${esc(c.note || c.why || "")}</td></tr>`).join("")}</table></div>
+      <div class="box"><b>Plan</b><table style="margin-top:6px">${(res.plan || []).map(p => `<tr><td class="muted">${esc(p.element || "")}</td><td>${esc(p.title || p.what || "")}<br><span class="muted">${esc(p.how || p.detail || "")}</span>${p.shop ? `<br><span class="muted">Shop: ${esc(p.shop)}</span>` : ""}</td></tr>`).join("")}</table></div>
+      <div class="box"><b>Picture instructions (first preview)</b><pre>${esc(res.render_brief || "")}</pre></div>
+      ${(r.versions || []).length > 1 ? `<div class="box"><b>Versions</b><div class="ver">${r.versions.map((v, i) => `<figure>${v.after ? `<img src="${esc(v.after)}" alt="">` : ""}<figcaption><b>${i + 1}. ${esc(v.label || "")}</b>${v.brief ? `<br><span class="muted">${esc(v.brief)}</span>` : ""}</figcaption></figure>`).join("")}</div></div>` : ""}
+      ${(r.chat || []).length ? `<div class="box"><b>What they asked for</b>${r.chat.map(m => `<p style="margin:6px 0"><span class="muted">${m.role === "user" ? "They" : "We"}:</span> ${esc(m.text)}</p>`).join("")}</div>` : ""}
+      <details class="box"><summary><b>Everything the AI returned</b> (for Claude)</summary><pre>${esc(JSON.stringify(res, null, 2))}</pre></details>`;
+    $("#backList").onclick = e => { e.preventDefault(); history.pushState(null, "", location.pathname); back(); };
+    history.replaceState(null, "", "?id=" + encodeURIComponent(id));
+  } catch (e) { box.innerHTML = `<p><a href="#" id="backList">← All trees</a></p><div class="err">${esc(e.message)}</div>`; $("#backList").onclick = ev => { ev.preventDefault(); back(); }; }
+}
+function back() { $("#one").hidden = true; $("#grid").hidden = $("#tools").hidden = false; if (!trees.length) list(); }
+$("#grid").onclick = e => { const c = e.target.closest("[data-id]"); if (c) open(c.dataset.id); };
+$("#q").oninput = draw;
+$("#pf").onsubmit = e => { e.preventDefault(); pw = $("#pw").value.trim(); try { sessionStorage.setItem("ts_pw", pw); } catch {} const id = new URLSearchParams(location.search).get("id"); id ? open(id) : list(); };
+const startId = new URLSearchParams(location.search).get("id");
+startId ? open(startId) : list();
+</script>
+</body>
+</html>

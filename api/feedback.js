@@ -4,6 +4,7 @@ import { put, list, get } from "@vercel/blob";
 import { blobToken, blobConnected, envPath } from "../lib/blob.js";
 const tok = () => (blobToken() ? { token: blobToken() } : {});
 import { checkPassword } from "../lib/util.js";
+import { whoIs } from "../lib/account.js";
 
 const clip = (v, n) => String(v ?? "").slice(0, n);
 const smallImg = v => (typeof v === "string" && /^data:image\/(jpeg|png|webp);base64,/.test(v) && v.length < 400000) ? v : "";
@@ -24,9 +25,13 @@ async function readJson(b) {
 }
 
 export default async function handler(req, res) {
-  if (!checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
+  // Ratings come from customers since the app opened to the public (Nov 20): a signed-in person can send one; reading
+  // them still takes the test password. (Before, sending also needed the password, so customers' ratings were refused.)
+  if (req.method !== "POST" && !checkPassword(req)) return res.status(401).json({ error: "Wrong password" });
 
   if (req.method === "POST") {
+    const who = await whoIs(req);
+    if (!who) return res.status(401).json({ error: "Please sign in.", code: "sign_in" });
     const b = req.body || {};
     const entry = {
       at: new Date().toISOString(),
@@ -35,7 +40,9 @@ export default async function handler(req, res) {
       mode: clip(b.mode, 10), style: clip(b.style, 20), theme: clip(b.theme, 80),
       overall: Number(b.overall) || null, version: Number(b.version) || 1,
       headline: clip(b.headline, 120),
-      photo: smallImg(b.photo), after: smallImg(b.after)
+      photo: smallImg(b.photo), after: smallImg(b.after),
+      email: String(who.email || (who.viaPassword ? "tester (password)" : "")).slice(0, 120),
+      logId: /^[a-z0-9]{6,32}$/.test(String(b.logId || "")) ? b.logId : ""
     };
     // Always leave a copy in the Vercel logs, even if storage isn't set up yet.
     console.log("FEEDBACK", JSON.stringify({ ...entry, photo: !!entry.photo, after: !!entry.after }));
