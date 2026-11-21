@@ -1774,7 +1774,6 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
     </ul>
     <div class="acts">
       <button class="btn" id="signinBtn">Continue with email</button>
-      <button class="linkbtn" id="signinLater">Not now</button>
     </div>
     <div class="err" id="signinErr"></div>
   </section>
@@ -3196,7 +3195,7 @@ function show(id, reset) {
 const screenUrl = id => "/try/" + (id === "s-home" || id === "s-pass" ? "" : id.slice(2));
 function back() {
   if (stack.length <= 1) return;
-  stack.pop();
+  if (stack.pop() === "s-login") leaveSignIn();
   // never step back into the loading-driven reveal from the hub
   paint(true);
 }
@@ -3674,7 +3673,8 @@ async function resumePending() {
   if (acct.clerk?.user) run();
   return true;
 }
-$("#signinLater").onclick = () => { idb.set(PENDING_KEY, null); if (signinWait) { const f = signinWait; signinWait = null; f(false); } else history.back(); };
+// Leaving sign-in with the back arrow (the "Not now" link is gone, Eric): stop waiting, so whatever asked can carry on
+function leaveSignIn() { if (!signinWait) return; idb.set(PENDING_KEY, null); const f = signinWait; signinWait = null; f(false); }
 function openPass(reason, browsing) {
   const n = acct.info?.freeLimit || 2, cap = reason === "daily_cap", ended = reason === "pass_ended";
   $("#holTitle").textContent = cap ? "That's a lot of trees for one day" : ended ? "Your Holiday Pass has ended" : "Keep designing all season";
