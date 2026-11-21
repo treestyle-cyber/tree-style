@@ -395,6 +395,17 @@
       // so the far side of the curl shows its darker inside, like ribbon in a photo
       let loopSeed = 0;
       const toWorld = (x, y, ang, pts) => pts.map(([a, b]) => [x + a * Math.cos(ang) - b * Math.sin(ang), y + a * Math.sin(ang) + b * Math.cos(ang)]);
+      // Keep every piece of ribbon on the branches (Eric, Nov 20: ribbon 7 on his dress-form tree hung its tail off the edge of
+      // the tree, over the floor). A piece whose far end would land outside the tree's outline is turned toward the middle,
+      // a little at a time, until it ends well inside.
+      const inside = (px, py) => py >= G.A[1] && py <= G.L[1] - G.treeH * .02 && Math.abs(px - G.centerAt(py)) <= G.halfWidthAt(py) * .88;
+      const inward = (x, y, ang, reach) => {
+        const end = a => [x + Math.cos(a) * reach, y + Math.sin(a) * reach];
+        if (inside(...end(ang))) return ang;
+        const toward = x > G.centerAt(y) ? 1 : -1;   // right of centre: turn clockwise toward down-left; left: the other way
+        for (let k = 1; k <= 14; k++) { const a = ang + toward * k * .14; if (inside(...end(a))) return a; }
+        return Math.PI / 2 + toward * .35;   // nothing fits: fall straight down, leaning in
+      };
       const ribbonLoop = (x, y, ang, len, rb, over, wide) => {
         // the loop is a real surface: its centre line arcs out of the branches and back, and the ribbon's width runs across
         // it (D, slightly foreshortened). Where the curve turns past D the inside face shows, darker, like a photo of a curl.
@@ -475,8 +486,8 @@
           // so it reads as ribbon tucked in and poking out, not a bow sitting on top.
           const main = g, sc = layer(W, H), sg = sc.getContext("2d");
           g = sg;
-          (scene.loops || []).filter(L => L.tail && L.x === sp.x && L.y === sp.y).slice(0, 1).forEach(L => ribbonTail(sp.x, sp.y, L.ang, L.len, RB.base, RB.overlay));
-          sp.loops.slice(0, 1).forEach(L => ribbonLoop(sp.x, sp.y, L.ang, L.len, RB.base, RB.overlay));
+          (scene.loops || []).filter(L => L.tail && L.x === sp.x && L.y === sp.y).slice(0, 1).forEach(L => ribbonTail(sp.x, sp.y, inward(sp.x, sp.y, L.ang, L.len * .7), L.len, RB.base, RB.overlay));
+          sp.loops.slice(0, 1).forEach(L => ribbonLoop(sp.x, sp.y, inward(sp.x, sp.y, L.ang, L.len * .6), L.len, RB.base, RB.overlay));
           const fr = Math.max(6, RW.base * .9), fade = sg.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, fr);
           fade.addColorStop(0, "rgba(0,0,0,.85)"); fade.addColorStop(1, "rgba(0,0,0,0)");
           sg.globalCompositeOperation = "destination-out"; sg.fillStyle = fade; sg.beginPath(); sg.arc(sp.x, sp.y, fr, 0, TAU); sg.fill();
