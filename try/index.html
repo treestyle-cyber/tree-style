@@ -594,7 +594,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .tilenote{text-align:center;color:var(--muted);font-size:calc(14px * var(--s-body,1));max-width:26em;margin:20px auto 0}
   #s-pass form{max-width:420px;margin:0 auto}
   /* sign-in and Holiday Pass */
-  #s-login .signin-note{font-size:14px;opacity:.75;margin-top:-6px}
+  #s-login .signin-list{max-width:300px;margin:4px auto 26px;gap:10px}
   #s-login .acts,#s-holiday .acts{display:grid;gap:10px;max-width:420px;margin:0 auto}
   #s-login .acts .btn,#s-holiday .acts .btn{width:100%;padding:16px}
   .linkbtn{background:none;border:0;color:var(--muted);font:inherit;font-size:14px;text-decoration:underline;cursor:pointer;padding:10px}
@@ -1767,8 +1767,12 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   <section class="screen" id="s-login" data-title="" hidden>
     <div class="kicker">Your tree is next</div>
     <h2 class="ttl">Create your free account</h2>
-    <p class="sub" id="signinSub">Enter your email and we'll send a 6-digit code to confirm it's you. No password. Your first 2 previews are free.</p>
-    <p class="sub signin-note">Already have an account? Same button, we'll sign you in. Your photo and choices are saved while you check your email.</p>
+    <p class="sub" id="signinSub">Your first 2 previews are free.</p>
+    <ul class="passlist signin-list">
+      <li>No password. We email you a code.</li>
+      <li>Your photo stays saved.</li>
+      <li>Have an account? Same button.</li>
+    </ul>
     <div class="acts">
       <button class="btn" id="signinBtn">Continue with email</button>
       <button class="linkbtn" id="signinLater">Not now</button>
@@ -3617,7 +3621,7 @@ function askSignIn() {
   if (signinP && stack[stack.length - 1] === "s-login") return signinP;
   if (signinWait) { const f = signinWait; signinWait = null; f(false); }
   const n = acct.info?.freeLimit || 2;
-  $("#signinSub").textContent = `Enter your email and we'll send a 6-digit code to confirm it's you. No password. Your first ${n} previews are free.`;
+  $("#signinSub").textContent = `Your first ${n} previews are free.`;
   $("#signinErr").textContent = "";
   signinP = new Promise(ok => { signinWait = ok; }).then(v => { signinP = null; if (stack[stack.length - 1] === "s-login") history.back(); return v; });
   show("s-login");
