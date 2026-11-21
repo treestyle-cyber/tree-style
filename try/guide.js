@@ -398,12 +398,12 @@
       // Keep every piece of ribbon on the branches (Eric, Nov 20: ribbon 7 on his dress-form tree hung its tail off the edge of
       // the tree, over the floor). A piece whose far end would land outside the tree's outline is turned toward the middle,
       // a little at a time, until it ends well inside.
-      const inside = (px, py) => py >= G.A[1] && py <= G.L[1] - G.treeH * .02 && Math.abs(px - G.centerAt(py)) <= G.halfWidthAt(py) * .88;
+      const inside = (px, py) => py >= G.A[1] && py <= G.L[1] - G.treeH * .02 && Math.abs(px - G.centerAt(py)) <= G.halfWidthAt(py) * .84;
       const inward = (x, y, ang, reach) => {
-        const end = a => [x + Math.cos(a) * reach, y + Math.sin(a) * reach];
-        if (inside(...end(ang))) return ang;
+        const fits = a => [0, -.45, .45].every(o => inside(x + Math.cos(a + o) * reach * (o ? .8 : 1), y + Math.sin(a + o) * reach * (o ? .8 : 1)));   // the far end and both sides of the piece
+        if (fits(ang)) return ang;
         const toward = x > G.centerAt(y) ? 1 : -1;   // right of centre: turn clockwise toward down-left; left: the other way
-        for (let k = 1; k <= 14; k++) { const a = ang + toward * k * .14; if (inside(...end(a))) return a; }
+        for (let k = 1; k <= 18; k++) { const a = ang + toward * k * .14; if (fits(a)) return a; }
         return Math.PI / 2 + toward * .35;   // nothing fits: fall straight down, leaning in
       };
       const ribbonLoop = (x, y, ang, len, rb, over, wide) => {
