@@ -1620,7 +1620,8 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   html.theme-ivory #s-plan .stepnav{order:8;margin-top:14px}
   html.theme-ivory #s-plan .stepcard{order:9;margin-top:22px}
   html.theme-ivory #s-plan .helprow{order:10}
-  html.theme-ivory #s-plan #prevStep{display:none}
+  html.theme-ivory #s-plan #prevStep{flex:0 0 auto;padding:18px 22px}
+  html.theme-ivory #s-plan #prevStep[hidden]{display:none}
   html.theme-ivory #s-plan #nextStep{flex:1;padding:18px 20px}
   html.theme-ivory #s-plan .peek{display:none}
   html.theme-ivory #s-plan #stepLead{display:none}
@@ -1628,6 +1629,11 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .sv2top{position:relative;display:flex;justify-content:center;align-items:center;min-height:22px}
   .sv2k{font:600 calc(12px * var(--s-label,1)) var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--brass)}
   .sv2all{position:absolute;right:0;top:50%;transform:translateY(-50%);background:none;border:0;padding:4px 0;color:var(--ink);font:500 calc(14px * var(--s-body,1)) var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+  .sv2arr{display:inline-grid;place-items:center;width:38px;height:38px;margin:0 10px;border-radius:50%;border:1px solid rgba(184,149,90,.55);background:transparent;color:var(--brass);cursor:pointer;padding:0;flex:0 0 auto}
+  .sv2arr svg{width:18px;height:18px}
+  .sv2arr:disabled{opacity:.3;cursor:default}
+  .sv2bar button{flex:1;height:22px;padding:8px 0;border:0;background:none;cursor:pointer;display:flex;align-items:center}
+  .sv2bar button i{flex:1}
   .sv2bar{display:flex;gap:5px;justify-content:center;margin:12px auto 14px;max-width:300px}
   .sv2bar i{flex:1;height:5px;border-radius:99px;background:rgba(184,149,90,.22)}
   .sv2bar i.on{background:var(--goldbar,linear-gradient(90deg,#9C7638,#C9A35E,#EBD49C,#C49C58))}
@@ -2103,7 +2109,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
       </div>
       <p class="shmsg" id="shMsg"></p>
     </div></div>
-    <div class="sv2head" id="sv2Head"><div class="sv2top"><span class="sv2k" id="sv2K"></span><button type="button" class="sv2all" id="sv2All">All steps</button></div>
+    <div class="sv2head" id="sv2Head"><div class="sv2top"><button type="button" class="sv2arr" id="sv2Prev" aria-label="Previous step"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><span class="sv2k" id="sv2K"></span><button type="button" class="sv2arr" id="sv2Next" aria-label="Next step"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button><button type="button" class="sv2all" id="sv2All">All steps</button></div>
       <div class="sv2bar" id="sv2Bar"></div><h2 class="sv2t" id="sv2T"></h2><p class="sv2s" id="sv2S"></p></div>
     <div class="steptabs" id="stepTabs" role="tablist"></div>
     <div class="stephead"><div class="k" id="stepK"></div><h2 id="stepTitle"></h2></div>
@@ -4957,7 +4963,8 @@ async function drawStep() {
     const SV2_SUB = { fluff: "Open every branch, then fan out the tips.", lights: "Start at the trunk and work from the top down.", primary_picks: "Start full at the base. Go lighter toward the top.", ribbon: "Start near the top and alternate sides as you work down.", florals: "Nestle the flowers beside the ribbon, fuller low.", statement: "Hang the largest pieces set back toward the trunk.", medium: "Fill in around the large ones, mixing the sizes.", crown: "Wire the topper on, then finish the base.", all: "Every step together: the tree your plan creates." };
     const isAll = key === "all", n = isAll ? total : stepIdx + 1;
     $("#sv2K").textContent = isAll ? "Your finished tree" : `Step ${n} of ${total}`;
-    $("#sv2Bar").innerHTML = Array.from({ length: total }, (_, i) => `<i class="${i < n ? "on" : ""}"></i>`).join("");
+    $("#sv2Bar").innerHTML = Array.from({ length: total }, (_, i) => `<button type="button" data-i="${i}" aria-label="Step ${i + 1}"><i class="${i < n ? "on" : ""}"></i></button>`).join("");   // tap a segment to jump to that step
+    $("#sv2Prev").disabled = stepIdx === 0; $("#sv2Next").disabled = stepIdx >= guide.steps.length - 1;
     const SV2_T = { fluff: "Shape the branches", lights: "Add the lights", primary_picks: "Add filler stems", ribbon: "Place the ribbon", florals: "Add floral accents", statement: "Place large ornaments", medium: "Place medium & small ornaments", crown: "Finish the crown & base", all: "Your finished tree" };
     $("#sv2T").textContent = SV2_T[key] || guide.title(key); $("#sv2S").textContent = SV2_SUB[key] || "";
     // The crown & base step: a Crown / Base switch, each with its own instruction (Kylie's step 7 mockup)
@@ -5001,6 +5008,12 @@ async function drawStep() {
   $("#nextStep").textContent = document.documentElement.classList.contains("theme-ivory") && key !== "all" ? (doneSteps.has(key) || goodSteps.has(key) ? (stepIdx === total - 1 ? "See the finished tree" : "Next step") : "Mark step complete") : key === "all" ? "Back to my tree" : (doneSteps.has(key) || goodSteps.has(key)) ? (stepIdx === total - 1 ? "See the finished tree" : "Next step") : (stepIdx === total - 1 ? "Done, see the finished tree" : "Done, next");
 }
 $("#prevStep").onclick = () => { stepIdx--; drawStep(); scrollTo(0, 0); };
+// Moving through the steps without marking them done (Eric: the only way forward was Mark step complete): the arrows beside
+// STEP n OF N and the segments of the bar under it. The last arrow goes on to Your finished tree.
+const goStep = i => { if (!guide) return; const n = guide.steps.length; i = Math.max(0, Math.min(n - 1, i)); if (i === stepIdx) return; stepIdx = i; closePinPop(); drawStep(); scrollTo(0, 0); saveSoon(); };
+$("#sv2Prev").onclick = () => goStep(stepIdx - 1);
+$("#sv2Next").onclick = () => goStep(stepIdx + 1);
+$("#sv2Bar").addEventListener("click", e => { const b = e.target.closest("button[data-i]"); if (b) goStep(+b.dataset.i); });
 $("#sv2Parts").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; window.__sv2part = b.dataset.p; drawStep(); });
 // Tips to round out each step's instructions so the numbered spots each have one (Kylie's mockups); the plan's own come first
 // A step video from the Studio (Kylie: show a clip of the branches being unfolded and shaped) plays on a loop in the card, silent.
