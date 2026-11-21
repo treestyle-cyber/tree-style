@@ -800,6 +800,10 @@
       return treeMask;
     }
     function onTree(x, y, kind) {
+      // Only for a tree we imagined for them (Design my tree). On their own photo the plan already placed every spot
+      // on the tree it saw; the green-finding below can latch onto plants, wreaths or garland nearby and drag
+      // the spots off (Eric's dress-form tree in a store: a potted plant and a palm joined the "tree").
+      if (mode !== "design") return [x, y];
       const tm = findTree(); if (!tm || !isFinite(x) || !isFinite(y)) return [x, y];
       if (tm.remap) {   // carry it across from the plan's outline onto the tree that was found
         const t = clamp((y - G.A[1]) / G.treeH, 0, 1), hw = G.halfWidthAt(y) || 1, k = clamp((x - G.centerAt(y)) / hw, -1, 1);
