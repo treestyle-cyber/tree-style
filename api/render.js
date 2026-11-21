@@ -173,13 +173,15 @@ export default async function handler(req, res) {
   const simple = variant === "simple" && !revision;
   const rs = variant === "ribbon6" || variant === "simple" ? RIBBON_STYLES[ribbonStyle] : null;
   const styleRef = rs ? await ribbonRef(rs.slot) : null;
-  const rref = styleRef || await ribbonRef();
+  // Lab variant "ribref" (Eric, Nov 20): the same plan painted with a candidate ribbon photo (Studio slot ribbonref_test)
+  const testRef = variant === "ribref" && !rs ? await ribbonRef("ribbonref_test") : null;
+  const rref = styleRef || testRef || await ribbonRef();
   // A Change something edit gets the ribbon reference photo only when the change is about ribbon (Eric, Nov 17: moving a
   // leaf cluster came back as the reference photo itself, a different snowy tree in a different room, since a small
   // edit with a second whole tree photo beside it can be painted onto the wrong picture)
   const useRef = !revision || /ribbon/i.test(String(brief || ""));
   const rrefSent = useRef ? rref : null;
-  const refUsed = !rrefSent ? "none" : styleRef ? rs.slot : "ribbonref";
+  const refUsed = !rrefSent ? "none" : styleRef ? rs.slot : testRef ? "ribbonref_test" : "ribbonref";
   const refNote = rs ? `Reference photo showing the ribbon style to use, "${rs.name}". Do not copy its room, tree, colors, ribbon or ornaments; copy only HOW the ribbon is placed on the tree. Paint the ribbons the instructions describe, used this way.` : undefined;
   const shapeText = rs ? `\n\nRIBBON STYLE: ${rs.name}. ${rs.paint}` : RIBBON_SHAPE;
   // Lab "ribbon6": the old ribbon comes off first, and the new ribbon has to be plainly visible (Eric: a diagonal plaid

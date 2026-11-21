@@ -102,6 +102,10 @@
       <div class="where">One photo of a tree <b>you</b> styled with tucked ribbon. Every Studio photo, every fix, and every customer preview in the app is told to copy this ribbon technique (only the ribbon, never the room or colors). This is the most reliable way to stop the bows.</div>
       <div class="refrow"><div class="frame" id="refCur" style="aspect-ratio:3/4;max-width:200px">No reference yet</div>
         <div><label class="btn" style="cursor:pointer">Add your photo<input type="file" id="refFile" accept="image/*" hidden></label><p class="msg" id="refMsg"></p></div></div>
+      <h3 style="margin:22px 0 4px">Test photo (Lab only)</h3>
+      <div class="where">Try a different ribbon photo without changing the app. The Lab paints the same plan twice: once with this photo, once with the live one above. If it wins, upload it above.</div>
+      <div class="refrow"><div class="frame" id="refTestCur" style="aspect-ratio:3/4;max-width:200px">No test photo yet</div>
+        <div><label class="btn" style="cursor:pointer">Add test photo<input type="file" id="refTestFile" accept="image/*" hidden></label><p class="msg" id="refTestMsg"></p><p><a href="/lab/?test=ribref">Open the Lab test →</a></p></div></div>
     </div>
     <div class="refcard" id="rsCard">
       <h2>Ribbon styles (in the Lab)</h2>
@@ -506,6 +510,18 @@ async function start() {
       $("#refCur").innerHTML = `<img src="${data}" alt="">`;
       $("#refMsg").className = "msg ok"; $("#refMsg").textContent = "Saved. New photos, fixes and app previews will copy this ribbon technique (allow up to 10 minutes for the app).";
     } catch (err) { $("#refMsg").className = "msg err"; $("#refMsg").textContent = err.message; }
+  };
+  if ((info.photos || {}).ribbonref_test) $("#refTestCur").innerHTML = `<img src="${info.photos.ribbonref_test}" alt="">`;
+  $("#refTestFile").onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    $("#refTestMsg").className = "msg"; $("#refTestMsg").textContent = "Saving…";
+    try {
+      const raw = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); });
+      const data = await shrink(raw, 1400);
+      await call({ action: "use", slot: "ribbonref_test", image: data });
+      $("#refTestCur").innerHTML = `<img src="${data}" alt="">`;
+      $("#refTestMsg").className = "msg ok"; $("#refTestMsg").textContent = "Saved. Only the Lab uses it; customers still get the photo above.";
+    } catch (err) { $("#refTestMsg").className = "msg err"; $("#refTestMsg").textContent = err.message; }
   };
   setupRibbonStyles(info.photos || {});
   build(info.photos || {});   // step tutorial videos removed (Kylie, Nov 19)
