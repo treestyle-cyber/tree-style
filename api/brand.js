@@ -15,7 +15,7 @@
 // POST /api/brand { action:"sample-save", sample }        -> { ok }                        (password)
 // GET  /api/brand?notes=1              -> { notes }    notes left on screens in Studio → Screens
 // POST /api/brand { action:"note", op:"add"|"update"|"delete", note } -> { notes }          (password)
-import { put, list, get } from "@vercel/blob";
+import { put, list, get, del } from "@vercel/blob";
 import { blobToken, blobVarNames, blobConnected, IS_PREVIEW, envPath } from "../lib/blob.js";
 const tok = () => (blobToken() ? { token: blobToken() } : {});
 import { ribbonRef, RIBBON_REF_NOTE } from "../lib/ribbonref.js";
@@ -359,6 +359,20 @@ export default async function handler(req, res) {
     } catch (e) { return res.status(500).json({ error: String(e.message || e) }); }
   }
 
+  // Undo an upload to the ribbon reference by mistake (Eric, Nov 20): the newest ribbon reference photo on this copy
+  // moves to the Lab's test spot, so the photo before it is the reference again (on a preview copy with none left,
+  // that is the live app's photo). Nothing is lost: the moved photo is the Lab test photo.
+  if (action === "ref-move") {
+    if (!blobConnected()) return res.status(400).json({ error: "Storage isn't connected." });
+    const all = (await list({ ...tok(), prefix: envPath("brand/photos/ribbonref/"), limit: 1000 })).blobs.sort((a, b) => t(b) - t(a));
+    if (!all.length) return res.status(400).json({ error: "There's no upload on this copy to undo." });
+    const b = all[0], buf = await readBlob(b), ext = (b.pathname.split(".").pop() || "jpg");
+    const path = envPath(`brand/photos/ribbonref_test/${Date.now()}.${ext}`);
+    try { await put(path, buf, { ...tok(), access: "public", contentType: b.contentType || "image/jpeg" }); }
+    catch (e) { await put(path, buf, { ...tok(), access: "private", contentType: b.contentType || "image/jpeg" }); }
+    await del(b.url, tok());
+    return res.status(200).json({ ok: true, left: all.length - 1 });
+  }
   if (action === "use") {
     if (!isSlot(slot)) return res.status(400).json({ error: "Unknown slot" });
     if (!blobConnected()) return res.status(400).json({ error: "Storage isn't connected yet. In Vercel: Storage → Create → Blob → connect it to this project, then Redeploy." });

@@ -101,7 +101,7 @@
       <h2>Ribbon technique reference</h2>
       <div class="where">One photo of a tree <b>you</b> styled with tucked ribbon. Every Studio photo, every fix, and every customer preview in the app is told to copy this ribbon technique (only the ribbon, never the room or colors). This is the most reliable way to stop the bows.</div>
       <div class="refrow"><div class="frame" id="refCur" style="aspect-ratio:3/4;max-width:200px">No reference yet</div>
-        <div><label class="btn" style="cursor:pointer">Add your photo<input type="file" id="refFile" accept="image/*" hidden></label><p class="msg" id="refMsg"></p></div></div>
+        <div><label class="btn" style="cursor:pointer">Add your photo<input type="file" id="refFile" accept="image/*" hidden></label><p class="msg" id="refMsg"></p><p><button class="btn ghost" id="refUndo" type="button">Undo my last upload here</button></p><p class="msg" id="refUndoMsg">Puts the previous photo back and moves the last one to the test spot below.</p></div></div>
       <h3 style="margin:22px 0 4px">Test photo (Lab only)</h3>
       <div class="where">Try a different ribbon photo without changing the app. The Lab paints the same plan twice: once with this photo, once with the live one above. If it wins, upload it above.</div>
       <div class="refrow"><div class="frame" id="refTestCur" style="aspect-ratio:3/4;max-width:200px">No test photo yet</div>
@@ -510,6 +510,20 @@ async function start() {
       $("#refCur").innerHTML = `<img src="${data}" alt="">`;
       $("#refMsg").className = "msg ok"; $("#refMsg").textContent = "Saved. New photos, fixes and app previews will copy this ribbon technique (allow up to 10 minutes for the app).";
     } catch (err) { $("#refMsg").className = "msg err"; $("#refMsg").textContent = err.message; }
+  };
+  let undoArmed = false;
+  $("#refUndo").onclick = async () => {
+    if (!undoArmed) { undoArmed = true; $("#refUndo").textContent = "Tap again to undo"; $("#refUndoMsg").textContent = "The last photo uploaded here moves to the test spot; the one before it comes back."; return; }
+    undoArmed = false; $("#refUndo").disabled = true; $("#refUndoMsg").className = "msg"; $("#refUndoMsg").textContent = "Undoing…";
+    try {
+      await call({ action: "ref-move" });
+      const fresh = await (await fetch("/api/brand?v=" + Date.now())).json().catch(() => ({}));
+      const ph = fresh.photos || {};
+      $("#refCur").innerHTML = ph.ribbonref ? `<img src="${ph.ribbonref}" alt="">` : "No reference yet";
+      if (ph.ribbonref_test) $("#refTestCur").innerHTML = `<img src="${ph.ribbonref_test}" alt="">`;
+      $("#refUndoMsg").className = "msg ok"; $("#refUndoMsg").textContent = "Done. The previous photo is back; your last upload is now the test photo below.";
+    } catch (err) { $("#refUndoMsg").className = "msg err"; $("#refUndoMsg").textContent = err.message; }
+    $("#refUndo").disabled = false; $("#refUndo").textContent = "Undo my last upload here";
   };
   if ((info.photos || {}).ribbonref_test) $("#refTestCur").innerHTML = `<img src="${info.photos.ribbonref_test}" alt="">`;
   $("#refTestFile").onchange = async e => {
