@@ -1662,7 +1662,8 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
   .stepkey ul{list-style:none;margin:0;padding:0}
   .stepkey li{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(184,156,107,.28)}
   .stepkey li:last-child{border-bottom:0}
-  .stepkey .kic.art{background:#fffaf0 center/82% no-repeat;box-shadow:0 0 0 1px rgba(184,156,107,.45)}
+  .stepkey .kic.ico{background:#fffaf0 center/86% no-repeat}
+  .stepkey .kic.rib{border-radius:6px;background:linear-gradient(160deg,color-mix(in srgb,var(--kc) 70%,#fff) 0,var(--kc) 45%,color-mix(in srgb,var(--kc) 70%,#000) 100%)}
   .stepkey .kic{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff8e6 0,var(--kc,#B8913F) 28%,#1a1208 100%) center/cover no-repeat;box-shadow:0 2px 6px -2px rgba(30,20,10,.5),0 0 0 2px #fffaf0}
   .stepkey .kname{font:500 calc(16px * var(--s-headline,1))/1.2 var(--serif)}
   .stepkey .kqty{font:500 calc(16px * var(--s-headline,1))/1 var(--serif);white-space:nowrap}
@@ -2395,7 +2396,7 @@ fetch("/api/brand" + (/[?&]screen-preview\b/.test(location.search) ? "?fresh=" +
 </div>
 
 <script src="/try/engine.js?v=20261117c"></script>
-<script src="/try/guide.js?v=20261120b"></script>
+<script src="/try/guide.js?v=20261120c"></script>
 <script src="/picks-looks.js"></script>
 <script>
 // Screen preview (Studio → Screens): /try/?screen-preview&s=<screen> opens that screen straight away with the
@@ -3937,7 +3938,6 @@ async function run() {
   const ok = await ensureAccess().finally(() => { runPending = false; idb.set(PENDING_KEY, null); });   // no reload happened: drop the save
   if (!ok) return;   // signed in, with a free preview or the Holiday Pass
   logId = null; logKey = "";   // a new tree gets its own log
-  pieceArt = {}; artP = null;
   if (mode === "design" && src !== "tree") { if (!(await makeBase())) return; }
   if (!photo) return;
   $("#startErr").textContent = $("#detailsErr").textContent = "";
@@ -4031,7 +4031,6 @@ function paintFirst() {
     if (stack[stack.length - 1] === "s-results") sweep();
     saveSoon();
     if (after && guide) { const ai = new Image(); ai.onload = () => { if (!guide) return; guide.setAfter(ai); if (guide.steps[stepIdx] === "all" || (guide.usesAfter && guide.usesAfter(guide.steps[stepIdx]))) drawStep(); }; ai.src = after; }
-    if (after) ensureArt();
   });
 }
 
@@ -5067,93 +5066,6 @@ function drawGuide(key, peek) {
 // round photo of what goes there (the ornament or ribbon photo in its color, the Studio's filler, flower, topper and base
 // photos), sized to the piece, with a fine white ring and a soft shadow. A piece with no photo yet gets a glossy disc in its color.
 const ICON_IMGS = {};
-// Renderings of the pieces (Eric, Nov 20: "use renderings of the objects rather than the pictures"). Once the preview is
-// painted, one picture renders every piece this design buys as a clean product shot on white, in a grid, matched to the
-// preview (api/pieceart.js). The app cuts the grid apart, takes the white away, and each piece is placed on its spots and
-// in the key. Kept with the tree on the phone. Until it arrives, or if it fails, the photos show as before.
-const ART_STEPS = ["primary_picks", "ribbon", "florals", "statement", "medium", "crown"];
-let pieceArt = {}, artP = null; const ART_ASKED = {};
-const ART_IMGS = {};
-function artImg(label) {
-  const u = pieceArt[label]; if (!u) return null;
-  let im = ART_IMGS[u]; if (!im) { im = ART_IMGS[u] = new Image(); im.onload = () => redrawArt(); im.src = u; }
-  return im.complete && im.naturalWidth ? im : null;
-}
-function redrawArt() { if (guide && stack[stack.length - 1] === "s-plan" && !$("#sv2Tabs").querySelector('[data-v="photo"].on')) { const k = guide.steps[stepIdx]; drawGuide(k); drawKey(k); } }
-function artWanted(gd) {
-  if (!gd) return [];
-  const per = ART_STEPS.filter(k => gd.steps.includes(k)).map(k => (gd.buy(k) || []).filter(b => b.label && !/^optional/i.test(b.qty || "")).map(b => b.label));
-  const out = [], seen = new Set();
-  for (let i = 0; out.length < 12 && per.some(l => l[i]); i++) per.forEach(l => { const v = l[i]; if (v && !seen.has(v) && out.length < 12) { seen.add(v); out.push(v); } });   // every step gets its first pieces before any gets its fourth
-  return out;
-}
-async function ensureArt() {
-  if (SAMPLE || artP || !result || !after || !document.documentElement.classList.contains("theme-ivory")) return;
-  let gd = guide; if (!gd) { try { gd = TreeGuide.create(await getPhotoImg(), document.createElement("canvas"), result, mode); } catch (e) { return; } }   // an off-screen copy just for the shopping list, so the step screen still sets itself up
-  const need = artWanted(gd).filter(l => !(l in pieceArt)); if (!need.length) return;
-  const forResult = result;
-  artP = (async () => {
-    try {
-      const ref = await thumb(after, 768, .8);
-      const r = await api("/api/pieceart", { pieces: need, image: ref });
-      if (result !== forResult) return;
-      const cut = await cutGrid(r.image, r.cols, r.rows, need.length);
-      need.forEach((l, i) => { pieceArt[l] = cut[i] || ""; });   // "" = tried, nothing usable: keep its photo
-      saveSoon(); redrawArt();
-    } catch (e) { console.warn("piece renderings", e.message); }
-    finally { artP = null; }
-  })();
-}
-// Cut the grid into pieces: each cell's white background (reached from its edges) becomes see-through, then it's
-// trimmed to the piece. A cell that came back empty gives "".
-async function cutGrid(src, cols, rows, n) {
-  const im = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
-  const cw = im.naturalWidth / cols, ch = im.naturalHeight / rows, out = [];
-  for (let k = 0; k < n; k++) {
-    const S = 320, c = document.createElement("canvas"); c.width = c.height = S; const g = c.getContext("2d", { willReadFrequently: true });
-    const cx = (k % cols) * cw, cy = Math.floor(k / cols) * ch, side = Math.min(cw, ch) * .96, ox = cx + (cw - side) / 2, oy = cy + (ch - side) / 2;   // a little inside the cell, clear of any faint grid lines
-    g.fillStyle = "#fff"; g.fillRect(0, 0, S, S); g.drawImage(im, ox, oy, side, side, 0, 0, S, S);
-    const id = g.getImageData(0, 0, S, S), d = id.data, bg = new Uint8Array(S * S), st = [];
-    // white and the soft grey studio shadow count as background; the shadow fades out instead of staying as a pale plate
-    const white = i => { const r = d[i * 4], gg = d[i * 4 + 1], b = d[i * 4 + 2], mx = Math.max(r, gg, b), mn = Math.min(r, gg, b); return mn > 196 && mx - mn < 20; };
-    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { if (x > 3 && y > 3 && x < S - 4 && y < S - 4) continue; const p = y * S + x; if (!bg[p] && white(p)) { bg[p] = 1; st.push(p); } }
-    while (st.length) { const p = st.pop(), x = p % S, y = (p / S) | 0; [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => { const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= S || Y >= S) return; const q = Y * S + X; if (!bg[q] && white(q)) { bg[q] = 1; st.push(q); } }); }
-    let x0 = S, y0 = S, x1 = -1, y1 = -1, solid = 0;
-    for (let p = 0; p < S * S; p++) {
-      if (bg[p]) { const mn = Math.min(d[p * 4], d[p * 4 + 1], d[p * 4 + 2]); d[p * 4 + 3] = mn >= 238 ? 0 : Math.round((238 - mn) / 42 * 90); d[p * 4] = d[p * 4 + 1] = d[p * 4 + 2] = 60; continue; }   // white goes; a grey shadow stays as a faint shadow
-      const x = p % S, y = (p / S) | 0, edge = (x && bg[p - 1]) || (x < S - 1 && bg[p + 1]) || (y && bg[p - S]) || (y < S - 1 && bg[p + S]);
-      if (edge) d[p * 4 + 3] = 150;   // soften the cut edge
-      solid++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
-    }
-    if (solid < S * S * .02 || x1 < 0) { out.push(""); continue; }
-    g.putImageData(id, 0, 0);
-    const pad = 4, w = Math.min(S, x1 - x0 + 1 + pad * 2), h = Math.min(S, y1 - y0 + 1 + pad * 2), t = document.createElement("canvas"); t.width = w; t.height = h;
-    t.getContext("2d").drawImage(c, Math.max(0, x0 - pad), Math.max(0, y0 - pad), w, h, 0, 0, w, h);
-    out.push(t.toDataURL("image/png"));
-  }
-  return out;
-}
-// which shopping list item a spot on the picture shows (the same choices the photos used)
-function spotItem(sp, buy) {
-  if (sp.kind === "filler" || sp.kind === "floral") { const l = buy.filter(b => pieceArt[b.label]); return l.length ? l[(sp.i || 0) % l.length] : null; }
-  if (sp.kind === "ribbon") return buy.find(b => !/accent/i.test(b.label || "")) || buy[0] || null;
-  if (sp.kind === "topper") return buy.find(b => /topper|star|angel|finial|bow|crown|spray/i.test(b.label || "") && !/skirt|collar|basket/i.test(b.label || "")) || null;
-  if (sp.kind === "base") return buy.find(b => /skirt|collar|basket|base/i.test(b.label || "")) || null;
-  if (sp.kind === "ornament") {
-    const rgb = h => { h = hex6(h); return h ? [1, 3, 5].map(j => parseInt(h.slice(j, j + 2), 16)) : null; }, a = rgb(sp.color);
-    const shape = b => /teardrop|drop/i.test(b.label) ? "drop" : /finial|icicle/i.test(b.label) ? "finial" : "ball";
-    let best = null, bd = 1e9;
-    buy.filter(b => pieceArt[b.label]).forEach(b => { const c = rgb(b.color); let dd = a && c ? Math.hypot(a[0] - c[0], a[1] - c[1], a[2] - c[2]) : 200; if (shape(b) !== (sp.shape === "drop" ? "drop" : sp.shape === "finial" ? "finial" : "ball")) dd += 120; if (dd < bd) { bd = dd; best = b; } });
-    return bd < 260 ? best : null;
-  }
-  return null;
-}
-function iconImg(url, key) {
-  if (!url) return null;
-  let im = ICON_IMGS[url];
-  if (!im) { im = ICON_IMGS[url] = new Image(); im.onload = () => { if (guide && guide.steps[stepIdx] === key && !$("#sv2Tabs").querySelector('[data-v="photo"].on')) drawGuide(key); }; im.src = url; }
-  return im.complete && im.naturalWidth ? im : null;
-}
 function iconUrl(sp, key, buy) {
   const ph = window.__PH || {}, pick = re => buy.filter(b => re.test(String(b.label || "")) ) ;
   if (sp.kind === "filler" || sp.kind === "floral") {
@@ -5212,12 +5124,52 @@ function tintedIcon(url, hex, onReady) {
 // The key under the step picture (Kylie's mockup): each piece with its picture and how many, from the shopping list,
 // so the names and counts match it; ornaments are grouped by size ("8 in", "4 in")
 const KEY_TITLE = { primary_picks: "Filler key", ribbon: "Ribbon key", florals: "Flower key", statement: "Ornament key", medium: "Ornament key", crown: "Crown & base key" };
+// Step picture icons (Eric, Nov 20: "it is a diagram after all and it should be easy to read"). Each piece is a simple flat
+// drawing in its own color with a white edge, so it reads on any photo: an ornament (round, teardrop or finial with its cap),
+// a flower, a sprig of leaves, berries or a spray, a topper and a skirt. Ribbon isn't an icon: the guide outlines the
+// shape each piece of ribbon takes (guide.js). The key under the picture uses the same drawings.
+function iconKind(label, kind) {
+  const l = String(label || "").toLowerCase();
+  if (kind === "base" || /skirt|collar|basket/.test(l)) return "base";
+  if (kind === "topper") return /finial/.test(l) ? "finialtop" : /bow/.test(l) ? "bow" : /angel/.test(l) ? "angel" : "star";
+  if (kind === "ornament") return /teardrop|drop/.test(l) ? "drop" : /finial|icicle/.test(l) ? "finial" : "ball";
+  if (/berr|holly/.test(l)) return "berries";
+  if (/pearl|crystal|icicle|glitter|spray|sprig|twig|wheat|cotton|feather/.test(l)) return "spray";
+  if (/rose|poinsettia|hydrangea|peon|ranunculus|dahlia|orchid|lil(y|ies)|amaryllis|tulip|flower|bloom|carnation|mum\b/.test(l) || kind === "floral") return "flower";
+  return "leaves";
+}
+function pieceIcon(g, type, x, y, r, col) {
+  col = hex6(col) || (type === "leaves" ? "#3E6B45" : type === "flower" ? "#A3151F" : type === "base" ? "#6E1A2C" : "#C9A24B");
+  const edge = Math.max(1.4, r * .11), dark = shadeHex(col, -.35), lite = shadeHex(col, .35);
+  const finish = () => { g.lineJoin = "round"; g.lineWidth = edge * 2.2; g.strokeStyle = "rgba(255,252,244,.95)"; g.stroke(); g.lineWidth = edge * .55; g.strokeStyle = dark; g.stroke(); };
+  const fillShape = () => { const gr = g.createLinearGradient(x - r, y - r, x + r * .6, y + r); gr.addColorStop(0, lite); gr.addColorStop(.55, col); gr.addColorStop(1, dark); g.fillStyle = gr; g.fill(); };
+  g.save(); g.shadowColor = "rgba(20,12,6,.35)"; g.shadowBlur = r * .35; g.shadowOffsetY = r * .1;
+  const cap = (cy, w) => { g.beginPath(); g.rect(x - w / 2, cy - r * .16, w, r * .2); g.fillStyle = "#C9A24B"; g.fill(); g.lineWidth = edge * .6; g.strokeStyle = "rgba(255,252,244,.95)"; g.stroke(); };
+  g.beginPath();
+  if (type === "ball") { g.arc(x, y + r * .08, r * .82, 0, Math.PI * 2); fillShape(); g.shadowColor = "transparent"; finish(); cap(y - r * .74, r * .38); g.beginPath(); g.arc(x - r * .3, y - r * .2, r * .16, 0, Math.PI * 2); g.fillStyle = "rgba(255,255,255,.6)"; g.fill(); }
+  else if (type === "drop") { g.moveTo(x, y - r * .7); g.bezierCurveTo(x + r * .7, y - r * .1, x + r * .5, y + r * .55, x, y + r); g.bezierCurveTo(x - r * .5, y + r * .55, x - r * .7, y - r * .1, x, y - r * .7); fillShape(); g.shadowColor = "transparent"; finish(); cap(y - r * .72, r * .28); }
+  else if (type === "finial" || type === "finialtop") { const k = type === "finialtop" ? 1.15 : 1; g.moveTo(x, y - r * .55 * k); g.bezierCurveTo(x + r * .55, y - r * .35, x + r * .5, y + r * .1, x + r * .12, y + r * .25); g.lineTo(x, y + r * 1.05 * k); g.lineTo(x - r * .12, y + r * .25); g.bezierCurveTo(x - r * .5, y + r * .1, x - r * .55, y - r * .35, x, y - r * .55 * k); fillShape(); g.shadowColor = "transparent"; finish(); cap(y - r * .6 * k, r * .26); }
+  else if (type === "flower") { const n = 6; for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / n; g.moveTo(x, y); g.quadraticCurveTo(x + Math.cos(a - .5) * r * .95, y + Math.sin(a - .5) * r * .95, x + Math.cos(a) * r, y + Math.sin(a) * r); g.quadraticCurveTo(x + Math.cos(a + .5) * r * .95, y + Math.sin(a + .5) * r * .95, x, y); } fillShape(); g.shadowColor = "transparent"; finish(); g.beginPath(); g.arc(x, y, r * .2, 0, Math.PI * 2); g.fillStyle = "#E8C34A"; g.fill(); }
+  else if (type === "star") { for (let i = 0; i <= 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .42 : r; g[i ? "lineTo" : "moveTo"](x + Math.cos(a) * rr, y + Math.sin(a) * rr); } fillShape(); g.shadowColor = "transparent"; finish(); }
+  else if (type === "angel") { g.moveTo(x, y - r * .35); g.lineTo(x + r * .55, y + r); g.lineTo(x - r * .55, y + r); g.closePath(); g.moveTo(x + r * .2, y - r * .1); g.quadraticCurveTo(x + r * 1.05, y - r * .7, x + r * .9, y + r * .3); g.moveTo(x - r * .2, y - r * .1); g.quadraticCurveTo(x - r * 1.05, y - r * .7, x - r * .9, y + r * .3); fillShape(); g.shadowColor = "transparent"; finish(); g.beginPath(); g.arc(x, y - r * .58, r * .22, 0, Math.PI * 2); g.fillStyle = col; g.fill(); finish(); }
+  else if (type === "bow") { g.moveTo(x, y); g.bezierCurveTo(x - r * 1.1, y - r * .9, x - r * 1.1, y + r * .5, x, y); g.bezierCurveTo(x + r * 1.1, y - r * .9, x + r * 1.1, y + r * .5, x, y); g.moveTo(x - r * .1, y); g.lineTo(x - r * .5, y + r); g.lineTo(x - r * .2, y + r * .85); g.lineTo(x + r * .05, y); g.lineTo(x + r * .5, y + r); g.lineTo(x + r * .2, y + r * .85); fillShape(); g.shadowColor = "transparent"; finish(); }
+  else if (type === "base") { g.moveTo(x - r * 1.2, y + r * .35); g.quadraticCurveTo(x, y - r * .55, x + r * 1.2, y + r * .35); g.quadraticCurveTo(x, y + r * .95, x - r * 1.2, y + r * .35); fillShape(); g.shadowColor = "transparent"; finish(); }
+  else {   // leaves, berries, spray: a stem with its pieces
+    const stem = () => { g.beginPath(); g.moveTo(x - r * .55, y + r * .85); g.quadraticCurveTo(x - r * .1, y + r * .1, x + r * .45, y - r * .8); g.lineCap = "round"; g.lineWidth = edge * 2.6; g.strokeStyle = "rgba(255,252,244,.95)"; g.stroke(); g.lineWidth = edge * .9; g.strokeStyle = type === "leaves" ? dark : "#6B5232"; g.stroke(); };
+    g.shadowColor = "transparent"; stem();
+    const at = [[-.32, .45], [.05, .05], [.3, -.42], [-.1, -.25], [.25, .3]];
+    if (type === "leaves") at.forEach(([u, v], i) => { const cx = x + u * r, cy = y + v * r, a = (i % 2 ? .9 : -.9) - .6; g.beginPath(); g.ellipse(cx, cy, r * .42, r * .17, a, 0, Math.PI * 2); fillShape(); finish(); });
+    else at.concat(type === "berries" ? [[.45, -.1], [-.05, -.6]] : [[.5, -.75], [.1, -.7], [-.4, .1]]).forEach(([u, v]) => { g.beginPath(); g.arc(x + u * r, y + v * r, r * (type === "berries" ? .2 : .13), 0, Math.PI * 2); fillShape(); finish(); });
+  }
+  g.restore();
+}
+function shadeHex(h, k) { h = hex6(h) || "#888888"; const c = [1, 3, 5].map(j => parseInt(h.slice(j, j + 2), 16)).map(v => Math.round(k < 0 ? v * (1 + k) : v + (255 - v) * k)); return "#" + c.map(v => Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0")).join(""); }
+const KEY_ICONS = {};
 function keyIcon(b, key) {
-  if (key === "statement" || key === "medium") return shopPhoto(b, key);
-  if (key === "ribbon") return shopPhoto(b, "ribbon");
-  if (key === "primary_picks" || key === "florals") return fillPhoto(b.label) || (key === "primary_picks" ? FILL_BUILTIN.pine || "" : "");
-  if (key === "crown") return shopPhoto(b, b.kind === "base" || /skirt|collar|basket/i.test(b.label || "") ? "base" : "crown");
-  return "";
+  const kind = key === "statement" || key === "medium" ? "ornament" : key === "crown" ? (b.kind === "base" || /skirt|collar|basket/i.test(b.label || "") ? "base" : "topper") : key === "florals" ? "floral" : "filler";
+  const type = iconKind(b.label, kind), k = type + "|" + b.color; if (KEY_ICONS[k]) return KEY_ICONS[k];
+  const c = document.createElement("canvas"); c.width = c.height = 96; pieceIcon(c.getContext("2d"), type, 48, type === "base" ? 46 : 50, 30, b.color);
+  return (KEY_ICONS[k] = c.toDataURL("image/png"));
 }
 function drawKey(key) {
   const el = $("#stepKeyPanel"); if (!el) return;
@@ -5232,10 +5184,8 @@ function drawKey(key) {
   };
   const nice = l => l.replace(/\s*christmas\s*/i, " ").replace(/\s*wired ribbon\b/i, "").replace(/\s*\((?:laid on top|thin accent)\)/i, "").trim().replace(/^./, c => c.toUpperCase());
   const row = (b, name) => {
-    const au = pieceArt[b.label]; if (au) return `<li><span class="kic art" style="background-image:url('${esc(au)}')"></span><span class="kname">${esc(name)}</span><span class="kqty">${esc(qty(b.qty) || (key === "crown" ? "×1" : ""))}</span></li>`;
-    let u = keyIcon(b, key);
-    if (u && (key === "primary_picks" || key === "florals") && NEEDS_TINT.test(b.label || "") && hex6(b.color)) { const t = tintedIcon(u, hex6(b.color), () => drawKey(key)); u = t ? t.toDataURL("image/jpeg", .85) : ""; }   // same color as the plan, like the icons
-    return `<li><span class="kic" style="${u ? `background-image:url('${esc(u)}')` : `--kc:${esc(b.color)}`}"></span><span class="kname">${esc(name)}</span><span class="kqty">${esc(qty(b.qty) || (key === "crown" ? "×1" : ""))}</span></li>`; };
+    const u = key === "ribbon" ? "" : keyIcon(b, key);
+    return `<li><span class="kic${u ? " ico" : " rib"}" style="${u ? `background-image:url('${esc(u)}')` : `--kc:${esc(b.color)}`}"></span><span class="kname">${esc(name)}</span><span class="kqty">${esc(qty(b.qty) || (key === "crown" ? "×1" : ""))}</span></li>`; };
   let body;
   if (key === "statement" || key === "medium") {
     const groups = {}, order = [];
@@ -5246,51 +5196,20 @@ function drawKey(key) {
   } else body = `<ul>${items.map(b => row(b, nice(b.label))).join("")}</ul>`;
   el.innerHTML = `<div class="ktitle"><span>${esc(KEY_TITLE[key])}</span></div>${body}`;
 }
-// the plan's color when this piece's photo has to be recolored to match (flowers, berries, colored sprays)
-function iconTint(sp, key, buy) {
-  if (sp.kind !== "filler" && sp.kind !== "floral") return "";
-  const list = buy.filter(b => fillPhoto(b.label)); if (!list.length) return "";
-  const b = list[(sp.i || 0) % list.length];
-  return NEEDS_TINT.test(b.label || "") ? hex6(b.color) : "";
-}
 function drawIcons(key) {
   if (!guide || !guide.spots || !document.documentElement.classList.contains("theme-ivory")) return;
-  const sps = guide.spots(key); if (!sps.length) return;
-  const cv = $("#guideCv"), g = cv.getContext("2d"), W = cv.width, buy = guide.buy(key) || [], ivory = getComputedStyle(document.documentElement);
-  const R = { xl: .062, l: .052, m: .04, s: .032 };
-  // big pieces first so small ones sit on top; the base and topper last
-  sps.slice().sort((a, b) => (a.kind === "topper" || a.kind === "base") - (b.kind === "topper" || b.kind === "base") || (R[b.size] || .045) - (R[a.size] || .045)).forEach(sp => {
-    const r = W * (sp.kind === "ornament" ? (R[sp.size] || .04) : sp.kind === "ribbon" ? .05 : sp.kind === "topper" ? .075 : sp.kind === "base" ? .085 : .036 + .006 * (sp.size || 2));
-    const art = (() => { const it = spotItem(sp, buy); return it ? artImg(it.label) : null; })();
-    if (art) {   // the rendered piece itself, standing on its spot with a soft shadow (no round frame)
-      const box = r * (sp.kind === "ribbon" ? 2.6 : sp.kind === "base" ? 2.6 : sp.kind === "topper" ? 2.4 : 2.2), k = Math.min(box / art.naturalWidth, box / art.naturalHeight), w = art.naturalWidth * k, h = art.naturalHeight * k;
-      g.save(); g.shadowColor = "rgba(20,12,6,.5)"; g.shadowBlur = r * .45; g.shadowOffsetY = r * .12; g.drawImage(art, sp.x - w / 2, sp.y - h / 2, w, h); g.restore();
-      return;
-    }
-    if (!(key in ART_ASKED)) { ART_ASKED[key] = 1; ensureArt(); }
-    const src = iconUrl(sp, key, buy), tint = iconTint(sp, key, buy);
-    let im;
-    if (src && tint) { const t = tintedIcon(src, tint, () => { if (guide && guide.steps[stepIdx] === key && !$("#sv2Tabs").querySelector('[data-v="photo"].on')) { drawGuide(key); drawKey(key); } }); im = t || null; if (t === false) sp = Object.assign({}, sp, { kind: sp.kind === "filler" ? "floral" : sp.kind, color: tint, drawn: true }); }   // can't recolor it: draw it in the right color rather than show the wrong one
-    else im = iconImg(src, key);
-    g.save();
-    g.shadowColor = "rgba(30,20,10,.45)"; g.shadowBlur = r * .5; g.shadowOffsetY = r * .14;
-    g.beginPath(); g.arc(sp.x, sp.y, r + Math.max(1.5, r * .09), 0, Math.PI * 2); g.fillStyle = "#fffaf0"; g.fill();
-    g.shadowColor = "transparent";
-    g.beginPath(); g.arc(sp.x, sp.y, r, 0, Math.PI * 2); g.clip();
-    if (im) { const iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height, k = Math.max(2 * r / iw, 2 * r / ih) * 1.08, w = iw * k, h = ih * k; g.drawImage(im, sp.x - w / 2, sp.y - h / 2, w, h); }
-    else if (sp.kind === "floral" || sp.kind === "topper") {   // a flower in its own color, or a gold star, on deep evergreen until a photo exists
-      g.fillStyle = "#24402c"; g.fillRect(sp.x - r, sp.y - r, 2 * r, 2 * r);
-      const col = sp.kind === "floral" ? (sp.color || "#B0242F") : "#D4AF62", n = sp.kind === "floral" ? 6 : 5;
-      g.beginPath();
-      for (let i = 0; i <= n * 2; i++) { const a = -Math.PI / 2 + i * Math.PI / n, rr = i % 2 ? r * (sp.kind === "floral" ? .42 : .38) : r * .86; g[i ? "lineTo" : "moveTo"](sp.x + Math.cos(a) * rr, sp.y + Math.sin(a) * rr); }
-      const gr = g.createRadialGradient(sp.x - r * .2, sp.y - r * .25, r * .05, sp.x, sp.y, r); gr.addColorStop(0, "#fff5d6"); gr.addColorStop(.3, col); gr.addColorStop(1, "#2a1206"); g.fillStyle = gr; g.fill();
-      if (sp.kind === "floral") { g.beginPath(); g.arc(sp.x, sp.y, r * .16, 0, Math.PI * 2); g.fillStyle = "#E8C34A"; g.fill(); }
-    }
-    else {   // a glossy disc in the piece's color until a photo exists
-      const col = sp.color || (sp.kind === "filler" ? "#3E6B45" : sp.kind === "ribbon" ? "#7A1F2B" : sp.kind === "base" ? "#5A3A28" : "#B8913F");
-      const gr = g.createRadialGradient(sp.x - r * .35, sp.y - r * .4, r * .1, sp.x, sp.y, r * 1.05); gr.addColorStop(0, "#ffffff"); gr.addColorStop(.18, col); gr.addColorStop(1, "#1a1208"); g.fillStyle = gr; g.fillRect(sp.x - r, sp.y - r, 2 * r, 2 * r);
-    }
-    g.restore();
+  const sps = guide.spots(key).filter(sp => sp.kind !== "ribbon"); if (!sps.length) return;   // ribbon is outlined by the guide itself
+  const cv = $("#guideCv"), g = cv.getContext("2d"), W = cv.width, buy = (guide.buy(key) || []).filter(b => b.label && !/^optional/i.test(b.qty || ""));
+  const R = { xl: .05, l: .042, m: .032, s: .025 };
+  const fill = buy.filter(b => b.kind !== "base");
+  sps.slice().sort((a, b) => (a.kind === "topper" || a.kind === "base") - (b.kind === "topper" || b.kind === "base") || (R[b.size] || .04) - (R[a.size] || .04)).forEach(sp => {
+    let type, col = sp.color, r;
+    if (sp.kind === "ornament") { type = sp.shape === "drop" ? "drop" : sp.shape === "finial" ? "finial" : "ball"; r = W * (R[sp.size] || .032); }
+    else if (sp.kind === "filler" || sp.kind === "floral") { const b = fill.length ? fill[(sp.i || 0) % fill.length] : null; type = iconKind(b ? b.label : "", sp.kind); col = (b && b.color) || sp.color; r = W * (.03 + .004 * (sp.size || 2)); }   // the kinds take turns, so every filler kind shows on the tree
+    else if (sp.kind === "topper") { const b = buy.find(b => b.kind !== "base" && !/skirt|collar|basket/i.test(b.label)); type = iconKind(b ? b.label : "", "topper"); col = (b && b.color) || "#C9A24B"; r = W * .055; }
+    else if (sp.kind === "base") { const b = buy.find(b => b.kind === "base" || /skirt|collar|basket/i.test(b.label)); type = "base"; col = (b && b.color) || "#6E1A2C"; r = W * .07; }
+    else return;
+    pieceIcon(g, type, sp.x, sp.y, r, col);
   });
 }
 function drawPins(key) {
@@ -5571,7 +5490,7 @@ function saveSoon() {
     idb.set(SAVE_KEY, {
       at: Date.now(), mode, src, factsSet, photo, photoAspect, keyPhoto, result, after,
       form: { kind: val("kind") || "", height: val("height") || "", density: val("density") || "", stage: val("stage") || "", style: val("style") || "keep", theme: $("#theme").value },
-      versions, current, chat, stepIdx, doneSteps: [...doneSteps], got: [...gotItems], screen: SAVE_SCREENS.includes(scr) ? scr : "s-results", pieceArt
+      versions, current, chat, stepIdx, doneSteps: [...doneSteps], got: [...gotItems], screen: SAVE_SCREENS.includes(scr) ? scr : "s-results"
     });
     logTree();
   }, 400);
@@ -5618,7 +5537,7 @@ async function restoreSaved(st) {
     $("#stageQ").hidden = true; $("#densityQ").hidden = false; syncKind(); $("#inspoRow").hidden = mode !== "design"; setPhotoCopy(mode === "design" ? (src === "room" ? "room" : "design") : "check");
     photo = st.photo; photoAspect = st.photoAspect || "3:4"; photoImg = null; keyPhoto = st.keyPhoto || null; keyList = keyPhoto ? [keyPhoto] : []; baseKey = "";
     $("#dropInner").innerHTML = `<img src="${photo}" alt="Your tree"><div class="pcap"><span>Is the whole tree in view, top included?</span><b>Change photo</b></div>`; photoChecked();
-    result = lookResult = st.result; after = st.after || null; planState = "ready"; planP = null; pieceArt = st.pieceArt || {}; artP = null;
+    result = lookResult = st.result; after = st.after || null; planState = "ready"; planP = null;
     evalBody = { image: photo, mode, style: val("style"), theme: $("#theme").value.trim(), facts: facts(), pieces: keyPhoto || undefined };
     versions = (st.versions || []).length ? st.versions : [{ label: "Original", result: JSON.parse(JSON.stringify(result)), after }];
     current = Math.min(st.current || 0, versions.length - 1); chat = st.chat || [];

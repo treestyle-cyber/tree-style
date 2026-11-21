@@ -499,6 +499,7 @@
       shg.shadowColor = "rgba(25,12,8,.5)"; shg.shadowBlur = Math.max(3, u * .9); shg.shadowOffsetY = Math.max(1.5, u * .35);
       shg.drawImage(c, 0, 0);
       ribbonPlan.layer = sh;
+      ribbonPlan.shape = c;
     }
     const layerFor = k => k === "ribbon" ? (ribbonPlan.layer || planL.ribbon) : planL[k];
     let afterImg = null, photoSteps = false, iconSteps = false;
@@ -552,6 +553,26 @@
     }
     const lightCount = () => { const h = data.tree.height_ft || 7; return [Math.round(h * 100 / 50) * 50, Math.round(h * 200 / 50) * 50]; };
 
+    // Ribbon on the Ivory step pictures (Eric, Nov 20: ribbon is the hardest step, and the picture is a diagram that should be
+    // easy to read): each piece of ribbon is shown as the outline of the shape it takes (the billow or cascade the preview
+    // paints), in the ribbon's color with a white edge and a light wash of color inside, instead of a picture of ribbon.
+    function ribbonOutline(o) {
+      const sh = ribbonPlan.shape; if (!sh) return;
+      const u = G.unit, col = (scene.rb && scene.rb.base && scene.rb.base.color) || "#7A1F2B";
+      const silhouette = (rad, color) => {   // the ribbon's shape grown by rad, in one color
+        const c = layer(W, H), g = c.getContext("2d"), n = 12;
+        for (let i = 0; i < n; i++) { const a = i / n * TAU; g.drawImage(sh, Math.cos(a) * rad, Math.sin(a) * rad); }
+        g.drawImage(sh, 0, 0); g.globalCompositeOperation = "source-in"; g.fillStyle = color; g.fillRect(0, 0, W, H); return c;
+      };
+      const w = Math.max(1.6, u * .3);
+      const halo = silhouette(w * 2.1, "rgba(255,252,244,.95)"), line = silhouette(w, col), inner = silhouette(0, col);
+      const ring = layer(W, H), rg = ring.getContext("2d");
+      rg.drawImage(halo, 0, 0); rg.globalCompositeOperation = "destination-out"; rg.drawImage(inner, 0, 0);   // white edge outside the shape
+      rg.globalCompositeOperation = "source-over"; rg.drawImage(line, 0, 0);
+      rg.globalCompositeOperation = "destination-out"; rg.drawImage(inner, 0, 0);   // the colored line sits just outside the shape
+      o.save(); o.globalAlpha = .22; o.drawImage(inner, 0, 0); o.restore();   // a light wash of the ribbon color inside
+      o.drawImage(ring, 0, 0);
+    }
     function draw(key, peek) {
       const o = ctx, u = G.unit, vs = viewScale(), S = scene, sizes = ORN_IN(data);
       placed = [];
@@ -559,7 +580,7 @@
       // Ivory look (Kylie's step mockups): every step after shaping shows their finished tree, the preview, with only the
       // numbered spots on top (drawn by the app); the drawn pieces stay as the fallback until the preview exists
       // Ivory look (Kylie): their own photo in full color; the app lays a picture of each piece on its spot (spots())
-      if (iconSteps && spots(key).length) { o.drawImage(img, 0, 0, W, H); return; }
+      if (iconSteps && spots(key).length) { o.drawImage(img, 0, 0, W, H); if (key === "ribbon") ribbonOutline(o); return; }
       if (usesAfter(key)) {
         const k2 = Math.max(W / afterImg.naturalWidth, H / afterImg.naturalHeight), aw = afterImg.naturalWidth * k2, ah = afterImg.naturalHeight * k2;
         o.drawImage(afterImg, (W - aw) / 2, (H - ah) / 2, aw, ah);
@@ -854,7 +875,7 @@
       else if (key === "ribbon") pts = (ribbonPlan.marks || []).slice();   // every ribbon spot, top down
       else if (key === "crown") pts = iconSteps ? spots("crown").map(p => [p.x, p.y]) : [[G.A[0], G.A[1] + G.treeH * .05], [(G.L[0] + G.R[0]) / 2 + G.treeH * .12, G.L[1] - G.treeH * .03]];
       pts = pts.filter(p => p && isFinite(p[0]) && isFinite(p[1]));
-      return iconSteps && key !== "crown" ? pts.map(([x, y]) => onTree(x, y)) : pts;   // the numbers sit on the same (on-tree) spots as the icons
+      return iconSteps && key !== "crown" && key !== "ribbon" ? pts.map(([x, y]) => onTree(x, y)) : pts;   // ribbon numbers stay on the ribbon outlines   // the numbers sit on the same (on-tree) spots as the icons
     }
 
     return { steps, title: k => STEP_TITLE[k], draw, pins, setQuiet: v => { quiet = !!v; }, drawMap: opts => drawMap(ctx, opts), lead, note, legend, itemsFor, buy, data, usesAfter, spots, unit: () => G.unit, setIconSteps: v => { iconSteps = !!v; }, setPhotoSteps: v => { photoSteps = !!v; }, setAfter: im => { afterImg = im; } };
